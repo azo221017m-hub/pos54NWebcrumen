@@ -1,3 +1,5 @@
+const baseUrl = import.meta.env.VITE_API_URL;
+
 export const validarCliente = async (numerodecliente: string) => {
   try {
     const response = await fetch('http://localhost:3000/api/auth/validar-cliente', {

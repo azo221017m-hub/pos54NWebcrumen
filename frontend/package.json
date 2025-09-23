@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build" ,
-    "start": "vite preview"
+    "start": "vite main"
   },
   "dependencies": {
     "react": "^18.2.0",
