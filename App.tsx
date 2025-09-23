@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import CargaCrumenPosWeb from './components/CargaCrumenPosWeb';
-import PInicioCrumenPosWeb from './components/PInicioCrumenPosWeb'; // Asegúrate de crear este componente
+import CargaCrumenPosWeb from './frontend/src/components/CargaCrumenPosWeb';
+import PInicioCrumenPosWeb from './frontend/src/components/PInicioCrumenPosWeb';
 
 function App() {
   const [cargando, setCargando] = useState(true);

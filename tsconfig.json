@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "types": ["node"],
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Node",
@@ -12,7 +11,8 @@
     "isolatedModules": true,
     "resolveJsonModule": true,
     "noEmit": true,
-    "allowJs": true
+    "allowJs": true,
+    "types": ["node"]
   },
   "include": ["frontend/src"],
   "exclude": ["node_modules", "dist"]
