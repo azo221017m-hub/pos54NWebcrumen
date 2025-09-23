@@ -13,6 +13,6 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src"],                   // todos los archivos dentro de src
+  "include": ["src/**/*"],                   // todos los archivos dentro de src
   "exclude": ["node_modules", "dist"]   // no compila node_modules ni dist
 }
