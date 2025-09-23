@@ -2,8 +2,9 @@
   "name": "crumen-frontend",
   "version": "1.0.0",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build"
+"dev": "vite",
+  "build": "vite build",
+  "start": "vite preview"
    },
   "dependencies": {
     "react": "^18.2.0",
