@@ -1,20 +1,18 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "useDefineForClassFields": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "allowJs": false,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
+    "allowJs": true,                    // permite archivos .js
+    "noEmit": true,                     // no genera .js, Vite se encarga
+    "jsx": "react-jsx",                 // JSX moderno de React 17+
+    "strict": true,                     // habilita todas las comprobaciones estrictas
     "module": "ESNext",
+    "target": "ESNext",
     "moduleResolution": "Node",
+    "isolatedModules": true,            // requerido por Vite
+    "esModuleInterop": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx"
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["src"]
+  "include": ["src"],                   // todos los archivos dentro de src
+  "exclude": ["node_modules", "dist"]   // no compila node_modules ni dist
 }
