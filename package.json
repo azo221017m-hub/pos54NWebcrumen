@@ -1,17 +1,14 @@
 {
-  "name": "crumen-front3nd",
+"name": "pos54nwebcrumen",
   "version": "1.0.0",
+  "private": true,
   "scripts": {
-  "dev": "vite",
-  "build": "vite build",
-  "preview": "vite preview"
-}
-,
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "serve": "^14.2.5",
-"vite": "^5.0.0"
+    "build": "cd frontend && npm install --include=dev && npm run build && cd ../backend && npm install --include=dev && npx tsc",
+    "start": "cd backend && npm install && npm start",
+    "dev": "concurrently \"cd frontend && npm run dev\" \"cd backend && npx ts-node src/index.ts\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
   },
   "devDependencies": {
     "@types/node": "^24.5.2",
