@@ -2,14 +2,17 @@
   "name": "crumen-front3nd",
   "version": "1.0.0",
   "scripts": {
-  "dev": "vite",
-  "build": "vite build"
-},
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "vite preview --host"
+  },
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/node": "^24.5.2",
     "@types/react": "^19.1.13",
     "@vitejs/plugin-react": "^4.0.0",
     "typescript": "^5.8.3",

@@ -1,18 +1,19 @@
 {
   "compilerOptions": {
-    "allowJs": true,                    // permite archivos .js
-    "noEmit": true,                     // no genera .js, Vite se encarga
-    "jsx": "react-jsx",                 // JSX moderno de React 17+
-    "strict": true,                     // habilita todas las comprobaciones estrictas
-    "module": "ESNext",
+    "types": ["node"],
     "target": "ESNext",
+    "module": "ESNext",
     "moduleResolution": "Node",
-    "isolatedModules": true,            // requerido por Vite
+    "jsx": "react-jsx",
+    "strict": true,
     "esModuleInterop": true,
-    "resolveJsonModule": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "allowJs": true
   },
-  "include": ["src/**/*"],                   // todos los archivos dentro de src
-  "exclude": ["node_modules", "dist"]   // no compila node_modules ni dist
+  "include": ["frontend/src"],
+  "exclude": ["node_modules", "dist"]
 }
