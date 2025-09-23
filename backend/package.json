@@ -1,24 +1,19 @@
-{
-  "name": "crumen-front3nd",
+{{
+  "name": "crumen-backend",
   "version": "1.0.0",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
   },
   "dependencies": {
-    "dotenv": "^17.2.2",
-    "express": "^5.1.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "serve": "^14.2.5",
-    "vite": "^5.0.0"
+    "express": "^4.18.2",
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {
-    "@types/dotenv": "^6.1.1",
-    "@types/express": "^5.0.3",
-    "@types/node": "^24.5.2",
-    "@types/react": "^19.1.13",
-    "@vitejs/plugin-react": "^4.0.0",
-    "typescript": "^5.8.3"
+    "@types/express": "^4.17.17",
+    "@types/node": "^20.5.1",
+    "@types/dotenv": "^8.2.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
   }
 }
