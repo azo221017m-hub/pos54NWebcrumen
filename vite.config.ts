@@ -4,7 +4,10 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   preview: {
-    port: parseInt(process.env.PORT ?? "5173"),// puerto para vite preview
-    host: true                                // permite acceso externo
+    port: parseInt(process.env.PORT ?? "5173"),
+    host: true,
+    allowedHosts: [
+      "poswebcrumen.onrender.com"
+    ]
   }
 });
