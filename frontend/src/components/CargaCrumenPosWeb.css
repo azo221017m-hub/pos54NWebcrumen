@@ -1,0 +1,77 @@
+.carga-crumen-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;  /* Header, formulario, footer */
+  align-items: center;     /* Centra horizontalmente */
+  justify-content: flex-start;
+  padding: 2rem 1rem;
+  background: linear-gradient(180deg, #111, #111);
+  color: #e6eef8;
+  gap: 2rem;               /* Separación entre header, formulario y footer */
+}
+
+
+/* Estilo general del header */
+.header-crumen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 150px; /* altura del header */
+  background-color: #111; /* fondo del header */
+  color: #fff; /* color del texto */
+  font-weight: bold;
+  font-size: 5rem; /* tamaño base de letra */
+  overflow: hidden; /* para evitar que se vean letras fuera */
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+/* Cada letra de CRUMEN */
+.header-crumen span {
+  display: inline-block;
+  opacity: 0;
+  transform: scale(3); /* empieza grande */
+  animation: zoomOutLetter 0.6s ease forwards;
+}
+
+/* Animación letra por letra con delay */
+.header-crumen span:nth-child(1) { animation-delay: 0s; }
+.header-crumen span:nth-child(2) { animation-delay: 0.1s; }
+.header-crumen span:nth-child(3) { animation-delay: 0.2s; }
+.header-crumen span:nth-child(4) { animation-delay: 0.3s; }
+.header-crumen span:nth-child(5) { animation-delay: 0.4s; }
+.header-crumen span:nth-child(6) { animation-delay: 0.5s; }
+
+/* Animación zoom out */
+@keyframes zoomOutLetter {
+  0% {
+    opacity: 0;
+    transform: scale(3);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.footer-crumen {
+  position: fixed;        /* fijo al pie de la página */
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #aaa;
+  font-weight: 500;
+  padding: 1rem 0;
+  border-top: 1px solid #444;
+  background-color: #111;
+  font-family: 'Arial', sans-serif;
+  letter-spacing: 1px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  margin-top: auto;
+}
+
