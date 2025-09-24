@@ -1,26 +1,12 @@
-import React, { useState } from 'react';
-import CargaCrumenPosWeb from './frontend/src/components/CargaCrumenPosWeb';
-import PInicioCrumenPosWeb from './frontend/src/components/PInicioCrumenPosWeb';
+import TestApi from './frontend/src/components/TestApi';
+
 
 function App() {
-  const [cargando, setCargando] = useState(true);
-
-  const handleCargaTerminada = () => {
-    // Espera 2 segundos antes de mostrar la pantalla de inicio
-    setTimeout(() => {
-      setCargando(false);
-    });
-  };
-
   return (
-    <>
-      {cargando ? (
-        <CargaCrumenPosWeb onTerminado={handleCargaTerminada} />
-      ) : (
-        <PInicioCrumenPosWeb onEntrarVenta={() => console.log('Entrando a venta')} />
-
-      )}
-    </>
+    <div className="App">
+      <h1>CrumenPosWeb - Prueba API</h1>
+      <TestApi />
+    </div>
   );
 }
 

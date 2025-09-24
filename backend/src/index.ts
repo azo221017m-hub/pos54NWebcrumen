@@ -42,6 +42,11 @@ app.use((req, res, next) => {
   next();
 });
 
+
+app.get('/', (req, res) => {
+  res.send('Backend CrumenPosWeb funcionando ✅');
+});
+
 // 6️⃣ Arrancar servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
