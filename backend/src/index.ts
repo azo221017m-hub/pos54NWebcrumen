@@ -14,6 +14,13 @@ app.use(cors());
 // 2️⃣ Parsear JSON
 app.use(express.json());
 
+app.use((req, res, next) => {
+  console.log(`[REQUEST] ${req.method} ${req.originalUrl} - Body:`, req.body);
+  next();
+});
+
+
+
 // 3️⃣ Rutas de autenticación
 app.use('/api/auth', authRoutes);
 
