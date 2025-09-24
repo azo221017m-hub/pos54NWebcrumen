@@ -9,6 +9,16 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 
+app.get('/api/ping-bd', async (req, res) => {
+  try {
+    const [rows]: any = await (await import('./db.js')).pool.query("SELECT NOW() AS ahora");
+    res.json({ ok: true, ahora: rows[0].ahora });
+  } catch (error) {
+    console.error('[ERROR] /api/ping-bd:', error);
+    res.status(500).json({ ok: false, mensaje: 'Error al consultar la BD' });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
