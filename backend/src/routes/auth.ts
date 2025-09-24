@@ -23,6 +23,7 @@ const router = Router();
  */
 router.post('/validar-cliente', async (req, res) => {
   const { numerodecliente } = req.body;
+  console.log('[DEBUG] validar-cliente - Body recibido:', req.body);
 
   try {
     const [clientes] = await pool.query<Cliente[]>(
@@ -30,10 +31,13 @@ router.post('/validar-cliente', async (req, res) => {
       [numerodecliente]
     );
 
-    res.json({ ok: clientes.length > 0 });
+    console.log('[DEBUG] validar-cliente - Resultado query:', clientes);
+
+    // Devolvemos también el contenido para depuración
+    res.json({ ok: clientes.length > 0, clientes });
   } catch (error) {
     console.error('[ERROR] validar-cliente:', error);
-    res.status(500).json({ ok: false });
+    res.status(500).json({ ok: false, mensaje: 'Error al consultar la BD' });
   }
 });
 
@@ -42,6 +46,7 @@ router.post('/validar-cliente', async (req, res) => {
  */
 router.post('/validar-usuario', async (req, res) => {
   const { nombredeusuario, contrasenia } = req.body;
+  console.log('[DEBUG] validar-usuario - Body recibido:', req.body);
 
   try {
     const [usuarios] = await pool.query<Usuario[]>(
@@ -49,10 +54,12 @@ router.post('/validar-usuario', async (req, res) => {
       [nombredeusuario, contrasenia]
     );
 
-    res.json({ ok: usuarios.length > 0 });
+    console.log('[DEBUG] validar-usuario - Resultado query:', usuarios);
+
+    res.json({ ok: usuarios.length > 0, usuarios });
   } catch (error) {
     console.error('[ERROR] validar-usuario:', error);
-    res.status(500).json({ ok: false });
+    res.status(500).json({ ok: false, mensaje: 'Error al consultar la BD' });
   }
 });
 

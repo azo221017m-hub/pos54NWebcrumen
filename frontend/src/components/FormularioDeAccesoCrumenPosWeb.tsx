@@ -30,15 +30,18 @@ const FormularioDeAccesoCrumenPosWeb: React.FC = () => {
         return;
       }
 
+      console.log('[FRONT] Validando cliente:', numerodecliente);
       const resp = await validarCliente(numerodecliente);
+      console.log('[FRONT] Respuesta validarCliente:', resp);
 
       if (resp.ok) {
         setAccesoConcedido(true);
-  
+        console.log('[FRONT] Cliente válido, se permite ingreso de usuario.');
       } else {
         setAccesoConcedido(false);
         setNumerodecliente('');
         setPopup({ mensaje: 'No se encontró Cliente', tipo: 'error' });
+        console.warn('[FRONT] Cliente no encontrado');
       }
     }
     // Paso 2: validar usuario
@@ -48,14 +51,18 @@ const FormularioDeAccesoCrumenPosWeb: React.FC = () => {
         return;
       }
 
+      console.log('[FRONT] Validando usuario:', nombredeusuario);
       const resp = await validarUsuario(nombredeusuario, contrasenia);
+      console.log('[FRONT] Respuesta validarUsuario:', resp);
 
       if (resp.ok) {
         setPopup({ mensaje: 'Abrirá Pantalla de Inicio', tipo: 'success' });
+        console.log('[FRONT] Usuario válido, acceso concedido.');
       } else {
         setNombredeusuario('');
         setContrasenia('');
         setPopup({ mensaje: 'No se encontró Usuario', tipo: 'error' });
+        console.warn('[FRONT] Usuario no encontrado o contraseña incorrecta');
       }
     }
   };
