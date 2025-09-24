@@ -11,7 +11,7 @@ app.use('/api/auth', authRoutes);
 
 app.get('/api/ping-bd', async (req, res) => {
   try {
-    const [rows]: any = await (await import('./db.js')).pool.query("SELECT NOW() AS ahora");
+    const [rows]: any = await (await import('./db.js')).pool.query("SELECT count(*) FROM negociostbl AS ahora");
     res.json({ ok: true, ahora: rows[0].ahora });
   } catch (error) {
     console.error('[ERROR] /api/ping-bd:', error);
