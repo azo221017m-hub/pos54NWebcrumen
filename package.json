@@ -2,15 +2,12 @@
 "name": "pos54nwebcrumen",
   "version": "1.0.0",
   "private": true,
-  "scripts": {
-    "build": "cd frontend && npm install --include=dev && npm run build && cd ../backend && npm install --include=dev && npx tsc",
-    "start": "cd backend && npm install && npm start",
-    "dev": "concurrently \"cd frontend && npm run dev\" \"cd backend && npx ts-node src/index.ts\""
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.0"
-  },
-  "devDependencies": {
+ "scripts": {
+  "dev": "vite",
+  "build": "vite build",
+  "preview": "vite preview"
+},
+    "devDependencies": {
     "@types/node": "^24.5.2",
     "@types/react": "^19.1.13",
     "@vitejs/plugin-react": "^4.0.0",
