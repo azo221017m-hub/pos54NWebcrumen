@@ -2,14 +2,17 @@ import React, { useState, useEffect } from 'react';
 import './FormularioDeAccesoCrumenPosWeb.css';
 import { validarCliente, validarUsuario } from '../services/apiAuth';
 
-const FormularioDeAccesoCrumenPosWeb: React.FC = () => {
+interface FormularioProps {
+  onAccesoExitoso: () => void;
+}
+
+const FormularioDeAccesoCrumenPosWeb: React.FC<FormularioProps> = ({ onAccesoExitoso }) => {
   const [numerodecliente, setNumerodecliente] = useState('');
   const [nombredeusuario, setNombredeusuario] = useState('');
   const [contrasenia, setContrasenia] = useState('');
   const [error, setError] = useState('');
   const [accesoConcedido, setAccesoConcedido] = useState(false);
 
-  // Estado para el popup
   const [popup, setPopup] = useState<{ mensaje: string; tipo: 'success' | 'error' } | null>(null);
 
   // Desaparecer popup después de 3 segundos
@@ -34,34 +37,33 @@ const FormularioDeAccesoCrumenPosWeb: React.FC = () => {
       const resp = await validarCliente(numerodecliente);
       console.log('[FRONT] Respuesta validarCliente:', resp);
 
-    if (resp.ok) {
-  setAccesoConcedido(true);
-} else if (resp.error) {
-  setPopup({ mensaje: resp.error, tipo: 'error' });
-} else {
-  setPopup({ mensaje: 'Client3 no encontrado', tipo: 'error' });
-}
-    }
-    // Paso 2: validar usuario
-    else {
-      if (!nombredeusuario || !contrasenia) {
-        setError('Por favor complete usuario y contraseñ4.');
-        return;
-      }
-
-      console.log('[FRONT] Validando usuario:', nombredeusuario);
-      const resp = await validarUsuario(nombredeusuario, contrasenia);
-      console.log('[FRONT] Respuesta validarUsuario:', resp);
-
       if (resp.ok) {
-        setPopup({ mensaje: 'Abrirá Pantalla de 1nicio', tipo: 'success' });
-        console.log('[FRONT] Usuario válido, acceso concedido.');
+        setAccesoConcedido(true);
+        setPopup({ mensaje: 'Cliente válido, ingrese usuario y contraseña', tipo: 'success' });
       } else {
-        setNombredeusuario('');
-        setContrasenia('');
-        setPopup({ mensaje: 'No se encontró Usuari0', tipo: 'error' });
-        console.warn('[FRONT] Usuario no encontrado o contraseña incorrecta');
+        setPopup({ mensaje: resp.error || 'Cliente no encontrado', tipo: 'error' });
       }
+
+      return;
+    }
+
+    // Paso 2: validar usuario
+    if (!nombredeusuario || !contrasenia) {
+      setError('Por favor complete usuario y contraseña.');
+      return;
+    }
+
+    console.log('[FRONT] Validando usuario:', nombredeusuario);
+    const resp = await validarUsuario(nombredeusuario, contrasenia);
+    console.log('[FRONT] Respuesta validarUsuario:', resp);
+
+    if (resp.ok) {
+      setPopup({ mensaje: 'Acceso concedido', tipo: 'success' });
+      onAccesoExitoso(); // avisamos al componente padre
+    } else {
+      setNombredeusuario('');
+      setContrasenia('');
+      setPopup({ mensaje: 'Usuario no encontrado o contraseña incorrecta', tipo: 'error' });
     }
   };
 
@@ -97,7 +99,9 @@ const FormularioDeAccesoCrumenPosWeb: React.FC = () => {
 
       {error && <div className="error">{error}</div>}
 
-      <button onClick={testCliente}>Test Cliente</button>
+      <button onClick={handleIngreso}>
+        {accesoConcedido ? 'Ingresar Usuario' : 'Validar Cliente'}
+      </button>
 
       {/* Popup */}
       {popup && (

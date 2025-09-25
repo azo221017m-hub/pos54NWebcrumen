@@ -1,25 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import './CargaCrumenPosWeb.css';
-import './FormularioDeAccesoCrumenPosWeb.css';
 import FormularioDeAccesoCrumenPosWeb from './FormularioDeAccesoCrumenPosWeb';
 
 interface Props {
-  onTerminado?: () => void; // opcional
+  onTerminado?: () => void; // opcional, se ejecuta al terminar la carga
 }
 
 const CargaCrumenPosWeb: React.FC<Props> = ({ onTerminado }) => {
-  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [mostrarFormulario, setMostrarFormulario] = useState<boolean>(false);
 
-  
- useEffect(() => {
+  useEffect(() => {
     const timeout = setTimeout(() => {
       setMostrarFormulario(true); // después de 3s, mostrar el formulario
+      if (onTerminado) onTerminado();
     }, 3000);
 
     return () => clearTimeout(timeout);
-  }, []);
-
-
+  }, [onTerminado]);
 
   return (
     <div className="carga-crumen-container">
@@ -31,18 +28,18 @@ const CargaCrumenPosWeb: React.FC<Props> = ({ onTerminado }) => {
         ))}
       </header>
 
-<div className="formulario-acceso">
-      {!mostrarFormulario ? (
-        <div></div>
-      ) : (
-        <div >
-          Acceso al Sistema<FormularioDeAccesoCrumenPosWeb
-            onAccesoExitoso={() => alert('Acceso exitoso!')}
-          />
-        </div>
-      )}
-    </div>
-    
+      <main className="formulario-acceso">
+        {mostrarFormulario ? (
+          <div className="acceso-contenedor">
+            <h2>Acceso al Sistema</h2>
+            <FormularioDeAccesoCrumenPosWeb
+              onAccesoExitoso={() => alert('Acceso exitoso!')}
+            />
+          </div>
+        ) : (
+          <div className="placeholder-formulario"></div>
+        )}
+      </main>
 
       <footer className="footer-crumen">
         por CRUMEN, © Derechos reservados.
