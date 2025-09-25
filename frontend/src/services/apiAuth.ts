@@ -5,7 +5,7 @@ export const validarCliente = async (numerodecliente: string) => {
   console.log('[FETCH] Enviando validar-cliente:', numerodecliente);
 
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/validar-cliente`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/validar-cliente`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ numerodecliente }),
@@ -29,7 +29,7 @@ export const validarCliente = async (numerodecliente: string) => {
 export const validarUsuario = async (nombredeusuario: string, contrasenia: string) => {
   console.log('[FETCH] Enviando validar-usuario:', { nombredeusuario, contrasenia });
   try {
-    const response =  await fetch(`${import.meta.env.VITE_API_URL}/api/validar-usuario`, {
+    const response =  await fetch(`${import.meta.env.VITE_API_URL}/api/auth/validar-usuario`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nombredeusuario, contrasenia }),
