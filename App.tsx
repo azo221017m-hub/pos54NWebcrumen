@@ -1,6 +1,7 @@
 // src/App.tsx
 import React from 'react';
-import ApiTest from './components/TestApi'; // ajusta la ruta real
+import TestApi from './frontend/src/components/TestApi'; // ajusta la ruta real
+
 
 function App() {
   return (
