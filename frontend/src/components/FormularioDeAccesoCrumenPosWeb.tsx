@@ -97,9 +97,7 @@ const FormularioDeAccesoCrumenPosWeb: React.FC = () => {
 
       {error && <div className="error">{error}</div>}
 
-      <button className="boton-ingreso" onClick={handleIngreso}>
-        Ingresar
-      </button>
+      <button onClick={testCliente}>Test Cliente</button>
 
       {/* Popup */}
       {popup && (

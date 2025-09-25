@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { validarCliente, validarUsuario } from '../config/api';
+import { validarCliente, validarUsuario } from '../services/apiAuth'; // ajusta según tu archivo real
 
 const TestApi: React.FC = () => {
   const [cliente, setCliente] = useState('');
@@ -11,14 +11,14 @@ const TestApi: React.FC = () => {
     console.log('[TEST] Enviando validarCliente con:', cliente);
     const resp = await validarCliente(cliente);
     console.log('[TEST] Respuesta validarCliente:', resp);
-    setResultado(JSON.stringify(resp));
+    setResultado(JSON.stringify(resp, null, 2));
   };
 
   const testUsuario = async () => {
     console.log('[TEST] Enviando validarUsuario con:', { usuario, contrasenia });
     const resp = await validarUsuario(usuario, contrasenia);
     console.log('[TEST] Respuesta validarUsuario:', resp);
-    setResultado(JSON.stringify(resp));
+    setResultado(JSON.stringify(resp, null, 2));
   };
 
   return (

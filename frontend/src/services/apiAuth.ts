@@ -1,3 +1,5 @@
+console.log('[FETCH] VITE_API_URL:', import.meta.env.VITE_API_URL);
+
 // src/config/api.ts
 export const validarCliente = async (numerodecliente: string) => {
   console.log('[FETCH] Enviando validar-cliente:', numerodecliente);

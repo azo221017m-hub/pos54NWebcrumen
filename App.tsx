@@ -1,10 +1,11 @@
-import TestApi from './frontend/src/components/TestApi';
-
+// src/App.tsx
+import React from 'react';
+import ApiTest from './components/TestApi'; // ajusta la ruta real
 
 function App() {
   return (
-    <div className="App">
-      <h1>CrumenPosWeb - Prueba API</h1>
+    <div>
+      <h1>Mi App POS</h1>
       <TestApi />
     </div>
   );
