@@ -34,15 +34,13 @@ const FormularioDeAccesoCrumenPosWeb: React.FC = () => {
       const resp = await validarCliente(numerodecliente);
       console.log('[FRONT] Respuesta validarCliente:', resp);
 
-      if (resp.ok) {
-        setAccesoConcedido(true);
-        console.log('[FRONT] Cliente válido, se permite ingreso de usuario.');
-      } else {
-        setAccesoConcedido(false);
-        setNumerodecliente('');
-        setPopup({ mensaje: 'No se encontró Client3', tipo: 'error' });
-        console.warn('[FRONT] Cliente no encontrado');
-      }
+    if (resp.ok) {
+  setAccesoConcedido(true);
+} else if (resp.error) {
+  setPopup({ mensaje: resp.error, tipo: 'error' });
+} else {
+  setPopup({ mensaje: 'Client3 no encontrado', tipo: 'error' });
+}
     }
     // Paso 2: validar usuario
     else {
