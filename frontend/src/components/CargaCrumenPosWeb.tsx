@@ -1,48 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import './CargaCrumenPosWeb.css';
-import FormularioDeAccesoCrumenPosWeb from './FormularioDeAccesoCrumenPosWeb';
+import React, { useEffect } from "react";
+import "./CargaCrumenPosWeb.css";
+import logoPath from "../assets/logocrumen.svg";
 
-interface Props {
-  onTerminado?: () => void; // opcional, se ejecuta al terminar la carga
-}
-
-const CargaCrumenPosWeb: React.FC<Props> = ({ onTerminado }) => {
-  const [mostrarFormulario, setMostrarFormulario] = useState<boolean>(false);
-
+const CargaCrumenPosWeb: React.FC = () => {
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      setMostrarFormulario(true); // después de 3s, mostrar el formulario
-      if (onTerminado) onTerminado();
-    }, 3000);
-
-    return () => clearTimeout(timeout);
-  }, [onTerminado]);
+    const timer = setTimeout(() => {
+      window.location.href = "/login"; // redirige después de 4s
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <div className="carga-crumen-container">
-      <header className="header-crumen">
-        {'POS54N WEB'.split('').map((letra, i) => (
-          <span key={i} style={{ animationDelay: `${i * 0.2}s` }}>
-            {letra}
-          </span>
-        ))}
-      </header>
-
-      <main className="formulario-acceso">
-        {mostrarFormulario ? (
-          <div className="acceso-contenedor">
-            <h2>Acceso al Sistema</h2>
-           <FormularioDeAccesoCrumenPosWeb onAccesoExitoso={() => {}} />
-          </div>
-        ) : (
-          <div className="placeholder-formulario"></div>
-        )}
-      </main>
-
-      <footer className="footer-crumen">
-        por CRUMEN, © Derechos reservados.
-      </footer>
-    </div>
+    <main className="splash">
+      <img src={logoPath} alt="Logo CRUMEN" className="logo" />
+      <h1 className="brand">POS54N WEB</h1>
+      <p className="tagline">
+        Punto de venta web ligero para negocios locales
+      </p>
+      <div className="loader" aria-hidden="true"></div>
+    </main>
   );
 };
 

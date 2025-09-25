@@ -9,8 +9,12 @@ dotenv.config();
 const app = express();
 
 // 1️⃣ Permitir CORS desde cualquier origen (útil para pruebas)
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
 app.use(cors({
-  origin: "*", // o la URL exacta de tu frontend en Render
+  origin: FRONTEND_URL,
+  methods: ['GET', 'POST'],
+  credentials: true,
 }));
 
 // 2️⃣ Parsear JSON

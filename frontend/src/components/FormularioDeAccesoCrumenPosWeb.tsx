@@ -1,21 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import './FormularioDeAccesoCrumenPosWeb.css';
-import { validarCliente, validarUsuario } from '../services/apiAuth';
+// src/components/FormularioDeAccesoCrumenPosWeb.tsx
+import React, { useState, useEffect } from "react";
+import { validarCliente, validarUsuario } from "../services/apiAuth";
+import "./FormularioDeAccesoCrumenPosWeb.css";
 
 interface FormularioProps {
   onAccesoExitoso: () => void;
 }
 
-const FormularioDeAccesoCrumenPosWeb: React.FC<FormularioProps> = ({ onAccesoExitoso }) => {
-  const [numerodecliente, setNumerodecliente] = useState('');
-  const [nombredeusuario, setNombredeusuario] = useState('');
-  const [contrasenia, setContrasenia] = useState('');
-  const [error, setError] = useState('');
+const FormularioDeAccesoCrumenPosWeb: React.FC<FormularioProps> = ({
+  onAccesoExitoso,
+}) => {
+  const [numerodecliente, setNumerodecliente] = useState("");
+  const [nombredeusuario, setNombredeusuario] = useState("");
+  const [contrasenia, setContrasenia] = useState("");
+  const [error, setError] = useState("");
   const [accesoConcedido, setAccesoConcedido] = useState(false);
+  const [popup, setPopup] = useState<{ mensaje: string; tipo: "success" | "error" } | null>(null);
 
-  const [popup, setPopup] = useState<{ mensaje: string; tipo: 'success' | 'error' } | null>(null);
-
-  // Desaparecer popup después de 3 segundos
+  // Oculta popup después de 3s
   useEffect(() => {
     if (popup) {
       const timer = setTimeout(() => setPopup(null), 3000);
@@ -24,92 +26,122 @@ const FormularioDeAccesoCrumenPosWeb: React.FC<FormularioProps> = ({ onAccesoExi
   }, [popup]);
 
   const handleIngreso = async () => {
-    setError('');
+    setError("");
 
-    // Paso 1: validar cliente
     if (!accesoConcedido) {
       if (!numerodecliente) {
-        setError('Por favor ingrese el número de cliente.');
+        setError("Por favor ingrese el número de cliente.");
         return;
       }
-
-      console.log('[FRONT] Validando cliente:', numerodecliente);
       const resp = await validarCliente(numerodecliente);
-      console.log('[FRONT] Respuesta validarCliente:', resp);
-
       if (resp.ok) {
         setAccesoConcedido(true);
-        setPopup({ mensaje: 'Cliente válido, ingrese usuario y contraseña', tipo: 'success' });
+        setPopup({ mensaje: "Cliente válido, ingrese usuario y contraseña", tipo: "success" });
       } else {
-        setPopup({ mensaje: resp.error || 'Cliente no encontrado', tipo: 'error' });
+        setPopup({ mensaje: resp.error || "Cliente no encontrado", tipo: "error" });
       }
-
       return;
     }
 
-    // Paso 2: validar usuario
     if (!nombredeusuario || !contrasenia) {
-      setError('Por favor complete usuario y contraseña.');
+      setError("Por favor complete usuario y contraseña.");
       return;
     }
 
-    console.log('[FRONT] Validando usuario:', nombredeusuario);
     const resp = await validarUsuario(nombredeusuario, contrasenia);
-    console.log('[FRONT] Respuesta validarUsuario:', resp);
-
     if (resp.ok) {
-      setPopup({ mensaje: 'Acceso concedido', tipo: 'success' });
-      onAccesoExitoso(); // avisamos al componente padre
+      setPopup({ mensaje: "Acceso concedido", tipo: "success" });
+      onAccesoExitoso();
     } else {
-      setNombredeusuario('');
-      setContrasenia('');
-      setPopup({ mensaje: 'Usuario no encontrado o contraseña incorrecta', tipo: 'error' });
+      setNombredeusuario("");
+      setContrasenia("");
+      setPopup({ mensaje: "Usuario o contraseña incorrectos", tipo: "error" });
     }
   };
 
   return (
-    <div className="formulario-acceso">
-      <input
-        type="text"
-        placeholder="Número de cliente"
-        className="input-acceso"
-        value={numerodecliente}
-        onChange={(e) => setNumerodecliente(e.target.value)}
-        disabled={accesoConcedido}
-      />
+    <section className="login-grid">
+      {/* Panel Izquierdo */}
+      <aside className="panel left">
+        <img
+          src="./frontend/src/assets/logoposweb-crumen.svg"
+          alt="Logo CRUMEN"
+          className="logo"
+        />
+        <h1>Pos54nWeb</h1>
+        <p>
+          Más que una comanda digital,<br />
+          es un sistema ligero para negocios locales.
+        </p>
+      </aside>
 
-      {accesoConcedido && (
-        <>
-          <input
-            type="text"
-            className="input-acceso"
-            placeholder="Nombre de usuario"
-            value={nombredeusuario}
-            onChange={(e) => setNombredeusuario(e.target.value)}
-          />
-          <input
-            type="password"
-            className="input-acceso"
-            placeholder="Contraseña"
-            value={contrasenia}
-            onChange={(e) => setContrasenia(e.target.value)}
-          />
-        </>
-      )}
+      {/* Panel Derecho */}
+      <main className="panel right">
+        <form
+          className="card"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleIngreso();
+          }}
+        >
+          <h2>Iniciar sesión</h2>
 
-      {error && <div className="error">{error}</div>}
+          {/* Paso 1: Cliente */}
+          {!accesoConcedido && (
+            <label className="field">
+              <span>Número de cliente</span>
+              <input
+                type="text"
+                placeholder="Ej: 10023"
+                value={numerodecliente}
+                onChange={(e) => setNumerodecliente(e.target.value)}
+              />
+            </label>
+          )}
 
-      <button onClick={handleIngreso}>
-        {accesoConcedido ? 'Ingresar Usuario' : 'Validar Cliente'}
-      </button>
+          {/* Paso 2: Usuario */}
+          {accesoConcedido && (
+            <>
+              <label className="field">
+                <span>Usuario</span>
+                <input
+                  type="text"
+                  placeholder="usuario@empresa"
+                  value={nombredeusuario}
+                  onChange={(e) => setNombredeusuario(e.target.value)}
+                />
+              </label>
 
-      {/* Popup */}
-      {popup && (
-        <div className={`popup ${popup.tipo}`}>
-          {popup.mensaje}
-        </div>
-      )}
-    </div>
+              <label className="field">
+                <span>Contraseña</span>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={contrasenia}
+                  onChange={(e) => setContrasenia(e.target.value)}
+                />
+              </label>
+            </>
+          )}
+
+          {error && <div className="toast error">{error}</div>}
+
+          <button type="submit" className="btn">
+            {accesoConcedido ? "Ingresar" : "Validar Cliente"}
+          </button>
+
+          {popup && (
+            <div className={`toast ${popup.tipo}`} role="status">
+              {popup.mensaje}
+            </div>
+          )}
+        </form>
+
+        <footer className="meta">
+          <small>© {new Date().getFullYear()} POSW38Crum3n. Todos los derechos reservados.</small>
+        </footer>
+      </main>
+    </section>
   );
 };
 

@@ -4,3 +4,7 @@ git commit -m "Primer commit"
 git branch -M main
 git remote add origin https://github.com/usuario/crumenposweb.git
 git push -u origin main
+
+
+
+eres experta en IU, con vite+react+TS modifica este código:
