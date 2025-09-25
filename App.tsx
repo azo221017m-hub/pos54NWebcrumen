@@ -6,8 +6,7 @@ import CargaCrumenPosWeb from './frontend/src/components/CargaCrumenPosWeb'; // 
 function App() {
   return (
     <div>
-      <h1>       Mi App POS</h1>
-      <CargaCrumenPosWeb />
+     <CargaCrumenPosWeb />
     </div>
   );
 }

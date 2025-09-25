@@ -32,9 +32,7 @@ const CargaCrumenPosWeb: React.FC<Props> = ({ onTerminado }) => {
         {mostrarFormulario ? (
           <div className="acceso-contenedor">
             <h2>Acceso al Sistema</h2>
-            <FormularioDeAccesoCrumenPosWeb
-              onAccesoExitoso={() => alert('Acceso exitoso!')}
-            />
+           <FormularioDeAccesoCrumenPosWeb onAccesoExitoso={() => {}} />
           </div>
         ) : (
           <div className="placeholder-formulario"></div>
