@@ -1,0 +1,84 @@
+body {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #74ebd5, #acb6e5);
+  color: #333;
+}
+
+.test-container {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #fff;
+  text-shadow: 1px 1px 10px rgba(0,0,0,0.3);
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input-group input {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.input-group input:focus {
+  border-color: #74ebd5;
+  box-shadow: 0 0 8px rgba(116, 235, 213, 0.6);
+  outline: none;
+}
+
+.input-group button {
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(90deg, #36d1dc, #5b86e5);
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.input-group button:hover {
+  background: linear-gradient(90deg, #5b86e5, #36d1dc);
+  transform: scale(1.05);
+}
+
+.resultado-card {
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  font-family: 'Fira Code', monospace;
+  overflow-x: auto;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+}
+
+.resultado-card pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
