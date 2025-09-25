@@ -9,17 +9,12 @@ dotenv.config();
 const app = express();
 
 // 1️⃣ Permitir CORS desde cualquier origen (útil para pruebas)
-app.use(cors());
+app.use(cors({
+  origin: "*", // o la URL exacta de tu frontend en Render
+}));
 
 // 2️⃣ Parsear JSON
 app.use(express.json());
-
-app.use((req, res, next) => {
-  console.log(`[REQUEST] ${req.method} ${req.originalUrl} - Body:`, req.body);
-  next();
-});
-
-
 
 // 3️⃣ Rutas de autenticación
 app.use('/api/auth', authRoutes);

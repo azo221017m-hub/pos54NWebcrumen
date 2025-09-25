@@ -40,14 +40,14 @@ const FormularioDeAccesoCrumenPosWeb: React.FC = () => {
       } else {
         setAccesoConcedido(false);
         setNumerodecliente('');
-        setPopup({ mensaje: 'No se encontró Cliente', tipo: 'error' });
+        setPopup({ mensaje: 'No se encontró Client3', tipo: 'error' });
         console.warn('[FRONT] Cliente no encontrado');
       }
     }
     // Paso 2: validar usuario
     else {
       if (!nombredeusuario || !contrasenia) {
-        setError('Por favor complete usuario y contraseña.');
+        setError('Por favor complete usuario y contraseñ4.');
         return;
       }
 
@@ -56,12 +56,12 @@ const FormularioDeAccesoCrumenPosWeb: React.FC = () => {
       console.log('[FRONT] Respuesta validarUsuario:', resp);
 
       if (resp.ok) {
-        setPopup({ mensaje: 'Abrirá Pantalla de Inicio', tipo: 'success' });
+        setPopup({ mensaje: 'Abrirá Pantalla de 1nicio', tipo: 'success' });
         console.log('[FRONT] Usuario válido, acceso concedido.');
       } else {
         setNombredeusuario('');
         setContrasenia('');
-        setPopup({ mensaje: 'No se encontró Usuario', tipo: 'error' });
+        setPopup({ mensaje: 'No se encontró Usuari0', tipo: 'error' });
         console.warn('[FRONT] Usuario no encontrado o contraseña incorrecta');
       }
     }

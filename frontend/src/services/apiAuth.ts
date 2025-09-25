@@ -1,14 +1,33 @@
 // src/config/api.ts
-export const API_URL = "https://pos54nwebcrumenbackend.onrender.com";
+export const validarCliente = async (numerodecliente: string) => {
+  console.log('[FETCH] Enviando validar-cliente:', numerodecliente);
 
-export const resp = await validarCliente('12345'); // número de cliente de prueba
-console.log('[TEST] Respuesta validarCliente:', resp);
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/validar-cliente`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ numerodecliente }),
+    });
 
-  
+    console.log('[FETCH] Respuesta raw validar-cliente:', response);
+
+    // 👇 Solo se hace una vez
+    const data = await response.json();
+    console.log('[FETCH] JSON validar-cliente:', data);
+
+    return data;
+  } catch (error) {
+    console.error('[FETCH] Error al validar cliente:', error);
+    return { ok: false };
+  }
+};
+
+
+
 export const validarUsuario = async (nombredeusuario: string, contrasenia: string) => {
   console.log('[FETCH] Enviando validar-usuario:', { nombredeusuario, contrasenia });
   try {
-    const response = await fetch(`${API_URL}/api/auth/validar-usuario`, {
+    const response =  await fetch(`${import.meta.env.VITE_API_URL}/api/validar-usuario`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nombredeusuario, contrasenia }),
