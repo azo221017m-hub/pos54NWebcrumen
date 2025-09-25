@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { validarCliente, validarUsuario } from '../services/apiAuth'; // ajusta según tu archivo real
-import './TestApi.css'; // CSS separado para mantener limpio el componente
 
 const TestApi: React.FC = () => {
   const [cliente, setCliente] = useState('');
@@ -23,43 +22,37 @@ const TestApi: React.FC = () => {
   };
 
   return (
-    <div className="test-container">
-      <h2 className="title">💻 Test API CrumenPosWeb</h2>
+    <div style={{ padding: 20 }}>
+      <h2>Test API CrumenPosWeb</h2>
 
-      <div className="card">
-        <h3>🔹 Validar Cliente</h3>
-        <div className="input-group">
-          <input
-            type="text"
-            placeholder="Número de cliente"
-            value={cliente}
-            onChange={(e) => setCliente(e.target.value)}
-          />
-          <button onClick={testCliente}>Test Cliente</button>
-        </div>
+      <div>
+        <input
+          type="text"
+          placeholder="Número de cliente"
+          value={cliente}
+          onChange={(e) => setCliente(e.target.value)}
+        />
+        <button onClick={testCliente}>Test Cliente</button>
       </div>
 
-      <div className="card">
-        <h3>🔹 Validar Usuario</h3>
-        <div className="input-group">
-          <input
-            type="text"
-            placeholder="Nombre de usuario"
-            value={usuario}
-            onChange={(e) => setUsuario(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={contrasenia}
-            onChange={(e) => setContrasenia(e.target.value)}
-          />
-          <button onClick={testUsuario}>Test Usuario</button>
-        </div>
+      <div style={{ marginTop: 10 }}>
+        <input
+          type="text"
+          placeholder="Nombre de usuario"
+          value={usuario}
+          onChange={(e) => setUsuario(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Contraseña"
+          value={contrasenia}
+          onChange={(e) => setContrasenia(e.target.value)}
+        />
+        <button onClick={testUsuario}>Test Usuario</button>
       </div>
 
-      <div className="resultado-card">
-        <h3>📝 Resultado:</h3>
+      <div style={{ marginTop: 20 }}>
+        <strong>Resultado:</strong>
         <pre>{resultado}</pre>
       </div>
     </div>
