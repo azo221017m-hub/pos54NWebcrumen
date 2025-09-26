@@ -39,7 +39,7 @@ const App: React.FC = () => {
     <div className="app-container">
       {!mostrarFormulario ? (
         <main className="splash">
-          <img src="./frontend/public/assets/logocrumen.svg"alt="Logo CRUMEN" className="logo" />
+          <img src="/assets/logocrumen.svg" alt="Logo CRUMEN" className="logo" />
           <h1 className="brand">CrumenPOS</h1>
           <p className="tagline">{fraseActual}</p>
           <div className="loader" aria-hidden="true"></div>

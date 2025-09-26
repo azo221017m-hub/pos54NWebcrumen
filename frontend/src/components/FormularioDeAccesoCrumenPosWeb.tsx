@@ -64,7 +64,7 @@ const FormularioDeAccesoCrumenPosWeb: React.FC<FormularioProps> = ({
       {/* Panel Izquierdo */}
       <aside className="panel left">
         <img
-          src="./frontend/public/assets/logoposweb-crumen.svg"
+          src="/assets/logoposweb-crumen.svg"
           alt="Logo CRUMEN"
           className="logo"
         />
