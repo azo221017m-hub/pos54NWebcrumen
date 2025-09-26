@@ -7,6 +7,11 @@ git push -u origin main
 
 
 
+
+npm run dev
+
+
+
 eres experta en IU, con vite+react+TS modifica este código:
 
 

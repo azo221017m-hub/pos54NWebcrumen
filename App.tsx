@@ -4,11 +4,6 @@ import FormularioDeAccesoCrumenPosWeb from './frontend/src/components/Formulario
 import './App.css'; // Asegúrate de tener los estilos aquí
 
 
-
-
-
-
-
 const App: React.FC = () => {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const frases = [
@@ -33,14 +28,11 @@ const App: React.FC = () => {
     // Aquí podrías redirigir o mostrar la app principal
   };
 
- 
-
-
   return (
     <div className="app-container">
       {!mostrarFormulario ? (
         <main className="splash">
-          <img src="/assets/logocrumen.svg" alt="Logo CRUMEN" className="logo" />
+          <img src='/assets/logocrumen.svg' alt="Logo CRUMEN" className="logo" />
           <h1 className="brand">CrumenPOS</h1>
           <p className="tagline">{fraseActual}</p>
           <div className="loader" aria-hidden="true"></div>
