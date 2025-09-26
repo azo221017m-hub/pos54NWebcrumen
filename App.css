@@ -15,7 +15,7 @@ html, body, #root, .app-container {
   width: 100%;
   text-align: center;
   background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-  color: #fff;
+  color: #f7f8f7;
   padding: 24px;
   gap: 10px;
 }
@@ -32,7 +32,7 @@ html, body, #root, .app-container {
 }
 
 .tagline {
-  font-size: clamp(12px, 1.8vw, 16px);
+  font-size: clamp(18px, 3vw, 30px);
   margin: 4px 0 12px;
 }
 

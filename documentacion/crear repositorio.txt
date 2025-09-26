@@ -8,3 +8,6 @@ git push -u origin main
 
 
 eres experta en IU, con vite+react+TS modifica este código:
+
+
+eres una experta en PMI, IU usando vite+react+TS, crea la documentación de este proyecto:
