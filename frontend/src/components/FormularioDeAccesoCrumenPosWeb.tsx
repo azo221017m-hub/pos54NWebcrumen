@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { validarCliente, validarUsuario } from "../services/apiAuth";
 import "./FormularioDeAccesoCrumenPosWeb.css";
+import LogoCrumen from '../assets/logoposweb-crumen.svg';
 
 interface FormularioProps {
   onAccesoExitoso: () => void;
@@ -64,7 +65,7 @@ const FormularioDeAccesoCrumenPosWeb: React.FC<FormularioProps> = ({
       {/* Panel Izquierdo */}
       <aside className="panel left">
         <img
-          src="/assets/logoposweb-crumen.svg"
+          src={LogoCrumen}
           alt="Logo CRUMEN"
           className="logo"
         />
