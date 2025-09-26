@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import FormularioDeAccesoCrumenPosWeb from './frontend/src/components/FormularioDeAccesoCrumenPosWeb';
 import './App.css'; // Asegúrate de tener los estilos aquí
-import LogoCrumen from '../assets/logocrumen.svg';
+
 
 
 
@@ -40,7 +40,7 @@ const App: React.FC = () => {
     <div className="app-container">
       {!mostrarFormulario ? (
         <main className="splash">
-          <img src={LogoCrumen} alt="Logo CRUMEN" className="logo" />
+          <img src="/assets/logocrumen.svg" alt="Logo CRUMEN" className="logo" />
           <h1 className="brand">CrumenPOS</h1>
           <p className="tagline">{fraseActual}</p>
           <div className="loader" aria-hidden="true"></div>
