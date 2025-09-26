@@ -1,6 +1,6 @@
 git init
 git add .
-git commit -m "Primer commit"
+git commit -m "IU ProdBeta commit"
 git branch -M main
 git remote add origin https://github.com/usuario/crumenposweb.git
 git push -u origin main
