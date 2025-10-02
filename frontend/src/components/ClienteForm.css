@@ -1,0 +1,124 @@
+/* Contenedor centrado con fondo semi-transparente */
+.cliente-form-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11,16,32,0.75); /* fondo más oscuro y profesional */
+  z-index: 1000;
+  font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Card del formulario */
+.cliente-form-card {
+  background-color: #1f2937; /* fondo moderno oscuro */
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+  width: 100%;
+  max-width: 480px;
+  box-sizing: border-box;
+  color: #f0f4f8;
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Animación de aparición */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Grupos de campo */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: #e5e7eb;
+  font-size: 0.95rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"] {
+  padding: 0.6rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background-color: #111827;
+  color: #f0f4f8;
+  font-size: 0.95rem;
+  transition: border 0.2s, box-shadow 0.2s, transform 0.05s;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus {
+  border-color: #22d3ee;
+  box-shadow: 0 0 0 6px rgba(34,211,238,0.15);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+/* Checkbox moderno */
+.form-group input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  accent-color: #22d3ee; /* color moderno al activar */
+}
+
+/* Botones */
+.form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.btn-guardar {
+  background: linear-gradient(90deg, #22d3ee, #60a5fa);
+  color: #061019;
+  border: none;
+  padding: 0.65rem 1.3rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.05s, filter 0.2s;
+}
+.btn-guardar:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+.btn-cancelar {
+  background-color: #374151;
+  color: #f0f4f8;
+  border: none;
+  padding: 0.65rem 1.3rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.05s, filter 0.2s;
+}
+.btn-cancelar:hover { filter: brightness(1.05); transform: translateY(-1px); }
+
+/* Errores */
+.error {
+  border-color: #ef4444 !important;
+}
+
+.error-msg {
+  color: #fca5a5;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* Responsivo */
+@media (max-width: 500px) {
+  .cliente-form-card {
+    padding: 1.5rem;
+  }
+}

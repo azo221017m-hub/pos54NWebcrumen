@@ -1,0 +1,24 @@
+html, body {
+  margin: 0;             /* Quita márgenes por defecto */
+  padding: 0;            /* Quita padding por defecto */
+  overflow-x: hidden;    /* Evita scroll horizontal fantasma */
+  height: 100%;          /* Asegura que body herede bien el 100% */
+}
+
+/* Fondo general */
+.fondo-animado {
+  position: relative;  
+  width: 100%;           
+  min-height: 100vh;     /* Siempre ocupa el alto completo de la ventana */
+  overflow: hidden;      /* Evita desbordes */
+  box-sizing: border-box; /* Incluye padding en el cálculo del tamaño */
+
+  background: linear-gradient(135deg, #ece9e6, #ffffff);  
+  background-size: cover;  
+
+  display: flex;  
+  flex-direction: column;  
+  justify-content: flex-start;  
+  align-items: center;  
+  padding: 1rem;  
+}

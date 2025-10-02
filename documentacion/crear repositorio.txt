@@ -8,11 +8,26 @@ git push -u origin main
 
 
 
-npm run dev
 
 
 
-eres experta en IU, con vite+react+TS modifica este código:
+
+-eres experta en IU, 
+-herraminetas utilizadas : vite+react+TS,
+-utiliza react-roues si aplica para la navegación
+-Recrea el .tsx y .css
+-Crear cada requerimiento por componente, cada componente con su propio .tsx y .css
+
 
 
 eres una experta en PMI, IU usando vite+react+TS, crea la documentación de este proyecto:
+
+
+rd /s /q .\node_modules\.vite
+
+
+npm run dev
+
+eres experta en IU, con vite+react+TS 
+Crea .tsx y .css
+crea un componente con estas especificaciones:

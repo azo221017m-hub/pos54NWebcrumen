@@ -19,11 +19,17 @@ html, body, #root, .app-container {
   padding: 24px;
   gap: 10px;
 }
-
 .logo {
-  width: 200px;
-  height: auto;
-  filter: drop-shadow(0 8px 24px rgba(0,0,0,.35));
+  width: 10px;             /* Ajusta el ancho del logo a tamaño visible */
+  max-width: 10%;          /* Responsivo: nunca excede el contenedor */
+            /* Mantiene la proporción original */
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.35)); /* Sombra profesional */
+  transition: transform 0.3s ease; /* Opcional: animación suave si quieres efecto hover */
+}
+
+/* Ejemplo de hover opcional */
+.logo:hover {
+  transform: scale(1.05); /* Pequeño efecto de zoom al pasar el mouse */
 }
 
 .brand {

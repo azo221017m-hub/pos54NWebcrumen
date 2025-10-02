@@ -1,0 +1,71 @@
+/* Header general */
+.header-menu {
+  width: 100%;
+  background-color: #0b1020;
+  padding: 0.5rem 2rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  box-sizing: border-box;
+}
+
+/* Barra principal */
+.menu-bar {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 2rem;
+}
+
+/* Items del menú */
+.menu-item {
+  position: relative;
+}
+
+.menu-item > span {
+  color: #fff;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  display: inline-block;
+  transition: color 0.2s;
+}
+
+.menu-item > span:hover {
+  color: #ff6600;
+}
+
+/* Submenu desplegable */
+.submenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #111827;
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0;
+  min-width: 180px;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  display: none;
+}
+
+.menu-item:hover .submenu {
+  display: block;
+}
+
+.submenu li span {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.submenu li span:hover {
+  background-color: #ff6600;
+  color: #fff;
+}

@@ -101,3 +101,16 @@ h2 { margin: 0 0 14px 0; }
   .login-grid { grid-template-columns: 1fr; }
   .panel.left { display: none; }
 }
+
+
+.site-footer {
+  width: 100%;
+  text-align: center;
+  padding: 12px 0;
+  font-size: 16px;
+  color: #666;
+  background: #040529; /* opcional */
+  position: fixed; /* se queda abajo aunque no haya scroll */
+  bottom: 0;
+  left: 0;
+}

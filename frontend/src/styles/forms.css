@@ -1,0 +1,69 @@
+body, html {
+  height: 100%;
+  margin: 0;
+}
+
+.form-container {
+  position: absolute; /* permite usar coordenadas */
+ top: 120px;          /* 50px desde la parte superior del contenedor */
+  left: 230px;       /* 30px desde la izquierda del contenedor */
+    background-color: #6de2eb;
+  color: #1d6363;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgb(219, 255, 252);
+  width: 80%;
+}
+
+
+.form-container h2 {
+  margin-bottom: 15px;
+}
+
+.form-container label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-container input,
+.form-container select,
+.form-container textarea {
+  width: 100%;
+  padding: 8px 10px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #374151;
+  background-color: #b2e69a;
+  color: #2d3d02c5;
+}
+
+.form-container button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.form-container button.save {
+  background-color: #2563eb;
+}
+
+.form-container button.save:hover {
+  background-color: #1d4ed8;
+}
+
+.form-container button.cancel {
+  background-color: #ef4444;
+}
+
+.form-container button.cancel:hover {
+  background-color: #dc2626;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+}

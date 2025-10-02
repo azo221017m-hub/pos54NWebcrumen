@@ -1,6 +1,7 @@
 // src/components/FormularioDeAccesoCrumenPosWeb.tsx
 import React, { useState, useEffect } from "react";
 import { validarCliente, validarUsuario } from "../services/apiAuth";
+import Pantalla from './Pantalla';
 import "./FormularioDeAccesoCrumenPosWeb.css";
 
 
@@ -8,15 +9,14 @@ interface FormularioProps {
   onAccesoExitoso: () => void;
 }
 
-const FormularioDeAccesoCrumenPosWeb: React.FC<FormularioProps> = ({
-  onAccesoExitoso,
-}) => {
+const FormularioDeAccesoCrumenPosWeb: React.FC<FormularioProps> = ({ onAccesoExitoso }) => {
   const [numerodecliente, setNumerodecliente] = useState("");
   const [nombredeusuario, setNombredeusuario] = useState("");
   const [contrasenia, setContrasenia] = useState("");
   const [error, setError] = useState("");
   const [accesoConcedido, setAccesoConcedido] = useState(false);
   const [popup, setPopup] = useState<{ mensaje: string; tipo: "success" | "error" } | null>(null);
+  const [mostrarPVenta, setMostrarPVenta] = useState(false);
 
   // Oculta popup después de 3s
   useEffect(() => {
@@ -29,6 +29,7 @@ const FormularioDeAccesoCrumenPosWeb: React.FC<FormularioProps> = ({
   const handleIngreso = async () => {
     setError("");
 
+    // Paso 1: validar cliente
     if (!accesoConcedido) {
       if (!numerodecliente) {
         setError("Por favor ingrese el número de cliente.");
@@ -44,6 +45,7 @@ const FormularioDeAccesoCrumenPosWeb: React.FC<FormularioProps> = ({
       return;
     }
 
+    // Paso 2: validar usuario
     if (!nombredeusuario || !contrasenia) {
       setError("Por favor complete usuario y contraseña.");
       return;
@@ -51,15 +53,35 @@ const FormularioDeAccesoCrumenPosWeb: React.FC<FormularioProps> = ({
 
     const resp = await validarUsuario(nombredeusuario, contrasenia);
     if (resp.ok) {
-      setPopup({ mensaje: "Acceso concedido", tipo: "success" });
-      onAccesoExitoso();
+      // Mostrar popup
+     //420 setPopup({ mensaje: "Acceso concedid0 ✅", tipo: "success" });
+
+      // Guardar usuario en sessionStorage
+      sessionStorage.setItem(
+        "texco_user",
+        JSON.stringify({ user: nombredeusuario, role: resp.role || "usuario" })
+      );
+
+      // Mostrar pantalla PVenta
+      setMostrarPVenta(true);
+
     } else {
       setNombredeusuario("");
       setContrasenia("");
-      setPopup({ mensaje: "Usuario o contraseña incorrectos", tipo: "error" });
+      setPopup({ mensaje: "Usuario o contraseña incorrectos ❌", tipo: "error" });
     }
   };
 
+  // ✅ Si ya se concedió acceso, mostrar PVentaCrumenPosWeb
+  if (mostrarPVenta) {
+    return (
+      <>
+                <Pantalla/>
+      </>
+    );
+  }
+
+  // Formulario de acceso
   return (
     <section className="login-grid">
       {/* Panel Izquierdo */}
@@ -137,11 +159,11 @@ const FormularioDeAccesoCrumenPosWeb: React.FC<FormularioProps> = ({
             </div>
           )}
         </form>
-
-        <footer className="meta">
-          <small>© {new Date().getFullYear()} POSW38Crum3n. Todos los derechos reservados.</small>
-        </footer>
       </main>
+
+      <footer className="site-footer">
+        <small>© {new Date().getFullYear()} POSW38Crum3n. Todos los derechos reservados.</small>
+      </footer>
     </section>
   );
 };
