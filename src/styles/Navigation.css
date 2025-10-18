@@ -8,21 +8,24 @@
   left: 0; /* Desde la izquierda */
   width: 280px; /* Ancho fijo */
   height: 100vh; /* Altura completa */
-  background: linear-gradient(180deg, #1e293b 0%, #334155 100%); /* Fondo con gradiente */
-  color: white; /* Texto blanco */
-  overflow-y: auto; /* Scroll vertical si es necesario */
+  background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%); /* Fondo verde claro */
+  color: #166534; /* Texto verde oscuro */
+  overflow: hidden; /* Sin scroll en el contenedor principal */
   z-index: 1000; /* Encima de otros elementos */
   transition: transform 0.3s ease; /* Transición suave */
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1); /* Sombra a la derecha */
+  box-shadow: 2px 0 10px rgba(34, 197, 94, 0.1); /* Sombra verde suave */
+  display: flex; /* Flexbox para estructura */
+  flex-direction: column; /* Columna vertical */
 }
 
 /* Header de la navegación */
 .nav-header {
   padding: 1.5rem; /* Padding interno */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Borde inferior */
+  border-bottom: 1px solid rgba(34, 197, 94, 0.2); /* Borde verde suave */
   display: flex; /* Flexbox */
   justify-content: space-between; /* Espacio entre elementos */
   align-items: center; /* Centra verticalmente */
+  flex-shrink: 0; /* No se encoge */
 }
 
 /* Logo en la navegación */
@@ -48,7 +51,7 @@
 .nav-close {
   background: none; /* Sin fondo */
   border: none; /* Sin borde */
-  color: white; /* Color blanco */
+  color: #166534; /* Color verde oscuro */
   font-size: 1.5rem; /* Tamaño grande */
   cursor: pointer; /* Cursor de mano */
   padding: 0.25rem; /* Padding pequeño */
@@ -61,8 +64,9 @@
   display: flex; /* Flexbox */
   align-items: center; /* Centra verticalmente */
   gap: 0.75rem; /* Espacio entre elementos */
-  background: rgba(255, 255, 255, 0.05); /* Fondo semi-transparente */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Borde inferior */
+  background: rgba(34, 197, 94, 0.1); /* Fondo verde muy claro */
+  border-bottom: 1px solid rgba(34, 197, 94, 0.2); /* Borde verde suave */
+  flex-shrink: 0; /* No se encoge */
 }
 
 /* Avatar del usuario */
@@ -70,11 +74,12 @@
   width: 40px; /* Ancho */
   height: 40px; /* Alto */
   border-radius: 50%; /* Círculo completo */
-  background: rgba(255, 255, 255, 0.2); /* Fondo semi-transparente */
+  background: rgba(34, 197, 94, 0.2); /* Fondo verde claro */
   display: flex; /* Flexbox */
   align-items: center; /* Centra verticalmente */
   justify-content: center; /* Centra horizontalmente */
   font-size: 1.2rem; /* Tamaño del icono */
+  color: #166534; /* Color verde oscuro */
 }
 
 /* Información del usuario */
@@ -87,18 +92,21 @@
   font-weight: 600; /* Peso semi-bold */
   font-size: 0.95rem; /* Tamaño de fuente */
   margin-bottom: 0.125rem; /* Margen inferior pequeño */
+  color: #166534; /* Verde oscuro */
 }
 
 /* Rol del usuario */
 .nav-user-role {
   font-size: 0.8rem; /* Tamaño pequeño */
-  color: rgba(255, 255, 255, 0.7); /* Color semi-transparente */
+  color: #15803d; /* Verde medio */
 }
 
 /* Menú principal */
 .nav-menu {
   flex: 1; /* Toma el espacio restante */
   padding: 1rem 0; /* Padding vertical */
+  overflow-y: auto; /* Scroll interno cuando sea necesario */
+  overflow-x: hidden; /* Sin scroll horizontal */
 }
 
 /* Sección del menú */
@@ -115,7 +123,7 @@
   font-size: 0.8rem; /* Tamaño pequeño */
   font-weight: 700; /* Peso negrita */
   letter-spacing: 1px; /* Espaciado entre letras */
-  color: rgba(255, 255, 255, 0.8); /* Color semi-transparente */
+  color: #15803d; /* Verde medio */
   text-transform: uppercase; /* Texto en mayúsculas */
   margin-bottom: 0.5rem; /* Margen inferior */
 }
@@ -137,7 +145,7 @@
   width: 100%; /* Ancho completo */
   background: none; /* Sin fondo */
   border: none; /* Sin borde */
-  color: white; /* Color blanco */
+  color: #166534; /* Color verde oscuro */
   padding: 0.75rem 1.5rem; /* Padding interno */
   display: flex; /* Flexbox */
   align-items: center; /* Centra verticalmente */
@@ -146,12 +154,15 @@
   transition: all 0.2s ease; /* Transición suave */
   text-align: left; /* Texto a la izquierda */
   font-size: 0.9rem; /* Tamaño de fuente */
+  border-radius: 0 25px 25px 0; /* Bordes redondeados solo a la derecha */
+  margin-right: 1rem; /* Margen derecho para el efecto */
 }
 
 /* Hover del elemento del menú */
 .nav-item:hover {
-  background: rgba(255, 255, 255, 0.1); /* Fondo semi-transparente */
-  padding-left: 2rem; /* Aumenta padding izquierdo */
+  background: rgba(34, 197, 94, 0.1); /* Fondo verde muy claro */
+  color: #15803d; /* Verde más intenso */
+  transform: translateX(4px); /* Ligero desplazamiento */
 }
 
 /* Icono del elemento del menú */
@@ -159,34 +170,39 @@
   font-size: 1.1rem; /* Tamaño del icono */
   width: 20px; /* Ancho fijo para alineación */
   text-align: center; /* Centra el icono */
+  color: #15803d; /* Verde medio para iconos */
 }
 
 /* Footer de la navegación */
 .nav-footer {
   padding: 1rem 1.5rem; /* Padding interno */
-  border-top: 1px solid rgba(255, 255, 255, 0.1); /* Borde superior */
+  border-top: 1px solid rgba(34, 197, 94, 0.2); /* Borde superior verde */
+  flex-shrink: 0; /* No se encoge */
 }
 
 /* Botón de logout */
 .nav-logout {
   width: 100%; /* Ancho completo */
-  background: rgba(239, 68, 68, 0.8); /* Fondo rojo semi-transparente */
-  border: none; /* Sin borde */
-  color: white; /* Color blanco */
+  background: rgba(220, 38, 38, 0.1); /* Fondo rojo muy suave */
+  border: 1px solid rgba(220, 38, 38, 0.3); /* Borde rojo suave */
+  color: #dc2626; /* Color rojo */
   padding: 0.75rem; /* Padding interno */
-  border-radius: 0.5rem; /* Bordes redondeados */
+  border-radius: 8px; /* Bordes redondeados suaves */
   display: flex; /* Flexbox */
   align-items: center; /* Centra verticalmente */
   justify-content: center; /* Centra horizontalmente */
   gap: 0.5rem; /* Espacio entre elementos */
   cursor: pointer; /* Cursor de mano */
-  transition: background-color 0.2s ease; /* Transición de color */
+  transition: all 0.2s ease; /* Transición suave */
   font-weight: 500; /* Peso medium */
+  font-size: 0.9rem; /* Tamaño de fuente */
 }
 
 /* Hover del botón de logout */
 .nav-logout:hover {
-  background: rgba(239, 68, 68, 1); /* Fondo rojo completo */
+  background: rgba(220, 38, 38, 0.15); /* Fondo rojo más visible */
+  border-color: rgba(220, 38, 38, 0.5); /* Borde más intenso */
+  transform: translateY(-1px); /* Ligero levantamiento */
 }
 
 /* Responsive design para móviles */
@@ -213,19 +229,23 @@
 }
 
 /* Scrollbar personalizado para la navegación */
-.navigation::-webkit-scrollbar {
+.navigation::-webkit-scrollbar,
+.nav-menu::-webkit-scrollbar {
   width: 4px; /* Ancho del scrollbar */
 }
 
-.navigation::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1); /* Fondo del track */
+.navigation::-webkit-scrollbar-track,
+.nav-menu::-webkit-scrollbar-track {
+  background: rgba(34, 197, 94, 0.1); /* Fondo del track verde */
 }
 
-.navigation::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3); /* Color del thumb */
+.navigation::-webkit-scrollbar-thumb,
+.nav-menu::-webkit-scrollbar-thumb {
+  background: rgba(34, 197, 94, 0.3); /* Color del thumb verde */
   border-radius: 2px; /* Bordes redondeados */
 }
 
-.navigation::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5); /* Color del thumb al hover */
+.navigation::-webkit-scrollbar-thumb:hover,
+.nav-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 197, 94, 0.5); /* Color del thumb al hover más intenso */
 }

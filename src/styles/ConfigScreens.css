@@ -4,7 +4,7 @@
 /* Contenedor principal de las pantallas de configuración */
 .config-screen {
   min-height: 100vh; /* Altura mínima completa */
-  background-color: var(--bg-secondary); /* Fondo gris claro */
+  background-color: var(--bg-secondary); /* Fondo verde muy claro */
   padding: 2rem; /* Padding interno */
 }
 
@@ -17,7 +17,8 @@
   background: var(--bg-primary); /* Fondo blanco */
   padding: 1.5rem; /* Padding interno */
   border-radius: var(--border-radius); /* Bordes redondeados */
-  box-shadow: var(--shadow-sm); /* Sombra pequeña */
+  box-shadow: var(--shadow-sm); /* Sombra verde suave */
+  border: 1px solid var(--border-color); /* Borde verde claro */
 }
 
 /* Contenedor izquierdo del header */
@@ -196,9 +197,10 @@
 .data-table {
   background: var(--bg-primary); /* Fondo blanco */
   border-radius: var(--border-radius); /* Bordes redondeados */
-  box-shadow: var(--shadow-sm); /* Sombra pequeña */
+  box-shadow: var(--shadow-sm); /* Sombra verde suave */
   overflow: hidden; /* Oculta contenido que se desborda */
   overflow-x: auto; /* Scroll horizontal si es necesario */
+  border: 1px solid var(--border-color); /* Borde verde claro */
 }
 
 /* Tabla */
@@ -210,25 +212,26 @@
 
 /* Header de la tabla */
 .data-table th {
-  background: var(--bg-secondary); /* Fondo gris claro */
-  color: var(--text-primary); /* Color de texto */
+  background: var(--bg-light); /* Fondo verde claro */
+  color: var(--text-primary); /* Color de texto verde oscuro */
   font-weight: 600; /* Peso semi-bold */
   padding: 1rem; /* Padding interno */
   text-align: left; /* Texto a la izquierda */
-  border-bottom: 1px solid var(--border-color); /* Borde inferior */
+  border-bottom: 1px solid var(--border-color-dark); /* Borde inferior verde */
   white-space: nowrap; /* No rompe líneas */
 }
 
 /* Celdas de la tabla */
 .data-table td {
   padding: 1rem; /* Padding interno */
-  border-bottom: 1px solid var(--border-color); /* Borde inferior */
+  border-bottom: 1px solid var(--border-color); /* Borde inferior verde claro */
   vertical-align: middle; /* Alineación vertical */
+  color: var(--text-primary); /* Texto verde oscuro */
 }
 
 /* Hover de las filas */
 .data-table tbody tr:hover {
-  background: var(--bg-secondary); /* Fondo gris claro */
+  background: var(--bg-secondary); /* Fondo verde muy claro */
 }
 
 /* Estado activo/inactivo */

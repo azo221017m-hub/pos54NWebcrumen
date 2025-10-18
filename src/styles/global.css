@@ -10,36 +10,39 @@
 
 /* Configuración del elemento raíz */
 :root {
-  /* Paleta de colores principales */
-  --primary-color: #2563eb; /* Azul principal */
-  --primary-dark: #1d4ed8; /* Azul oscuro */
-  --primary-light: #3b82f6; /* Azul claro */
+  /* Paleta de colores verdes principales */
+  --primary-color: #22c55e; /* Verde principal */
+  --primary-dark: #166534; /* Verde oscuro */
+  --primary-light: #4ade80; /* Verde claro */
   
-  /* Colores secundarios */
-  --secondary-color: #64748b; /* Gris azulado */
-  --accent-color: #10b981; /* Verde de acento */
+  /* Colores secundarios verdes */
+  --secondary-color: #15803d; /* Verde medio */
+  --accent-color: #84cc16; /* Verde lima de acento */
   --warning-color: #f59e0b; /* Amarillo de advertencia */
   --error-color: #ef4444; /* Rojo de error */
   
-  /* Colores de fondo */
+  /* Colores de fondo verdes suaves */
   --bg-primary: #ffffff; /* Fondo blanco principal */
-  --bg-secondary: #f8fafc; /* Fondo gris muy claro */
-  --bg-dark: #1e293b; /* Fondo oscuro */
+  --bg-secondary: #f0fdf4; /* Fondo verde muy claro */
+  --bg-light: #dcfce7; /* Fondo verde claro */
+  --bg-dark: #166534; /* Fondo verde oscuro */
   
   /* Colores de texto */
-  --text-primary: #1e293b; /* Texto principal oscuro */
-  --text-secondary: #64748b; /* Texto secundario gris */
-  --text-light: #94a3b8; /* Texto claro */
+  --text-primary: #166534; /* Texto principal verde oscuro */
+  --text-secondary: #15803d; /* Texto secundario verde medio */
+  --text-light: #65a30d; /* Texto verde claro */
   --text-white: #ffffff; /* Texto blanco */
+  --text-muted: #6b7280; /* Texto gris suave */
   
-  /* Sombras */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05); /* Sombra pequeña */
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1); /* Sombra mediana */
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1); /* Sombra grande */
+  /* Sombras verdes suaves */
+  --shadow-sm: 0 1px 2px 0 rgb(34 197 94 / 0.05); /* Sombra pequeña verde */
+  --shadow-md: 0 4px 6px -1px rgb(34 197 94 / 0.1); /* Sombra mediana verde */
+  --shadow-lg: 0 10px 15px -3px rgb(34 197 94 / 0.1); /* Sombra grande verde */
   
   /* Bordes */
   --border-radius: 8px; /* Radio de borde estándar */
-  --border-color: #e2e8f0; /* Color de borde gris claro */
+  --border-color: #d1fae5; /* Color de borde verde claro */
+  --border-color-dark: #a7f3d0; /* Color de borde verde más intenso */
   
   /* Transiciones */
   --transition-fast: 0.15s ease-in-out; /* Transición rápida */
@@ -98,7 +101,7 @@ body {
 
 /* Estilos para botones principales */
 .btn-primary {
-  background-color: var(--primary-color); /* Fondo azul */
+  background-color: var(--primary-color); /* Fondo verde */
   color: var(--text-white); /* Texto blanco */
   border: none; /* Sin borde */
   padding: 0.75rem 1.5rem; /* Padding interno */
@@ -106,22 +109,25 @@ body {
   font-size: 1rem; /* Tamaño de fuente */
   font-weight: 600; /* Peso de fuente semi-bold */
   cursor: pointer; /* Cursor de mano */
-  transition: background-color var(--transition-fast); /* Transición de color */
+  transition: all var(--transition-fast); /* Transición suave */
   display: inline-flex; /* Flexbox inline */
   align-items: center; /* Centra elementos verticalmente */
   gap: 0.5rem; /* Espacio entre elementos */
+  box-shadow: var(--shadow-sm); /* Sombra sutil */
 }
 
 /* Hover effect para botón principal */
 .btn-primary:hover {
   background-color: var(--primary-dark); /* Color más oscuro al hover */
+  transform: translateY(-1px); /* Ligero levantamiento */
+  box-shadow: var(--shadow-md); /* Sombra más prominente */
 }
 
 /* Estilos para botones secundarios */
 .btn-secondary {
   background-color: var(--bg-primary); /* Fondo blanco */
-  color: var(--text-primary); /* Texto oscuro */
-  border: 1px solid var(--border-color); /* Borde gris */
+  color: var(--text-primary); /* Texto verde oscuro */
+  border: 1px solid var(--border-color-dark); /* Borde verde */
   padding: 0.75rem 1.5rem; /* Padding interno */
   border-radius: var(--border-radius); /* Bordes redondeados */
   font-size: 1rem; /* Tamaño de fuente */
@@ -135,26 +141,27 @@ body {
 
 /* Hover effect para botón secundario */
 .btn-secondary:hover {
-  background-color: var(--bg-secondary); /* Fondo gris claro al hover */
-  border-color: var(--primary-color); /* Borde azul al hover */
+  background-color: var(--bg-light); /* Fondo verde claro al hover */
+  border-color: var(--primary-color); /* Borde verde más intenso al hover */
 }
 
 /* Estilos para inputs y formularios */
 .form-input {
   width: 100%; /* Ancho completo */
   padding: 0.75rem; /* Padding interno */
-  border: 1px solid var(--border-color); /* Borde gris */
+  border: 1px solid var(--border-color); /* Borde verde claro */
   border-radius: var(--border-radius); /* Bordes redondeados */
   font-size: 1rem; /* Tamaño de fuente */
-  transition: border-color var(--transition-fast); /* Transición de borde */
+  transition: all var(--transition-fast); /* Transición completa */
   background-color: var(--bg-primary); /* Fondo blanco */
+  color: var(--text-primary); /* Texto verde oscuro */
 }
 
 /* Focus state para inputs */
 .form-input:focus {
   outline: none; /* Remueve outline por defecto */
-  border-color: var(--primary-color); /* Borde azul al focus */
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); /* Sombra azul suave */
+  border-color: var(--primary-color); /* Borde verde al focus */
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1); /* Sombra verde suave */
 }
 
 /* Estilos para etiquetas de formulario */

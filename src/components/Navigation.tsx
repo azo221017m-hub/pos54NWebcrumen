@@ -91,6 +91,24 @@ const Navigation: React.FC<NavigationProps> = ({
               </button>
             </li>
             <li>
+              <button 
+                className="nav-item"
+                onClick={() => handleNavigate('config-categorias')}
+              >
+                <span className="nav-item-icon">📂</span>
+                Categorías
+              </button>
+            </li>
+            <li>
+              <button 
+                className="nav-item"
+                onClick={() => handleNavigate('config-insumos')}
+              >
+                <span className="nav-item-icon">📦</span>
+                Insumos
+              </button>
+            </li>
+            <li>
               <button className="nav-item">
                 <span className="nav-item-icon">🍽️</span>
                 Productos
