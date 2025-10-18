@@ -115,7 +115,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, isLoading }) => {
           <div className="login-header">
             <div className="login-logo">
               <span className="logo-icon">🏪</span>
-              <h1 className="login-title">POSWEBCrumen</h1>
+              <h1 className="login-title">POSWEBCrum3n</h1>
             </div>
             <p className="login-subtitle">Accede a tu cuenta</p>
           </div>
