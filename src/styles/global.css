@@ -1,0 +1,226 @@
+/* src/styles/global.css */
+/* Estilos globales para POSWEBCrumen */
+
+/* Reset básico y configuración global */
+* {
+  margin: 0; /* Remueve márgenes por defecto */
+  padding: 0; /* Remueve padding por defecto */
+  box-sizing: border-box; /* Incluye padding y border en el tamaño total */
+}
+
+/* Configuración del elemento raíz */
+:root {
+  /* Paleta de colores principales */
+  --primary-color: #2563eb; /* Azul principal */
+  --primary-dark: #1d4ed8; /* Azul oscuro */
+  --primary-light: #3b82f6; /* Azul claro */
+  
+  /* Colores secundarios */
+  --secondary-color: #64748b; /* Gris azulado */
+  --accent-color: #10b981; /* Verde de acento */
+  --warning-color: #f59e0b; /* Amarillo de advertencia */
+  --error-color: #ef4444; /* Rojo de error */
+  
+  /* Colores de fondo */
+  --bg-primary: #ffffff; /* Fondo blanco principal */
+  --bg-secondary: #f8fafc; /* Fondo gris muy claro */
+  --bg-dark: #1e293b; /* Fondo oscuro */
+  
+  /* Colores de texto */
+  --text-primary: #1e293b; /* Texto principal oscuro */
+  --text-secondary: #64748b; /* Texto secundario gris */
+  --text-light: #94a3b8; /* Texto claro */
+  --text-white: #ffffff; /* Texto blanco */
+  
+  /* Sombras */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05); /* Sombra pequeña */
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1); /* Sombra mediana */
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1); /* Sombra grande */
+  
+  /* Bordes */
+  --border-radius: 8px; /* Radio de borde estándar */
+  --border-color: #e2e8f0; /* Color de borde gris claro */
+  
+  /* Transiciones */
+  --transition-fast: 0.15s ease-in-out; /* Transición rápida */
+  --transition-normal: 0.3s ease-in-out; /* Transición normal */
+}
+
+/* Configuración del body */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fuente del sistema */
+  font-size: 16px; /* Tamaño de fuente base */
+  line-height: 1.6; /* Altura de línea */
+  color: var(--text-primary); /* Color de texto principal */
+  background-color: var(--bg-secondary); /* Fondo gris claro */
+  overflow-x: hidden; /* Evita scroll horizontal */
+}
+
+/* Contenedor principal de la aplicación */
+.app-container {
+  min-height: 100vh; /* Altura mínima de toda la pantalla */
+  display: flex; /* Flexbox para layout */
+  flex-direction: column; /* Dirección vertical */
+}
+
+/* Estilos para pantalla completa */
+.fullscreen {
+  position: fixed; /* Posición fija */
+  top: 0; /* Desde arriba */
+  left: 0; /* Desde la izquierda */
+  width: 100vw; /* Ancho completo de la ventana */
+  height: 100vh; /* Alto completo de la ventana */
+  z-index: 1000; /* Encima de otros elementos */
+}
+
+/* Estilos para centrar contenido */
+.center-content {
+  display: flex; /* Flexbox */
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center; /* Centra verticalmente */
+  min-height: 100vh; /* Altura mínima completa */
+}
+
+/* Estilos para tarjetas */
+.card {
+  background: var(--bg-primary); /* Fondo blanco */
+  border-radius: var(--border-radius); /* Bordes redondeados */
+  box-shadow: var(--shadow-md); /* Sombra mediana */
+  padding: 1.5rem; /* Padding interno */
+  border: 1px solid var(--border-color); /* Borde gris claro */
+  transition: box-shadow var(--transition-normal); /* Transición de sombra */
+}
+
+/* Hover effect para tarjetas */
+.card:hover {
+  box-shadow: var(--shadow-lg); /* Sombra más grande al hacer hover */
+}
+
+/* Estilos para botones principales */
+.btn-primary {
+  background-color: var(--primary-color); /* Fondo azul */
+  color: var(--text-white); /* Texto blanco */
+  border: none; /* Sin borde */
+  padding: 0.75rem 1.5rem; /* Padding interno */
+  border-radius: var(--border-radius); /* Bordes redondeados */
+  font-size: 1rem; /* Tamaño de fuente */
+  font-weight: 600; /* Peso de fuente semi-bold */
+  cursor: pointer; /* Cursor de mano */
+  transition: background-color var(--transition-fast); /* Transición de color */
+  display: inline-flex; /* Flexbox inline */
+  align-items: center; /* Centra elementos verticalmente */
+  gap: 0.5rem; /* Espacio entre elementos */
+}
+
+/* Hover effect para botón principal */
+.btn-primary:hover {
+  background-color: var(--primary-dark); /* Color más oscuro al hover */
+}
+
+/* Estilos para botones secundarios */
+.btn-secondary {
+  background-color: var(--bg-primary); /* Fondo blanco */
+  color: var(--text-primary); /* Texto oscuro */
+  border: 1px solid var(--border-color); /* Borde gris */
+  padding: 0.75rem 1.5rem; /* Padding interno */
+  border-radius: var(--border-radius); /* Bordes redondeados */
+  font-size: 1rem; /* Tamaño de fuente */
+  font-weight: 500; /* Peso de fuente medium */
+  cursor: pointer; /* Cursor de mano */
+  transition: all var(--transition-fast); /* Transición completa */
+  display: inline-flex; /* Flexbox inline */
+  align-items: center; /* Centra elementos verticalmente */
+  gap: 0.5rem; /* Espacio entre elementos */
+}
+
+/* Hover effect para botón secundario */
+.btn-secondary:hover {
+  background-color: var(--bg-secondary); /* Fondo gris claro al hover */
+  border-color: var(--primary-color); /* Borde azul al hover */
+}
+
+/* Estilos para inputs y formularios */
+.form-input {
+  width: 100%; /* Ancho completo */
+  padding: 0.75rem; /* Padding interno */
+  border: 1px solid var(--border-color); /* Borde gris */
+  border-radius: var(--border-radius); /* Bordes redondeados */
+  font-size: 1rem; /* Tamaño de fuente */
+  transition: border-color var(--transition-fast); /* Transición de borde */
+  background-color: var(--bg-primary); /* Fondo blanco */
+}
+
+/* Focus state para inputs */
+.form-input:focus {
+  outline: none; /* Remueve outline por defecto */
+  border-color: var(--primary-color); /* Borde azul al focus */
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); /* Sombra azul suave */
+}
+
+/* Estilos para etiquetas de formulario */
+.form-label {
+  display: block; /* Elemento de bloque */
+  margin-bottom: 0.5rem; /* Margen inferior */
+  font-weight: 500; /* Peso de fuente medium */
+  color: var(--text-primary); /* Color de texto principal */
+}
+
+/* Estilos para mensajes de error */
+.error-message {
+  color: var(--error-color); /* Color rojo */
+  font-size: 0.875rem; /* Tamaño de fuente pequeño */
+  margin-top: 0.25rem; /* Margen superior pequeño */
+}
+
+/* Estilos para mensajes de éxito */
+.success-message {
+  color: var(--accent-color); /* Color verde */
+  font-size: 0.875rem; /* Tamaño de fuente pequeño */
+  margin-top: 0.25rem; /* Margen superior pequeño */
+}
+
+/* Estilos para el loader/spinner */
+.spinner {
+  border: 2px solid var(--border-color); /* Borde gris */
+  border-top: 2px solid var(--primary-color); /* Borde superior azul */
+  border-radius: 50%; /* Círculo completo */
+  width: 24px; /* Ancho */
+  height: 24px; /* Alto */
+  animation: spin 1s linear infinite; /* Animación de rotación */
+}
+
+/* Animación de rotación */
+@keyframes spin {
+  0% { transform: rotate(0deg); } /* Inicio */
+  100% { transform: rotate(360deg); } /* Final */
+}
+
+/* Clases utilitarias */
+.text-center { text-align: center; } /* Texto centrado */
+.text-left { text-align: left; } /* Texto a la izquierda */
+.text-right { text-align: right; } /* Texto a la derecha */
+
+.mb-1 { margin-bottom: 0.25rem; } /* Margen inferior pequeño */
+.mb-2 { margin-bottom: 0.5rem; } /* Margen inferior mediano */
+.mb-3 { margin-bottom: 0.75rem; } /* Margen inferior */
+.mb-4 { margin-bottom: 1rem; } /* Margen inferior grande */
+
+.mt-1 { margin-top: 0.25rem; } /* Margen superior pequeño */
+.mt-2 { margin-top: 0.5rem; } /* Margen superior mediano */
+.mt-3 { margin-top: 0.75rem; } /* Margen superior */
+.mt-4 { margin-top: 1rem; } /* Margen superior grande */
+
+.p-1 { padding: 0.25rem; } /* Padding pequeño */
+.p-2 { padding: 0.5rem; } /* Padding mediano */
+.p-3 { padding: 0.75rem; } /* Padding */
+.p-4 { padding: 1rem; } /* Padding grande */
+
+/* Responsive design - oculta elementos en móviles */
+@media (max-width: 768px) {
+  .hidden-mobile { display: none; } /* Oculta en móvil */
+  
+  .card {
+    padding: 1rem; /* Reduce padding en móvil */
+    margin: 0.5rem; /* Agrega margen en móvil */
+  }
+}

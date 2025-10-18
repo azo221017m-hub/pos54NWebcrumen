@@ -1,0 +1,157 @@
+/* src/styles/PresentationScreen.css */
+/* Estilos específicos para la pantalla de presentación */
+
+/* Contenedor principal de la pantalla de presentación */
+.presentation-screen {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Fondo con gradiente */
+  display: flex; /* Flexbox para centrar contenido */
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center; /* Centra verticalmente */
+  color: white; /* Texto blanco */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fuente del sistema */
+}
+
+/* Contenedor del contenido de la presentación */
+.presentation-content {
+  text-align: center; /* Texto centrado */
+  max-width: 600px; /* Ancho máximo */
+  padding: 2rem; /* Padding interno */
+}
+
+/* Contenedor del logotipo */
+.logo-container {
+  margin-bottom: 3rem; /* Margen inferior */
+  display: flex; /* Flexbox */
+  justify-content: center; /* Centra horizontalmente */
+}
+
+/* Círculo del logotipo con animación de pulso */
+.logo-circle {
+  width: 150px; /* Ancho del círculo */
+  height: 150px; /* Alto del círculo */
+  border-radius: 50%; /* Hace el círculo */
+  background: rgba(255, 255, 255, 0.2); /* Fondo semi-transparente */
+  border: 3px solid rgba(255, 255, 255, 0.3); /* Borde semi-transparente */
+  display: flex; /* Flexbox para centrar texto */
+  flex-direction: column; /* Dirección vertical */
+  justify-content: center; /* Centra verticalmente */
+  align-items: center; /* Centra horizontalmente */
+  animation: pulse 2s ease-in-out infinite; /* Animación de pulso infinita */
+  backdrop-filter: blur(10px); /* Efecto de desenfoque */
+}
+
+/* Texto principal del logotipo */
+.logo-text {
+  font-size: 2rem; /* Tamaño de fuente grande */
+  font-weight: bold; /* Peso de fuente negrita */
+  letter-spacing: 2px; /* Espaciado entre letras */
+  margin-bottom: 0.25rem; /* Margen inferior pequeño */
+}
+
+/* Subtexto del logotipo */
+.logo-subtext {
+  font-size: 0.9rem; /* Tamaño de fuente más pequeño */
+  font-weight: 300; /* Peso de fuente ligero */
+  letter-spacing: 1px; /* Espaciado entre letras */
+  opacity: 0.9; /* Opacidad reducida */
+}
+
+/* Animación de pulso para el logotipo */
+@keyframes pulse {
+  0% {
+    transform: scale(1); /* Tamaño normal */
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); /* Sin sombra */
+  }
+  50% {
+    transform: scale(1.05); /* Ligeramente más grande */
+    box-shadow: 0 0 0 20px rgba(255, 255, 255, 0); /* Sombra expandida */
+  }
+  100% {
+    transform: scale(1); /* Vuelve al tamaño normal */
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); /* Sin sombra */
+  }
+}
+
+/* Contenedor de las frases */
+.phrases-container {
+  height: 80px; /* Altura fija para evitar saltos */
+  display: flex; /* Flexbox */
+  align-items: center; /* Centra verticalmente */
+  justify-content: center; /* Centra horizontalmente */
+  margin-bottom: 2rem; /* Margen inferior */
+}
+
+/* Estilos para las frases */
+.phrase {
+  font-size: 1.5rem; /* Tamaño de fuente mediano */
+  font-weight: 300; /* Peso de fuente ligero */
+  transition: opacity 0.3s ease-in-out; /* Transición suave de opacidad */
+  margin: 0; /* Sin margen */
+  line-height: 1.4; /* Altura de línea */
+}
+
+/* Animación de aparición de frase */
+.phrase.fade-in {
+  opacity: 1; /* Completamente visible */
+}
+
+/* Animación de desaparición de frase */
+.phrase.fade-out {
+  opacity: 0; /* Completamente transparente */
+}
+
+/* Contenedor del indicador de progreso */
+.progress-container {
+  display: flex; /* Flexbox */
+  justify-content: center; /* Centra horizontalmente */
+  margin-top: 2rem; /* Margen superior */
+}
+
+/* Contenedor de los puntos de progreso */
+.progress-dots {
+  display: flex; /* Flexbox horizontal */
+  gap: 0.75rem; /* Espacio entre puntos */
+}
+
+/* Estilos para cada punto de progreso */
+.progress-dot {
+  width: 10px; /* Ancho del punto */
+  height: 10px; /* Alto del punto */
+  border-radius: 50%; /* Hace el círculo */
+  background-color: rgba(255, 255, 255, 0.3); /* Fondo semi-transparente */
+  transition: all 0.3s ease; /* Transición suave */
+}
+
+/* Punto de progreso activo */
+.progress-dot.active {
+  background-color: rgba(255, 255, 255, 0.8); /* Fondo más opaco */
+  transform: scale(1.2); /* Ligeramente más grande */
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5); /* Sombra brillante */
+}
+
+/* Responsive design para móviles */
+@media (max-width: 768px) {
+  /* Ajustes para pantallas pequeñas */
+  .presentation-content {
+    padding: 1rem; /* Reduce el padding */
+    max-width: 90%; /* Reduce el ancho máximo */
+  }
+  
+  .logo-circle {
+    width: 120px; /* Reduce el tamaño del logo */
+    height: 120px; /* Reduce el tamaño del logo */
+  }
+  
+  .logo-text {
+    font-size: 1.75rem; /* Reduce el tamaño de fuente */
+  }
+  
+  .phrase {
+    font-size: 1.25rem; /* Reduce el tamaño de fuente */
+  }
+  
+  .phrases-container {
+    height: 70px; /* Reduce la altura del contenedor */
+    margin-bottom: 1.5rem; /* Reduce el margen */
+  }
+}

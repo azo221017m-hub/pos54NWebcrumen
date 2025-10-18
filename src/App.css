@@ -1,0 +1,35 @@
+/* src/App.css */
+/* Estilos específicos para el componente App */
+
+/* Contenedor principal de la aplicación */
+.app-container {
+  width: 100%; /* Ancho completo */
+  min-height: 100vh; /* Altura mínima completa */
+  margin: 0; /* Sin margen */
+  padding: 0; /* Sin padding */
+  box-sizing: border-box; /* Incluye padding y border en el tamaño */
+}
+
+/* Pantalla de carga */
+.loading-screen {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Fondo con gradiente */
+  color: white; /* Texto blanco */
+}
+
+/* Contenido de la pantalla de carga */
+.loading-content {
+  display: flex; /* Flexbox */
+  flex-direction: column; /* Dirección vertical */
+  align-items: center; /* Centra horizontalmente */
+  gap: 1rem; /* Espacio entre elementos */
+}
+
+/* Texto de la pantalla de carga */
+.loading-content p {
+  font-size: 1.2rem; /* Tamaño de fuente */
+  font-weight: 300; /* Peso ligero */
+  margin: 0; /* Sin margen */
+  letter-spacing: 1px; /* Espaciado entre letras */
+}
+
+/* Eliminamos estilos del Vite template que ya no necesitamos */

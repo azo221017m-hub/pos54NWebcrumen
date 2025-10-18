@@ -1,0 +1,227 @@
+/* src/styles/LoginScreen.css */
+/* Estilos específicos para la pantalla de login */
+
+/* Contenedor principal de la pantalla de login */
+.login-screen {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #581c87 100%); /* Fondo con gradiente azul-morado */
+  display: flex; /* Flexbox para centrar */
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center; /* Centra verticalmente */
+  padding: 1rem; /* Padding para móviles */
+}
+
+/* Contenedor del formulario de login */
+.login-container {
+  width: 100%; /* Ancho completo */
+  max-width: 400px; /* Ancho máximo */
+  margin: 0 auto; /* Centra horizontalmente */
+}
+
+/* Tarjeta del formulario de login */
+.login-card {
+  background: rgba(255, 255, 255, 0.95); /* Fondo blanco semi-transparente */
+  backdrop-filter: blur(10px); /* Efecto de desenfoque */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Borde semi-transparente */
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* Sombra profunda */
+}
+
+/* Header del formulario */
+.login-header {
+  text-align: center; /* Texto centrado */
+  margin-bottom: 2rem; /* Margen inferior */
+}
+
+/* Logo del login */
+.login-logo {
+  display: flex; /* Flexbox */
+  flex-direction: column; /* Dirección vertical */
+  align-items: center; /* Centra horizontalmente */
+  margin-bottom: 1rem; /* Margen inferior */
+}
+
+/* Icono del logo */
+.logo-icon {
+  font-size: 3rem; /* Tamaño grande */
+  margin-bottom: 0.5rem; /* Margen inferior */
+  animation: bounce 2s ease-in-out infinite; /* Animación de rebote */
+}
+
+/* Animación de rebote para el logo */
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translateY(0); /* Posición normal */
+  }
+  40%, 43% {
+    transform: translateY(-8px); /* Sube 8px */
+  }
+  70% {
+    transform: translateY(-4px); /* Sube 4px */
+  }
+  90% {
+    transform: translateY(-2px); /* Sube 2px */
+  }
+}
+
+/* Título del login */
+.login-title {
+  font-size: 2rem; /* Tamaño grande */
+  font-weight: 700; /* Peso negrita */
+  color: var(--primary-color); /* Color azul principal */
+  margin: 0; /* Sin margen */
+  letter-spacing: 1px; /* Espaciado entre letras */
+}
+
+/* Subtítulo del login */
+.login-subtitle {
+  color: var(--text-secondary); /* Color gris */
+  font-size: 1rem; /* Tamaño normal */
+  margin: 0; /* Sin margen */
+  font-weight: 400; /* Peso normal */
+}
+
+/* Formulario de login */
+.login-form {
+  display: flex; /* Flexbox */
+  flex-direction: column; /* Dirección vertical */
+  gap: 1.5rem; /* Espacio entre elementos */
+}
+
+/* Grupo de campos del formulario */
+.form-group {
+  display: flex; /* Flexbox */
+  flex-direction: column; /* Dirección vertical */
+  gap: 0.5rem; /* Espacio pequeño */
+}
+
+/* Contenedor de input con icono */
+.input-container {
+  position: relative; /* Posición relativa para iconos */
+  display: flex; /* Flexbox */
+  align-items: center; /* Centra verticalmente */
+}
+
+/* Icono dentro del input */
+.input-icon {
+  position: absolute; /* Posición absoluta */
+  left: 0.75rem; /* Posición desde la izquierda */
+  font-size: 1.1rem; /* Tamaño del icono */
+  color: var(--text-secondary); /* Color gris */
+  z-index: 1; /* Encima del input */
+}
+
+/* Input con icono - padding adicional a la izquierda */
+.input-with-icon {
+  padding-left: 2.75rem; /* Espacio para el icono */
+}
+
+/* Botón para mostrar/ocultar contraseña */
+.password-toggle {
+  position: absolute; /* Posición absoluta */
+  right: 0.75rem; /* Posición desde la derecha */
+  background: none; /* Sin fondo */
+  border: none; /* Sin borde */
+  cursor: pointer; /* Cursor de mano */
+  font-size: 1.1rem; /* Tamaño del icono */
+  padding: 0; /* Sin padding */
+  color: var(--text-secondary); /* Color gris */
+  transition: color var(--transition-fast); /* Transición de color */
+}
+
+/* Hover del botón de contraseña */
+.password-toggle:hover {
+  color: var(--primary-color); /* Color azul al hover */
+}
+
+/* Botón de login */
+.login-button {
+  width: 100%; /* Ancho completo */
+  padding: 1rem; /* Padding generoso */
+  font-size: 1.1rem; /* Tamaño de fuente ligeramente mayor */
+  font-weight: 600; /* Peso semi-bold */
+  margin-top: 0.5rem; /* Margen superior */
+  transition: all var(--transition-normal); /* Transición completa */
+}
+
+/* Hover del botón de login */
+.login-button:hover:not(:disabled) {
+  transform: translateY(-1px); /* Eleva ligeramente */
+  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3); /* Sombra azul */
+}
+
+/* Estado deshabilitado del botón */
+.login-button:disabled {
+  opacity: 0.7; /* Opacidad reducida */
+  cursor: not-allowed; /* Cursor de no permitido */
+  transform: none; /* Sin transformación */
+}
+
+/* Mensaje de error específico del login */
+.login-screen .error-message {
+  display: flex; /* Flexbox */
+  align-items: center; /* Centra verticalmente */
+  gap: 0.5rem; /* Espacio entre icono y texto */
+  background-color: rgba(239, 68, 68, 0.1); /* Fondo rojo muy claro */
+  border: 1px solid rgba(239, 68, 68, 0.3); /* Borde rojo claro */
+  border-radius: var(--border-radius); /* Bordes redondeados */
+  padding: 0.75rem; /* Padding interno */
+  font-size: 0.875rem; /* Tamaño de fuente pequeño */
+}
+
+/* Icono del mensaje de error */
+.error-icon {
+  font-size: 1rem; /* Tamaño del icono */
+  flex-shrink: 0; /* No se encoge */
+}
+
+/* Footer del formulario */
+.login-footer {
+  margin-top: 2rem; /* Margen superior */
+  text-align: center; /* Texto centrado */
+  padding-top: 1.5rem; /* Padding superior */
+  border-top: 1px solid var(--border-color); /* Borde superior */
+}
+
+/* Texto de ayuda */
+.help-text {
+  color: var(--text-secondary); /* Color gris */
+  font-size: 0.875rem; /* Tamaño pequeño */
+  margin: 0; /* Sin margen */
+  line-height: 1.5; /* Altura de línea */
+}
+
+/* Responsive design para móviles */
+@media (max-width: 480px) {
+  .login-container {
+    max-width: 100%; /* Ancho completo en móvil */
+    padding: 0 0.5rem; /* Padding mínimo */
+  }
+  
+  .login-card {
+    padding: 1.5rem; /* Reduce padding */
+    margin: 1rem 0; /* Margen vertical */
+  }
+  
+  .login-title {
+    font-size: 1.75rem; /* Reduce tamaño del título */
+  }
+  
+  .logo-icon {
+    font-size: 2.5rem; /* Reduce tamaño del icono */
+  }
+  
+  .login-form {
+    gap: 1.25rem; /* Reduce espacio entre elementos */
+  }
+}
+
+/* Animación para errores */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Aplica animación de shake a mensajes de error */
+.error-message {
+  animation: shake 0.5s ease-in-out; /* Animación de temblor */
+}
