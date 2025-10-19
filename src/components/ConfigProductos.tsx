@@ -581,7 +581,6 @@ const ConfigProductos: React.FC<ConfigProductosProps> = ({ user, onNavigate }) =
         <Toast
           message={toast.message}
           type={toast.type === 'info' ? 'success' : toast.type} // Convertir 'info' a 'success'
-          isVisible={toast.show}
           onClose={closeToast}
         />
       )}

@@ -183,7 +183,6 @@ const FormularioNegocio: React.FC<FormularioNegocioProps> = ({ currentUser, onBa
         <Toast
           message={toastMessage}
           type={toastType}
-          isVisible={showToast}
           onClose={closeToast}
         />
       )}

@@ -6,8 +6,10 @@ import type { CorsOptions } from 'cors'; // Importa tipos de cors
 
 // Configuración de CORS para permitir conexiones desde el frontend
 const corsOptions: CorsOptions = {
-  // Origen permitido - URL del frontend
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  // Origen permitido - URL del frontend (más permisivo para desarrollo)
+  origin: [
+    'http://localhost:5173'
+  ],
   
   // Métodos HTTP permitidos
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -25,6 +27,10 @@ const corsOptions: CorsOptions = {
 // Crea y exporta el middleware CORS configurado
 const corsMiddleware = cors(corsOptions);
 
-console.log('🌐 Middleware CORS configurado para:', process.env.FRONTEND_URL); // Log de configuración
+console.log('🌐 Middleware CORS configurado para múltiples orígenes:'); // Log de configuración
+console.log('   - http://localhost:5173');
+console.log('   - http://localhost:5174');
+console.log('   - https://localhost:5173');
+console.log('   - https://localhost:5174');
 
 export default corsMiddleware;

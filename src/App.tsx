@@ -17,6 +17,8 @@ import ConfigCategorias from './components/ConfigCategorias'; // Configuración 
 import ConfigInsumos from './components/ConfigInsumos'; // Configuración de insumos
 import FormularioNegocio from './components/FormularioNegocio'; // Formulario completo de negocio
 import ConfigProductos from './components/ConfigProductos'; // Configuración de productos
+import ConfigRecetas from './components/ConfigRecetas'; // Configuración de recetas
+import ConfigSubRecetas from './components/ConfigSubRecetas'; // Configuración de sub-recetas
 
 // Workaround: permite pasar props no tipadas al componente cuando el tipo de props
 // del componente no incluye onBack (evita error de compilación hasta ajustar tipos)
@@ -27,6 +29,7 @@ const ConfigCategoriasAny = ConfigCategorias as any;
 const ConfigInsumosAny = ConfigInsumos as any;
 const FormularioNegocioAny = FormularioNegocio as any;
 const ConfigProductosAny = ConfigProductos as any;
+const ConfigRecetasAny = ConfigRecetas as any;
 
 // Importa estilos
 import './styles/global.css'; // Estilos globales
@@ -95,8 +98,13 @@ function App() {
       return (
         <div className="loading-screen fullscreen center-content">
           <div className="loading-content">
+            <img 
+              src="/logocrumenpos.svg" 
+              alt="Logo Crumen POS" 
+              className="loading-logo"
+            />
             <div className="spinner"></div>
-            <p>Cargando POSWEBCrumen...</p>
+            <p>PosWebCrumen Cargando</p>
           </div>
         </div>
       );
@@ -189,6 +197,24 @@ function App() {
         }
         console.log('📦 Renderizando configuración de productos'); // Log de renderizado
         return <ConfigProductosAny user={user} onNavigate={handleNavigate} />;
+
+      case 'config-recetas':
+        if (!isAuthenticated || !user) {
+          console.log('❌ Usuario no autenticado, redirigiendo a login'); // Log de error
+          setCurrentScreen('login');
+          return <div></div>; // Componente vacío temporal
+        }
+        console.log('📋 Renderizando configuración de recetas'); // Log de renderizado
+        return <ConfigRecetasAny user={user} onNavigate={handleNavigate} />;
+
+      case 'config-sub-recetas':
+        if (!isAuthenticated || !user) {
+          console.log('❌ Usuario no autenticado, redirigiendo a login'); // Log de error
+          setCurrentScreen('login');
+          return <div></div>; // Componente vacío temporal
+        }
+        console.log('🍴 Renderizando configuración de sub-recetas'); // Log de renderizado
+        return <ConfigSubRecetas user={user} onNavigate={handleNavigate} />;
 
       case 'formulario-negocio':
         if (!isAuthenticated || !user) {

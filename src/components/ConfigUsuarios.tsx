@@ -190,7 +190,6 @@ const ConfigUsuarios: React.FC<ConfigUsuariosProps> = ({ currentUser, onBack }) 
         <Toast
           message={toastMessage}
           type={toastType}
-          isVisible={showToast}
           onClose={closeToast}
         />
       )}

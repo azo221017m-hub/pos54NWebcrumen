@@ -127,7 +127,6 @@ const ConfigClientes: React.FC<ConfigClientesProps> = ({ currentUser, onBack }) 
         <Toast
           message={toastMessage}
           type={toastType}
-          isVisible={showToast}
           onClose={closeToast}
         />
       )}

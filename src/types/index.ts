@@ -173,6 +173,7 @@ export type ScreenType =
   | 'formulario-negocio' // Formulario completo de negocio
   | 'config-productos' // Configuración de productos
   | 'config-recetas' // Configuración de recetas
+  | 'config-sub-recetas' // Configuración de sub-recetas
   | 'config-perfil' // Configuración de perfil
   | 'config-recibos' // Configuración de recibos
   | 'iniciar-venta' // Iniciar nueva venta
@@ -266,4 +267,27 @@ export interface CreateInsumoData {
   precioVta: number; // Precio de venta
   idCategoria: number; // ID de la categoría
   usuario?: string; // Usuario que crea el registro (opcional, se llenará automáticamente)
+}
+
+// Tipo para producto en un pedido
+export interface PedidoProducto {
+  nombre: string; // Nombre del producto
+  cantidad: number; // Cantidad solicitada
+  precio: number; // Precio unitario
+  subtotal: number; // Subtotal del producto (cantidad * precio)
+}
+
+// Tipo para pedido tipo comanda
+export interface Pedido {
+  idPedido: string; // ID único del pedido
+  numeroComanda: string; // Número de comanda
+  cliente: string; // Nombre del cliente
+  productos: PedidoProducto[]; // Lista de productos en el pedido
+  total: number; // Total del pedido
+  formaPago: 'EFECTIVO' | 'TARJETA' | 'TRANSFERENCIA' | 'MIXTO'; // Forma de pago
+  estado: 'PENDIENTE' | 'PREPARANDO' | 'LISTO' | 'ENTREGADO' | 'CANCELADO'; // Estado del pedido
+  fechaPedido: string; // Fecha y hora del pedido
+  horaPedido: string; // Hora específica del pedido
+  mesa?: string; // Mesa asignada (opcional)
+  observaciones?: string; // Observaciones especiales (opcional)
 }

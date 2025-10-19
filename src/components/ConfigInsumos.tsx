@@ -511,7 +511,6 @@ const ConfigInsumos: React.FC<ConfigInsumosProps> = ({ onNavigate, currentUser }
         <Toast
           message={toastMessage}
           type={toastType}
-          isVisible={showToast}
           onClose={() => setShowToast(false)}
         />
       )}

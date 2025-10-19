@@ -12,8 +12,17 @@
 
 /* Pantalla de carga */
 .loading-screen {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Fondo con gradiente */
+  background: linear-gradient(135deg, #134e4a 0%, #0f766e 50%, #14b8a6 100%) !important; /* Degradado teal corporativo */
   color: white; /* Texto blanco */
+  height: 100vh !important; /* Usa toda la altura de la pantalla */
+  width: 100vw !important; /* Usa todo el ancho de la pantalla */
+  position: fixed !important; /* Posición fija */
+  top: 0 !important; /* Desde arriba */
+  left: 0 !important; /* Desde la izquierda */
+  display: flex !important; /* Flexbox */
+  justify-content: center !important; /* Centra horizontalmente */
+  align-items: center !important; /* Centra verticalmente */
+  z-index: 9999 !important; /* Por encima de todo */
 }
 
 /* Contenido de la pantalla de carga */
@@ -21,7 +30,24 @@
   display: flex; /* Flexbox */
   flex-direction: column; /* Dirección vertical */
   align-items: center; /* Centra horizontalmente */
-  gap: 1rem; /* Espacio entre elementos */
+  justify-content: center; /* Centra verticalmente */
+  gap: 1.5rem; /* Espacio entre elementos */
+  height: 100%; /* Ocupa toda la altura disponible */
+  width: 100%; /* Ocupa todo el ancho disponible */
+}
+
+/* Logo en la pantalla de carga */
+.loading-logo {
+  width: 120px; /* Ancho del logo */
+  height: 120px; /* Alto del logo */
+  object-fit: contain; /* Mantiene proporciones */
+  animation: logoFloat 3s ease-in-out infinite; /* Animación flotante */
+}
+
+/* Animación flotante para el logo */
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
 }
 
 /* Texto de la pantalla de carga */

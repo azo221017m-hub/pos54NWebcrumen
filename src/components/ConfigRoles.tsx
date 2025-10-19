@@ -123,7 +123,6 @@ const ConfigRoles: React.FC<ConfigRolesProps> = ({ currentUser, onBack }) => {
         <Toast
           message={toastMessage}
           type={toastType}
-          isVisible={showToast}
           onClose={closeToast}
         />
       )}

@@ -10,31 +10,31 @@
 
 /* Configuración del elemento raíz */
 :root {
-  /* ===== PALETA PROFESIONAL CORPORATE TECH ===== */
+  /* ===== PALETA TEAL CORPORATE - BASADA EN CRUMEN BRAND ===== */
   
-  /* Colores primarios - Azul corporativo sofisticado */
-  --primary-50: #eff6ff;    /* Azul muy claro */
-  --primary-100: #dbeafe;   /* Azul claro */
-  --primary-200: #bfdbfe;   /* Azul medio claro */
-  --primary-300: #93c5fd;   /* Azul medio */
-  --primary-400: #60a5fa;   /* Azul medio-intenso */
-  --primary-500: #3b82f6;   /* Azul principal */
-  --primary-600: #2563eb;   /* Azul intenso */
-  --primary-700: #1d4ed8;   /* Azul oscuro */
-  --primary-800: #1e40af;   /* Azul muy oscuro */
-  --primary-900: #1e3a8a;   /* Azul corporativo profundo */
+  /* Colores primarios - Verde azulado corporativo */
+  --primary-50: #f0fdfa;    /* Teal muy claro */
+  --primary-100: #ccfbf1;   /* Teal claro */
+  --primary-200: #99f6e4;   /* Teal medio claro */
+  --primary-300: #5eead4;   /* Teal medio */
+  --primary-400: #2dd4bf;   /* Teal medio-intenso */
+  --primary-500: #14b8a6;   /* Teal principal */
+  --primary-600: #0d9488;   /* Teal intenso (base seleccionada) */
+  --primary-700: #0f766e;   /* Teal oscuro */
+  --primary-800: #115e59;   /* Teal muy oscuro */
+  --primary-900: #134e4a;   /* Teal corporativo profundo */
   
-  /* Colores secundarios - Púrpura elegante */
-  --secondary-50: #faf5ff;  /* Púrpura muy claro */
-  --secondary-100: #f3e8ff; /* Púrpura claro */
-  --secondary-200: #e9d5ff; /* Púrpura medio claro */
-  --secondary-300: #d8b4fe; /* Púrpura medio */
-  --secondary-400: #c084fc; /* Púrpura medio-intenso */
-  --secondary-500: #a855f7; /* Púrpura principal */
-  --secondary-600: #9333ea; /* Púrpura intenso */
-  --secondary-700: #7c3aed; /* Púrpura oscuro */
-  --secondary-800: #6b21a8; /* Púrpura muy oscuro */
-  --secondary-900: #581c87; /* Púrpura profundo */
+  /* Colores secundarios - Slate complementario */
+  --secondary-50: #f8fafc;  /* Slate muy claro */
+  --secondary-100: #f1f5f9; /* Slate claro */
+  --secondary-200: #e2e8f0; /* Slate medio claro */
+  --secondary-300: #cbd5e1; /* Slate medio */
+  --secondary-400: #94a3b8; /* Slate medio-intenso */
+  --secondary-500: #64748b; /* Slate principal */
+  --secondary-600: #475569; /* Slate intenso */
+  --secondary-700: #334155; /* Slate oscuro */
+  --secondary-800: #1e293b; /* Slate muy oscuro */
+  --secondary-900: #0f172a; /* Slate profundo */
   
   /* Colores de acento - Verde éxito y Naranja advertencia */
   --success-500: #10b981;   /* Verde éxito */
@@ -57,14 +57,14 @@
   --gray-900: #0f172a;      /* Negro azulado */
   
   /* ===== COLORES SEMÁNTICOS ===== */
-  --bg-primary: var(--gray-50);      /* Fondo principal */
-  --bg-secondary: var(--gray-100);   /* Fondo secundario */
+  --bg-primary: var(--primary-50);   /* Fondo principal - teal muy claro */
+  --bg-secondary: var(--primary-100); /* Fondo secundario - teal claro */
   --bg-surface: #ffffff;             /* Superficie blanca */
-  --bg-overlay: rgba(15, 23, 42, 0.8); /* Overlay oscuro */
+  --bg-overlay: rgba(19, 78, 74, 0.8); /* Overlay teal oscuro */
   
-  --text-primary: var(--gray-900);   /* Texto principal */
-  --text-secondary: var(--gray-600); /* Texto secundario */
-  --text-muted: var(--gray-500);     /* Texto suave */
+  --text-primary: var(--primary-900); /* Texto principal - teal muy oscuro */
+  --text-secondary: var(--primary-700); /* Texto secundario - teal oscuro */
+  --text-muted: var(--primary-600);   /* Texto suave - teal base */
   --text-inverse: #ffffff;           /* Texto sobre fondos oscuros */
   
   /* ===== SISTEMA DE SOMBRAS PREMIUM ===== */
@@ -77,7 +77,7 @@
   --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
   
   /* Sombras coloridas para elementos interactivos */
-  --shadow-primary: 0 10px 15px -3px rgba(59, 130, 246, 0.1), 0 4px 6px -2px rgba(59, 130, 246, 0.05);
+  --shadow-primary: 0 10px 15px -3px rgba(13, 148, 136, 0.1), 0 4px 6px -2px rgba(13, 148, 136, 0.05);
   --shadow-secondary: 0 10px 15px -3px rgba(168, 85, 247, 0.1), 0 4px 6px -2px rgba(168, 85, 247, 0.05);
   
   /* ===== BORDER RADIUS SYSTEM ===== */
@@ -242,11 +242,11 @@ body::before {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-6);
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-lg);
   font-weight: var(--font-medium);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   line-height: 1;
   text-decoration: none;
   border: none;
@@ -309,25 +309,25 @@ body::before {
 
 /* Tamaños de botones */
 .btn-sm {
-  padding: var(--space-2) var(--space-4);
-  font-size: var(--text-xs);
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.7rem;
   border-radius: var(--radius-md);
 }
 
 .btn-lg {
-  padding: var(--space-4) var(--space-8);
-  font-size: var(--text-base);
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--text-sm);
   border-radius: var(--radius-xl);
 }
 
 /* Sistema de inputs modernos */
 .input {
   width: 100%;
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--gray-300);
   border-radius: var(--radius-lg);
-  font-size: var(--text-sm);
-  line-height: 1.5;
+  font-size: var(--text-xs);
+  line-height: 1.4;
   background: var(--bg-surface);
   color: var(--text-primary);
   transition: var(--transition-fast);

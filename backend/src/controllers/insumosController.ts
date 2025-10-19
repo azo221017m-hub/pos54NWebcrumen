@@ -451,3 +451,70 @@ export const deleteInsumoController = async (req: Request, res: Response): Promi
     });
   }
 };
+
+// Controlador para buscar insumos por filtro de nombre
+export const buscarInsumosController = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Soportar tanto parámetros de ruta como query parameters
+    const filtroParam = req.params.filtro;
+    const { busqueda, tipo } = req.query;
+    
+    const filtro = filtroParam || busqueda as string;
+    
+    console.log('🔍 Buscando insumos con filtro:', filtro, 'Tipo:', tipo);
+
+    // Validar que el filtro no esté vacío
+    if (!filtro || filtro.trim().length < 2) {
+      res.status(400).json({
+        success: false,
+        message: 'El filtro debe tener al menos 2 caracteres',
+        data: []
+      });
+      return;
+    }
+
+    // Construir query dinámicamente según los filtros
+    let query = `
+      SELECT 
+        idInsumo,
+        nomInsumo,
+        umInsumo,
+        costoPromPond,
+        tipoInsumo,
+        existencia,
+        idCategoria
+      FROM tblposcrumenwebinsumos
+      WHERE nomInsumo LIKE ?
+    `;
+    
+    const queryParams: any[] = [`%${filtro.trim()}%`];
+    
+    // Agregar filtro por tipo si se especifica
+    if (tipo && tipo !== 'ALL') {
+      query += ' AND tipoInsumo = ?';
+      queryParams.push(tipo);
+    }
+    
+    query += ' ORDER BY nomInsumo LIMIT 20';
+
+    const insumos = await executeQuery(query, queryParams);
+    
+    console.log(`✅ ${insumos.length} insumos encontrados con filtro "${filtro}" ${tipo ? `tipo "${tipo}"` : ''}`);
+
+    res.status(200).json({
+      success: true,
+      message: `${insumos.length} insumos encontrados`,
+      data: insumos
+    });
+
+  } catch (error) {
+    console.error('❌ Error al buscar insumos:', error);
+    
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor al buscar insumos',
+      data: [],
+      error: process.env.NODE_ENV === 'development' ? error : undefined
+    });
+  }
+};

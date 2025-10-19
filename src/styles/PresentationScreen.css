@@ -2,12 +2,15 @@
 
 /* Contenedor principal de la pantalla de presentación */
 .presentation-screen {
-  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 1rem;
-  position: relative;
+  padding: 2rem;
+  position: fixed;
+  top: 0;
+  left: 0;
   overflow: hidden;
   background: linear-gradient(135deg, var(--primary-900) 0%, var(--primary-700) 35%, var(--secondary-700) 65%, var(--secondary-900) 100%);
 }
@@ -47,24 +50,39 @@
 /* Contenedor del contenido de la presentación */
 .presentation-content {
   text-align: center;
-  max-width: 700px;
-  padding: 3rem;
+  max-width: 800px;
+  width: 100%;
+  padding: 4rem;
   z-index: 2;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Contenedor del logotipo con efectos premium */
 .logo-container {
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
   display: flex;
   justify-content: center;
   position: relative;
+  transform: scale(1.1);
+}
+
+/* Logo SVG con animaciones */
+.presentation-logo {
+  width: 180px;
+  height: 180px;
+  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
+  animation: logoFloat 4s ease-in-out infinite;
+  transition: transform 0.3s ease;
 }
 
 /* Círculo del logotipo con glassmorphism */
 .logo-circle {
-  width: 180px;
-  height: 180px;
+  width: 220px;
+  height: 220px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
@@ -102,10 +120,10 @@
 
 /* Texto principal del logotipo */
 .logo-text {
-  font-size: 2.5rem;
+  font-size: 3rem;
   font-weight: 800;
   letter-spacing: 3px;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
   color: rgba(255, 255, 255, 0.95);
   text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   z-index: 1;
@@ -114,7 +132,7 @@
 
 /* Subtexto del logotipo */
 .logo-subtext {
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 400;
   letter-spacing: 2px;
   opacity: 0.85;
@@ -124,19 +142,20 @@
   position: relative;
 }
 
-/* Contenedor de las frases con altura fija */
+/* Contenedor de las frases - ocupa todo el espacio disponible */
 .phrases-container {
-  height: 100px;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
   position: relative;
+  min-height: 120px;
 }
 
 /* Estilos para las frases */
 .phrase {
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 300;
   color: rgba(255, 255, 255, 0.9);
   margin: 0;
@@ -299,30 +318,40 @@
 }
 
 @media (max-width: 480px) {
+  .presentation-screen {
+    padding: 1rem;
+  }
+  
   .presentation-content {
-    padding: 1.5rem 0.75rem;
+    padding: 2rem 1rem;
+    max-width: calc(100vw - 2rem);
+  }
+  
+  .logo-container {
+    transform: scale(0.9);
+    margin-bottom: 3rem;
   }
   
   .logo-circle {
-    width: 120px;
-    height: 120px;
+    width: 160px;
+    height: 160px;
   }
   
   .logo-text {
-    font-size: 1.75rem;
+    font-size: 2.2rem;
     letter-spacing: 1px;
   }
   
   .logo-subtext {
-    font-size: 0.75rem;
+    font-size: 1rem;
   }
   
   .phrase {
-    font-size: 1.2rem;
+    font-size: 1.6rem;
   }
   
   .phrases-container {
-    height: 70px;
-    margin-bottom: 1.5rem;
+    height: 100px;
+    margin-bottom: 3rem;
   }
 }

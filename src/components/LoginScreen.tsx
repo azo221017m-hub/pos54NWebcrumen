@@ -4,7 +4,7 @@
 import { useState } from 'react'; // Importa hooks de React
 import type { LoginData } from '../types'; // Importa tipos
 import Toast from './Toast'; // Importa componente Toast
-import '../styles/LoginScreen.css'; // Importa estilos específicos
+import '../styles/LoginScreenNew.css'; // Importa estilos específicos
 
 // Interfaz para las props del componente
 interface LoginScreenProps {
@@ -104,7 +104,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, isLoading }) => {
   };
 
   return (
-    <div className="login-screen fullscreen">
+    <div className="login-screen">
       {/* Contenedor principal del login */}
       <div className="login-container">
         
@@ -114,8 +114,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, isLoading }) => {
           {/* Header con logo y título */}
           <div className="login-header">
             <div className="login-logo">
-              <span className="logo-icon">🏪</span>
-              <h1 className="login-title">POSWEBCrum3n</h1>
+              <img 
+                src="/logowebposcrumen.svg" 
+                alt="POSWEBCrumen Logo" 
+                className="login-logo-img"
+              />
+              <h1 className="login-title">POSWEBCrumen</h1>
             </div>
             <p className="login-subtitle">Accede a tu cuenta</p>
           </div>
@@ -204,12 +208,13 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, isLoading }) => {
       </div>
 
       {/* Componente Toast para mensajes */}
-      <Toast
-        message={toast.message}
-        type={toast.type}
-        isVisible={toast.isVisible}
-        onClose={closeToast}
-      />
+      {toast.isVisible && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={closeToast}
+        />
+      )}
     </div>
   );
 };
