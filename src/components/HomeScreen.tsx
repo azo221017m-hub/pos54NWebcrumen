@@ -10,6 +10,7 @@ interface RightNavigationProps {
   onNavigate: (screen: ScreenType) => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const RightNavigation: React.FC<RightNavigationProps> = ({ onNavigate }) => {
   // Función para manejar navegación
   const handleNavigate = (screen: ScreenType) => {
@@ -163,6 +164,7 @@ const RightNavigation: React.FC<RightNavigationProps> = ({ onNavigate }) => {
 };
 
 // Componente de pedidos online con 15 registros simulados
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const OnlineOrdersComponent: React.FC = () => {
   // Datos simulados de 15 pedidos online tipo comanda
   const mockOnlineOrders: Pedido[] = [
@@ -486,7 +488,6 @@ const OnlineOrdersComponent: React.FC = () => {
 interface HomeScreenProps {
   user: Usuario; // Usuario autenticado
   onNavigate: (screen: ScreenType) => void; // Función de navegación
-  onLogout: () => void; // Función de logout
 }
 
 // Componente de pantalla principal
@@ -575,15 +576,66 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ user, onNavigate }) => {
           </div>
         </header>
 
-        {/* Contenido principal del dashboard */}
-        <div className="dashboard-content">
+        {/* Contenido principal con 3 columnas */}
+        <div className="dashboard-container">
           
           {/* Columna izquierda: Navegación */}
-          <RightNavigation onNavigate={onNavigate} />
+          <div className="dashboard-left-area">
+            <div className="left-navigator">
+              <h2>🧭 NAVEGADOR</h2>
+              
+              <div className="nav-section-title-left">Configuración</div>
+              <div className="nav-icons-grid">
+                <button className="nav-icon-item" onClick={() => onNavigate('config-usuarios' as ScreenType)}>
+                  <span className="icon">👥</span>
+                  <span className="label">Usuarios</span>
+                </button>
+                <button className="nav-icon-item" onClick={() => onNavigate('config-roles' as ScreenType)}>
+                  <span className="icon">🎭</span>
+                  <span className="label">Roles</span>
+                </button>
+                <button className="nav-icon-item" onClick={() => onNavigate('config-clientes' as ScreenType)}>
+                  <span className="icon">👤</span>
+                  <span className="label">Clientes</span>
+                </button>
+                <button className="nav-icon-item" onClick={() => onNavigate('config-negocios' as ScreenType)}>
+                  <span className="icon">🏪</span>
+                  <span className="label">Negocios</span>
+                </button>
+                <button className="nav-icon-item" onClick={() => onNavigate('config-mesas' as ScreenType)}>
+                  <span className="icon">🪑</span>
+                  <span className="label">Mesas</span>
+                </button>
+                <button className="nav-icon-item" onClick={() => onNavigate('config-productos' as ScreenType)}>
+                  <span className="icon">📦</span>
+                  <span className="label">Productos</span>
+                </button>
+                <button className="nav-icon-item" onClick={() => onNavigate('config-categorias' as ScreenType)}>
+                  <span className="icon">📁</span>
+                  <span className="label">Categorías</span>
+                </button>
+                <button className="nav-icon-item" onClick={() => onNavigate('config-insumos' as ScreenType)}>
+                  <span className="icon">🥘</span>
+                  <span className="label">Insumos</span>
+                </button>
+                <button className="nav-icon-item" onClick={() => onNavigate('config-recetas' as ScreenType)}>
+                  <span className="icon">📝</span>
+                  <span className="label">Recetas</span>
+                </button>
+                <button className="nav-icon-item" onClick={() => onNavigate('config-subrecetas' as ScreenType)}>
+                  <span className="icon">📋</span>
+                  <span className="label">Sub-recetas</span>
+                </button>
+              </div>
+            </div>
+          </div>
           
-          {/* Columna central: Grid de indicadores */}
-          <section className="indicators-section">
-            <div className="indicators-grid">
+          {/* Columna central: Indicadores */}
+          <div className="dashboard-main-area">
+            <section className="indicators-section">
+              <h1 className="main-title">Panel de Control</h1>
+              
+              <div className="indicators-grid">
               
               {/* Cards de indicadores minimalistas - 8 indicadores */}
               <div className="indicator-card" onClick={() => handleIndicatorClick('ventas')}>
@@ -596,7 +648,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ user, onNavigate }) => {
               </div>
 
               <div className="indicator-card" onClick={() => handleIndicatorClick('pedidos')}>
-                <div className="card-icon">�</div>
+                <div className="card-icon">🍽️</div>
                 <div className="card-content">
                   <h3 className="card-title">Pedidos</h3>
                   <div className="card-value">47</div>
@@ -605,7 +657,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ user, onNavigate }) => {
               </div>
 
               <div className="indicator-card" onClick={() => handleIndicatorClick('clientes')}>
-                <div className="card-icon">�</div>
+                <div className="card-icon">👥</div>
                 <div className="card-content">
                   <h3 className="card-title">Clientes</h3>
                   <div className="card-value">156</div>
@@ -623,7 +675,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ user, onNavigate }) => {
               </div>
 
               <div className="indicator-card" onClick={() => handleIndicatorClick('ingresos')}>
-                <div className="card-icon">�</div>
+                <div className="card-icon">💵</div>
                 <div className="card-content">
                   <h3 className="card-title">Ingresos</h3>
                   <div className="card-value">$187K</div>
@@ -632,7 +684,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ user, onNavigate }) => {
               </div>
 
               <div className="indicator-card" onClick={() => handleIndicatorClick('gastos')}>
-                <div className="card-icon">�</div>
+                <div className="card-icon">💸</div>
                 <div className="card-content">
                   <h3 className="card-title">Gastos</h3>
                   <div className="card-value">$42K</div>
@@ -640,29 +692,19 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ user, onNavigate }) => {
                 </div>
               </div>
 
-              <div className="indicator-card" onClick={() => handleIndicatorClick('utilidad')}>
-                <div className="card-icon">📈</div>
-                <div className="card-content">
-                  <h3 className="card-title">Utilidad</h3>
-                  <div className="card-value">$145K</div>
-                  <div className="card-change positive">+18.3% ↗️</div>
-                </div>
-              </div>
 
-              <div className="indicator-card" onClick={() => handleIndicatorClick('empleados')}>
-                <div className="card-icon">👨‍💼</div>
-                <div className="card-content">
-                  <h3 className="card-title">Empleados</h3>
-                  <div className="card-value">12</div>
-                  <div className="card-change neutral">Sin cambios</div>
-                </div>
-              </div>
 
             </div>
-          </section>
+            </section>
+          </div>
 
           {/* Columna derecha: Pedidos Online */}
-          <OnlineOrdersComponent />
+          <div className="dashboard-right-area">
+            {/* Renderizamos el componente RightNavigation para usar la declaración y permitir navegación rápida */}
+            <RightNavigation onNavigate={onNavigate} />
+
+            <OnlineOrdersComponent />
+          </div>
 
         </div>
 

@@ -41,12 +41,12 @@ const PresentationScreen: React.FC<PresentationScreenProps> = ({ onComplete }) =
           
           // Si llegamos al final de las frases
           if (nextIndex >= phrases.length) {
-            console.log('✅ Presentación completada'); // Log de completado
+            console.log('✅ Presentación completada, llamando a onComplete'); // Log de completado
             clearInterval(phraseTimer); // Limpia el timer
             
-            // Después de un segundo, llama a onComplete
+            // Después de un segundo, llama a onComplete para ir al login
             setTimeout(() => {
-              onComplete(); // Cambia a la siguiente pantalla
+              onComplete(); // Llama a onComplete para que App.tsx maneje el login
             }, 1000);
             
             return prevIndex; // Mantiene el índice actual
@@ -67,6 +67,7 @@ const PresentationScreen: React.FC<PresentationScreenProps> = ({ onComplete }) =
     };
   }, [onComplete, phrases.length]);
 
+  // Renderizado - solo presentación
   return (
     <div className="presentation-screen fullscreen">
       {/* Contenedor principal de la presentación */}

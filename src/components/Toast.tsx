@@ -93,7 +93,6 @@ const Toast: React.FC<ToastProps> = ({
       className={toastClasses}
       role="alert"
       aria-live="polite"
-      style={{ border: '2px solid red' }} // Debug border temporal
     >
       <div className="toast-content">
         <span className="toast-icon">

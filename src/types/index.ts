@@ -164,6 +164,7 @@ export type ScreenType =
   | 'presentation' // Pantalla de presentación inicial
   | 'login' // Pantalla de login
   | 'home' // Pantalla principal/dashboard
+  | 'tablero-inicial' // Nuevo tablero inicial
   | 'config-usuarios' // Configuración de usuarios
   | 'config-negocios' // Configuración de negocios
   | 'config-roles' // Configuración de roles

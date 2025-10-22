@@ -9,7 +9,7 @@ import { useAuth } from './hooks/useAuth'; // Importa hook de autenticación
 import PresentationScreen from './components/PresentationScreen'; // Pantalla de presentación
 import LoginScreen from './components/LoginScreen'; // Pantalla de login
 import HomeScreen from './components/HomeScreen'; // Pantalla principal
-import ConfigNegocios from './components/ConfigNegocios'; // Configuración de negocios
+// ConfigNegocios removido - ahora se usa FormularioNegocio
 import ConfigUsuarios from './components/ConfigUsuarios'; // Configuración de usuarios
 import ConfigRoles from './components/ConfigRoles'; // Configuración de roles
 import ConfigClientes from './components/ConfigClientes'; // Configuración de clientes
@@ -20,6 +20,7 @@ import ConfigProductos from './components/ConfigProductos'; // Configuración de
 import ConfigRecetas from './components/ConfigRecetas'; // Configuración de recetas
 import ConfigSubRecetas from './components/ConfigSubRecetas'; // Configuración de sub-recetas
 import ConfigMesas from './components/ConfigMesas'; // Configuración de mesas
+import TableroInicial from './components/TableroInicial'; // Nuevo tablero inicial
 
 // Workaround: permite pasar props no tipadas al componente cuando el tipo de props
 // del componente no incluye onBack (evita error de compilación hasta ajustar tipos)
@@ -53,11 +54,11 @@ function App() {
       isLoading 
     }); // Log de cambio
     
-    // Si está autenticado y no está en una pantalla válida, va al home
-    if (isAuthenticated && currentScreen !== 'home' && currentScreen !== 'config-usuarios' && currentScreen !== 'config-negocios') {
-      console.log('🏠 [App] Redirigiendo a home - usuario autenticado'); // Log de redirección
-      console.log('📱 [App] Cambiando currentScreen de', currentScreen, 'a home'); // Log de cambio de pantalla
-      setCurrentScreen('home');
+    // Si está autenticado y viene de login o presentation, va al tablero-inicial
+    if (isAuthenticated && user && (currentScreen === 'login' || currentScreen === 'presentation')) {
+      console.log('📊 [App] Redirigiendo a tablero-inicial - usuario autenticado'); // Log de redirección
+      console.log('📱 [App] Cambiando currentScreen de', currentScreen, 'a tablero-inicial'); // Log de cambio de pantalla
+      setCurrentScreen('tablero-inicial');
     }
     
     // Si no está autenticado y no está en login o presentación, va a login
@@ -67,10 +68,10 @@ function App() {
     }
   }, [isAuthenticated, isLoading, user]); // Removido currentScreen de las dependencias para evitar loops
 
-  // Función para manejar el completado de la presentación
+  // Función para manejar el completado de la presentación (solo presentación, no login)
   const handlePresentationComplete = (): void => {
-    console.log('🎬 Presentación completada'); // Log de completado
-    setCurrentScreen('login'); // Cambia a la pantalla de login
+    console.log('🎬 [handlePresentationComplete] Presentación completada, ir a login');
+    setCurrentScreen('login'); // Ir al login real
   };
 
   // Función para manejar la navegación entre pantallas
@@ -79,18 +80,13 @@ function App() {
     setCurrentScreen(screen); // Cambia la pantalla actual
   };
 
-  // Función para regresar al home desde pantallas de configuración
-  const handleBackToHome = (): void => {
-    console.log('🏠 Regresando al home'); // Log de regreso
-    setCurrentScreen('home'); // Cambia al home
+  // Función para regresar al TableroInicial desde pantallas de configuración
+  const handleBackToTableroInicial = (): void => {
+    console.log('📊 Regresando al TableroInicial'); // Log de regreso
+    setCurrentScreen('tablero-inicial'); // Cambia al TableroInicial
   };
 
-  // Función para manejar logout
-  const handleLogout = (): void => {
-    console.log('🚪 Cerrando sesión desde App'); // Log de logout
-    logout(); // Ejecuta logout
-    setCurrentScreen('login'); // Cambia a login
-  };
+  // Función para manejar logout integrada inline donde se usa
 
   // Renderiza la pantalla actual según el estado
   const renderCurrentScreen = (): React.ReactElement => {
@@ -118,8 +114,29 @@ function App() {
         return <PresentationScreen onComplete={handlePresentationComplete} />;
 
       case 'login':
-        console.log('🔐 Renderizando pantalla de login'); // Log de renderizado
-        return <LoginScreen onLogin={login} isLoading={isLoading} />;
+        console.log('🔐 Renderizando pantalla de login directa'); // Log de renderizado
+        return (
+          <LoginScreen
+            onLogin={async (loginData) => {
+              console.log('🔐 [App] Manejando login directamente:', loginData.usuario);
+              try {
+                const success = await login(loginData);
+                if (success) {
+                  console.log('✅ [App] Login exitoso, navegando a tablero-inicial');
+                  setCurrentScreen('tablero-inicial');
+                  return true;
+                } else {
+                  console.log('❌ [App] Login falló');
+                  return false;
+                }
+              } catch (error) {
+                console.error('💥 [App] Error en login:', error);
+                return false;
+              }
+            }}
+            isLoading={isLoading}
+          />
+        );
 
       case 'home':
         if (!isAuthenticated || !user) {
@@ -132,7 +149,35 @@ function App() {
           <HomeScreen 
             user={user} 
             onNavigate={handleNavigate}
-            onLogout={handleLogout}
+          />
+        );
+
+      case 'tablero-inicial':
+        console.log('📊 [tablero-inicial] Llegando al caso tablero-inicial');
+        console.log('🔍 [tablero-inicial] Estado:', { isAuthenticated, user: user?.usuario, isLoading });
+        
+        if (!isAuthenticated || !user) {
+          console.log('❌ [tablero-inicial] Usuario no autenticado, intentando esperar...');
+          
+          // En lugar de redirigir inmediatamente, mostremos un mensaje de carga
+          return (
+            <div style={{padding: '20px', textAlign: 'center'}}>
+              <h2>🔄 Verificando autenticación...</h2>
+              <p>Usuario: {user?.usuario || 'Sin usuario'}</p>
+              <p>Autenticado: {isAuthenticated ? 'Sí' : 'No'}</p>
+              <p>Cargando: {isLoading ? 'Sí' : 'No'}</p>
+            </div>
+          );
+        }
+        console.log('📊 Renderizando tablero inicial'); // Log de renderizado
+        return (
+          <TableroInicial 
+            user={user} 
+            onNavigate={handleNavigate}
+            onLogout={() => {
+              logout();
+              setCurrentScreen('presentation');
+            }}
           />
         );
 
@@ -143,7 +188,7 @@ function App() {
           return <div></div>; // Componente vacío temporal
         }
         console.log('👥 Renderizando configuración de usuarios'); // Log de renderizado
-        return <ConfigUsuariosAny currentUser={user} onBack={handleBackToHome} />;
+        return <ConfigUsuariosAny currentUser={user} onBack={handleBackToTableroInicial} />;
 
       case 'config-negocios':
         if (!isAuthenticated || !user) {
@@ -151,8 +196,8 @@ function App() {
           setCurrentScreen('login');
           return <div></div>; // Componente vacío temporal
         }
-        console.log('🏢 Renderizando configuración de negocios'); // Log de renderizado
-        return <ConfigNegocios onBack={handleBackToHome} />;
+        console.log('🏢 Renderizando formulario de negocios'); // Log de renderizado
+        return <FormularioNegocioAny onBack={handleBackToTableroInicial} />;
 
       case 'config-roles':
         if (!isAuthenticated || !user) {
@@ -161,7 +206,7 @@ function App() {
           return <div></div>; // Componente vacío temporal
         }
         console.log('👥 Renderizando configuración de roles'); // Log de renderizado
-        return <ConfigRolesAny currentUser={user} onBack={handleBackToHome} />;
+        return <ConfigRolesAny currentUser={user} onBack={handleBackToTableroInicial} />;
 
       case 'config-clientes':
         if (!isAuthenticated || !user) {
@@ -170,7 +215,7 @@ function App() {
           return <div></div>; // Componente vacío temporal
         }
         console.log('👥 Renderizando configuración de clientes'); // Log de renderizado
-        return <ConfigClientesAny currentUser={user} onBack={handleBackToHome} />;
+        return <ConfigClientesAny currentUser={user} onBack={handleBackToTableroInicial} />;
 
       case 'config-categorias':
         if (!isAuthenticated || !user) {
@@ -233,7 +278,7 @@ function App() {
           return <div></div>; // Componente vacío temporal
         }
         console.log('🏢 Renderizando formulario de negocio completo'); // Log de renderizado
-        return <FormularioNegocioAny currentUser={user} onBack={handleBackToHome} />;
+        return <FormularioNegocioAny currentUser={user} onBack={handleBackToTableroInicial} />;
 
       default:
         console.log('❓ Pantalla desconocida, redirigiendo a presentación'); // Log de error
