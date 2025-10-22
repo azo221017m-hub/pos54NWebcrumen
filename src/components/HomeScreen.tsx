@@ -94,6 +94,13 @@ const RightNavigation: React.FC<RightNavigationProps> = ({ onNavigate }) => {
             </button>
             <button 
               className="nav-direct-button"
+              onClick={() => handleNavigate('config-mesas' as ScreenType)}
+            >
+              <span className="nav-button-icon">🍽️</span>
+              <span className="nav-button-text">Mesas</span>
+            </button>
+            <button 
+              className="nav-direct-button"
               onClick={() => handleNavigate('config-perfil' as ScreenType)}
             >
               <span className="nav-button-icon">👤</span>

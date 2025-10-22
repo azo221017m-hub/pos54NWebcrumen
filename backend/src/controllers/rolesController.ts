@@ -133,3 +133,90 @@ export const createRolController = async (req: Request, res: Response): Promise<
     } as ApiResponse);
   }
 };
+
+// Controlador para actualizar un rol existente
+export const updateRolController = async (req: Request, res: Response): Promise<void> => {
+  try {
+    console.log('👥 Actualizando rol'); // Log de inicio
+    const { id } = req.params; // ID del rol a actualizar
+    const rolData: CreateRolData = req.body; // Datos del rol
+
+    // Valida campos requeridos
+    const requiredFields = ['nombreRol', 'descripcion'];
+    const missingFields = requiredFields.filter(field => !rolData[field as keyof CreateRolData]);
+    
+    if (missingFields.length > 0) {
+      console.log('❌ Faltan campos requeridos:', missingFields);
+      res.status(400).json({
+        success: false,
+        message: `Faltan campos requeridos: ${missingFields.join(', ')}`,
+        error: 'MISSING_FIELDS'
+      } as ApiResponse);
+      return;
+    }
+
+    // Verifica si el rol existe
+    const existingRol = await executeQuery(
+      'SELECT idRol FROM tblposcrumenwebrolesdeusuario WHERE idRol = ?',
+      [id]
+    );
+
+    if (existingRol.length === 0) {
+      console.log('❌ Rol no encontrado');
+      res.status(404).json({
+        success: false,
+        message: 'Rol no encontrado',
+        error: 'ROLE_NOT_FOUND'
+      } as ApiResponse);
+      return;
+    }
+
+    // Verifica si ya existe otro rol con el mismo nombre (excluyendo el actual)
+    const duplicateRol = await executeQuery(
+      'SELECT idRol FROM tblposcrumenwebrolesdeusuario WHERE nombreRol = ? AND idRol != ?',
+      [rolData.nombreRol, id]
+    );
+
+    if (duplicateRol.length > 0) {
+      console.log('❌ Nombre de rol ya existe');
+      res.status(409).json({
+        success: false,
+        message: 'Ya existe otro rol con ese nombre',
+        error: 'ROLE_NAME_EXISTS'
+      } as ApiResponse);
+      return;
+    }
+
+    // Actualiza el rol
+    await executeQuery(`
+      UPDATE tblposcrumenwebrolesdeusuario 
+      SET nombreRol = ?, descripcion = ?, estatus = ?, fechaActualizacion = NOW(), usuario = ?
+      WHERE idRol = ?
+    `, [
+      rolData.nombreRol,
+      rolData.descripcion,
+      rolData.estatus || 1,
+      rolData.usuario || 'system',
+      id
+    ]);
+
+    console.log(`✅ Rol ${id} actualizado exitosamente`);
+    
+    res.json({
+      success: true,
+      message: 'Rol actualizado exitosamente',
+      data: { 
+        idRol: parseInt(id),
+        nombreRol: rolData.nombreRol 
+      }
+    } as ApiResponse);
+
+  } catch (error) {
+    console.error('❌ Error actualizando rol:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error actualizando rol',
+      error: 'INTERNAL_ERROR'
+    } as ApiResponse);
+  }
+};

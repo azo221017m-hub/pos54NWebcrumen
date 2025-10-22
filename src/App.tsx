@@ -19,6 +19,7 @@ import FormularioNegocio from './components/FormularioNegocio'; // Formulario co
 import ConfigProductos from './components/ConfigProductos'; // Configuración de productos
 import ConfigRecetas from './components/ConfigRecetas'; // Configuración de recetas
 import ConfigSubRecetas from './components/ConfigSubRecetas'; // Configuración de sub-recetas
+import ConfigMesas from './components/ConfigMesas'; // Configuración de mesas
 
 // Workaround: permite pasar props no tipadas al componente cuando el tipo de props
 // del componente no incluye onBack (evita error de compilación hasta ajustar tipos)
@@ -215,6 +216,15 @@ function App() {
         }
         console.log('🍴 Renderizando configuración de sub-recetas'); // Log de renderizado
         return <ConfigSubRecetas user={user} onNavigate={handleNavigate} />;
+
+      case 'config-mesas':
+        if (!isAuthenticated || !user) {
+          console.log('❌ Usuario no autenticado, redirigiendo a login'); // Log de error
+          setCurrentScreen('login');
+          return <div></div>; // Componente vacío temporal
+        }
+        console.log('🍽️ Renderizando configuración de mesas'); // Log de renderizado
+        return <ConfigMesas onNavigate={handleNavigate} currentUser={user} />;
 
       case 'formulario-negocio':
         if (!isAuthenticated || !user) {

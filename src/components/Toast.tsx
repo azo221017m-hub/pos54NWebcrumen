@@ -2,7 +2,7 @@
 // Componente de toast mejorado para notificaciones con animaciones
 
 import React, { useEffect, useState } from 'react';
-import '../styles/ToastNew.css';
+import '../styles/Toast.css';
 
 interface ToastProps {
   message: string;
@@ -19,12 +19,17 @@ const Toast: React.FC<ToastProps> = ({
   onClose,
   autoHide = true 
 }) => {
+  console.log('🍞 [Toast] Renderizando Toast con:', { message, type, duration, autoHide });
+  
   const [isVisible, setIsVisible] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 
   useEffect(() => {
+    console.log('🎬 [Toast] useEffect ejecutado');
+    
     // Activar animación de entrada
     const showTimer = setTimeout(() => {
+      console.log('👀 [Toast] Haciendo visible el toast');
       setIsVisible(true);
     }, 10);
 
@@ -43,9 +48,11 @@ const Toast: React.FC<ToastProps> = ({
   }, [duration, autoHide]);
 
   const handleClose = () => {
+    console.log('❌ [Toast] Cerrando toast');
     setIsLeaving(true);
     // Esperar que termine la animación antes de cerrar
     setTimeout(() => {
+      console.log('🚪 [Toast] Toast cerrado completamente');
       onClose();
     }, 300);
   };
@@ -78,11 +85,15 @@ const Toast: React.FC<ToastProps> = ({
     }
   };
 
+  const toastClasses = `toast toast-${type} ${isVisible && !isLeaving ? 'toast-visible' : ''}`;
+  console.log('🎨 [Toast] Clases aplicadas:', toastClasses, { isVisible, isLeaving });
+
   return (
     <div 
-      className={`toast toast-${type} ${isVisible ? 'toast-show' : ''} ${isLeaving ? 'toast-hide' : ''}`}
+      className={toastClasses}
       role="alert"
       aria-live="polite"
+      style={{ border: '2px solid red' }} // Debug border temporal
     >
       <div className="toast-content">
         <span className="toast-icon">

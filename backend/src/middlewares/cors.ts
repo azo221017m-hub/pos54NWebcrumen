@@ -4,11 +4,16 @@
 import cors from 'cors'; // Importa cors
 import type { CorsOptions } from 'cors'; // Importa tipos de cors
 
+
+
+
 // Configuración de CORS para permitir conexiones desde el frontend
 const corsOptions: CorsOptions = {
-  // Origen permitido - URL del frontend (más permisivo para desarrollo)
-  origin: [
-    'https://pos54nwebcrumen.onrender.com'
+  // Origen permitido - URL del frontend (desarrollo y producción)
+ origin: [
+    'http://localhost:5173', 
+    'https://pos54nwebcrumen.onrender.com',
+    'https://pos54nwebcrumenbackend.onrender.com'
   ],
   
   // Métodos HTTP permitidos
@@ -28,7 +33,9 @@ const corsOptions: CorsOptions = {
 const corsMiddleware = cors(corsOptions);
 
 console.log('🌐 Middleware CORS configurado para múltiples orígenes:'); // Log de configuración
-console.log('   - Server Frontend URL');
+console.log('   - localhost:5173 (desarrollo)');
+console.log('   - pos54nwebcrumen.onrender.com (frontend producción)');
+console.log('   - pos54nwebcrumenbackend.onrender.com (backend producción)');
 
 
 export default corsMiddleware;

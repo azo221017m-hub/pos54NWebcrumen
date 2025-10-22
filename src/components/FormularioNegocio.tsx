@@ -246,18 +246,7 @@ const FormularioNegocio: React.FC<FormularioNegocioProps> = ({ currentUser, onBa
                 />
               </div>
               
-              <div className="form-group">
-                <label className="form-label">Estado Cliente</label>
-                <select
-                  className="form-input"
-                  value={formData.cliente.estatus}
-                  onChange={(e) => updateClienteData('estatus', Number(e.target.value))}
-                  required
-                >
-                  <option value={1}>Activo</option>
-                  <option value={0}>Inactivo</option>
-                </select>
-              </div>
+              {/* Campo Estado Cliente oculto - se mantiene como activo por defecto */}
               
               <div className="form-group form-group-full">
                 <label className="form-label">Dirección del Cliente</label>
@@ -426,18 +415,7 @@ const FormularioNegocio: React.FC<FormularioNegocioProps> = ({ currentUser, onBa
                 />
               </div>
               
-              <div className="form-group">
-                <label className="form-label">Estado de Parámetros</label>
-                <select
-                  className="form-input"
-                  value={formData.parametros.estatus}
-                  onChange={(e) => updateParametrosData('estatus', Number(e.target.value))}
-                  required
-                >
-                  <option value={1}>Activo</option>
-                  <option value={0}>Inactivo</option>
-                </select>
-              </div>
+              {/* Campo Estado de Parámetros oculto - se mantiene como activo por defecto */}
             </div>
           </div>
         </div>

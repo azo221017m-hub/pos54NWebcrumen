@@ -6,7 +6,7 @@ import type { ApiResponse, LoginData, Usuario, Negocio, CreateUsuarioData, Creat
 // URL base de la API - se obtiene de variables de entorno o usa localhost por defecto
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
-// Clase para manejar todas las llamadas a la API
+// Clase principal del servicio API que maneja todas las llamadas a la API
 class ApiService {
   private baseURL: string; // URL base de la API
 
@@ -148,6 +148,16 @@ class ApiService {
     
     return this.request<{ idRol: number; nombreRol: string }>('/api/roles', {
       method: 'POST', // Método POST
+      body: JSON.stringify(rolData), // Datos del rol en JSON
+    });
+  }
+
+  // Método para actualizar un rol existente
+  async updateRol(idRol: number, rolData: any): Promise<ApiResponse<{ idRol: number; nombreRol: string }>> {
+    console.log('👥 Actualizando rol:', idRol, rolData.nombreRol); // Log de actualización
+    
+    return this.request<{ idRol: number; nombreRol: string }>(`/api/roles/${idRol}`, {
+      method: 'PUT', // Método PUT
       body: JSON.stringify(rolData), // Datos del rol en JSON
     });
   }
@@ -372,6 +382,56 @@ class ApiService {
       body: JSON.stringify(data), // Datos adicionales
     });
   }
+
+  // Método para obtener subrecetas
+  async getSubRecetas(): Promise<ApiResponse<any[]>> {
+    console.log('📋 Obteniendo subrecetas'); // Log de consulta
+    
+    return this.request<any[]>('/api/sub-recetas', {
+      method: 'GET', // Método GET
+    });
+  }
+
+  // Métodos para gestión de mesas
+  
+  // Método para obtener mesas
+  async getMesas(): Promise<ApiResponse<any[]>> {
+    console.log('🍽️ Obteniendo mesas'); // Log de consulta
+    
+    return this.request<any[]>('/api/mesas', {
+      method: 'GET', // Método GET
+    });
+  }
+
+  // Método para crear una nueva mesa
+  async createMesa(mesaData: any): Promise<ApiResponse<any>> {
+    console.log('🍽️ Creando nueva mesa:', mesaData); // Log de creación
+    
+    return this.request<any>('/api/mesas', {
+      method: 'POST', // Método POST
+      body: JSON.stringify(mesaData), // Datos de la mesa en JSON
+    });
+  }
+
+  // Método para actualizar una mesa
+  async updateMesa(id: number, mesaData: any): Promise<ApiResponse<any>> {
+    console.log(`🔄 Actualizando mesa ID: ${id}`, mesaData); // Log de actualización
+    
+    return this.request<any>(`/api/mesas/${id}`, {
+      method: 'PUT', // Método PUT
+      body: JSON.stringify(mesaData), // Datos actualizados en JSON
+    });
+  }
+
+  // Método para eliminar una mesa (cambiar a inactiva)
+  async deleteMesa(id: number, data: any): Promise<ApiResponse<any>> {
+    console.log(`🗑️ Eliminando mesa ID: ${id}`); // Log de eliminación
+    
+    return this.request<any>(`/api/mesas/${id}`, {
+      method: 'DELETE', // Método DELETE
+      body: JSON.stringify(data), // Datos de auditoría
+    });
+  }
 }
 
 // Crea y exporta una instancia única del servicio API
@@ -412,3 +472,12 @@ export const getInsumos = () => apiService.getInsumos();
 export const createInsumo = (insumoData: any) => apiService.createInsumo(insumoData);
 export const updateInsumo = (id: number, insumoData: any) => apiService.updateInsumo(id, insumoData);
 export const deleteInsumo = (id: number, data: any) => apiService.deleteInsumo(id, data);
+
+// Exportaciones para subrecetas
+export const getSubRecetas = () => apiService.getSubRecetas();
+
+// Exportaciones para mesas
+export const getMesas = () => apiService.getMesas();
+export const createMesa = (mesaData: any) => apiService.createMesa(mesaData);
+export const updateMesa = (id: number, mesaData: any) => apiService.updateMesa(id, mesaData);
+export const deleteMesa = (id: number, data: any) => apiService.deleteMesa(id, data);

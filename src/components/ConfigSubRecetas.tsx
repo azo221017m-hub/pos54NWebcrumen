@@ -524,7 +524,7 @@ const ConfigSubRecetas: React.FC<ConfigSubRecetasProps> = ({ user, onNavigate })
                   {/* Selector de Insumos */}
                   <InsumosSelector 
                     onInsumoSelect={handleInsumoSelect}
-                    filtroTipo="CONSUMO"
+                    filtroTipo="INSUMO"
                     label="Buscar Insumos de Consumo"
                     placeholder="Buscar insumos para agregar a la sub-receta..."
                   />

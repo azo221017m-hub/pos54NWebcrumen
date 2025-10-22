@@ -24,6 +24,8 @@ const ConfigRoles: React.FC<ConfigRolesProps> = ({ currentUser, onBack }) => {
   const [roles, setRoles] = useState<Rol[]>([]); // Lista de roles
   const [isLoading, setIsLoading] = useState<boolean>(true); // Estado de carga
   const [showForm, setShowForm] = useState<boolean>(false); // Control del formulario
+  const [isEditing, setIsEditing] = useState<boolean>(false); // Control del modo edición
+  const [editingId, setEditingId] = useState<number | null>(null); // ID del rol siendo editado
   
   // Estado para el formulario de nuevo rol
   const [formData, setFormData] = useState<CreateRolData>({
@@ -98,13 +100,7 @@ const ConfigRoles: React.FC<ConfigRolesProps> = ({ currentUser, onBack }) => {
       if (response.success) {
         showToastMessage('Rol creado exitosamente', 'success');
         setShowForm(false);
-        // Resetea el formulario
-        setFormData({
-          nombreRol: '',
-          descripcion: '',
-          estatus: 1,
-          usuario: currentUser?.usuario || 'admin'
-        });
+        resetForm();
         loadRoles(); // Recarga la lista
       } else {
         showToastMessage(response.message || 'Error creando rol', 'error');
@@ -113,6 +109,67 @@ const ConfigRoles: React.FC<ConfigRolesProps> = ({ currentUser, onBack }) => {
       console.error('❌ Error creando rol:', error);
       showToastMessage('Error de conexión', 'error');
     }
+  };
+
+  // Función para editar rol
+  const handleEditRol = async (e: React.FormEvent): Promise<void> => {
+    e.preventDefault();
+    
+    if (!editingId) return;
+    
+    try {
+      console.log(`👥 Editando rol ${editingId}...`);
+      
+      const dataToSubmit = {
+        ...formData,
+        usuario: currentUser?.usuario || 'admin'
+      };
+      
+      const response = await apiService.updateRol(editingId, dataToSubmit);
+      
+      if (response.success) {
+        showToastMessage('Rol actualizado exitosamente', 'success');
+        setShowForm(false);
+        resetForm();
+        loadRoles();
+      } else {
+        showToastMessage(response.message || 'Error actualizando rol', 'error');
+      }
+    } catch (error) {
+      console.error('❌ Error editando rol:', error);
+      showToastMessage('Error de conexión', 'error');
+    }
+  };
+
+  // Función para iniciar edición
+  const startEdit = (rol: Rol): void => {
+    setFormData({
+      nombreRol: rol.nombreRol,
+      descripcion: rol.descripcion,
+      estatus: rol.estatus,
+      usuario: currentUser?.usuario || 'admin'
+    });
+    setEditingId(rol.idRol);
+    setIsEditing(true);
+    setShowForm(true);
+  };
+
+  // Función para resetear formulario
+  const resetForm = (): void => {
+    setFormData({
+      nombreRol: '',
+      descripcion: '',
+      estatus: 1,
+      usuario: currentUser?.usuario || 'admin'
+    });
+    setIsEditing(false);
+    setEditingId(null);
+  };
+
+  // Función para cancelar edición/creación
+  const handleCancel = (): void => {
+    setShowForm(false);
+    resetForm();
   };
 
   // Renderizado del componente
@@ -148,12 +205,12 @@ const ConfigRoles: React.FC<ConfigRolesProps> = ({ currentUser, onBack }) => {
         </button>
       </div>
 
-      {/* Formulario de nuevo rol */}
+      {/* Formulario de nuevo/editar rol */}
       {showForm && (
         <div className="form-modal">
           <div className="form-card card">
-            <h2>Nuevo Rol</h2>
-            <form onSubmit={handleCreateRol}>
+            <h2>{isEditing ? 'Editar Rol' : 'Nuevo Rol'}</h2>
+            <form onSubmit={isEditing ? handleEditRol : handleCreateRol}>
               <div className="form-group">
                 <label className="form-label">Nombre del Rol</label>
                 <input
@@ -193,11 +250,11 @@ const ConfigRoles: React.FC<ConfigRolesProps> = ({ currentUser, onBack }) => {
               </div>
               
               <div className="form-actions">
-                <button type="button" className="btn-secondary" onClick={() => setShowForm(false)}>
+                <button type="button" className="btn-secondary" onClick={handleCancel}>
                   Cancelar
                 </button>
                 <button type="submit" className="btn-primary">
-                  Registrar Rol
+                  {isEditing ? 'Actualizar Rol' : 'Registrar Rol'}
                 </button>
               </div>
             </form>
@@ -217,16 +274,17 @@ const ConfigRoles: React.FC<ConfigRolesProps> = ({ currentUser, onBack }) => {
               <th>Fecha Registro</th>
               <th>Última Actualización</th>
               <th>Usuario</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={7} className="loading">Cargando roles...</td>
+                <td colSpan={8} className="loading">Cargando roles...</td>
               </tr>
             ) : roles.length === 0 ? (
               <tr>
-                <td colSpan={7} className="no-data">No hay roles registrados</td>
+                <td colSpan={8} className="no-data">No hay roles registrados</td>
               </tr>
             ) : (
               roles.map((rol) => (
@@ -242,6 +300,17 @@ const ConfigRoles: React.FC<ConfigRolesProps> = ({ currentUser, onBack }) => {
                   <td>{new Date(rol.fechaRegistro).toLocaleDateString()}</td>
                   <td>{new Date(rol.fechaActualizacion).toLocaleDateString()}</td>
                   <td>{rol.usuario}</td>
+                  <td>
+                    <div className="action-buttons">
+                      <button 
+                        className="btn-edit"
+                        onClick={() => startEdit(rol)}
+                        title="Editar rol"
+                      >
+                        ✏️
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))
             )}

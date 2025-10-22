@@ -33,6 +33,8 @@ const ConfigUsuarios: React.FC<ConfigUsuariosProps> = ({ currentUser, onBack }) 
   const [roles, setRoles] = useState<Rol[]>([]); // Lista de roles
   const [isLoading, setIsLoading] = useState<boolean>(true); // Estado de carga
   const [showForm, setShowForm] = useState<boolean>(false); // Control del formulario
+  const [isEditing, setIsEditing] = useState<boolean>(false); // Control del modo edición
+  const [editingId, setEditingId] = useState<number | null>(null); // ID del usuario siendo editado
   
   // Estado para el formulario de nuevo usuario
   const [formData, setFormData] = useState<CreateUsuarioData>({
@@ -170,6 +172,90 @@ const ConfigUsuarios: React.FC<ConfigUsuariosProps> = ({ currentUser, onBack }) 
     }
   };
 
+  // Función para editar usuario
+  const handleEditUser = async (e: React.FormEvent): Promise<void> => {
+    e.preventDefault();
+    
+    if (!editingId) return;
+    
+    try {
+      console.log(`👤 Editando usuario ${editingId}...`);
+      
+      const dataToSubmit = {
+        ...formData,
+        usuarioAuditoria: currentUser?.usuario || 'admin'
+      };
+      
+      // Si no se proporciona password, no la incluir en la actualización
+      if (!formData.password.trim()) {
+        const { password, ...dataWithoutPassword } = dataToSubmit;
+        const response = await apiService.updateUsuario(editingId, dataWithoutPassword);
+        
+        if (response.success) {
+          showToastMessage('Usuario actualizado exitosamente', 'success');
+          setShowForm(false);
+          resetForm();
+          loadUsuarios();
+        } else {
+          showToastMessage(response.message || 'Error actualizando usuario', 'error');
+        }
+      } else {
+        const response = await apiService.updateUsuario(editingId, dataToSubmit);
+        
+        if (response.success) {
+          showToastMessage('Usuario actualizado exitosamente', 'success');
+          setShowForm(false);
+          resetForm();
+          loadUsuarios();
+        } else {
+          showToastMessage(response.message || 'Error actualizando usuario', 'error');
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error editando usuario:', error);
+      showToastMessage('Error de conexión', 'error');
+    }
+  };
+
+  // Función para iniciar edición
+  const startEdit = (usuario: Usuario): void => {
+    setFormData({
+      idNegocio: usuario.idNegocio,
+      idRol: usuario.idRol,
+      nombre: usuario.nombre,
+      usuario: usuario.usuario,
+      password: '', // Dejar vacío para edición
+      email: usuario.email,
+      activo: usuario.estatus,
+      usuarioAuditoria: currentUser?.usuario || 'admin'
+    });
+    setEditingId(usuario.idUsuario);
+    setIsEditing(true);
+    setShowForm(true);
+  };
+
+  // Función para resetear formulario
+  const resetForm = (): void => {
+    setFormData({
+      idNegocio: 0,
+      idRol: 0,
+      nombre: '',
+      usuario: '',
+      password: '',
+      email: '',
+      activo: 1,
+      usuarioAuditoria: currentUser?.usuario || 'admin'
+    });
+    setIsEditing(false);
+    setEditingId(null);
+  };
+
+  // Función para cancelar edición/creación
+  const handleCancel = (): void => {
+    setShowForm(false);
+    resetForm();
+  };
+
   // Función para obtener nombre de negocio por ID
   const getNombreNegocio = (idNegocio: number): string => {
     const negocio = negocios.find(n => n.idNegocio === idNegocio);
@@ -215,12 +301,12 @@ const ConfigUsuarios: React.FC<ConfigUsuariosProps> = ({ currentUser, onBack }) 
         </button>
       </div>
 
-      {/* Formulario de nuevo usuario */}
+      {/* Formulario de nuevo/editar usuario */}
       {showForm && (
         <div className="form-modal">
           <div className="form-card card">
-            <h2>Nuevo Usuario</h2>
-            <form onSubmit={handleCreateUser}>
+            <h2>{isEditing ? 'Editar Usuario' : 'Nuevo Usuario'}</h2>
+            <form onSubmit={isEditing ? handleEditUser : handleCreateUser}>
               <div className="form-group">
                 <label className="form-label">Nombre Completo</label>
                 <input
@@ -289,13 +375,16 @@ const ConfigUsuarios: React.FC<ConfigUsuariosProps> = ({ currentUser, onBack }) 
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Contraseña</label>
+                <label className="form-label">
+                  Contraseña {isEditing && '(dejar vacío para mantener actual)'}
+                </label>
                 <input
                   type="password"
                   className="form-input"
                   value={formData.password}
                   onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  required
+                  required={!isEditing}
+                  placeholder={isEditing ? 'Dejar vacío para no cambiar' : ''}
                 />
               </div>
               
@@ -314,11 +403,11 @@ const ConfigUsuarios: React.FC<ConfigUsuariosProps> = ({ currentUser, onBack }) 
               </div>
               
               <div className="form-actions">
-                <button type="button" className="btn-secondary" onClick={() => setShowForm(false)}>
+                <button type="button" className="btn-secondary" onClick={handleCancel}>
                   Cancelar
                 </button>
                 <button type="submit" className="btn-primary">
-                  Crear Usuario
+                  {isEditing ? 'Actualizar Usuario' : 'Crear Usuario'}
                 </button>
               </div>
             </form>
@@ -339,16 +428,17 @@ const ConfigUsuarios: React.FC<ConfigUsuariosProps> = ({ currentUser, onBack }) 
               <th>Rol</th>
               <th>Estado</th>
               <th>Fecha Registro</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={8} className="loading">Cargando usuarios...</td>
+                <td colSpan={9} className="loading">Cargando usuarios...</td>
               </tr>
             ) : usuarios.length === 0 ? (
               <tr>
-                <td colSpan={8} className="no-data">No hay usuarios registrados</td>
+                <td colSpan={9} className="no-data">No hay usuarios registrados</td>
               </tr>
             ) : (
               usuarios.map((usuario) => (
@@ -365,6 +455,17 @@ const ConfigUsuarios: React.FC<ConfigUsuariosProps> = ({ currentUser, onBack }) 
                     </span>
                   </td>
                   <td>{new Date(usuario.fechaRegistro).toLocaleDateString()}</td>
+                  <td>
+                    <div className="action-buttons">
+                      <button 
+                        className="btn-edit"
+                        onClick={() => startEdit(usuario)}
+                        title="Editar usuario"
+                      >
+                        ✏️
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))
             )}

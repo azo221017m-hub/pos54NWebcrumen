@@ -95,10 +95,7 @@ const ConfigCategorias: React.FC<ConfigCategoriasProps> = ({ onNavigate, current
       return;
     }
 
-    if (!formData.usuario || !formData.usuario.trim()) {
-      mostrarToast('El usuario es obligatorio', 'error');
-      return;
-    }
+    // Usuario se toma automáticamente del currentUser, no necesita validación
 
     try {
       setSubmitting(true);
@@ -109,7 +106,7 @@ const ConfigCategorias: React.FC<ConfigCategoriasProps> = ({ onNavigate, current
         ...formData,
         nombre: formData.nombre.trim(),
         descripcion: formData.descripcion.trim(),
-        usuario: formData.usuario ? formData.usuario.trim() : ''
+        usuario: currentUser.usuario // Usar siempre el usuario actual
       };
 
       const response: ApiResponse = await createCategoria(categoriaData);
@@ -250,28 +247,7 @@ const ConfigCategorias: React.FC<ConfigCategoriasProps> = ({ onNavigate, current
                   </div>
                 </div>
 
-                <div className="form-row">
-                  {/* Campo usuario */}
-                  <div className="form-group">
-                    <label htmlFor="usuario" className="form-label">
-                      Usuario *
-                    </label>
-                    <input
-                      type="text"
-                      id="usuario"
-                      name="usuario"
-                      value={formData.usuario}
-                      onChange={handleInputChange}
-                      className="form-input"
-                      placeholder="Usuario que registra"
-                      maxLength={100}
-                      readOnly
-                      style={{ backgroundColor: '#f8f9fa', cursor: 'not-allowed' }}
-                      required
-                    />
-                    <small className="form-hint">Campo automático desde login</small>
-                  </div>
-                </div>
+                {/* Campo usuario oculto - se mantiene automáticamente con currentUser */}
               </div>
 
               {/* Botones de acción */}

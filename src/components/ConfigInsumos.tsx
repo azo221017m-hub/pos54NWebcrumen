@@ -20,13 +20,15 @@ const ConfigInsumos: React.FC<ConfigInsumosProps> = ({ onNavigate, currentUser }
   const [categorias, setCategorias] = useState<Categoria[]>([]); // Lista de categorías para dropdown
   const [loading, setLoading] = useState<boolean>(true); // Estado de carga
   const [submitting, setSubmitting] = useState<boolean>(false); // Estado de envío de formulario
+  const [, setIsEditing] = useState<boolean>(false); // Control del modo edición
+  const [, setEditingId] = useState<number | null>(null); // ID del insumo siendo editado
 
   // Estados para el formulario de nuevo insumo
   const [formData, setFormData] = useState<CreateInsumoData>({
     nomInsumo: '',
     costoPromPond: 0,
     umInsumo: '',
-    tipoInsumo: 'PIEZA',
+    tipoInsumo: 'INSUMO',
     existencia: 0,
     stockMinimo: 0,
     precioVta: 0,
@@ -39,6 +41,9 @@ const ConfigInsumos: React.FC<ConfigInsumosProps> = ({ onNavigate, currentUser }
   const [toastMessage, setToastMessage] = useState<string>('');
   const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('info');
 
+  // Estados para calculadora de precio (solo para PRODUCTO)
+  const [porcentajeUtilidad, setPorcentajeUtilidad] = useState<number>(0);
+
   // Función para mostrar notificaciones
   const mostrarToast = (message: string, type: 'success' | 'error' | 'info') => {
     setToastMessage(message);
@@ -46,6 +51,28 @@ const ConfigInsumos: React.FC<ConfigInsumosProps> = ({ onNavigate, currentUser }
     setShowToast(true);
     // Auto-ocultar después de 3 segundos
     setTimeout(() => setShowToast(false), 3000);
+  };
+
+  // Funciones para calculadora de precio de venta
+  const calcularPrecioPorUtilidad = (costo: number, utilidad: number): number => {
+    if (costo <= 0 || utilidad < 0) return 0;
+    return costo + (costo * utilidad / 100);
+  };
+
+  const calcularUtilidadPorPrecio = (costo: number, precio: number): number => {
+    if (costo <= 0 || precio <= 0) return 0;
+    return ((precio - costo) / costo) * 100;
+  };
+
+  const handleUtilidadChange = (utilidad: number): void => {
+    setPorcentajeUtilidad(utilidad);
+    const nuevoPrecio = calcularPrecioPorUtilidad(formData.costoPromPond, utilidad);
+    setFormData(prev => ({ ...prev, precioVta: Number(nuevoPrecio.toFixed(2)) }));
+  };
+
+  const handlePrecioChange = (precio: number): void => {
+    const nuevaUtilidad = calcularUtilidadPorPrecio(formData.costoPromPond, precio);
+    setPorcentajeUtilidad(Number(nuevaUtilidad.toFixed(2)));
   };
 
   // Función para cargar insumos desde la API
@@ -103,12 +130,39 @@ const ConfigInsumos: React.FC<ConfigInsumosProps> = ({ onNavigate, currentUser }
   // Función para manejar cambios en el formulario
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
+    
+    let newFormData = {
+      ...formData,
       [name]: ['costoPromPond', 'existencia', 'stockMinimo', 'precioVta', 'idCategoria'].includes(name) 
         ? Number(value) 
         : value
-    }));
+    };
+
+    // Lógica condicional para tipo de insumo
+    if (name === 'tipoInsumo') {
+      if (value === 'PRODUCTO') {
+        // Si es PRODUCTO, rellenar unidad de medida con 'pza'
+        newFormData.umInsumo = 'pza';
+      } else if (value === 'INSUMO') {
+        // Si es INSUMO, ocultar precio (rellenar con 0) y resetear categoría
+        newFormData.precioVta = 0;
+        newFormData.idCategoria = 0;
+        setPorcentajeUtilidad(0); // Resetear utilidad
+      }
+    }
+
+    // Actualizar cálculos de utilidad cuando cambia el precio o costo (solo para PRODUCTO)
+    if (formData.tipoInsumo === 'PRODUCTO') {
+      if (name === 'precioVta') {
+        handlePrecioChange(Number(value));
+      } else if (name === 'costoPromPond') {
+        // Recalcular precio manteniendo el mismo porcentaje de utilidad
+        const nuevoPrecio = calcularPrecioPorUtilidad(Number(value), porcentajeUtilidad);
+        newFormData.precioVta = Number(nuevoPrecio.toFixed(2));
+      }
+    }
+
+    setFormData(newFormData);
   };
 
   // Función para manejar envío del formulario
@@ -126,8 +180,9 @@ const ConfigInsumos: React.FC<ConfigInsumosProps> = ({ onNavigate, currentUser }
       return;
     }
 
-    if (formData.idCategoria === 0) {
-      mostrarToast('Debe seleccionar una categoría', 'error');
+    // Validar categoría solo para PRODUCTO
+    if (formData.tipoInsumo === 'PRODUCTO' && formData.idCategoria === 0) {
+      mostrarToast('Debe seleccionar una categoría para productos', 'error');
       return;
     }
 
@@ -155,11 +210,13 @@ const ConfigInsumos: React.FC<ConfigInsumosProps> = ({ onNavigate, currentUser }
       setSubmitting(true);
       console.log('Enviando nuevo insumo:', formData);
       
-      // Preparar datos con usuario automático
+      // Preparar datos con usuario automático y lógica condicional
       const insumoData: CreateInsumoData = {
         ...formData,
         nomInsumo: formData.nomInsumo.trim(),
         umInsumo: formData.umInsumo.trim(),
+        // Si es INSUMO, usar una categoría especial o 0
+        idCategoria: formData.tipoInsumo === 'INSUMO' ? 0 : formData.idCategoria,
         usuario: currentUser.usuario
       };
 
@@ -174,7 +231,7 @@ const ConfigInsumos: React.FC<ConfigInsumosProps> = ({ onNavigate, currentUser }
           nomInsumo: '',
           costoPromPond: 0,
           umInsumo: '',
-          tipoInsumo: 'PIEZA',
+          tipoInsumo: 'INSUMO',
           existencia: 0,
           stockMinimo: 0,
           precioVta: 0,
@@ -249,6 +306,29 @@ const ConfigInsumos: React.FC<ConfigInsumosProps> = ({ onNavigate, currentUser }
     }
   };
 
+  // Función para editar insumo
+
+  // Función para iniciar edición
+
+  // Función para resetear formulario
+  const resetForm = (): void => {
+    setFormData({
+      nomInsumo: '',
+      costoPromPond: 0,
+      umInsumo: '',
+      tipoInsumo: 'INSUMO',
+      existencia: 0,
+      stockMinimo: 0,
+      precioVta: 0,
+      idCategoria: 0,
+      usuario: currentUser.usuario
+    });
+    setIsEditing(false);
+    setEditingId(null);
+  };
+
+  // Función para cancelar edición/creación
+
   // Función para obtener nombre de categoría
   const obtenerNombreCategoria = (idCategoria: number): string => {
     const categoria = categorias.find(c => c.idCategoria === idCategoria);
@@ -296,25 +376,7 @@ const ConfigInsumos: React.FC<ConfigInsumosProps> = ({ onNavigate, currentUser }
                 />
               </div>
 
-              {/* Campo unidad de medida */}
-              <div className="form-group">
-                <label htmlFor="umInsumo" className="form-label">
-                  Unidad de Medida *
-                </label>
-                <input
-                  type="text"
-                  id="umInsumo"
-                  name="umInsumo"
-                  value={formData.umInsumo}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  placeholder="Ej: kg, litros, piezas, metros"
-                  maxLength={50}
-                  required
-                />
-              </div>
-
-              {/* Campo tipo de insumo */}
+              {/* Campo tipo de insumo - movido arriba */}
               <div className="form-group">
                 <label htmlFor="tipoInsumo" className="form-label">
                   Tipo de Insumo *
@@ -327,32 +389,68 @@ const ConfigInsumos: React.FC<ConfigInsumosProps> = ({ onNavigate, currentUser }
                   className="form-select"
                   required
                 >
-                  <option value="PIEZA">PIEZA</option>
-                  <option value="CONSUMO">CONSUMO</option>
+                  <option value="INSUMO">INSUMO</option>
+                  <option value="PRODUCTO">PRODUCTO</option>
                 </select>
               </div>
 
-              {/* Campo categoría */}
+              {/* Campo unidad de medida - dropdown o readonly según tipo */}
               <div className="form-group">
-                <label htmlFor="idCategoria" className="form-label">
-                  Categoría *
+                <label htmlFor="umInsumo" className="form-label">
+                  Unidad de Medida *
                 </label>
-                <select
-                  id="idCategoria"
-                  name="idCategoria"
-                  value={formData.idCategoria}
-                  onChange={handleInputChange}
-                  className="form-select"
-                  required
-                >
-                  <option value={0}>Seleccione una categoría</option>
-                  {categorias.map((categoria) => (
-                    <option key={categoria.idCategoria} value={categoria.idCategoria}>
-                      {categoria.nombre}
-                    </option>
-                  ))}
-                </select>
+                {formData.tipoInsumo === 'PRODUCTO' ? (
+                  <input
+                    type="text"
+                    id="umInsumo"
+                    name="umInsumo"
+                    value={formData.umInsumo}
+                    className="form-input"
+                    readOnly
+                    style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed' }}
+                  />
+                ) : (
+                  <select
+                    id="umInsumo"
+                    name="umInsumo"
+                    value={formData.umInsumo}
+                    onChange={handleInputChange}
+                    className="form-select"
+                    required
+                  >
+                    <option value="">Seleccione unidad</option>
+                    <option value="Kg">Kg</option>
+                    <option value="Lt">Lt</option>
+                    <option value="ml">ml</option>
+                    <option value="gr">gr</option>
+                    <option value="pza">pza</option>
+                  </select>
+                )}
               </div>
+
+              {/* Campo categoría - solo visible para PRODUCTO */}
+              {formData.tipoInsumo === 'PRODUCTO' && (
+                <div className="form-group">
+                  <label htmlFor="idCategoria" className="form-label">
+                    Categoría *
+                  </label>
+                  <select
+                    id="idCategoria"
+                    name="idCategoria"
+                    value={formData.idCategoria}
+                    onChange={handleInputChange}
+                    className="form-select"
+                    required
+                  >
+                    <option value={0}>Seleccione una categoría</option>
+                    {categorias.map((categoria) => (
+                      <option key={categoria.idCategoria} value={categoria.idCategoria}>
+                        {categoria.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Campo costo promedio ponderado */}
               <div className="form-group">
@@ -408,23 +506,62 @@ const ConfigInsumos: React.FC<ConfigInsumosProps> = ({ onNavigate, currentUser }
                 />
               </div>
 
-              {/* Campo precio de venta */}
-              <div className="form-group">
-                <label htmlFor="precioVta" className="form-label">
-                  Precio de Venta
-                </label>
-                <input
-                  type="number"
-                  id="precioVta"
-                  name="precioVta"
-                  value={formData.precioVta}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  placeholder="0.00"
-                  min="0"
-                  step="0.01"
-                />
-              </div>
+              {/* Campo precio de venta - Solo visible para PRODUCTO */}
+              {formData.tipoInsumo === 'PRODUCTO' && (
+                <>
+                  <div className="form-group">
+                    <label htmlFor="precioVta" className="form-label">
+                      Precio de Venta
+                    </label>
+                    <input
+                      type="number"
+                      id="precioVta"
+                      name="precioVta"
+                      value={formData.precioVta}
+                      onChange={handleInputChange}
+                      className="form-input"
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+
+                  {/* Calculadora de utilidad */}
+                  <div className="form-group calculadora-utilidad">
+                    <label className="form-label">💰 Calculadora de Utilidad</label>
+                    <div className="utilidad-calculator">
+                      <div className="calc-row">
+                        <label htmlFor="porcentajeUtilidad" className="calc-label">% Utilidad:</label>
+                        <input
+                          type="number"
+                          id="porcentajeUtilidad"
+                          value={porcentajeUtilidad}
+                          onChange={(e) => handleUtilidadChange(Number(e.target.value))}
+                          className="calc-input"
+                          placeholder="0"
+                          min="0"
+                          step="0.1"
+                        />
+                        <span className="calc-unit">%</span>
+                      </div>
+                      <div className="calc-info">
+                        <div className="calc-detail">
+                          <span className="calc-detail-label">Costo:</span>
+                          <span className="calc-detail-value">${formData.costoPromPond.toFixed(2)}</span>
+                        </div>
+                        <div className="calc-detail">
+                          <span className="calc-detail-label">Precio:</span>
+                          <span className="calc-detail-value">${formData.precioVta.toFixed(2)}</span>
+                        </div>
+                        <div className="calc-detail">
+                          <span className="calc-detail-label">Ganancia:</span>
+                          <span className="calc-detail-value">${(formData.precioVta - formData.costoPromPond).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Campo usuario - oculto porque se llena automáticamente */}
             </div>
@@ -437,6 +574,14 @@ const ConfigInsumos: React.FC<ConfigInsumosProps> = ({ onNavigate, currentUser }
                 disabled={submitting}
               >
                 {submitting ? 'Guardando...' : 'Guardar Insumo'}
+              </button>
+              <button
+                type="button"
+                className="btn-secondary btn-cancel"
+                onClick={resetForm}
+                disabled={submitting}
+              >
+                Cancelar
               </button>
             </div>
           </form>

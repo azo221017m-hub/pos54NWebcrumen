@@ -10,31 +10,31 @@
 
 /* Configuración del elemento raíz */
 :root {
-  /* ===== PALETA TEAL CORPORATE - BASADA EN CRUMEN BRAND ===== */
+  /* ===== PALETA GRIS MODERNA - TONOS CORPORATIVOS ===== */
   
-  /* Colores primarios - Verde azulado corporativo */
-  --primary-50: #f0fdfa;    /* Teal muy claro */
-  --primary-100: #ccfbf1;   /* Teal claro */
-  --primary-200: #99f6e4;   /* Teal medio claro */
-  --primary-300: #5eead4;   /* Teal medio */
-  --primary-400: #2dd4bf;   /* Teal medio-intenso */
-  --primary-500: #14b8a6;   /* Teal principal */
-  --primary-600: #0d9488;   /* Teal intenso (base seleccionada) */
-  --primary-700: #0f766e;   /* Teal oscuro */
-  --primary-800: #115e59;   /* Teal muy oscuro */
-  --primary-900: #134e4a;   /* Teal corporativo profundo */
+  /* Colores primarios - Escala de grises moderno */
+  --primary-50: #f8fafc;    /* Gris muy claro */
+  --primary-100: #f1f5f9;   /* Gris claro */
+  --primary-200: #e2e8f0;   /* Gris medio claro */
+  --primary-300: #cbd5e1;   /* Gris medio */
+  --primary-400: #94a3b8;   /* Gris medio-intenso */
+  --primary-500: #64748b;   /* Gris principal */
+  --primary-600: #475569;   /* Gris intenso (base seleccionada) */
+  --primary-700: #334155;   /* Gris oscuro */
+  --primary-800: #1e293b;   /* Gris muy oscuro */
+  --primary-900: #0f172a;   /* Gris corporativo profundo */
   
-  /* Colores secundarios - Slate complementario */
-  --secondary-50: #f8fafc;  /* Slate muy claro */
-  --secondary-100: #f1f5f9; /* Slate claro */
-  --secondary-200: #e2e8f0; /* Slate medio claro */
-  --secondary-300: #cbd5e1; /* Slate medio */
-  --secondary-400: #94a3b8; /* Slate medio-intenso */
-  --secondary-500: #64748b; /* Slate principal */
-  --secondary-600: #475569; /* Slate intenso */
-  --secondary-700: #334155; /* Slate oscuro */
-  --secondary-800: #1e293b; /* Slate muy oscuro */
-  --secondary-900: #0f172a; /* Slate profundo */
+  /* Colores secundarios - Gris neutro complementario */
+  --secondary-50: #fafafa;  /* Gris neutro muy claro */
+  --secondary-100: #f4f4f5; /* Gris neutro claro */
+  --secondary-200: #e4e4e7; /* Gris neutro medio claro */
+  --secondary-300: #d4d4d8; /* Gris neutro medio */
+  --secondary-400: #a1a1aa; /* Gris neutro medio-intenso */
+  --secondary-500: #71717a; /* Gris neutro principal */
+  --secondary-600: #52525b; /* Gris neutro intenso */
+  --secondary-700: #3f3f46; /* Gris neutro oscuro */
+  --secondary-800: #27272a; /* Gris neutro muy oscuro */
+  --secondary-900: #18181b; /* Gris neutro profundo */
   
   /* Colores de acento - Verde éxito y Naranja advertencia */
   --success-500: #10b981;   /* Verde éxito */
@@ -57,15 +57,20 @@
   --gray-900: #0f172a;      /* Negro azulado */
   
   /* ===== COLORES SEMÁNTICOS ===== */
-  --bg-primary: var(--primary-50);   /* Fondo principal - teal muy claro */
-  --bg-secondary: var(--primary-100); /* Fondo secundario - teal claro */
+  --bg-primary: var(--primary-50);   /* Fondo principal - gris muy claro */
+  --bg-secondary: var(--primary-100); /* Fondo secundario - gris claro */
   --bg-surface: #ffffff;             /* Superficie blanca */
-  --bg-overlay: rgba(19, 78, 74, 0.8); /* Overlay teal oscuro */
+  --bg-overlay: rgba(15, 23, 42, 0.8); /* Overlay gris oscuro */
   
-  --text-primary: var(--primary-900); /* Texto principal - teal muy oscuro */
-  --text-secondary: var(--primary-700); /* Texto secundario - teal oscuro */
-  --text-muted: var(--primary-600);   /* Texto suave - teal base */
+  --text-primary: var(--primary-900); /* Texto principal - gris muy oscuro */
+  --text-secondary: var(--primary-700); /* Texto secundario - gris oscuro */
+  --text-muted: var(--primary-600);   /* Texto suave - gris base */
   --text-inverse: #ffffff;           /* Texto sobre fondos oscuros */
+  
+  --border-color: var(--primary-200);     /* Borde principal - gris claro */
+  --border-color-light: var(--primary-100); /* Borde muy claro */
+  --border-color-dark: var(--primary-300);  /* Borde más oscuro */
+  --primary-color: var(--primary-500);      /* Color primario principal */
   
   /* ===== SISTEMA DE SOMBRAS PREMIUM ===== */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -77,8 +82,8 @@
   --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
   
   /* Sombras coloridas para elementos interactivos */
-  --shadow-primary: 0 10px 15px -3px rgba(13, 148, 136, 0.1), 0 4px 6px -2px rgba(13, 148, 136, 0.05);
-  --shadow-secondary: 0 10px 15px -3px rgba(168, 85, 247, 0.1), 0 4px 6px -2px rgba(168, 85, 247, 0.05);
+  --shadow-primary: 0 10px 15px -3px rgba(71, 85, 105, 0.1), 0 4px 6px -2px rgba(71, 85, 105, 0.05);
+  --shadow-secondary: 0 10px 15px -3px rgba(82, 82, 91, 0.1), 0 4px 6px -2px rgba(82, 82, 91, 0.05);
   
   /* ===== BORDER RADIUS SYSTEM ===== */
   --radius-xs: 2px;

@@ -163,7 +163,7 @@ export interface Insumo {
   nomInsumo: string; // Nombre del insumo
   costoPromPond: number; // Costo promedio ponderado
   umInsumo: string; // Unidad de medida del insumo
-  tipoInsumo: 'PIEZA' | 'CONSUMO'; // Tipo de insumo
+  tipoInsumo: 'INSUMO' | 'PRODUCTO'; // Tipo de insumo
   existencia: number; // Existencia disponible
   stockMinimo: number; // Stock mínimo
   precioVta: number; // Precio de venta
@@ -178,10 +178,44 @@ export interface CreateInsumoData {
   nomInsumo: string; // Nombre del insumo
   costoPromPond: number; // Costo promedio ponderado
   umInsumo: string; // Unidad de medida del insumo
-  tipoInsumo: 'PIEZA' | 'CONSUMO'; // Tipo de insumo (según requerimiento)
+  tipoInsumo: 'INSUMO' | 'PRODUCTO'; // Tipo de insumo (según requerimiento)
   existencia: number; // Existencia inicial
   stockMinimo: number; // Stock mínimo
   precioVta: number; // Precio de venta
   idCategoria: number; // ID de la categoría
   usuario?: string; // Usuario que crea el registro (opcional, se llenará automáticamente)
+}
+
+// Tipo para datos de mesa en la base de datos
+export interface Mesa {
+  idmesa: number; // ID único de la mesa
+  nombremesa: string; // Nombre de la mesa
+  numeromesa: number; // Número de la mesa
+  cantcomensales: number; // Cantidad de comensales
+  estatusmesa: 'DISPONIBLE' | 'OCUPADA' | 'RESERVADA' | 'INACTIVA'; // Estado de la mesa
+  tiempodeinicio?: Date; // Tiempo de inicio de ocupación
+  tiempoactual?: Date; // Tiempo actual de ocupación
+  estatustiempo?: 'EN_CURSO' | 'FINALIZADO' | 'PENDIENTE'; // Estado del tiempo
+  creado_en?: Date; // Fecha de creación
+  actualizado_en?: Date; // Fecha de actualización
+  creado_por?: string; // Usuario que creó la mesa
+  actualizado_por?: string; // Usuario que actualizó la mesa
+}
+
+// Tipo para crear una nueva mesa
+export interface CreateMesaData {
+  nombremesa: string; // Nombre de la mesa
+  numeromesa: number; // Número de la mesa
+  cantcomensales: number; // Cantidad de comensales
+  estatusmesa: 'DISPONIBLE' | 'OCUPADA' | 'RESERVADA' | 'INACTIVA'; // Estado de la mesa
+  creado_por: string; // Usuario que crea la mesa
+}
+
+// Tipo para actualizar una mesa
+export interface UpdateMesaData {
+  nombremesa?: string; // Nombre de la mesa (opcional)
+  numeromesa?: number; // Número de la mesa (opcional)
+  cantcomensales?: number; // Cantidad de comensales (opcional)
+  estatusmesa?: 'DISPONIBLE' | 'OCUPADA' | 'RESERVADA' | 'INACTIVA'; // Estado de la mesa (opcional)
+  actualizado_por: string; // Usuario que actualiza la mesa
 }

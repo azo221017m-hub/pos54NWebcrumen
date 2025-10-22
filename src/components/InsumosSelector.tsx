@@ -12,7 +12,7 @@ interface InsumoSelectorItem extends Omit<Insumo, 'existencia'> {
 
 interface InsumosSelectorProps {
   onInsumoSelect: (insumo: InsumoSelectorItem) => void;
-  filtroTipo?: 'CONSUMO' | 'PIEZA' | 'ALL';
+  filtroTipo?: 'INSUMO' | 'PRODUCTO' | 'ALL';
   className?: string;
   placeholder?: string;
   label?: string;
@@ -23,7 +23,7 @@ interface InsumosSelectorProps {
 // Componente InsumosSelector
 const InsumosSelector: React.FC<InsumosSelectorProps> = ({
   onInsumoSelect,
-  filtroTipo = 'CONSUMO',
+  filtroTipo = 'INSUMO',
   className = '',
   placeholder = 'Buscar insumos...',
   label = 'Buscar Insumos',

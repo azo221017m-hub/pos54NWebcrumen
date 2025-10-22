@@ -5,6 +5,30 @@ import { Request, Response } from 'express';
 import { executeQuery } from '../config/database';
 import { Insumo, CreateInsumoData } from '../types';
 
+// Función auxiliar para mapear tipos de interfaz a valores de BD
+const mapearTipoInsumo = (tipo: string): string => {
+  switch (tipo) {
+    case 'INSUMO':
+      return 'CONSUMO'; // INSUMO se mapea a CONSUMO en BD
+    case 'PRODUCTO':
+      return 'PIEZA';   // PRODUCTO se mapea a PIEZA en BD
+    default:
+      return tipo;
+  }
+};
+
+// Función auxiliar para mapear valores de BD a tipos de interfaz
+const desmapearTipoInsumo = (tipo: string): string => {
+  switch (tipo) {
+    case 'CONSUMO':
+      return 'INSUMO';  // CONSUMO de BD se muestra como INSUMO
+    case 'PIEZA':
+      return 'PRODUCTO'; // PIEZA de BD se muestra como PRODUCTO
+    default:
+      return tipo;
+  }
+};
+
 // Controlador para obtener todos los insumos
 export const getInsumosController = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -34,10 +58,16 @@ export const getInsumosController = async (req: Request, res: Response): Promise
     const insumos = await executeQuery(query);
     console.log(`✅ ${insumos.length} insumos encontrados`);
 
+    // Mapear tipos de BD a tipos de interfaz
+    const insumosMapeados = insumos.map((insumo: any) => ({
+      ...insumo,
+      tipoInsumo: desmapearTipoInsumo(insumo.tipoInsumo)
+    }));
+
     res.status(200).json({
       success: true,
       message: `${insumos.length} insumos encontrados`,
-      data: insumos
+      data: insumosMapeados
     });
 
   } catch (error) {
@@ -74,10 +104,10 @@ export const createInsumoController = async (req: Request, res: Response): Promi
       return;
     }
 
-    if (!insumoData.tipoInsumo || !['PIEZA', 'CONSUMO'].includes(insumoData.tipoInsumo)) {
+    if (!insumoData.tipoInsumo || !['INSUMO', 'PRODUCTO'].includes(insumoData.tipoInsumo)) {
       res.status(400).json({
         success: false,
-        message: 'El tipo de insumo debe ser PIEZA o CONSUMO'
+        message: 'El tipo de insumo debe ser INSUMO o PRODUCTO'
       });
       return;
     }
@@ -173,7 +203,7 @@ export const createInsumoController = async (req: Request, res: Response): Promi
       insumoData.nomInsumo.trim(),
       Number(insumoData.costoPromPond),
       insumoData.umInsumo.trim(),
-      insumoData.tipoInsumo,
+      mapearTipoInsumo(insumoData.tipoInsumo), // Usar valor mapeado
       Number(insumoData.existencia),
       Number(insumoData.stockMinimo),
       Number(insumoData.precioVta),
@@ -185,6 +215,7 @@ export const createInsumoController = async (req: Request, res: Response): Promi
 
     console.log('🔍 Ejecutando query:', query);
     console.log('📝 Parámetros:', params);
+    console.log('🔄 Mapeo de tipo:', `${insumoData.tipoInsumo} → ${mapearTipoInsumo(insumoData.tipoInsumo)}`);
 
     const result = await executeQuery(query, params);
     console.log('✅ Insumo creado exitosamente. ID:', result.insertId);
@@ -278,15 +309,15 @@ export const updateInsumoController = async (req: Request, res: Response): Promi
     }
 
     if (insumoData.tipoInsumo !== undefined) {
-      if (!['PIEZA', 'CONSUMO'].includes(insumoData.tipoInsumo)) {
+      if (!['INSUMO', 'PRODUCTO'].includes(insumoData.tipoInsumo)) {
         res.status(400).json({
           success: false,
-          message: 'El tipo de insumo debe ser PIEZA o CONSUMO'
+          message: 'El tipo de insumo debe ser INSUMO o PRODUCTO'
         });
         return;
       }
       updateFields.push('tipoInsumo = ?');
-      updateValues.push(insumoData.tipoInsumo);
+      updateValues.push(mapearTipoInsumo(insumoData.tipoInsumo)); // Usar valor mapeado
     }
 
     if (insumoData.existencia !== undefined) {

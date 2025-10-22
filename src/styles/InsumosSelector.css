@@ -4,7 +4,7 @@
 /* Variables específicas del selector */
 :root {
   --selector-primary: #316414;
-  --selector-primary-hover: #1d4ed8;
+  --selector-primary-hover: #334155;
   --selector-secondary: #1b221b;
   --selector-bg-primary: hsla(103, 65%, 35%, 0.479);
   --selector-bg-secondary: rgba(39, 117, 15, 0.527);

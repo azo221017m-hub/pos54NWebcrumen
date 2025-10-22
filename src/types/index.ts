@@ -174,6 +174,7 @@ export type ScreenType =
   | 'config-productos' // Configuración de productos
   | 'config-recetas' // Configuración de recetas
   | 'config-sub-recetas' // Configuración de sub-recetas
+  | 'config-mesas' // Configuración de mesas
   | 'config-perfil' // Configuración de perfil
   | 'config-recibos' // Configuración de recibos
   | 'iniciar-venta' // Iniciar nueva venta
@@ -246,7 +247,7 @@ export interface Insumo {
   nomInsumo: string; // Nombre del insumo
   costoPromPond: string | number; // Costo promedio ponderado (decimal de MySQL)
   umInsumo: string; // Unidad de medida del insumo
-  tipoInsumo: 'PIEZA' | 'CONSUMO'; // Tipo de insumo
+  tipoInsumo: 'INSUMO' | 'PRODUCTO'; // Tipo de insumo
   existencia: string | number; // Existencia disponible (decimal de MySQL)
   stockMinimo: string | number; // Stock mínimo (decimal de MySQL)
   precioVta: string | number; // Precio de venta (decimal de MySQL)
@@ -261,7 +262,7 @@ export interface CreateInsumoData {
   nomInsumo: string; // Nombre del insumo
   costoPromPond: number; // Costo promedio ponderado
   umInsumo: string; // Unidad de medida del insumo
-  tipoInsumo: 'PIEZA' | 'CONSUMO'; // Tipo de insumo (según requerimiento)
+  tipoInsumo: 'INSUMO' | 'PRODUCTO'; // Tipo de insumo (según requerimiento)
   existencia: number; // Existencia inicial
   stockMinimo: number; // Stock mínimo
   precioVta: number; // Precio de venta
@@ -290,4 +291,38 @@ export interface Pedido {
   horaPedido: string; // Hora específica del pedido
   mesa?: string; // Mesa asignada (opcional)
   observaciones?: string; // Observaciones especiales (opcional)
+}
+
+// Tipo para datos de mesa
+export interface Mesa {
+  idmesa: number; // ID único de la mesa
+  nombremesa: string; // Nombre de la mesa
+  numeromesa: number; // Número de la mesa
+  cantcomensales: number; // Cantidad de comensales
+  estatusmesa: 'DISPONIBLE' | 'OCUPADA' | 'RESERVADA' | 'INACTIVA'; // Estado de la mesa
+  tiempodeinicio?: string; // Tiempo de inicio de ocupación
+  tiempoactual?: string; // Tiempo actual de ocupación
+  estatustiempo?: 'EN_CURSO' | 'FINALIZADO' | 'PENDIENTE'; // Estado del tiempo
+  creado_en?: string; // Fecha de creación
+  actualizado_en?: string; // Fecha de actualización
+  creado_por?: string; // Usuario que creó la mesa
+  actualizado_por?: string; // Usuario que actualizó la mesa
+}
+
+// Tipo para crear una nueva mesa
+export interface CreateMesaData {
+  nombremesa: string; // Nombre de la mesa
+  numeromesa: number; // Número de la mesa
+  cantcomensales: number; // Cantidad de comensales
+  estatusmesa: 'DISPONIBLE' | 'OCUPADA' | 'RESERVADA' | 'INACTIVA'; // Estado de la mesa
+  creado_por: string; // Usuario que crea la mesa
+}
+
+// Tipo para actualizar una mesa
+export interface UpdateMesaData {
+  nombremesa?: string; // Nombre de la mesa (opcional)
+  numeromesa?: number; // Número de la mesa (opcional)
+  cantcomensales?: number; // Cantidad de comensales (opcional)
+  estatusmesa?: 'DISPONIBLE' | 'OCUPADA' | 'RESERVADA' | 'INACTIVA'; // Estado de la mesa (opcional)
+  actualizado_por: string; // Usuario que actualiza la mesa
 }
