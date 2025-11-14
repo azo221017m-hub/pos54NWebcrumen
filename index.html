@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>POSWEBCrumen</title>
+    <!-- Previene interferencia de extensiones -->
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval'; object-src 'none';" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Bloquea scripts de extensiones que interfieren con Firebase -->
+    <script>
+      // Bloquea intentos de Firebase desde extensiones
+      if (window.firebase) delete window.firebase;
+      if (window.gapi) delete window.gapi;
+    </script>
+  </body>
+</html>

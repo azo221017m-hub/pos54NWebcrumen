@@ -1,0 +1,159 @@
+/* Mini card grid for moderadores */
+.mini-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.mini-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 1.2rem 1.3rem 1rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  transition: box-shadow 0.2s;
+  border: 1px solid #f0f0f0;
+}
+.mini-card:hover {
+  box-shadow: 0 4px 18px rgba(44,62,80,0.13);
+  border-color: #e0e0e0;
+}
+.mini-card-title {
+  font-size: 1.18rem;
+  font-weight: 600;
+  color: #2e7d32;
+  margin-bottom: 0.5rem;
+}
+.mini-card-meta {
+  font-size: 0.97rem;
+  color: #666;
+  margin-bottom: 0.3rem;
+}
+.mini-card-actions {
+  margin-top: 0.7rem;
+  display: flex;
+  gap: 0.7rem;
+}
+.mini-card-btn {
+  background: #e0e0e0;
+  border: none;
+  border-radius: 50%;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: #333;
+  transition: background 0.2s, color 0.2s;
+}
+.mini-card-btn:hover {
+  background: #2e7d32;
+  color: #fff;
+}
+/* ===== CONFIG MODERADORES STYLES ===== */
+.config-screen {
+  padding: 2rem;
+}
+.steps-indicator {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  align-items: center;
+}
+.active-step {
+  color: #2e7d32;
+  font-weight: bold;
+  border-bottom: 2px solid #2e7d32;
+}
+.step-content {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+input[type="text"] {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+.save-btn {
+  background: #2e7d32;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 1rem;
+}
+.save-btn:hover {
+  background: #1b5e20;
+}
+.form-msg {
+  margin-top: 0.5rem;
+  color: #e53935;
+  font-weight: 500;
+}
+.grid-moderadores {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.listbox-container {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+}
+.listbox {
+  background: #f3f3f3;
+  border-radius: 10px;
+  min-width: 180px;
+  min-height: 180px;
+  padding: 0.5rem;
+  list-style: none;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+.listbox li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.7rem;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 1rem;
+}
+.listbox li:last-child {
+  border-bottom: none;
+}
+.listbox button {
+  background: #e0e0e0;
+  border: none;
+  border-radius: 50%;
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  font-size: 1.1rem;
+  margin-left: 0.5rem;
+  transition: background 0.2s;
+}
+.listbox button:hover {
+  background: #bdbdbd;
+}
+.back-btn {
+  background: #e53935;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: background 0.2s;
+}
+.back-btn:hover {
+  background: #b71c1c;
+}

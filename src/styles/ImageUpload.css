@@ -1,0 +1,116 @@
+/* Estilos para subida y preview de imágenes */
+.image-upload-container {
+  position: relative;
+  width: 100%;
+}
+
+.image-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.image-upload-label {
+  display: block;
+  width: 100%;
+  min-height: 80px;
+  border: 2px dashed var(--border-color);
+  border-radius: var(--border-radius-lg);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  background: var(--bg-secondary);
+}
+
+.image-upload-label:hover {
+  border-color: var(--primary-color);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.upload-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.upload-placeholder span:not(.upload-icon) {
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.upload-placeholder small {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Preview de imagen de 35px */
+.image-preview {
+  width: 35px;
+  height: 35px;
+  object-fit: cover;
+  border-radius: var(--border-radius-md);
+  border: 2px solid var(--primary-color);
+  display: block;
+  margin: 1rem auto;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Preview expandido para cuando hay imagen */
+.image-preview-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-md);
+}
+
+.image-preview-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.image-preview-info .preview-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.image-preview-info .change-text {
+  font-size: 0.75rem;
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+/* Estilo para mostrar imagen en modo edición */
+.product-image-display {
+  width: 35px;
+  height: 35px;
+  object-fit: cover;
+  border-radius: var(--border-radius-md);
+  border: 2px solid var(--primary-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.image-loading {
+  width: 35px;
+  height: 35px;
+  border-radius: var(--border-radius-md);
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}

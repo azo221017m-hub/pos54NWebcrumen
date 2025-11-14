@@ -1,0 +1,357 @@
+/* Presentation Screen - Corporate Tech Design */
+
+/* Contenedor principal de la pantalla de presentación */
+.presentation-screen {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--primary-900) 0%, var(--primary-700) 35%, var(--secondary-700) 65%, var(--secondary-900) 100%);
+}
+
+/* Efectos de fondo animados */
+.presentation-screen::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(168, 85, 247, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(34, 197, 94, 0.05) 0%, transparent 50%);
+  animation: rotatingBackground 30s linear infinite;
+  z-index: 1;
+}
+
+/* Patrones geométricos flotantes */
+.presentation-screen::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.02) 50%, transparent 70%),
+    linear-gradient(-45deg, transparent 30%, rgba(255, 255, 255, 0.02) 50%, transparent 70%);
+  background-size: 100px 100px;
+  animation: geometricPattern 20s linear infinite;
+  z-index: 1;
+}
+
+/* Contenedor del contenido de la presentación */
+.presentation-content {
+  text-align: center;
+  width: 100vw;
+  height: 100vh;
+  padding: 0;
+  z-index: 2;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Contenedor del logotipo con efectos premium */
+.logo-container {
+  margin-bottom: 4rem;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  transform: scale(1.1);
+}
+
+/* Logo SVG con animaciones */
+.presentation-logo {
+  width: 180px;
+  height: 180px;
+  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
+  animation: logoFloat 4s ease-in-out infinite;
+  transition: transform 0.3s ease;
+}
+
+/* Círculo del logotipo con glassmorphism */
+.logo-circle {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: logoFloat 4s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+/* Efecto de brillo interno en el logo */
+.logo-circle::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    transparent, 
+    rgba(255, 255, 255, 0.1), 
+    transparent, 
+    rgba(255, 255, 255, 0.1), 
+    transparent
+  );
+  animation: logoRotation 8s linear infinite;
+}
+
+/* Texto principal del logotipo */
+.logo-text {
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: 3px;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+  position: relative;
+}
+
+/* Subtexto del logotipo */
+.logo-subtext {
+  font-size: 1.2rem;
+  font-weight: 400;
+  letter-spacing: 2px;
+  opacity: 0.85;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+  position: relative;
+}
+
+/* Contenedor de las frases - ocupa todo el espacio disponible */
+.phrases-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4rem;
+  position: relative;
+  min-height: 120px;
+}
+
+/* Estilos para las frases */
+.phrase {
+  font-size: 2rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  position: absolute;
+  width: 100%;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+/* Animación de aparición de frase */
+.phrase.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Animación de desaparición de frase */
+.phrase.fade-out {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+/* Contenedor del indicador de progreso */
+.progress-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 3rem;
+}
+
+/* Contenedor de los puntos de progreso */
+.progress-dots {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: var(--border-radius-xl);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Estilos para cada punto de progreso */
+.progress-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+}
+
+/* Efecto hover en los puntos */
+.progress-dot:hover {
+  background: rgba(255, 255, 255, 0.5);
+  transform: scale(1.1);
+}
+
+/* Punto de progreso activo */
+.progress-dot.active {
+  background: rgba(255, 255, 255, 0.9);
+  transform: scale(1.3);
+  box-shadow: 
+    0 0 20px rgba(255, 255, 255, 0.5),
+    0 0 40px rgba(255, 255, 255, 0.3);
+}
+
+/* Efecto de pulso en el punto activo */
+.progress-dot.active::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+/* Animaciones */
+@keyframes rotatingBackground {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(0, 0) rotate(360deg); }
+}
+
+@keyframes geometricPattern {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+
+@keyframes logoFloat {
+  0%, 100% { 
+    transform: translateY(0px) scale(1);
+    box-shadow: 
+      0 20px 40px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  }
+  50% { 
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 
+      0 30px 60px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  }
+}
+
+@keyframes logoRotation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.1; transform: scale(1.5); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .presentation-content {
+    padding: 2rem 1rem;
+    max-width: 95%;
+  }
+  
+  .logo-circle {
+    width: 140px;
+    height: 140px;
+  }
+  
+  .logo-text {
+    font-size: 2rem;
+    letter-spacing: 2px;
+  }
+  
+  .logo-subtext {
+    font-size: 0.875rem;
+    letter-spacing: 1px;
+  }
+  
+  .phrase {
+    font-size: 1.4rem;
+  }
+  
+  .phrases-container {
+    height: 80px;
+    margin-bottom: 2rem;
+  }
+  
+  .progress-dots {
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+  }
+  
+  .progress-dot {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .presentation-screen {
+    padding: 1rem;
+  }
+  
+  .presentation-content {
+    padding: 2rem 1rem;
+    max-width: calc(100vw - 2rem);
+  }
+  
+  .logo-container {
+    transform: scale(0.9);
+    margin-bottom: 3rem;
+  }
+  
+  .logo-circle {
+    width: 160px;
+    height: 160px;
+  }
+  
+  .logo-text {
+    font-size: 2.2rem;
+    letter-spacing: 1px;
+  }
+  
+  .logo-subtext {
+    font-size: 1rem;
+  }
+  
+  .phrase {
+    font-size: 1.6rem;
+  }
+  
+  .phrases-container {
+    height: 100px;
+    margin-bottom: 3rem;
+  }
+}

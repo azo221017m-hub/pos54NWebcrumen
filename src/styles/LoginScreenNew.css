@@ -1,0 +1,456 @@
+/* LoginScreen.css - Diseño mejorado con tema VSCode */
+
+/* Variables CSS para tema teal corporativo */
+:root {
+  --vscode-bg-primary: #134e4a;
+  --vscode-bg-secondary: #115e59;
+  --vscode-bg-tertiary: #0f766e;
+  --vscode-accent: #14b8a6;
+  --vscode-accent-hover: #0d9488;
+  --vscode-accent-light: #2dd4bf;
+  --vscode-secondary: #5eead4;
+  --vscode-secondary-hover: #2dd4bf;
+  --vscode-text-primary: #f0fdfa;
+  --vscode-text-secondary: #ccfbf1;
+  --vscode-text-muted: #99f6e4;
+  --vscode-border: #0f766e;
+  --vscode-error: #dc2626;
+  --vscode-success: #059669;
+  --vscode-warning: #d97706;
+  --vscode-shadow: 0 8px 32px rgba(19, 78, 74, 0.3);
+  --vscode-radius: 8px;
+  --vscode-transition: all 0.3s ease;
+}
+
+/* Reset y configuración base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Contenedor principal del login */
+.login-screen {
+  height: 100vh !important;
+  width: 100vw !important;
+  display: grid !important;
+  place-items: center !important;
+  background: linear-gradient(135deg, 
+    var(--vscode-bg-primary) 0%,
+    var(--vscode-bg-secondary) 50%,
+    var(--vscode-bg-tertiary) 100%) !important;
+  font-family: 'Segoe UI', Consolas, 'Courier New', monospace;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  overflow: hidden !important;
+  padding: 2rem;
+  z-index: 9999 !important;
+  margin: 0 !important;
+}
+
+/* Fondo animado */
+.login-screen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(0, 122, 204, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(78, 201, 176, 0.1) 0%, transparent 50%);
+  animation: backgroundMove 20s ease-in-out infinite alternate;
+}
+
+/* Container principal */
+.login-container {
+  background: var(--vscode-bg-secondary);
+  border: 1px solid var(--vscode-border);
+  border-radius: 12px;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  padding: 3rem 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  z-index: 10;
+  backdrop-filter: blur(20px);
+  animation: slideUp 0.6s ease-out;
+}
+
+/* Header del login */
+.login-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.login-logo {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.login-logo-img {
+  width: 120px;
+  height: auto;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  animation: logoGlow 2s ease-in-out infinite alternate;
+}
+
+.login-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--vscode-text-primary);
+  margin: 0;
+  background: linear-gradient(135deg, var(--vscode-accent), var(--vscode-success));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 30px rgba(0, 122, 204, 0.3);
+}
+
+.login-subtitle {
+  font-size: 1.1rem;
+  color: var(--vscode-text-secondary);
+  line-height: 1.6;
+}
+
+/* Formulario */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.form-label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--vscode-text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.form-input {
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--vscode-border);
+  border-radius: var(--vscode-radius);
+  background: var(--vscode-bg-primary);
+  color: var(--vscode-text-primary);
+  font-size: 1.1rem;
+  font-family: inherit;
+  transition: var(--vscode-transition);
+  outline: none;
+}
+
+.form-input::placeholder {
+  color: var(--vscode-text-muted);
+  font-style: italic;
+}
+
+.form-input:focus {
+  border-color: var(--vscode-accent);
+  box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+  background: var(--vscode-bg-secondary);
+}
+
+.form-input:hover:not(:focus) {
+  border-color: var(--vscode-text-secondary);
+}
+
+/* Input con error */
+.form-input.error {
+  border-color: var(--vscode-error);
+  box-shadow: 0 0 0 2px rgba(244, 71, 71, 0.2);
+}
+
+.form-input.error:focus {
+  border-color: var(--vscode-error);
+  box-shadow: 0 0 0 2px rgba(244, 71, 71, 0.3);
+}
+
+/* Contenedor de input con iconos */
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Input con iconos */
+.input-with-icon {
+  padding-right: 3rem; /* Espacio para el icono */
+}
+
+/* Botón para mostrar/ocultar contraseña */
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0.25rem;
+  color: var(--vscode-text-muted);
+  transition: var(--vscode-transition);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+}
+
+.password-toggle:hover {
+  color: var(--vscode-text-primary);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.password-toggle:focus {
+  outline: 2px solid var(--vscode-accent);
+  outline-offset: 2px;
+}
+
+.password-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Botón de login */
+.login-btn {
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, var(--vscode-accent), var(--vscode-accent-hover));
+  border: none;
+  border-radius: var(--vscode-radius);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--vscode-transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--vscode-accent-hover), var(--vscode-accent));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 122, 204, 0.3);
+}
+
+.login-btn:active {
+  transform: translateY(0);
+}
+
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Efectos de carga */
+.login-btn.loading {
+  color: transparent;
+}
+
+.login-btn.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Mensaje de error */
+.error-message {
+  background: rgba(244, 71, 71, 0.1);
+  border: 1px solid var(--vscode-error);
+  border-radius: var(--vscode-radius);
+  padding: 0.75rem 1rem;
+  color: var(--vscode-error);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: shake 0.5s ease-in-out;
+}
+
+.error-icon {
+  font-size: 1.1rem;
+}
+
+/* Footer del login */
+.login-footer {
+  margin-top: 2rem;
+  text-align: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--vscode-border);
+}
+
+.login-footer-text {
+  font-size: 0.85rem;
+  color: var(--vscode-text-muted);
+  line-height: 1.4;
+}
+
+.help-text {
+  font-size: 0.85rem;
+  color: var(--vscode-text-muted);
+  line-height: 1.4;
+  margin-bottom: 1rem;
+}
+
+/* Información de versión */
+.version-info {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(15, 118, 110, 0.3);
+}
+
+.version {
+  font-size: 0.75rem;
+  color: var(--vscode-accent-light);
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.copyright {
+  font-size: 0.7rem;
+  color: var(--vscode-text-muted);
+  font-family: 'Segoe UI', sans-serif;
+  opacity: 0.8;
+}
+
+.login-version {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--vscode-text-muted);
+  font-family: 'Courier New', monospace;
+}
+
+/* Animaciones */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes logoGlow {
+  from {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  }
+  to {
+    filter: drop-shadow(0 4px 16px rgba(0, 122, 204, 0.3));
+  }
+}
+
+@keyframes backgroundMove {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(50px, 30px);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+/* Estados responsive */
+@media (max-width: 768px) {
+  .login-container {
+    margin: 1rem;
+    padding: 2rem;
+    max-width: none;
+  }
+  
+  .login-title {
+    font-size: 1.5rem;
+  }
+  
+  .login-subtitle {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-screen {
+    padding: 1rem;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .login-container {
+    padding: 2rem;
+    margin: auto;
+    max-width: calc(100vw - 2rem);
+    min-height: auto;
+  }
+  
+  .login-title {
+    font-size: 1.8rem;
+  }
+  
+  .login-logo img {
+    max-width: 130px;
+  }
+  
+  .form-input {
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+  }
+  
+  .login-btn {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+/* Modo claro (fallback) */
+@media (prefers-color-scheme: light) {
+  :root {
+    --vscode-bg-primary: #ffffff;
+    --vscode-bg-secondary: #f8f8f8;
+    --vscode-bg-tertiary: #f0f0f0;
+    --vscode-text-primary: #333333;
+    --vscode-text-secondary: #666666;
+    --vscode-text-muted: #999999;
+    --vscode-border: #e0e0e0;
+  }
+}

@@ -1,0 +1,154 @@
+/* Estilos base para ConfigCategorias */
+/* Estilos base para ConfigCategorias */
+.config-categorias {
+  padding: 2rem;
+  background: #f8f9fa;
+}
+.header-categorias {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.btn-add, .btn-regresar {
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  background: #6c63ff;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-add:hover, .btn-regresar:hover {
+  background: #5548c8;
+}
+.msg-categorias {
+  margin-bottom: 1rem;
+  color: #2d3748;
+  font-weight: 500;
+}
+.loading-categorias {
+  text-align: center;
+  color: #888;
+}
+.grid-categorias {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+.card-categoria {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 1.2rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.img-categoria {
+  flex-shrink: 0;
+}
+.img-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 0.9rem;
+}
+.info-categoria {
+  flex: 1;
+}
+.info-categoria h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+}
+.info-categoria p {
+  margin: 0 0 0.5rem 0;
+  color: #555;
+}
+.activo {
+  color: #38a169;
+  font-weight: 600;
+}
+.inactivo {
+  color: #e53e3e;
+  font-weight: 600;
+}
+.btn-edit {
+  margin-top: 0.5rem;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  border: none;
+  background: #f6ad55;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-edit:hover {
+  background: #dd6b20;
+}
+.modal-categoria-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-categoria {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  min-width: 340px;
+  max-width: 400px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+.form-categoria .form-group {
+  margin-bottom: 1rem;
+}
+.form-categoria label {
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+  display: block;
+}
+.form-categoria input[type="text"],
+.form-categoria textarea {
+  width: 100%;
+  padding: 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  font-size: 1rem;
+}
+.form-categoria textarea {
+  resize: none;
+}
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.2rem;
+}
+.form-actions button {
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  background: #6c63ff;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.form-actions button:hover {
+  background: #5548c8;
+}
+.error-categoria {
+  color: #e53e3e;
+  margin-bottom: 0.5rem;
+}

@@ -1,0 +1,61 @@
+/* src/App.css */
+/* Estilos específicos para el componente App */
+
+/* Contenedor principal de la aplicación */
+.app-container {
+  width: 100%; /* Ancho completo */
+  min-height: 100vh; /* Altura mínima completa */
+  margin: 0; /* Sin margen */
+  padding: 0; /* Sin padding */
+  box-sizing: border-box; /* Incluye padding y border en el tamaño */
+}
+
+/* Pantalla de carga */
+.loading-screen {
+  background: linear-gradient(135deg, #134e4a 0%, #0f766e 50%, #14b8a6 100%) !important; /* Degradado teal corporativo */
+  color: white; /* Texto blanco */
+  height: 100vh !important; /* Usa toda la altura de la pantalla */
+  width: 100vw !important; /* Usa todo el ancho de la pantalla */
+  position: fixed !important; /* Posición fija */
+  top: 0 !important; /* Desde arriba */
+  left: 0 !important; /* Desde la izquierda */
+  display: flex !important; /* Flexbox */
+  justify-content: center !important; /* Centra horizontalmente */
+  align-items: center !important; /* Centra verticalmente */
+  z-index: 9999 !important; /* Por encima de todo */
+}
+
+/* Contenido de la pantalla de carga */
+.loading-content {
+  display: flex; /* Flexbox */
+  flex-direction: column; /* Dirección vertical */
+  align-items: center; /* Centra horizontalmente */
+  justify-content: center; /* Centra verticalmente */
+  gap: 1.5rem; /* Espacio entre elementos */
+  height: 100%; /* Ocupa toda la altura disponible */
+  width: 100%; /* Ocupa todo el ancho disponible */
+}
+
+/* Logo en la pantalla de carga */
+.loading-logo {
+  width: 120px; /* Ancho del logo */
+  height: 120px; /* Alto del logo */
+  object-fit: contain; /* Mantiene proporciones */
+  animation: logoFloat 3s ease-in-out infinite; /* Animación flotante */
+}
+
+/* Animación flotante para el logo */
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Texto de la pantalla de carga */
+.loading-content p {
+  font-size: 1.2rem; /* Tamaño de fuente */
+  font-weight: 300; /* Peso ligero */
+  margin: 0; /* Sin margen */
+  letter-spacing: 1px; /* Espaciado entre letras */
+}
+
+/* Eliminamos estilos del Vite template que ya no necesitamos */

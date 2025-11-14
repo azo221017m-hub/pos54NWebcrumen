@@ -1,0 +1,115 @@
+/* ===== PRODUCTOS CONFIG STYLES ===== */
+.productos-list {
+  margin-top: 1rem;
+}
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+.producto-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: box-shadow 0.2s;
+}
+.producto-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+.producto-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #f3f3f3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.no-img {
+  color: #bbb;
+  font-size: 0.9rem;
+}
+.producto-info {
+  flex: 1;
+}
+.producto-precio {
+  color: #2e7d32;
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+.modal-productos {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.productos-form {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.13);
+  padding: 2rem;
+  min-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.productos-form label {
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.img-btn {
+  background: #e0e0e0;
+  border-radius: 50%;
+  padding: 0.5rem;
+  cursor: pointer;
+  font-size: 1.3rem;
+  display: inline-block;
+  margin-top: 0.3rem;
+  transition: background 0.2s;
+}
+.img-btn:hover {
+  background: #bdbdbd;
+}
+.save-btn {
+  background: #2e7d32;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.save-btn:hover {
+  background: #1b5e20;
+}
+.cancel-btn {
+  background: #e53935;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 0.5rem;
+  transition: background 0.2s;
+}
+.cancel-btn:hover {
+  background: #b71c1c;
+}
+.form-msg {
+  margin-top: 0.5rem;
+  color: #e53935;
+  font-weight: 500;
+}
