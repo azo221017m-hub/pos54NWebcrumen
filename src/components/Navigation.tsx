@@ -143,7 +143,10 @@ const Navigation: React.FC<NavigationProps> = ({
           </div>
           <ul className="nav-items">
             <li>
-              <button className="nav-item">
+              <button 
+                className="nav-item"
+                onClick={() => handleNavigate('pos-ventas')}
+              >
                 <span className="nav-item-icon">🛒</span>
                 Iniciar Venta
               </button>

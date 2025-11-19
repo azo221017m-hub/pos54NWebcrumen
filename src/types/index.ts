@@ -21,6 +21,7 @@ export type ScreenType =
   | 'config-negocios' // Configuración de negocios
   | 'config-perfil' // Configuración de perfil
   | 'iniciar-venta' // Iniciar nueva venta
+  | 'pos-ventas' // Pantalla POS de ventas con categorías y productos
   | 'indicadores-ventas' // Indicadores de ventas
   | 'sistema-configuracion' // Configuración del sistema
   | 'config-moderadores' // Configuración de moderadores
@@ -347,6 +348,16 @@ export interface PedidoProducto {
   cantidad: number; // Cantidad solicitada
   precio: number; // Precio unitario
   subtotal: number; // Subtotal del producto (cantidad * precio)
+}
+
+// Tipo para producto en la comanda (orden activa)
+export interface ComandaProducto {
+  idProducto: number; // ID del producto
+  nombre: string; // Nombre del producto
+  precio: number; // Precio unitario
+  cantidad: number; // Cantidad en la comanda
+  subtotal: number; // Subtotal (cantidad * precio)
+  imagenProducto?: string; // Imagen del producto (opcional)
 }
 
 // Tipo para pedido tipo comanda
