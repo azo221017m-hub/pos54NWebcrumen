@@ -22,6 +22,7 @@ import ConfigClientes from './components/ConfigClientes'; // Configuración de c
 import ConfigNegocios from './components/ConfigNegocios'; // Configuración de negocios
 import ConfigModeradores from './components/ConfigModeradores'; // Import ConfigModeradores
 import ConfigCategoriaModeradores from './components/ConfigCategoriaModeradores'; // Configuración de categorías de moderadores
+import POSVentas from './components/POSVentas'; // POS de ventas
 
 
 // Workaround: permite pasar props no tipadas al componente cuando el tipo de props
@@ -301,6 +302,15 @@ function App() {
       case 'config-categoria-moderadores':
         console.log('🎭 Renderizando configuración de categorías de moderadores'); // Log de renderizado
         return <ConfigCategoriaModeradores onBack={() => setCurrentScreen('tablero-inicial')} />;
+
+      case 'pos-ventas':
+        if (!isAuthenticated || !user) {
+          console.log('❌ Usuario no autenticado, redirigiendo a login'); // Log de error
+          setCurrentScreen('login');
+          return <div></div>; // Componente vacío temporal
+        }
+        console.log('🛒 Renderizando POS de ventas'); // Log de renderizado
+        return <POSVentas onBack={() => setCurrentScreen('tablero-inicial')} />;
 
 
 
