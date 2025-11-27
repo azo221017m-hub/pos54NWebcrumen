@@ -1,8 +1,35 @@
 # POS54N Web Crumen - Sistema POS y Comanda Digital
 
-**Versión:** 2.5.B12
+**Versión:** 2.5.B12  
+**Proyecto**: Sistema de Punto de Venta Web Multi-tenant  
+**Organización**: Crumen
 
 Frontend de la aplicación POS54N Web Crumen desarrollado con React, TypeScript y Vite. Sistema profesional de Punto de Venta (POS) con comanda digital para restaurantes.
+
+## 📚 Documentación del Proyecto
+
+### Documentación PMI (Project Management Institute)
+- [📄 **PMI Documentation Index**](./PMI_DOCUMENTATION_INDEX.md) - Índice completo de documentación
+- [📄 **Project Charter**](./PMI_PROJECT_CHARTER.md) - Acta de constitución del proyecto
+- [📄 **Project Management Plan**](./PMI_PROJECT_MANAGEMENT_PLAN.md) - Plan de gestión completo
+
+### Guías de Inicio Rápido
+- [⚡ **Quick Start**](./QUICKSTART.md) - Inicio rápido
+- [🚀 **How to Run**](./HOW_TO_RUN.md) - Instrucciones detalladas de ejecución
+- [💻 **Development Guide**](./DEVELOPMENT_GUIDE.md) - Guía de desarrollo
+
+### Seguridad y Autenticación
+- [🔐 **Authentication Guide**](./AUTHENTICATION_GUIDE.md) - Sistema de autenticación
+- [🔐 **Sistema de Auditoría de Login**](./SISTEMA_AUDITORIA_LOGIN.md) - Auditoría completa
+- [🔐 **Sistema de Sesiones**](./SISTEMA_SESIONES.md) - Gestión de sesiones JWT
+- [🔐 **Comportamiento de Expiración**](./COMPORTAMIENTO_EXPIRACION_SESION.md) - Sesiones con pantalla bloqueada
+
+### Despliegue y Producción
+- [🚀 **Deploy Checklist**](./DEPLOY_CHECKLIST.md) - Lista de verificación
+- [🚀 **Producción**](./PRODUCCION.md) - Guía de producción
+- [🚀 **Render Deploy**](./RENDER.md) - Despliegue en Render.com
+
+---
 
 ## 🚀 Inicio Rápido
 
