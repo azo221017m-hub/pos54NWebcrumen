@@ -20,8 +20,9 @@
 Crear el archivo `frontend/.env` con:
 
 ```env
-# URL de la API backend en producción
-VITE_API_URL=https://pos54nwebcrumenbackend.onrender.com/api
+# URL de la API backend en producción (SIN /api al final)
+# El /api se agrega automáticamente en api.config.ts
+VITE_API_URL=https://pos54nwebcrumenbackend.onrender.com
 
 # Nombre de la aplicación
 VITE_APP_NAME=Web POS Crumen
@@ -29,6 +30,8 @@ VITE_APP_NAME=Web POS Crumen
 # Timeout para peticiones API (ms)
 VITE_API_TIMEOUT=30000
 ```
+
+**IMPORTANTE**: La URL NO debe incluir `/api` al final. Se agrega automáticamente en el código.
 
 ### Build del Frontend
 
@@ -104,14 +107,16 @@ const allowedOrigins = [
 
 ### Frontend (Render.com)
 1. Ir a Dashboard → Web Service (Frontend)
-2. Environment → Agregar:
-   - `VITE_API_URL` = `https://pos54nwebcrumenbackend.onrender.com/api`
+2. **IMPORTANTE**: Configurar Root Directory = `frontend`
+3. Environment → Agregar:
+   - `VITE_API_URL` = `https://pos54nwebcrumenbackend.onrender.com` (SIN /api)
    - `VITE_APP_NAME` = `Web POS Crumen`
    - `VITE_API_TIMEOUT` = `30000`
 
 ### Backend (Render.com)
 1. Ir a Dashboard → Web Service (Backend)
-2. Environment → Agregar todas las variables del archivo `.env`
+2. **IMPORTANTE**: Configurar Root Directory = `backend`
+3. Environment → Agregar todas las variables del archivo `.env`
 
 ---
 
