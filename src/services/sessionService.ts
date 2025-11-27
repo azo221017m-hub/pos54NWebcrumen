@@ -90,6 +90,17 @@ export const clearSession = (): void => {
 
 /**
  * Verifica el estado del token y ejecuta callback si está expirado
+ * 
+ * IMPORTANTE: Esta verificación se basa en el timestamp 'exp' del JWT,
+ * por lo que el token CONTINÚA EXPIRANDO incluso si:
+ * - La computadora está bloqueada (pantalla protegida)
+ * - El navegador está minimizado
+ * - La pestaña está en segundo plano
+ * 
+ * El setInterval puede pausarse en algunos navegadores cuando la pestaña
+ * está inactiva, pero al regresar se verifica inmediatamente contra el
+ * timestamp real del token, garantizando logout si expiró.
+ * 
  * @param onExpired - Función a ejecutar cuando el token expire
  * @param onExpiringSoon - Función opcional a ejecutar cuando el token esté por expirar
  * @returns Intervalo de verificación (debe limpiarse manualmente)
@@ -98,7 +109,7 @@ export const checkTokenExpiration = (
   onExpired: () => void,
   onExpiringSoon?: (minutesRemaining: number) => void
 ): ReturnType<typeof setInterval> => {
-  // Verificación inmediata
+  // Verificación inmediata basada en timestamp real del token
   const token = getToken();
   if (!token || isTokenExpired(token)) {
     onExpired();
@@ -115,6 +126,8 @@ export const checkTokenExpiration = (
       return;
     }
 
+    // Verificación basada en timestamp 'exp' del JWT
+    // NO depende de tiempo transcurrido en el cliente
     if (isTokenExpired(currentToken)) {
       onExpired();
       clearInterval(intervalId);
@@ -203,6 +216,19 @@ export const formatTimeRemaining = (milliseconds: number): string => {
 /**
  * Hook para inicializar el monitoreo de sesión
  * Debe llamarse una vez al montar la aplicación principal
+ * 
+ * CARACTERÍSTICAS:
+ * - Verificación periódica cada 1 minuto basada en timestamp del JWT
+ * - Verificación inmediata al volver a la pestaña (visibilitychange)
+ * - Verificación inmediata al enfocar la ventana (focus)
+ * - El token CONTINÚA EXPIRANDO incluso si:
+ *   * La computadora está bloqueada (pantalla protegida)
+ *   * El navegador está minimizado
+ *   * La pestaña está en segundo plano
+ * 
+ * @param onExpired - Callback cuando el token expira (opcional, usa autoLogout por defecto)
+ * @param onExpiringSoon - Callback cuando quedan pocos minutos (opcional)
+ * @returns Función de limpieza para desmontar listeners
  */
 export const initSessionMonitoring = (
   onExpired?: () => void,
@@ -212,14 +238,45 @@ export const initSessionMonitoring = (
     autoLogout('/login', 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
   };
 
+  const handleExpired = onExpired || defaultOnExpired;
+
+  // Iniciar verificación periódica (cada 1 minuto)
   const intervalId = checkTokenExpiration(
-    onExpired || defaultOnExpired,
+    handleExpired,
     onExpiringSoon
   );
+
+  // Función para verificar inmediatamente el token
+  const checkNow = () => {
+    const token = getToken();
+    if (!token || isTokenExpired(token)) {
+      handleExpired();
+    }
+  };
+
+  // Listener: Verificar cuando el usuario vuelve a la pestaña
+  // Útil cuando la pestaña estuvo inactiva por mucho tiempo
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible') {
+      checkNow();
+    }
+  };
+
+  // Listener: Verificar cuando el usuario enfoca la ventana
+  // Útil cuando el usuario desbloquea la pantalla o vuelve de otra app
+  const handleFocus = () => {
+    checkNow();
+  };
+
+  // Registrar listeners
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.addEventListener('focus', handleFocus);
 
   // Retornar función de limpieza
   return () => {
     clearInterval(intervalId);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+    window.removeEventListener('focus', handleFocus);
   };
 };
 
