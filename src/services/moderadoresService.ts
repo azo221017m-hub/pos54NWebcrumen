@@ -1,23 +1,13 @@
-import axios from 'axios';
+import apiClient from './api';
 import type { Moderador, ModeradorCreate, ModeradorUpdate } from '../types/moderador.types';
 
-const API_BASE = '/api/moderadores';
-
-// Obtener token del localStorage
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  };
-};
+const API_BASE = '/moderadores';
 
 // Obtener todos los moderadores de un negocio
 export const obtenerModeradores = async (idnegocio: number): Promise<Moderador[]> => {
   try {
     console.log('🔵 moderadoresService - Solicitando moderadores del negocio:', idnegocio);
-    const response = await axios.get<Moderador[]>(`${API_BASE}/negocio/${idnegocio}`, getAuthHeaders());
+    const response = await apiClient.get<Moderador[]>(`${API_BASE}/negocio/${idnegocio}`);
     console.log('✅ moderadoresService - Respuesta recibida:', response.data);
     
     if (Array.isArray(response.data)) {
@@ -35,7 +25,7 @@ export const obtenerModeradores = async (idnegocio: number): Promise<Moderador[]
 // Obtener un moderador por ID
 export const obtenerModerador = async (id: number): Promise<Moderador | null> => {
   try {
-    const response = await axios.get<Moderador>(`${API_BASE}/${id}`, getAuthHeaders());
+    const response = await apiClient.get<Moderador>(`${API_BASE}/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error al obtener moderador:', error);
@@ -45,15 +35,15 @@ export const obtenerModerador = async (id: number): Promise<Moderador | null> =>
 
 // Crear nuevo moderador
 export const crearModerador = async (moderador: ModeradorCreate): Promise<void> => {
-  await axios.post(API_BASE, moderador, getAuthHeaders());
+  await apiClient.post(API_BASE, moderador);
 };
 
 // Actualizar moderador
 export const actualizarModerador = async (id: number, moderador: ModeradorUpdate): Promise<void> => {
-  await axios.put(`${API_BASE}/${id}`, moderador, getAuthHeaders());
+  await apiClient.put(`${API_BASE}/${id}`, moderador);
 };
 
 // Eliminar moderador
 export const eliminarModerador = async (id: number): Promise<void> => {
-  await axios.delete(`${API_BASE}/${id}`, getAuthHeaders());
+  await apiClient.delete(`${API_BASE}/${id}`);
 };

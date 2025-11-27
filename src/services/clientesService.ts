@@ -1,24 +1,14 @@
-import axios from 'axios';
+import apiClient from './api';
 import type { Cliente, ClienteCreate, ClienteUpdate } from '../types/cliente.types';
 
-const API_BASE = '/api/clientes';
-
-// Obtener token del localStorage
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  };
-};
+const API_BASE = '/clientes';
 
 // Obtener todos los clientes de un negocio
 export const obtenerClientes = async (idnegocio: number): Promise<Cliente[]> => {
   try {
     console.log('🔵 clientesService - Solicitando clientes del negocio:', idnegocio);
     console.log('🔵 URL completa:', `${API_BASE}/negocio/${idnegocio}`);
-    const response = await axios.get<Cliente[]>(`${API_BASE}/negocio/${idnegocio}`, getAuthHeaders());
+    const response = await apiClient.get<Cliente[]>(`${API_BASE}/negocio/${idnegocio}`);
     console.log('✅ clientesService - Respuesta recibida:', response.data);
     
     // Validación: asegurarse de devolver siempre un array
@@ -37,7 +27,7 @@ export const obtenerClientes = async (idnegocio: number): Promise<Cliente[]> => 
 // Obtener un cliente por ID
 export const obtenerCliente = async (idCliente: number): Promise<Cliente | null> => {
   try {
-    const response = await axios.get<Cliente>(`${API_BASE}/${idCliente}`, getAuthHeaders());
+    const response = await apiClient.get<Cliente>(`${API_BASE}/${idCliente}`);
     return response.data;
   } catch (error) {
     console.error('clientesService - Error al obtener cliente:', error);
@@ -47,15 +37,15 @@ export const obtenerCliente = async (idCliente: number): Promise<Cliente | null>
 
 // Crear un nuevo cliente
 export const crearCliente = async (cliente: ClienteCreate): Promise<void> => {
-  await axios.post(API_BASE, cliente, getAuthHeaders());
+  await apiClient.post(API_BASE, cliente);
 };
 
 // Actualizar un cliente
 export const actualizarCliente = async (idCliente: number, cliente: ClienteUpdate): Promise<void> => {
-  await axios.put(`${API_BASE}/${idCliente}`, cliente, getAuthHeaders());
+  await apiClient.put(`${API_BASE}/${idCliente}`, cliente);
 };
 
 // Eliminar un cliente
 export const eliminarCliente = async (idCliente: number): Promise<void> => {
-  await axios.delete(`${API_BASE}/${idCliente}`, getAuthHeaders());
+  await apiClient.delete(`${API_BASE}/${idCliente}`);
 };

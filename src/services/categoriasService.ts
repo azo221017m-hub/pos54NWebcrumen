@@ -1,27 +1,13 @@
-import axios from 'axios';
+import apiClient from './api';
 import type { Categoria, CategoriaCreate, CategoriaUpdate } from '../types/categoria.types';
 
-const API_BASE = '/api/categorias';
-
-// Función para obtener headers con autenticación
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    }
-  };
-};
+const API_BASE = '/categorias';
 
 // Obtener todas las categorías por negocio
 export const obtenerCategorias = async (idnegocio: number): Promise<Categoria[]> => {
   try {
     console.log('🔵 categoriasService: Obteniendo categorías para negocio:', idnegocio);
-    const response = await axios.get<Categoria[]>(
-      `${API_BASE}/negocio/${idnegocio}`,
-      getAuthHeaders()
-    );
+    const response = await apiClient.get<Categoria[]>(`${API_BASE}/negocio/${idnegocio}`);
     console.log('🔵 categoriasService: Categorías obtenidas:', response.data.length);
     return response.data;
   } catch (error) {
@@ -34,10 +20,7 @@ export const obtenerCategorias = async (idnegocio: number): Promise<Categoria[]>
 export const obtenerCategoriaPorId = async (id: number): Promise<Categoria | null> => {
   try {
     console.log('🔵 categoriasService: Obteniendo categoría ID:', id);
-    const response = await axios.get<Categoria>(
-      `${API_BASE}/${id}`,
-      getAuthHeaders()
-    );
+    const response = await apiClient.get<Categoria>(`${API_BASE}/${id}`);
     console.log('🔵 categoriasService: Categoría obtenida:', response.data);
     return response.data;
   } catch (error) {
@@ -50,11 +33,7 @@ export const obtenerCategoriaPorId = async (id: number): Promise<Categoria | nul
 export const crearCategoria = async (categoria: CategoriaCreate): Promise<{ success: boolean; idCategoria?: number }> => {
   try {
     console.log('🔵 categoriasService: Creando categoría:', categoria);
-    const response = await axios.post(
-      API_BASE,
-      categoria,
-      getAuthHeaders()
-    );
+    const response = await apiClient.post(API_BASE, categoria);
     console.log('🔵 categoriasService: Categoría creada exitosamente');
     return { success: true, idCategoria: response.data.idCategoria };
   } catch (error) {
@@ -67,11 +46,7 @@ export const crearCategoria = async (categoria: CategoriaCreate): Promise<{ succ
 export const actualizarCategoria = async (id: number, categoria: CategoriaUpdate): Promise<boolean> => {
   try {
     console.log('🔵 categoriasService: Actualizando categoría ID:', id);
-    await axios.put(
-      `${API_BASE}/${id}`,
-      categoria,
-      getAuthHeaders()
-    );
+    await apiClient.put(`${API_BASE}/${id}`, categoria);
     console.log('🔵 categoriasService: Categoría actualizada exitosamente');
     return true;
   } catch (error) {
@@ -84,10 +59,7 @@ export const actualizarCategoria = async (id: number, categoria: CategoriaUpdate
 export const eliminarCategoria = async (id: number): Promise<boolean> => {
   try {
     console.log('🔵 categoriasService: Eliminando categoría ID:', id);
-    await axios.delete(
-      `${API_BASE}/${id}`,
-      getAuthHeaders()
-    );
+    await apiClient.delete(`${API_BASE}/${id}`);
     console.log('🔵 categoriasService: Categoría eliminada exitosamente');
     return true;
   } catch (error) {

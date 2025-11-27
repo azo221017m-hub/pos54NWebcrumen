@@ -1,29 +1,13 @@
-import axios from 'axios';
+import apiClient from './api';
 import type { Descuento, DescuentoCreate, DescuentoUpdate } from '../types/descuento.types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL 
-  ? `${import.meta.env.VITE_API_URL}/api`
-  : 'http://localhost:3000/api';
-const API_URL = `${API_BASE_URL}/descuentos`;
-
-// Obtener token del localStorage
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  };
-};
+const API_BASE = '/descuentos';
 
 // Obtener todos los descuentos de un negocio
 export const obtenerDescuentos = async (idnegocio: number): Promise<Descuento[]> => {
   try {
     console.log('Servicio: Obteniendo descuentos del negocio', idnegocio);
-    const response = await axios.get<Descuento[]>(
-      `${API_URL}/negocio/${idnegocio}`,
-      getAuthHeaders()
-    );
+    const response = await apiClient.get<Descuento[]>(`${API_BASE}/negocio/${idnegocio}`);
     console.log('Servicio: Descuentos obtenidos:', response.data.length);
     return response.data;
   } catch (error) {
@@ -36,10 +20,7 @@ export const obtenerDescuentos = async (idnegocio: number): Promise<Descuento[]>
 export const obtenerDescuentoPorId = async (id_descuento: number): Promise<Descuento> => {
   try {
     console.log('Servicio: Obteniendo descuento con ID', id_descuento);
-    const response = await axios.get<Descuento>(
-      `${API_URL}/${id_descuento}`,
-      getAuthHeaders()
-    );
+    const response = await apiClient.get<Descuento>(`${API_BASE}/${id_descuento}`);
     console.log('Servicio: Descuento obtenido:', response.data.nombre);
     return response.data;
   } catch (error) {
@@ -52,11 +33,7 @@ export const obtenerDescuentoPorId = async (id_descuento: number): Promise<Descu
 export const crearDescuento = async (descuento: DescuentoCreate): Promise<{ message: string; id_descuento: number }> => {
   try {
     console.log('Servicio: Creando nuevo descuento:', descuento.nombre);
-    const response = await axios.post<{ message: string; id_descuento: number }>(
-      API_URL,
-      descuento,
-      getAuthHeaders()
-    );
+    const response = await apiClient.post<{ message: string; id_descuento: number }>(API_BASE, descuento);
     console.log('Servicio: Descuento creado con ID:', response.data.id_descuento);
     return response.data;
   } catch (error) {
@@ -69,11 +46,7 @@ export const crearDescuento = async (descuento: DescuentoCreate): Promise<{ mess
 export const actualizarDescuento = async (id_descuento: number, descuento: DescuentoUpdate): Promise<{ message: string }> => {
   try {
     console.log('Servicio: Actualizando descuento ID:', id_descuento);
-    const response = await axios.put<{ message: string }>(
-      `${API_URL}/${id_descuento}`,
-      descuento,
-      getAuthHeaders()
-    );
+    const response = await apiClient.put<{ message: string }>(`${API_BASE}/${id_descuento}`, descuento);
     console.log('Servicio: Descuento actualizado');
     return response.data;
   } catch (error) {
@@ -86,10 +59,7 @@ export const actualizarDescuento = async (id_descuento: number, descuento: Descu
 export const eliminarDescuento = async (id_descuento: number): Promise<{ message: string }> => {
   try {
     console.log('Servicio: Eliminando descuento ID:', id_descuento);
-    const response = await axios.delete<{ message: string }>(
-      `${API_URL}/${id_descuento}`,
-      getAuthHeaders()
-    );
+    const response = await apiClient.delete<{ message: string }>(`${API_BASE}/${id_descuento}`);
     console.log('Servicio: Descuento eliminado');
     return response.data;
   } catch (error) {
@@ -111,10 +81,7 @@ export const validarNombreDescuentoUnico = async (
       params.id_descuento = id_descuento;
     }
     
-    const response = await axios.get<{ esUnico: boolean }>(
-      `${API_URL}/validar/nombre-descuento`,
-      { ...getAuthHeaders(), params }
-    );
+    const response = await apiClient.get<{ esUnico: boolean }>(`${API_BASE}/validar/nombre-descuento`, { params });
     
     console.log('Servicio: Nombre de descuento es único:', response.data.esUnico);
     return response.data.esUnico;
@@ -132,15 +99,14 @@ export const cambiarEstatusDescuento = async (
 ): Promise<{ message: string }> => {
   try {
     console.log('Servicio: Cambiando estatus de descuento ID:', id_descuento, 'a:', estatusdescuento);
-    const response = await axios.patch<{ message: string }>(
-      `${API_URL}/${id_descuento}/estatus`,
-      { estatusdescuento, UsuarioModifico: usuarioModifico },
-      getAuthHeaders()
+    const response = await apiClient.patch<{ message: string }>(
+      `${API_BASE}/${id_descuento}/estatus`,
+      { estatusdescuento, UsuarioModifico: usuarioModifico }
     );
     console.log('Servicio: Estatus de descuento cambiado');
     return response.data;
   } catch (error) {
-    console.error('Error en servicio cambiarEstatusDescuento:', error);
+    console.error('Error en servicio cambiarEstatusDescent:', error);
     throw error;
   }
 };

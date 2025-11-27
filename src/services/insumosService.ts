@@ -1,24 +1,14 @@
-import axios from 'axios';
+import apiClient from './api';
 import type { Insumo, InsumoCreate, InsumoUpdate } from '../types/insumo.types';
 
-const API_BASE = '/api/insumos';
-
-// Obtener token del localStorage
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  };
-};
+const API_BASE = '/insumos';
 
 // Obtener todos los insumos de un negocio
 export const obtenerInsumos = async (idnegocio: number): Promise<Insumo[]> => {
   try {
     console.log('🔵 insumosService - Solicitando insumos del negocio:', idnegocio);
     console.log('🔵 URL completa:', `${API_BASE}/negocio/${idnegocio}`);
-    const response = await axios.get<Insumo[]>(`${API_BASE}/negocio/${idnegocio}`, getAuthHeaders());
+    const response = await apiClient.get<Insumo[]>(`${API_BASE}/negocio/${idnegocio}`);
     console.log('✅ insumosService - Respuesta recibida:', response.data);
     
     // Validación: asegurarse de devolver siempre un array
@@ -37,21 +27,21 @@ export const obtenerInsumos = async (idnegocio: number): Promise<Insumo[]> => {
 
 // Obtener un insumo por ID
 export const obtenerInsumo = async (id_insumo: number): Promise<Insumo> => {
-  const response = await axios.get<Insumo>(`${API_BASE}/${id_insumo}`, getAuthHeaders());
+  const response = await apiClient.get<Insumo>(`${API_BASE}/${id_insumo}`);
   return response.data;
 };
 
 // Crear un nuevo insumo
 export const crearInsumo = async (insumo: InsumoCreate): Promise<void> => {
-  await axios.post(API_BASE, insumo, getAuthHeaders());
+  await apiClient.post(API_BASE, insumo);
 };
 
 // Actualizar un insumo
 export const actualizarInsumo = async (id_insumo: number, insumo: InsumoUpdate): Promise<void> => {
-  await axios.put(`${API_BASE}/${id_insumo}`, insumo, getAuthHeaders());
+  await apiClient.put(`${API_BASE}/${id_insumo}`, insumo);
 };
 
 // Eliminar un insumo
 export const eliminarInsumo = async (id_insumo: number): Promise<void> => {
-  await axios.delete(`${API_BASE}/${id_insumo}`, getAuthHeaders());
+  await apiClient.delete(`${API_BASE}/${id_insumo}`);
 };

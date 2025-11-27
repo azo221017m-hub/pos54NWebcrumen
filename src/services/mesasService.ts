@@ -1,29 +1,13 @@
-import axios from 'axios';
+import apiClient from './api';
 import type { Mesa, MesaCreate, MesaUpdate } from '../types/mesa.types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL 
-  ? `${import.meta.env.VITE_API_URL}/api`
-  : 'http://localhost:3000/api';
-const API_URL = `${API_BASE_URL}/mesas`;
-
-// Obtener token del localStorage
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  };
-};
+const API_BASE = '/mesas';
 
 // Obtener todas las mesas de un negocio
 export const obtenerMesas = async (idnegocio: number): Promise<Mesa[]> => {
   try {
     console.log('Servicio: Obteniendo mesas del negocio', idnegocio);
-    const response = await axios.get<Mesa[]>(
-      `${API_URL}/negocio/${idnegocio}`,
-      getAuthHeaders()
-    );
+    const response = await apiClient.get<Mesa[]>(`${API_BASE}/negocio/${idnegocio}`);
     console.log('Servicio: Mesas obtenidas:', response.data.length);
     return response.data;
   } catch (error) {
@@ -36,10 +20,7 @@ export const obtenerMesas = async (idnegocio: number): Promise<Mesa[]> => {
 export const obtenerMesaPorId = async (idmesa: number): Promise<Mesa> => {
   try {
     console.log('Servicio: Obteniendo mesa con ID', idmesa);
-    const response = await axios.get<Mesa>(
-      `${API_URL}/${idmesa}`,
-      getAuthHeaders()
-    );
+    const response = await apiClient.get<Mesa>(`${API_BASE}/${idmesa}`);
     console.log('Servicio: Mesa obtenida:', response.data.nombremesa);
     return response.data;
   } catch (error) {
@@ -52,11 +33,7 @@ export const obtenerMesaPorId = async (idmesa: number): Promise<Mesa> => {
 export const crearMesa = async (mesa: MesaCreate): Promise<{ message: string; idmesa: number }> => {
   try {
     console.log('Servicio: Creando nueva mesa:', mesa.nombremesa);
-    const response = await axios.post<{ message: string; idmesa: number }>(
-      API_URL,
-      mesa,
-      getAuthHeaders()
-    );
+    const response = await apiClient.post<{ message: string; idmesa: number }>(API_BASE, mesa);
     console.log('Servicio: Mesa creada con ID:', response.data.idmesa);
     return response.data;
   } catch (error) {
@@ -69,11 +46,7 @@ export const crearMesa = async (mesa: MesaCreate): Promise<{ message: string; id
 export const actualizarMesa = async (idmesa: number, mesa: MesaUpdate): Promise<{ message: string }> => {
   try {
     console.log('Servicio: Actualizando mesa ID:', idmesa);
-    const response = await axios.put<{ message: string }>(
-      `${API_URL}/${idmesa}`,
-      mesa,
-      getAuthHeaders()
-    );
+    const response = await apiClient.put<{ message: string }>(`${API_BASE}/${idmesa}`, mesa);
     console.log('Servicio: Mesa actualizada');
     return response.data;
   } catch (error) {
@@ -86,10 +59,7 @@ export const actualizarMesa = async (idmesa: number, mesa: MesaUpdate): Promise<
 export const eliminarMesa = async (idmesa: number): Promise<{ message: string }> => {
   try {
     console.log('Servicio: Eliminando mesa ID:', idmesa);
-    const response = await axios.delete<{ message: string }>(
-      `${API_URL}/${idmesa}`,
-      getAuthHeaders()
-    );
+    const response = await apiClient.delete<{ message: string }>(`${API_BASE}/${idmesa}`);
     console.log('Servicio: Mesa eliminada');
     return response.data;
   } catch (error) {
@@ -111,10 +81,7 @@ export const validarNumeroMesaUnico = async (
       params.idmesa = idmesa;
     }
     
-    const response = await axios.get<{ esUnico: boolean }>(
-      `${API_URL}/validar/numero-mesa`,
-      { ...getAuthHeaders(), params }
-    );
+    const response = await apiClient.get<{ esUnico: boolean }>(`${API_BASE}/validar/numero-mesa`, { params });
     
     console.log('Servicio: Número de mesa es único:', response.data.esUnico);
     return response.data.esUnico;
@@ -132,10 +99,9 @@ export const cambiarEstatusMesa = async (
 ): Promise<{ message: string }> => {
   try {
     console.log('Servicio: Cambiando estatus de mesa ID:', idmesa, 'a:', estatusmesa);
-    const response = await axios.patch<{ message: string }>(
-      `${API_URL}/${idmesa}/estatus`,
-      { estatusmesa, UsuarioModifico: usuarioModifico },
-      getAuthHeaders()
+    const response = await apiClient.patch<{ message: string }>(
+      `${API_BASE}/${idmesa}/estatus`,
+      { estatusmesa, UsuarioModifico: usuarioModifico }
     );
     console.log('Servicio: Estatus de mesa cambiado');
     return response.data;

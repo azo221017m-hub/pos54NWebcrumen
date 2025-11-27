@@ -1,23 +1,13 @@
-import axios from 'axios';
+import apiClient from './api';
 import type { CuentaContable, CuentaContableCreate, CuentaContableUpdate } from '../types/cuentaContable.types';
 
-const API_BASE = '/api/cuentas-contables';
-
-// Obtener token del localStorage
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  };
-};
+const API_BASE = '/cuentas-contables';
 
 // Obtener todas las cuentas contables de un negocio
 export const obtenerCuentasContables = async (idnegocio: number): Promise<CuentaContable[]> => {
   try {
     console.log('🔵 cuentasContablesService - Solicitando cuentas del negocio:', idnegocio);
-    const response = await axios.get<CuentaContable[]>(`${API_BASE}/negocio/${idnegocio}`, getAuthHeaders());
+    const response = await apiClient.get<CuentaContable[]>(`${API_BASE}/negocio/${idnegocio}`);
     console.log('✅ cuentasContablesService - Respuesta recibida:', response.data);
     
     if (Array.isArray(response.data)) {
@@ -35,7 +25,7 @@ export const obtenerCuentasContables = async (idnegocio: number): Promise<Cuenta
 // Obtener una cuenta contable por ID
 export const obtenerCuentaContable = async (id: number): Promise<CuentaContable | null> => {
   try {
-    const response = await axios.get<CuentaContable>(`${API_BASE}/${id}`, getAuthHeaders());
+    const response = await apiClient.get<CuentaContable>(`${API_BASE}/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error al obtener cuenta contable:', error);
@@ -45,15 +35,15 @@ export const obtenerCuentaContable = async (id: number): Promise<CuentaContable 
 
 // Crear nueva cuenta contable
 export const crearCuentaContable = async (cuenta: CuentaContableCreate): Promise<void> => {
-  await axios.post(API_BASE, cuenta, getAuthHeaders());
+  await apiClient.post(API_BASE, cuenta);
 };
 
 // Actualizar cuenta contable
 export const actualizarCuentaContable = async (id: number, cuenta: CuentaContableUpdate): Promise<void> => {
-  await axios.put(`${API_BASE}/${id}`, cuenta, getAuthHeaders());
+  await apiClient.put(`${API_BASE}/${id}`, cuenta);
 };
 
 // Eliminar cuenta contable
 export const eliminarCuentaContable = async (id: number): Promise<void> => {
-  await axios.delete(`${API_BASE}/${id}`, getAuthHeaders());
+  await apiClient.delete(`${API_BASE}/${id}`);
 };
