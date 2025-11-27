@@ -1,0 +1,29 @@
+import { Router } from 'express';
+import {
+  obtenerDescuentos,
+  obtenerDescuentoPorId,
+  crearDescuento,
+  actualizarDescuento,
+  eliminarDescuento,
+  validarNombreDescuentoUnico,
+  cambiarEstatusDescuento
+} from '../controllers/descuentos.controller';
+import { authMiddleware } from '../middlewares/auth';
+
+const router = Router();
+
+// Todas las rutas requieren autenticación
+router.use(authMiddleware);
+
+// Rutas CRUD
+router.get('/negocio/:idnegocio', obtenerDescuentos);
+router.get('/validar/nombre-descuento', validarNombreDescuentoUnico);
+router.get('/:id_descuento', obtenerDescuentoPorId);
+router.post('/', crearDescuento);
+router.put('/:id_descuento', actualizarDescuento);
+router.delete('/:id_descuento', eliminarDescuento);
+
+// Rutas adicionales
+router.patch('/:id_descuento/estatus', cambiarEstatusDescuento);
+
+export default router;

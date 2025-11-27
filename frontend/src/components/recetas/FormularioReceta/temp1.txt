@@ -1,0 +1,4 @@
+import React, { useState, useMemo } from 'react';
+import { Save, X, ChefHat, Plus, Trash2, Upload } from 'lucide-react';
+import type { Receta, DetalleReceta, RecetaCreate, RecetaUpdate } from '../../../types/receta.types';
+import './FormularioReceta.css';

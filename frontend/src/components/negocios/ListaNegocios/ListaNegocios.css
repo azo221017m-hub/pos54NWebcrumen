@@ -1,0 +1,303 @@
+/* Lista de Negocios */
+.lista-negocios {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  padding: 0.5rem 0;
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Scrollbar personalizado para lista-negocios */
+.lista-negocios::-webkit-scrollbar {
+  width: 8px;
+}
+
+.lista-negocios::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.lista-negocios::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 4px;
+}
+
+.lista-negocios::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #6a3f8e 100%);
+}
+
+/* Loading State */
+.lista-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  gap: 0.75rem;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.lista-loading p {
+  color: #718096;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* Empty State */
+.lista-vacia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.icono-vacio {
+  color: #cbd5e0;
+  width: 48px;
+  height: 48px;
+}
+
+.lista-vacia h3 {
+  font-size: 1.25rem;
+  color: #2d3748;
+  margin: 0;
+}
+
+.lista-vacia p {
+  color: #718096;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Card Negocio */
+.negocio-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+}
+
+.negocio-card:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+  border-color: #667eea;
+}
+
+/* Card Header */
+.card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0.875rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+}
+
+.card-logo {
+  width: 50px;
+  height: 50px;
+  background: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.12);
+  color: #667eea;
+}
+
+.card-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.card-badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+}
+
+.badge-activo,
+.badge-inactivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.badge-activo {
+  background: rgba(72, 187, 120, 0.2);
+  color: #22543d;
+  border: 1.5px solid rgba(72, 187, 120, 0.5);
+}
+
+.badge-inactivo {
+  background: rgba(245, 101, 101, 0.2);
+  color: #742a2a;
+  border: 1.5px solid rgba(245, 101, 101, 0.5);
+}
+
+/* Card Body */
+.card-body {
+  padding: 0.875rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.card-titulo {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.card-numero {
+  font-size: 0.75rem;
+  color: #667eea;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 0.4px;
+}
+
+.card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #4a5568;
+  font-size: 0.8rem;
+}
+
+.info-item svg {
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.info-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-contacto {
+  padding: 0.5rem 0.75rem;
+  background: #f7fafc;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #2d3748;
+  border-left: 2.5px solid #667eea;
+}
+
+.card-contacto strong {
+  color: #667eea;
+  font-weight: 600;
+}
+
+/* Card Footer */
+.card-footer {
+  padding: 0.75rem;
+  background: #f7fafc;
+  display: flex;
+  gap: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn-accion {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.btn-editar {
+  background: white;
+  color: #667eea;
+  border-color: #667eea;
+}
+
+.btn-editar:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 9px rgba(102, 126, 234, 0.3);
+}
+
+.btn-eliminar {
+  background: white;
+  color: #f56565;
+  border-color: #f56565;
+}
+
+.btn-eliminar:hover {
+  background: #f56565;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 9px rgba(245, 101, 101, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .lista-negocios {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .lista-negocios {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .card-body {
+    padding: 0.75rem;
+  }
+
+  .card-footer {
+    flex-wrap: nowrap;
+  }
+}

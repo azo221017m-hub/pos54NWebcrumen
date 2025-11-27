@@ -1,0 +1,206 @@
+/* Gestión Roles */
+.gestion-roles {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  max-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Scrollbar personalizado para gestion-roles */
+.gestion-roles::-webkit-scrollbar {
+  width: 8px;
+}
+
+.gestion-roles::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.gestion-roles::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 4px;
+}
+
+.gestion-roles::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #6a3f8e 100%);
+}
+
+/* Mensajes de Alerta */
+.mensaje-alerta {
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mensaje-alerta.success {
+  background: #c6f6d5;
+  color: #22543d;
+  border-left: 4px solid #48bb78;
+}
+
+.mensaje-alerta.error {
+  background: #fed7d7;
+  color: #742a2a;
+  border-left: 4px solid #f56565;
+}
+
+/* Header */
+.gestion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.header-info h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 0.75rem 0;
+}
+
+/* Contadores de Roles */
+.contadores-roles {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.75rem;
+}
+
+.contador-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid transparent;
+  transition: all 0.2s;
+}
+
+.contador-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.contador-label {
+  font-size: 0.875rem;
+  color: #718096;
+  font-weight: 500;
+}
+
+.contador-valor {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.contador-valor.total {
+  color: #667eea;
+}
+
+.contador-item:has(.contador-valor.total) {
+  border-left-color: #667eea;
+}
+
+.contador-valor.activos {
+  color: #48bb78;
+}
+
+.contador-item:has(.contador-valor.activos) {
+  border-left-color: #48bb78;
+}
+
+.contador-valor.inactivos {
+  color: #f56565;
+}
+
+.contador-item:has(.contador-valor.inactivos) {
+  border-left-color: #f56565;
+}
+
+/* Botones */
+.btn-nuevo,
+.btn-volver {
+  padding: 0.875rem 1.75rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-nuevo:hover,
+.btn-volver:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.btn-volver {
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+  box-shadow: none;
+}
+
+.btn-volver:hover {
+  background: #667eea;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .gestion-roles {
+    padding: 1.5rem 1rem;
+  }
+
+  .gestion-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .header-info h2 {
+    font-size: 1.5rem;
+  }
+
+  .contadores-roles {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .contador-item {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .btn-nuevo,
+  .btn-volver {
+    width: 100%;
+    justify-content: center;
+  }
+}
