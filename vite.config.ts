@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'Web POS Crumen',
-        short_name: 'POS Crumen',
-        description: 'Point of Sale system for Crumen',
+        name: 'POS54N Web Crumen - Sistema POS y Comanda Digital',
+        short_name: 'POS54N Crumen',
+        description: 'Sistema de Punto de Venta (POS) profesional con comanda digital para restaurantes. Gestión de ventas, inventario, comandas digitales y control de mesas.',
         theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',

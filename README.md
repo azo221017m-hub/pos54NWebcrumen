@@ -1,6 +1,8 @@
-# Frontend - Web POS Crumen
+# POS54N Web Crumen - Sistema POS y Comanda Digital
 
-Frontend de la aplicación POS desarrollado con React, TypeScript y Vite.
+**Versión:** 2.5.B12
+
+Frontend de la aplicación POS54N Web Crumen desarrollado con React, TypeScript y Vite. Sistema profesional de Punto de Venta (POS) con comanda digital para restaurantes.
 
 ## 🚀 Inicio Rápido
 
