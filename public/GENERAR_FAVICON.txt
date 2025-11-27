@@ -1,0 +1,11 @@
+<!-- 
+  NOTA: Para generar un favicon.ico desde el logo, puedes usar herramientas como:
+  - https://favicon.io/
+  - https://realfavicongenerator.net/
+  
+  1. Sube el archivo public/logocrumenpos.svg o public/logowebposcrumen.svg
+  2. Genera el favicon.ico
+  3. Coloca el archivo generado en la carpeta public/
+  
+  Esto eliminará el error 404 en /favicon.ico
+-->

@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: ['vite.svg', 'logocrumenpos.svg', 'logowebposcrumen.svg'],
       manifest: {
         name: 'POS54N Web Crumen - Sistema POS y Comanda Digital',
         short_name: 'POS54N Crumen',
@@ -18,20 +18,21 @@ export default defineConfig({
         display: 'standalone',
         icons: [
           {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
+            src: 'vite.svg',
+            sizes: '512x512',
+            type: 'image/svg+xml'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'logocrumenpos.svg',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/svg+xml',
+            purpose: 'any'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'logowebposcrumen.svg',
             sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable'
+            type: 'image/svg+xml',
+            purpose: 'maskable'
           }
         ]
       },
