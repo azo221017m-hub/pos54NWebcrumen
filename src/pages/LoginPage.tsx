@@ -11,11 +11,17 @@ export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [advertencia, setAdvertencia] = useState('');
+  const [intentosRestantes, setIntentosRestantes] = useState<number | null>(null);
+  const [bloqueado, setBloqueado] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
+    setAdvertencia('');
+    setIntentosRestantes(null);
+    setBloqueado(false);
     setIsLoading(true);
 
     try {
@@ -37,7 +43,26 @@ export const LoginPage = () => {
       }
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
-        setError(err.response.data.message || 'Usuario o contraseña incorrectos');
+        const errorData = err.response.data;
+        
+        // Manejar cuenta bloqueada
+        if (errorData.bloqueado || err.response.status === 403) {
+          setBloqueado(true);
+          setError(errorData.message || 'Cuenta bloqueada temporalmente');
+        } 
+        // Manejar intentos restantes
+        else if (errorData.intentosRestantes !== undefined) {
+          setError(errorData.message || 'Usuario o contraseña incorrectos');
+          setIntentosRestantes(errorData.intentosRestantes);
+          
+          if (errorData.advertencia) {
+            setAdvertencia(errorData.advertencia);
+          }
+        } 
+        // Error genérico
+        else {
+          setError(errorData.message || 'Usuario o contraseña incorrectos');
+        }
       } else {
         setError('Error de conexión con el servidor. Verifica que el backend esté ejecutándose.');
       }
@@ -69,7 +94,57 @@ export const LoginPage = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
-            {error && (
+            {/* Mensaje de advertencia (cuenta próxima a bloquearse) */}
+            {advertencia && !bloqueado && (
+              <div className="warning-message" style={{
+                backgroundColor: '#fff3cd',
+                color: '#856404',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                border: '1px solid #ffeaa7'
+              }}>
+                <svg style={{ width: '20px', height: '20px', flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <line x1="12" y1="9" x2="12" y2="13" strokeWidth="2" strokeLinecap="round"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+                <span>{advertencia}</span>
+              </div>
+            )}
+
+            {/* Mensaje de cuenta bloqueada */}
+            {bloqueado && (
+              <div className="blocked-message" style={{
+                backgroundColor: '#f8d7da',
+                color: '#721c24',
+                padding: '16px',
+                borderRadius: '8px',
+                marginBottom: '16px',
+                border: '1px solid #f5c6cb'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                  <svg style={{ width: '24px', height: '24px', flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" strokeWidth="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" strokeWidth="2"/>
+                    <line x1="12" y1="15" x2="12" y2="15" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                  <strong>Cuenta Bloqueada</strong>
+                </div>
+                <p style={{ margin: '0', fontSize: '14px' }}>
+                  {error}
+                </p>
+                <p style={{ margin: '8px 0 0 0', fontSize: '13px', opacity: 0.9 }}>
+                  Tu cuenta se desbloqueará automáticamente en 30 minutos desde el último intento fallido.
+                </p>
+              </div>
+            )}
+
+            {/* Mensaje de error estándar */}
+            {error && !bloqueado && (
               <div className="error-message">
                 <svg className="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <circle cx="12" cy="12" r="10" strokeWidth="2"/>
@@ -77,6 +152,22 @@ export const LoginPage = () => {
                   <line x1="12" y1="16" x2="12.01" y2="16" strokeWidth="2" strokeLinecap="round"/>
                 </svg>
                 {error}
+              </div>
+            )}
+
+            {/* Contador de intentos restantes */}
+            {intentosRestantes !== null && intentosRestantes > 0 && !bloqueado && (
+              <div style={{
+                backgroundColor: intentosRestantes === 1 ? '#fff3cd' : '#d1ecf1',
+                color: intentosRestantes === 1 ? '#856404' : '#0c5460',
+                padding: '10px 14px',
+                borderRadius: '6px',
+                marginBottom: '16px',
+                fontSize: '14px',
+                textAlign: 'center',
+                border: `1px solid ${intentosRestantes === 1 ? '#ffeaa7' : '#bee5eb'}`
+              }}>
+                {intentosRestantes === 1 ? '⚠️' : 'ℹ️'} Te {intentosRestantes === 1 ? 'queda' : 'quedan'} <strong>{intentosRestantes}</strong> {intentosRestantes === 1 ? 'intento' : 'intentos'}
               </div>
             )}
 

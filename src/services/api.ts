@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import config from '../config/api.config';
+import { autoLogout } from './sessionService';
 
 // Crear instancia de Axios
 const apiClient: AxiosInstance = axios.create({
@@ -25,15 +26,24 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Interceptor para manejar respuestas
+// Interceptor para manejar respuestas y errores
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
+    // Manejar errores de autenticación
     if (error.response?.status === 401) {
-      // Token expirado o inválido
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      // Token expirado, inválido o no autorizado
+      autoLogout('/login', 'Tu sesión ha expirado o es inválida. Por favor, inicia sesión nuevamente.');
+      return Promise.reject(error);
     }
+    
+    // Manejar errores de autorización
+    if (error.response?.status === 403) {
+      console.error('Acceso denegado: no tienes permisos para realizar esta acción');
+      // No hacer logout, solo rechazar la promesa
+      return Promise.reject(error);
+    }
+    
     return Promise.reject(error);
   }
 );

@@ -3,6 +3,11 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { pool } from '../config/db';
 import type { RowDataPacket } from 'mysql2';
+import { 
+  verificarBloqueo, 
+  registrarIntentoFallido, 
+  registrarLoginExitoso 
+} from '../services/loginAudit.service';
 
 interface Usuario extends RowDataPacket {
   idUsuario: number;
@@ -27,12 +32,13 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Buscar usuario por alias (username) en la tabla real
+    // PASO 1: Verificar si el usuario existe
     const [rows] = await pool.execute<Usuario[]>(
-      'SELECT * FROM tblposcrumenwebusuarios WHERE alias = ? AND estatus = 1',
+      'SELECT * FROM tblposcrumenwebusuarios WHERE alias = ?',
       [email]
     );
 
+    // Si el usuario NO existe, no revelar esta información
     if (rows.length === 0) {
       res.status(401).json({ 
         success: false, 
@@ -43,22 +49,50 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const usuario = rows[0];
 
-    // Verificar contraseña
-    // Si la contraseña está hasheada en la BD, usar bcrypt
-    const passwordValida = await bcrypt.compare(password, usuario.password);
-
-    // Si las contraseñas NO están hasheadas en la BD (comparación directa)
-    // const passwordValida = password === usuario.password;
-
-    if (!passwordValida) {
-      res.status(401).json({ 
+    // PASO 2: Verificar si el usuario está bloqueado
+    const estadoBloqueo = await verificarBloqueo(email);
+    
+    if (!estadoBloqueo.permitido || estadoBloqueo.bloqueado) {
+      res.status(403).json({ 
         success: false, 
-        message: 'Usuario o contraseña incorrectos' 
+        message: estadoBloqueo.mensaje,
+        bloqueado: true,
+        fechaBloqueado: estadoBloqueo.fechaBloqueado
       });
       return;
     }
 
-    // Generar token JWT
+    // PASO 3: Verificar que el usuario esté activo
+    if (usuario.estatus !== 1) {
+      res.status(401).json({ 
+        success: false, 
+        message: 'Usuario inactivo. Contacte al administrador' 
+      });
+      return;
+    }
+
+    // PASO 4: Verificar contraseña
+    const passwordValida = await bcrypt.compare(password, usuario.password);
+
+    if (!passwordValida) {
+      // AUDITORÍA: Registrar intento fallido
+      await registrarIntentoFallido(email, usuario.idNegocio, req);
+      
+      // Obtener intentos restantes
+      const estadoActualizado = await verificarBloqueo(email);
+      
+      res.status(401).json({ 
+        success: false, 
+        message: 'Usuario o contraseña incorrectos',
+        intentosRestantes: estadoActualizado.intentosRestantes,
+        advertencia: estadoActualizado.intentosRestantes && estadoActualizado.intentosRestantes <= 1 
+          ? 'Atención: Su cuenta será bloqueada si falla nuevamente'
+          : undefined
+      });
+      return;
+    }
+
+    // PASO 5: Login exitoso - Generar token JWT
     const token = jwt.sign(
       { 
         id: usuario.idUsuario, 
@@ -67,9 +101,12 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         idNegocio: usuario.idNegocio,
         idRol: usuario.idRol
       },
-      process.env.JWT_SECRET || 'secret',
-      { expiresIn: '24h' }
+      process.env.JWT_SECRET || 'secret_key_pos54nwebcrumen_2024',
+      { expiresIn: '8h' } // Token válido por 8 horas
     );
+
+    // AUDITORÍA: Registrar login exitoso
+    await registrarLoginExitoso(email, usuario.idNegocio, req);
 
     res.json({
       success: true,
