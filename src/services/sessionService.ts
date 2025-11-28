@@ -111,7 +111,15 @@ export const checkTokenExpiration = (
 ): ReturnType<typeof setInterval> => {
   // Verificación inmediata basada en timestamp real del token
   const token = getToken();
-  if (!token || isTokenExpired(token)) {
+  
+  // Si no hay token, NO ejecutar onExpired inmediatamente
+  // (el usuario puede estar en la página de login)
+  if (!token) {
+    return setInterval(() => {}, CHECK_INTERVAL_MS); // Retornar intervalo inactivo
+  }
+  
+  // Si hay token pero está expirado, ejecutar onExpired
+  if (isTokenExpired(token)) {
     onExpired();
     return setInterval(() => {}, CHECK_INTERVAL_MS); // Retornar intervalo inactivo
   }
@@ -121,7 +129,7 @@ export const checkTokenExpiration = (
     const currentToken = getToken();
     
     if (!currentToken) {
-      onExpired();
+      // Token fue eliminado (logout manual)
       clearInterval(intervalId);
       return;
     }
@@ -249,7 +257,10 @@ export const initSessionMonitoring = (
   // Función para verificar inmediatamente el token
   const checkNow = () => {
     const token = getToken();
-    if (!token || isTokenExpired(token)) {
+    
+    // Solo ejecutar handleExpired si HAY token y está expirado
+    // Si no hay token, no hacer nada (usuario en /login)
+    if (token && isTokenExpired(token)) {
       handleExpired();
     }
   };
