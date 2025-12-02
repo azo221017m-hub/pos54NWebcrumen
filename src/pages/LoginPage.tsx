@@ -5,6 +5,15 @@ import './LoginPage.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+interface UsuarioLogueado {
+  id: number;
+  nombre: string;
+  alias: string;
+  idNegocio: number;
+  idRol: number;
+  estatus: number;
+}
+
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,6 +23,8 @@ export const LoginPage = () => {
   const [advertencia, setAdvertencia] = useState('');
   const [intentosRestantes, setIntentosRestantes] = useState<number | null>(null);
   const [bloqueado, setBloqueado] = useState(false);
+  const [showUserPopup, setShowUserPopup] = useState(false);
+  const [usuarioLogueado, setUsuarioLogueado] = useState<UsuarioLogueado | null>(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -36,8 +47,9 @@ export const LoginPage = () => {
         localStorage.setItem('token', response.data.data.token);
         localStorage.setItem('usuario', JSON.stringify(response.data.data.usuario));
         
-        // Redirigir al dashboard
-        navigate('/dashboard');
+        // Mostrar popup con datos del usuario
+        setUsuarioLogueado(response.data.data.usuario);
+        setShowUserPopup(true);
       } else {
         setError(response.data.message || 'Error al iniciar sesión');
       }
@@ -259,9 +271,65 @@ export const LoginPage = () => {
             <p className="footer-text">
               ¿No tienes una cuenta? <a href="#" className="footer-link">Contacta al administrador</a>
             </p>
+            <p className="version-text">Ver 12.25.30</p>
           </div>
         </div>
       </div>
+
+      {/* Popup de datos del usuario logueado */}
+      {showUserPopup && usuarioLogueado && (
+        <div className="user-popup-overlay">
+          <div className="user-popup">
+            <div className="user-popup-header">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="user-popup-icon">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" strokeWidth="2" strokeLinecap="round"/>
+                <polyline points="22 4 12 14.01 9 11.01" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <h3>¡Bienvenido!</h3>
+            </div>
+            <div className="user-popup-body">
+              <p className="user-popup-subtitle">Has iniciado sesión correctamente</p>
+              <div className="user-popup-data">
+                <div className="user-data-row">
+                  <span className="data-label">Nombre:</span>
+                  <span className="data-value">{usuarioLogueado.nombre}</span>
+                </div>
+                <div className="user-data-row">
+                  <span className="data-label">ID Usuario:</span>
+                  <span className="data-value">{usuarioLogueado.id}</span>
+                </div>
+                <div className="user-data-row">
+                  <span className="data-label">Alias:</span>
+                  <span className="data-value">{usuarioLogueado.alias}</span>
+                </div>
+                <div className="user-data-row">
+                  <span className="data-label">ID Negocio:</span>
+                  <span className="data-value">{usuarioLogueado.idNegocio}</span>
+                </div>
+                <div className="user-data-row">
+                  <span className="data-label">Estatus:</span>
+                  <span className={`data-value status-badge ${usuarioLogueado.estatus === 1 ? 'active' : 'inactive'}`}>
+                    {usuarioLogueado.estatus === 1 ? 'Activo' : 'Inactivo'}
+                  </span>
+                </div>
+                <div className="user-data-row">
+                  <span className="data-label">ID Rol:</span>
+                  <span className="data-value">{usuarioLogueado.idRol}</span>
+                </div>
+              </div>
+            </div>
+            <button 
+              className="user-popup-btn"
+              onClick={() => {
+                setShowUserPopup(false);
+                navigate('/dashboard');
+              }}
+            >
+              Continuar al Dashboard
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
