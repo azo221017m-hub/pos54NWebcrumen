@@ -1,6 +1,9 @@
 import { pool } from '../config/db';
 import bcrypt from 'bcrypt';
 import type { RowDataPacket, ResultSetHeader } from 'mysql2';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 interface Usuario extends RowDataPacket {
   idUsuario: number;
@@ -11,11 +14,21 @@ interface Usuario extends RowDataPacket {
 }
 
 /**
- * Script para actualizar/crear el usuario poscrumen con la contraseña poszaval4
+ * Script para actualizar/crear el usuario poscrumen con una contraseña proporcionada
+ * Uso: POSCRUMEN_PASSWORD=tu_contraseña npm run db:update-poscrumen
  * Este usuario debe poder acceder al sistema.
  */
 const updatePoscrumenPassword = async () => {
   try {
+    // Obtener la contraseña desde variable de entorno
+    const newPassword = process.env.POSCRUMEN_PASSWORD;
+    
+    if (!newPassword) {
+      console.error('❌ Error: Debes proporcionar la contraseña como variable de entorno.');
+      console.log('\n📝 Uso: POSCRUMEN_PASSWORD=tu_contraseña npm run db:update-poscrumen\n');
+      process.exit(1);
+    }
+    
     console.log('🔄 Buscando usuario poscrumen...\n');
     
     // Buscar usuario poscrumen
@@ -24,7 +37,6 @@ const updatePoscrumenPassword = async () => {
       ['poscrumen']
     );
     
-    const newPassword = 'poszaval4';
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     
     if (usuarios.length > 0) {
@@ -41,7 +53,6 @@ const updatePoscrumenPassword = async () => {
       );
       
       console.log('\n✅ Contraseña actualizada exitosamente!');
-      console.log(`   Nueva contraseña: ${newPassword}`);
       
       // Limpiar intentos de login fallidos
       await pool.execute<ResultSetHeader>(
@@ -64,14 +75,11 @@ const updatePoscrumenPassword = async () => {
       console.log('✅ Usuario poscrumen creado exitosamente!');
       console.log(`   ID: ${result.insertId}`);
       console.log('   Alias: poscrumen');
-      console.log(`   Password: ${newPassword}`);
       console.log('   Rol: 1 (Administrador)');
     }
     
     console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('📝 Credenciales de acceso:');
-    console.log('   Usuario: poscrumen');
-    console.log('   Contraseña: poszaval4');
+    console.log('📝 El usuario poscrumen ahora puede acceder con la nueva contraseña.');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     
   } catch (error) {

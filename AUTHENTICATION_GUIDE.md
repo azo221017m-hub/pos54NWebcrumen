@@ -46,24 +46,20 @@ Rol: Administrador
 
 ### 2.1 Usuario poscrumen (Producción)
 
-Para actualizar/crear el usuario `poscrumen` con la contraseña `poszaval4`:
+Para actualizar/crear el usuario `poscrumen` con una nueva contraseña:
 
 ```bash
 cd backend
-npm run db:update-poscrumen
+POSCRUMEN_PASSWORD=tu_contraseña npm run db:update-poscrumen
 ```
 
 Este script:
 - ✅ Busca el usuario `poscrumen` en la base de datos
-- ✅ Actualiza la contraseña con el hash bcrypt de `poszaval4`
+- ✅ Actualiza la contraseña con el hash bcrypt proporcionado
 - ✅ Activa el usuario (estatus = 1)
 - ✅ Limpia el historial de intentos de login fallidos
 
-**Credenciales:**
-```
-Usuario: poscrumen
-Contraseña: poszaval4
-```
+**Nota:** La contraseña debe proporcionarse mediante variable de entorno por seguridad.
 
 ### 2.2 Desbloquear Cuenta
 
