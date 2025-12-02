@@ -86,7 +86,7 @@
 }
 
 .contador.total {
-  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  background: linear-gradient(135deg, #f59e0b 0%, #667eea 100%);
   color: white;
 }
 
@@ -108,7 +108,7 @@
 /* Botón nueva unidad */
 .btn-nueva-unidad {
   padding: 1rem 2rem;
-  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  background: linear-gradient(135deg, #f59e0b 0%, #667eea 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -156,7 +156,7 @@
 .mensaje-alerta.success {
   background: #d1fae5;
   color: #065f46;
-  border-left: 4px solid #10b981;
+  border-left: 4px solid #764ba2;
 }
 
 .mensaje-alerta.error {

@@ -17,7 +17,7 @@
 
 .spinner {
   animation: spin 1s linear infinite;
-  color: #f97316;
+  color: #667eea;
 }
 
 @keyframes spin {
@@ -74,7 +74,7 @@
 .mensaje-success {
   background: #d1fae5;
   color: #065f46;
-  border-left: 4px solid #10b981;
+  border-left: 4px solid #764ba2;
 }
 
 .mensaje-success .mensaje-cerrar:hover {
@@ -94,7 +94,7 @@
 .mensaje-info {
   background: #dbeafe;
   color: #1e40af;
-  border-left: 4px solid #3b82f6;
+  border-left: 4px solid #764ba2;
 }
 
 .mensaje-info .mensaje-cerrar:hover {
@@ -120,7 +120,7 @@
 .header-icon {
   width: 56px;
   height: 56px;
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -147,7 +147,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -155,12 +155,12 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 .btn-nuevo:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .btn-nuevo:active {

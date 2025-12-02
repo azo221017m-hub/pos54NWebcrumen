@@ -41,7 +41,7 @@
 
 /* Header */
 .receta-modal-header {
-  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  background: linear-gradient(135deg, #667eea 0%, #fb923c 100%);
   color: white;
   padding: 1.75rem 2rem;
   display: flex;
@@ -106,12 +106,12 @@
 }
 
 .receta-form::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  background: linear-gradient(135deg, #667eea 0%, #fb923c 100%);
   border-radius: 10px;
 }
 
 .receta-form::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
 }
 
 /* Form Grid */
@@ -152,7 +152,7 @@
 
 .receta-input:focus {
   outline: none;
-  border-color: #f97316;
+  border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
 }
 
@@ -173,7 +173,7 @@
 
 .receta-textarea:focus {
   outline: none;
-  border-color: #f97316;
+  border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
 }
 
@@ -189,7 +189,7 @@
 
 .receta-select:focus {
   outline: none;
-  border-color: #f97316;
+  border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
 }
 
@@ -204,7 +204,7 @@
 }
 
 .receta-file-input:hover {
-  border-color: #f97316;
+  border-color: #667eea;
   background: #fff7ed;
 }
 
@@ -321,7 +321,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
-  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  background: linear-gradient(135deg, #667eea 0%, #fb923c 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -361,7 +361,7 @@
 }
 
 .receta-ingredients-list::-webkit-scrollbar-thumb {
-  background: #f97316;
+  background: #667eea;
   border-radius: 10px;
 }
 
@@ -376,7 +376,7 @@
 }
 
 .receta-ingredient-card:hover {
-  border-color: #f97316;
+  border-color: #667eea;
   box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
 }
 
@@ -384,7 +384,7 @@
   position: absolute;
   top: -10px;
   left: 15px;
-  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  background: linear-gradient(135deg, #667eea 0%, #fb923c 100%);
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
@@ -523,7 +523,7 @@
 }
 
 .receta-button-submit {
-  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  background: linear-gradient(135deg, #667eea 0%, #fb923c 100%);
   color: white;
 }
 

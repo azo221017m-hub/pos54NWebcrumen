@@ -18,12 +18,12 @@
 }
 
 .lista-descuentos::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 10px;
 }
 
 .lista-descuentos::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #5568d3 0%, #667eea 100%);
 }
 
 .descuento-card {
@@ -37,11 +37,11 @@
 
 .descuento-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
 }
 
 .descuento-card-header {
-  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 1.25rem;
   display: flex;
   align-items: center;
@@ -86,7 +86,7 @@
 .descuento-valor {
   text-align: center;
   padding: 1.5rem;
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
   border-radius: 12px;
   margin-bottom: 1.5rem;
 }
@@ -95,7 +95,7 @@
   display: block;
   font-size: 2.5rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -124,11 +124,11 @@
   padding: 0.75rem;
   background: #f9fafb;
   border-radius: 8px;
-  border-left: 3px solid #2563eb;
+  border-left: 3px solid #667eea;
 }
 
 .info-item svg {
-  color: #2563eb;
+  color: #667eea;
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -155,7 +155,7 @@
 }
 
 .estatus-activo {
-  color: #059669 !important;
+  color: #667eea !important;
 }
 
 .estatus-inactivo {
@@ -167,7 +167,7 @@
 }
 
 .requiere-no {
-  color: #059669 !important;
+  color: #667eea !important;
 }
 
 .descuento-card-footer {
@@ -215,12 +215,12 @@
 }
 
 .btn-edit {
-  background: #2563eb;
+  background: #667eea;
   color: white;
 }
 
 .btn-edit:hover {
-  background: #1d4ed8;
+  background: #5568d3;
   transform: translateY(-1px);
 }
 

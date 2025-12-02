@@ -119,7 +119,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
           alias: usuario.alias,
           telefono: usuario.telefono,
           idNegocio: usuario.idNegocio,
-          idRol: usuario.idRol
+          idRol: usuario.idRol,
+          estatus: usuario.estatus
         }
       }
     });
