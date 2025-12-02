@@ -293,3 +293,16 @@ export const obtenerHistorialIntentos = async (aliasusuario: string): Promise<In
     throw error;
   }
 };
+
+/**
+ * Desbloquear cuenta de usuario (función pública para uso en controladores)
+ */
+export const desbloquearCuenta = async (aliasusuario: string): Promise<void> => {
+  try {
+    await resetearIntentos(aliasusuario);
+    console.log(`Cuenta desbloqueada para usuario: ${aliasusuario}`);
+  } catch (error) {
+    console.error('Error al desbloquear cuenta:', error);
+    throw error;
+  }
+};
