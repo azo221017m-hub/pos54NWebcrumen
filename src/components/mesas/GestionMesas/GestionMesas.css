@@ -14,7 +14,7 @@
 
 .spinner {
   animation: spin 1s linear infinite;
-  color: #059669;
+  color: #667eea;
 }
 
 @keyframes spin {
@@ -54,7 +54,7 @@
 .mensaje.success {
   background: #d1fae5;
   color: #065f46;
-  border-left: 4px solid #059669;
+  border-left: 4px solid #10b981;
 }
 
 .mensaje.error {
@@ -83,13 +83,13 @@
 .header-icon {
   width: 64px;
   height: 64px;
-  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .gestion-header h2 {
@@ -110,20 +110,20 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 1.5rem;
-  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
   font-size: 1rem;
 }
 
 .btn-nueva-mesa:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
 .btn-nueva-mesa:active {
@@ -152,14 +152,14 @@
 
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.1);
-  border-color: #d1fae5;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.1);
+  border-color: #e0e7ff;
 }
 
 .stat-numero {
   font-size: 2.5rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -248,11 +248,11 @@
 }
 
 .mesas-scroll-container::-webkit-scrollbar-thumb {
-  background: #059669;
+  background: #667eea;
   border-radius: 4px;
 }
 
 .mesas-scroll-container::-webkit-scrollbar-thumb:hover {
-  background: #047857;
+  background: #5568d3;
 }
 
