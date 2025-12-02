@@ -44,6 +44,38 @@ Contraseña: admin123
 Rol: Administrador
 ```
 
+### 2.1 Usuario poscrumen (Producción)
+
+Para actualizar/crear el usuario `poscrumen` con la contraseña `poszaval4`:
+
+```bash
+cd backend
+npm run db:update-poscrumen
+```
+
+Este script:
+- ✅ Busca el usuario `poscrumen` en la base de datos
+- ✅ Actualiza la contraseña con el hash bcrypt de `poszaval4`
+- ✅ Activa el usuario (estatus = 1)
+- ✅ Limpia el historial de intentos de login fallidos
+
+**Credenciales:**
+```
+Usuario: poscrumen
+Contraseña: poszaval4
+```
+
+### 2.2 Desbloquear Cuenta
+
+Si una cuenta está bloqueada por múltiples intentos fallidos:
+
+```bash
+cd backend
+npm run db:reset-login-attempts
+```
+
+Este script resetea los intentos de login del usuario `poscrumen` y desbloquea la cuenta.
+
 ### 3. Iniciar Servidores
 
 **Terminal 1 - Backend:**
@@ -248,12 +280,12 @@ curl -X GET http://localhost:3000/api/auth/verify \
 
 ## 🎯 Próximos Pasos
 
+- [x] Agregar límite de intentos de login
+- [x] Agregar logs de auditoría de login
 - [ ] Implementar "Olvidé mi contraseña"
 - [ ] Agregar 2FA (autenticación de dos factores)
 - [ ] Implementar refresh tokens
-- [ ] Agregar límite de intentos de login
 - [ ] Implementar sesiones concurrentes
-- [ ] Agregar logs de auditoría de login
 
 ---
 
