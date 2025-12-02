@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, useCallback, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './LoginPage.css';
@@ -26,6 +26,21 @@ export const LoginPage = () => {
   const [showUserPopup, setShowUserPopup] = useState(false);
   const [usuarioLogueado, setUsuarioLogueado] = useState<UsuarioLogueado | null>(null);
   const navigate = useNavigate();
+
+  // Handle escape key to close popup
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape' && showUserPopup) {
+      setShowUserPopup(false);
+      navigate('/dashboard');
+    }
+  }, [showUserPopup, navigate]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -278,14 +293,25 @@ export const LoginPage = () => {
 
       {/* Popup de datos del usuario logueado */}
       {showUserPopup && usuarioLogueado && (
-        <div className="user-popup-overlay">
+        <div 
+          className="user-popup-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="popup-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowUserPopup(false);
+              navigate('/dashboard');
+            }
+          }}
+        >
           <div className="user-popup">
             <div className="user-popup-header">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="user-popup-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="user-popup-icon" aria-hidden="true">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" strokeWidth="2" strokeLinecap="round"/>
                 <polyline points="22 4 12 14.01 9 11.01" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <h3>¡Bienvenido!</h3>
+              <h3 id="popup-title">¡Bienvenido!</h3>
             </div>
             <div className="user-popup-body">
               <p className="user-popup-subtitle">Has iniciado sesión correctamente</p>
@@ -324,6 +350,7 @@ export const LoginPage = () => {
                 setShowUserPopup(false);
                 navigate('/dashboard');
               }}
+              autoFocus
             >
               Continuar al Dashboard
             </button>
