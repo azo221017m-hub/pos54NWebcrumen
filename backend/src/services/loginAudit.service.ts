@@ -299,13 +299,7 @@ export const obtenerHistorialIntentos = async (aliasusuario: string): Promise<In
  */
 export const desbloquearCuenta = async (aliasusuario: string): Promise<void> => {
   try {
-    await pool.query<ResultSetHeader>(
-      `UPDATE tblposcrumenwebintentoslogin 
-       SET intentos = 0, fechabloqueado = NULL 
-       WHERE aliasusuario = ? 
-       ORDER BY id DESC LIMIT 1`,
-      [aliasusuario]
-    );
+    await resetearIntentos(aliasusuario);
     console.log(`Cuenta desbloqueada para usuario: ${aliasusuario}`);
   } catch (error) {
     console.error('Error al desbloquear cuenta:', error);
