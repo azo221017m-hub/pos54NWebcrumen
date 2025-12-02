@@ -26,14 +26,25 @@ apiClient.interceptors.request.use(
   }
 );
 
+// Endpoints de autenticación que no deben disparar auto-logout en 401
+const AUTH_ENDPOINTS = ['/auth/login', '/auth/register'];
+
 // Interceptor para manejar respuestas y errores
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
+    const requestUrl = error.config?.url || '';
+    
     // Manejar errores de autenticación
     if (error.response?.status === 401) {
-      // Token expirado, inválido o no autorizado
-      autoLogout('/login', 'Tu sesión ha expirado o es inválida. Por favor, inicia sesión nuevamente.');
+      // No hacer auto-logout para endpoints de autenticación (login/register)
+      // ya que 401 es una respuesta esperada para credenciales incorrectas
+      const isAuthEndpoint = AUTH_ENDPOINTS.some(endpoint => requestUrl.includes(endpoint));
+      
+      if (!isAuthEndpoint) {
+        // Token expirado, inválido o no autorizado (en endpoints protegidos)
+        autoLogout('/login', 'Tu sesión ha expirado o es inválida. Por favor, inicia sesión nuevamente.');
+      }
       return Promise.reject(error);
     }
     
