@@ -83,4 +83,13 @@ app.use('/api/recetas', recetasRoutes);
 app.use('/api/categorias', categoriasRoutes);
 app.use('/api/cat-moderadores', catModeradoresRoutes);
 
+// Manejo de rutas no encontradas (404)
+app.use((_req: Request, res: Response) => {
+  res.status(404).json({
+    success: false,
+    message: 'Endpoint no encontrado',
+    path: _req.originalUrl
+  });
+});
+
 export default app;

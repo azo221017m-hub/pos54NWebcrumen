@@ -10,7 +10,9 @@
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "db:verify": "ts-node src/scripts/verifyDatabase.ts",
-    "db:seed-user": "ts-node src/scripts/seedUsuario.ts"
+    "db:seed-user": "ts-node src/scripts/seedUsuario.ts",
+    "db:update-poscrumen": "ts-node src/scripts/updatePoscrumenPassword.ts",
+    "db:reset-login-attempts": "ts-node src/scripts/resetLoginAttempts.ts"
   },
   "keywords": [
     "pos",
