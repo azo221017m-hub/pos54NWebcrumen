@@ -62,16 +62,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // PASO 3: Verificar que el usuario esté activo
-    if (usuario.estatus !== 1) {
-      res.status(401).json({ 
-        success: false, 
-        message: 'Usuario inactivo. Contacte al administrador' 
-      });
-      return;
-    }
-
-    // PASO 4: Verificar contraseña
+    // PASO 3: Verificar contraseña
     const passwordValida = await bcrypt.compare(password, usuario.password);
 
     if (!passwordValida) {
@@ -88,6 +79,15 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         advertencia: estadoActualizado.intentosRestantes && estadoActualizado.intentosRestantes <= 1 
           ? 'Atención: Su cuenta será bloqueada si falla nuevamente'
           : undefined
+      });
+      return;
+    }
+
+    // PASO 4: Verificar que el usuario esté activo (después de verificar contraseña)
+    if (usuario.estatus !== 1) {
+      res.status(401).json({ 
+        success: false, 
+        message: 'Usuario inactivo. Contacte al administrador' 
       });
       return;
     }
