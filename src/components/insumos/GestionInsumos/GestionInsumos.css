@@ -86,7 +86,7 @@
 .mensaje-success {
   background: #d1fae5;
   color: #065f46;
-  border-left: 4px solid #10b981;
+  border-left: 4px solid #764ba2;
 }
 
 .mensaje-success .mensaje-cerrar:hover {
@@ -106,7 +106,7 @@
 .mensaje-info {
   background: #dbeafe;
   color: #1e40af;
-  border-left: 4px solid #3b82f6;
+  border-left: 4px solid #764ba2;
 }
 
 .mensaje-info .mensaje-cerrar:hover {

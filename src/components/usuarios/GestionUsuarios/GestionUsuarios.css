@@ -87,7 +87,7 @@
 }
 
 .contador.activos {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
   color: white;
 }
 
@@ -162,7 +162,7 @@
 .mensaje-alerta.success {
   background: #d1fae5;
   color: #065f46;
-  border-left: 4px solid #10b981;
+  border-left: 4px solid #764ba2;
 }
 
 .mensaje-alerta.error {

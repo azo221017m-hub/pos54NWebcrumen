@@ -125,7 +125,7 @@
 }
 
 .usuario-badge.activo {
-  background: #10b981;
+  background: #764ba2;
   color: white;
 }
 
@@ -292,12 +292,12 @@
 }
 
 .btn-editar {
-  background: #3b82f6;
+  background: #764ba2;
   color: white;
 }
 
 .btn-editar:hover {
-  background: #2563eb;
+  background: #667eea;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
