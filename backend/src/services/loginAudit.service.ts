@@ -293,3 +293,22 @@ export const obtenerHistorialIntentos = async (aliasusuario: string): Promise<In
     throw error;
   }
 };
+
+/**
+ * Desbloquear cuenta de usuario (función pública para uso en controladores)
+ */
+export const desbloquearCuenta = async (aliasusuario: string): Promise<void> => {
+  try {
+    await pool.query<ResultSetHeader>(
+      `UPDATE tblposcrumenwebintentoslogin 
+       SET intentos = 0, fechabloqueado = NULL 
+       WHERE aliasusuario = ? 
+       ORDER BY id DESC LIMIT 1`,
+      [aliasusuario]
+    );
+    console.log(`Cuenta desbloqueada para usuario: ${aliasusuario}`);
+  } catch (error) {
+    console.error('Error al desbloquear cuenta:', error);
+    throw error;
+  }
+};

@@ -6,7 +6,8 @@ import type { RowDataPacket } from 'mysql2';
 import { 
   verificarBloqueo, 
   registrarIntentoFallido, 
-  registrarLoginExitoso 
+  registrarLoginExitoso,
+  desbloquearCuenta
 } from '../services/loginAudit.service';
 
 interface Usuario extends RowDataPacket {
@@ -201,6 +202,67 @@ export const verifyToken = async (req: Request, res: Response): Promise<void> =>
     });
   } catch (error) {
     console.error('Error en verificación:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error en el servidor' 
+    });
+  }
+};
+
+export const checkLoginStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { alias } = req.params;
+
+    if (!alias) {
+      res.status(400).json({ 
+        success: false, 
+        message: 'Alias de usuario es requerido' 
+      });
+      return;
+    }
+
+    const estadoBloqueo = await verificarBloqueo(alias);
+    
+    res.json({
+      success: true,
+      data: {
+        alias,
+        bloqueado: estadoBloqueo.bloqueado || false,
+        permitido: estadoBloqueo.permitido,
+        mensaje: estadoBloqueo.mensaje,
+        intentosRestantes: estadoBloqueo.intentosRestantes,
+        fechaBloqueado: estadoBloqueo.fechaBloqueado
+      }
+    });
+  } catch (error) {
+    console.error('Error al verificar estado de login:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error en el servidor' 
+    });
+  }
+};
+
+export const unlockUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { alias } = req.params;
+
+    if (!alias) {
+      res.status(400).json({ 
+        success: false, 
+        message: 'Alias de usuario es requerido' 
+      });
+      return;
+    }
+
+    await desbloquearCuenta(alias);
+    
+    res.json({
+      success: true,
+      message: `Usuario ${alias} desbloqueado exitosamente`
+    });
+  } catch (error) {
+    console.error('Error al desbloquear usuario:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Error en el servidor' 

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { login, register, verifyToken } from '../controllers/auth.controller';
+import { login, register, verifyToken, checkLoginStatus, unlockUser } from '../controllers/auth.controller';
 import { authMiddleware } from '../middlewares/auth';
 
 const router = Router();
@@ -24,5 +24,19 @@ router.post('/register', register);
  * @access  Private
  */
 router.get('/verify', authMiddleware, verifyToken);
+
+/**
+ * @route   GET /api/auth/status/:alias
+ * @desc    Verificar estado de bloqueo de un usuario
+ * @access  Private (solo administradores)
+ */
+router.get('/status/:alias', authMiddleware, checkLoginStatus);
+
+/**
+ * @route   POST /api/auth/unlock/:alias
+ * @desc    Desbloquear cuenta de usuario
+ * @access  Private (solo administradores)
+ */
+router.post('/unlock/:alias', authMiddleware, unlockUser);
 
 export default router;

@@ -54,6 +54,23 @@ app.use(morgan('dev')); // Logging
 app.use(express.json({ limit: '10mb' })); // Parser JSON con límite aumentado
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Ruta raíz - Información de la API
+app.get('/', (_req: Request, res: Response) => {
+  res.json({ 
+    success: true,
+    message: 'API POS Crumen - Bienvenido',
+    version: '2.5.B12',
+    docs: 'Use /api/health para verificar el estado del servidor',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      productos: '/api/productos',
+      ventas: '/api/ventas'
+    },
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Ruta de prueba
 app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ 
