@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import bcrypt from 'bcrypt';
 
 // Obtener todos los usuarios
 export const obtenerUsuarios = async (_req: Request, res: Response): Promise<void> => {
@@ -161,6 +162,9 @@ export const crearUsuario = async (req: Request, res: Response): Promise<void> =
     const fotopersonaBuffer = fotopersona ? Buffer.from(fotopersona, 'base64') : null;
     const fotoavatarBuffer = fotoavatar ? Buffer.from(fotoavatar, 'base64') : null;
 
+    // Hash de la contraseña con bcrypt
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const [result] = await pool.execute<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebusuarios (
         idNegocio, 
@@ -185,7 +189,7 @@ export const crearUsuario = async (req: Request, res: Response): Promise<void> =
         idRol || null,
         nombre,
         alias,
-        password, // En producción, usar bcrypt para hash
+        hashedPassword,
         telefono || null,
         cumpleFormatted || null,
         frasepersonal || null,
@@ -303,10 +307,11 @@ export const actualizarUsuario = async (req: Request, res: Response): Promise<vo
       usuarioauditoria || 'sistema'
     ];
 
-    // Si se proporciona password, actualizarlo
+    // Si se proporciona password, hash y actualizarlo
     if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
       query += ', password = ?';
-      params.push(password);
+      params.push(hashedPassword);
     }
 
     // Actualizar imágenes si se proporcionan
