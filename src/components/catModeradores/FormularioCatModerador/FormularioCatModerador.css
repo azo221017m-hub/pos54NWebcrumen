@@ -30,7 +30,7 @@
   border-radius: 20px;
   width: 100%;
   max-width: 700px;
-  max-height: 90vh;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -98,13 +98,16 @@
 .cat-moderador-form {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .cat-moderador-form-body {
   flex: 1;
   overflow-y: auto;
   padding: 2rem;
+  min-height: 0;
 }
 
 .cat-moderador-form-body::-webkit-scrollbar {
@@ -304,6 +307,7 @@
   padding: 1.5rem 2rem;
   background: #f8fafc;
   border-top: 1px solid #e2e8f0;
+  flex-shrink: 0;
 }
 
 .btn-cancelar,
