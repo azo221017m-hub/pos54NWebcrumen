@@ -18,12 +18,12 @@
 }
 
 .gestion-usuarios-container::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   border-radius: 4px;
 }
 
 .gestion-usuarios-container::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
 }
 
 /* Header de la gestión */
@@ -50,7 +50,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  color: #667eea;
+  color: #10b981;
 }
 
 .header-title h2 {
@@ -82,12 +82,12 @@
 }
 
 .contador.total {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   color: white;
 }
 
 .contador.activos {
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
   color: white;
 }
 
@@ -114,7 +114,7 @@
 /* Botón nuevo usuario */
 .btn-nuevo-usuario {
   padding: 1rem 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -125,12 +125,12 @@
   align-items: center;
   gap: 0.75rem;
   transition: all 0.3s;
-  box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
 }
 
 .btn-nuevo-usuario:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
 }
 
 .btn-nuevo-usuario:active {
@@ -162,7 +162,7 @@
 .mensaje-alerta.success {
   background: #d1fae5;
   color: #065f46;
-  border-left: 4px solid #764ba2;
+  border-left: 4px solid #34d399;
 }
 
 .mensaje-alerta.error {

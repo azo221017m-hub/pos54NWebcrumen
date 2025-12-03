@@ -93,7 +93,7 @@
 .mensaje-alerta.success {
   background: #d1fae5;
   color: #065f46;
-  border-left: 4px solid #764ba2;
+  border-left: 4px solid #34d399;
 }
 
 .mensaje-alerta.error {
@@ -105,7 +105,7 @@
 .mensaje-alerta.info {
   background: #dbeafe;
   color: #1e40af;
-  border-left: 4px solid #764ba2;
+  border-left: 4px solid #34d399;
 }
 
 /* Loading */

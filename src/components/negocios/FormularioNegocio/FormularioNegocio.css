@@ -12,7 +12,7 @@
 }
 
 .formulario-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   padding: 1.5rem 2rem;
   color: white;
   flex-shrink: 0;
@@ -46,12 +46,12 @@
 }
 
 .formulario-contenido::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   border-radius: 4px;
 }
 
 .formulario-contenido::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #5568d3 0%, #6a3f8e 100%);
+  background: linear-gradient(135deg, #059669 0%, #6a3f8e 100%);
 }
 
 .formulario-seccion {
@@ -74,7 +74,7 @@
   align-items: center;
   gap: 0.5rem;
   padding-bottom: 0.75rem;
-  border-bottom: 2px solid #667eea;
+  border-bottom: 2px solid #10b981;
 }
 
 .formulario-grid {
@@ -114,8 +114,8 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .form-group textarea {
@@ -135,7 +135,7 @@
 }
 
 .form-group-checkbox:hover {
-  border-color: #667eea;
+  border-color: #10b981;
   background: #f7fafc;
 }
 
@@ -143,7 +143,7 @@
   width: 20px;
   height: 20px;
   cursor: pointer;
-  accent-color: #667eea;
+  accent-color: #10b981;
 }
 
 .form-group-checkbox label {
@@ -197,14 +197,14 @@
 }
 
 .btn-guardar {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   color: white;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .btn-guardar:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
 }
 
 .btn-cancelar:disabled,

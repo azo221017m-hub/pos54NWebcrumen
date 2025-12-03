@@ -54,7 +54,7 @@
   align-items: flex-start;
   gap: 1rem;
   padding: 1.25rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   color: white;
 }
 
@@ -120,7 +120,7 @@
 
 .categoria-recurrente {
   background: rgba(59, 130, 246, 0.2);
-  color: #764ba2;
+  color: #34d399;
   border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
@@ -138,7 +138,7 @@
 
 .badge-success {
   background: rgba(16, 185, 129, 0.2);
-  color: #764ba2;
+  color: #34d399;
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
@@ -171,7 +171,7 @@
 }
 
 .info-item svg {
-  color: #667eea;
+  color: #10b981;
   flex-shrink: 0;
 }
 
@@ -199,7 +199,7 @@
 }
 
 .stat-icon {
-  color: #667eea;
+  color: #10b981;
   flex-shrink: 0;
 }
 
@@ -332,14 +332,14 @@
 }
 
 .btn-editar {
-  background: #667eea;
+  background: #10b981;
   color: white;
 }
 
 .btn-editar:hover {
-  background: #5568d3;
+  background: #059669;
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
 .btn-eliminar {
