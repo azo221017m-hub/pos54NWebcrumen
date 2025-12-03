@@ -386,11 +386,18 @@ export const DashboardPage = () => {
                 </svg>
                 Descuentos
               </button>
+              <button className="submenu-item" onClick={() => navigate('/config-productos')}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="2" y="7" width="20" height="15" rx="2"/>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                </svg>
+                Productos
+              </button>
             </div>
           )}
         </div>
 
-        <button className="nav-item">
+        <button className="nav-item" onClick={() => navigate('/config-productos')}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="2" y="7" width="20" height="15" rx="2"/>
             <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
