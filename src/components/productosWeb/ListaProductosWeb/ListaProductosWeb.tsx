@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit2, Trash2, Package, DollarSign, Tag, CheckCircle, XCircle, Image as ImageIcon } from 'lucide-react';
+import { Edit2, Trash2, Package, DollarSign, CheckCircle, XCircle, Image as ImageIcon } from 'lucide-react';
 import type { ProductoWeb } from '../../../types/productoWeb.types';
 import './ListaProductosWeb.css';
 
@@ -89,14 +89,6 @@ const ListaProductosWeb: React.FC<Props> = ({ productos, onEditar, onEliminar })
                 <div className="stat-info">
                   <span className="stat-label">Precio</span>
                   <span className="stat-value">{formatCurrency(producto.precio)}</span>
-                </div>
-              </div>
-
-              <div className="stat-item costo">
-                <Tag size={18} />
-                <div className="stat-info">
-                  <span className="stat-label">Costo</span>
-                  <span className="stat-value">{formatCurrency(producto.costoproducto)}</span>
                 </div>
               </div>
 
