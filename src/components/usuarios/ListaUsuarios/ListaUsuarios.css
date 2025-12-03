@@ -18,12 +18,12 @@
 }
 
 .lista-usuarios-container::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   border-radius: 10px;
 }
 
 .lista-usuarios-container::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #5568d3 0%, #6a3f8e 100%);
+  background: linear-gradient(135deg, #059669 0%, #6a3f8e 100%);
 }
 
 /* Grid de usuarios */
@@ -51,7 +51,7 @@
 
 /* Header de la card */
 .usuario-card-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   padding: 1.5rem;
   display: flex;
   align-items: center;
@@ -125,7 +125,7 @@
 }
 
 .usuario-badge.activo {
-  background: #764ba2;
+  background: #34d399;
   color: white;
 }
 
@@ -154,7 +154,7 @@
 
 .contacto-item svg {
   flex-shrink: 0;
-  color: #667eea;
+  color: #10b981;
 }
 
 /* Frase personal */
@@ -247,7 +247,7 @@
 }
 
 .asignacion-item svg {
-  color: #667eea;
+  color: #10b981;
   flex-shrink: 0;
 }
 
@@ -292,12 +292,12 @@
 }
 
 .btn-editar {
-  background: #764ba2;
+  background: #34d399;
   color: white;
 }
 
 .btn-editar:hover {
-  background: #667eea;
+  background: #10b981;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
@@ -329,7 +329,7 @@
   width: 48px;
   height: 48px;
   border: 4px solid #e5e7eb;
-  border-top-color: #667eea;
+  border-top-color: #10b981;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;

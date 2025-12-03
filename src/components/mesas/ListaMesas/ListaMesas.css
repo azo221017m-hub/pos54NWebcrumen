@@ -18,12 +18,12 @@
 }
 
 .lista-mesas::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   border-radius: 10px;
 }
 
 .lista-mesas::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #5568d3 0%, #667eea 100%);
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
 }
 
 .mesa-card {
@@ -37,11 +37,11 @@
 
 .mesa-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
 }
 
 .mesa-card-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   padding: 1.25rem;
   display: flex;
   justify-content: space-between;
@@ -117,11 +117,11 @@
   padding: 0.75rem;
   background: #f9fafb;
   border-radius: 8px;
-  border-left: 3px solid #667eea;
+  border-left: 3px solid #10b981;
 }
 
 .info-item svg {
-  color: #667eea;
+  color: #10b981;
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -152,7 +152,7 @@
 }
 
 .tiempo-en-curso {
-  color: #667eea !important;
+  color: #10b981 !important;
 }
 
 .tiempo-demora {
@@ -220,12 +220,12 @@
 }
 
 .btn-edit {
-  background: #667eea;
+  background: #10b981;
   color: white;
 }
 
 .btn-edit:hover {
-  background: #5568d3;
+  background: #059669;
   transform: translateY(-1px);
 }
 
