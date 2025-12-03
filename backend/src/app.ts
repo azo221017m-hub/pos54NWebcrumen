@@ -23,6 +23,7 @@ import subrecetasRoutes from './routes/subrecetas.routes';
 import recetasRoutes from './routes/recetas.routes';
 import categoriasRoutes from './routes/categorias.routes';
 import catModeradoresRoutes from './routes/catModeradores.routes';
+import productosWebRoutes from './routes/productosWeb.routes';
 
 dotenv.config();
 
@@ -99,6 +100,7 @@ app.use('/api/subrecetas', subrecetasRoutes);
 app.use('/api/recetas', recetasRoutes);
 app.use('/api/categorias', categoriasRoutes);
 app.use('/api/cat-moderadores', catModeradoresRoutes);
+app.use('/api/productos-web', productosWebRoutes);
 
 // Manejo de rutas no encontradas (404)
 app.use((_req: Request, res: Response) => {

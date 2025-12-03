@@ -121,10 +121,6 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
       nuevosErrores.costo_promedio_ponderado = 'El costo no puede ser negativo';
     }
 
-    if (formData.precio_venta < 0) {
-      nuevosErrores.precio_venta = 'El precio de venta no puede ser negativo';
-    }
-
     setErrores(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
   };
@@ -242,7 +238,7 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
 
           {/* Precios */}
           <div className="form-section">
-            <h3 className="section-title">Costos y Precios</h3>
+            <h3 className="section-title">Costos</h3>
             
             <div className="form-row">
               <div className="form-group">
@@ -265,23 +261,6 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="precio_venta">
-                  Precio de Venta <span className="required">*</span>
-                </label>
-                <input
-                  type="number"
-                  id="precio_venta"
-                  name="precio_venta"
-                  value={formData.precio_venta}
-                  onChange={handleChange}
-                  className={errores.precio_venta ? 'error' : ''}
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                />
-                {errores.precio_venta && <span className="error-message">{errores.precio_venta}</span>}
-              </div>
             </div>
           </div>
 

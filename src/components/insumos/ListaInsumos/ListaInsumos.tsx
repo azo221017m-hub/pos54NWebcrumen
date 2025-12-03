@@ -102,18 +102,6 @@ const ListaInsumos: React.FC<Props> = ({ insumos, onEdit, onDelete }) => {
                     </span>
                   </div>
                 </div>
-
-                <div className="stat-item">
-                  <div className="stat-icon">
-                    <DollarSign size={20} />
-                  </div>
-                  <div className="stat-info">
-                    <span className="stat-label">Precio Venta</span>
-                    <span className="stat-value">
-                      {formatCurrency(insumo.precio_venta)}
-                    </span>
-                  </div>
-                </div>
               </div>
 
               {(insumo.idinocuidad || insumo.nombrecuentacontable) && (

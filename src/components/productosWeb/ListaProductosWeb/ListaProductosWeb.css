@@ -1,0 +1,352 @@
+/* Lista de Productos */
+.lista-productos-web {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  max-height: calc(100vh - 350px);
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+/* Scrollbar personalizada */
+.lista-productos-web::-webkit-scrollbar {
+  width: 10px;
+}
+
+.lista-productos-web::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.lista-productos-web::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  border-radius: 10px;
+}
+
+.lista-productos-web::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+}
+
+/* Card de Producto */
+.producto-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s;
+  border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+}
+
+.producto-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(16, 185, 129, 0.2);
+  border-color: #a7f3d0;
+}
+
+/* Header del Card */
+.producto-card-header {
+  padding: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border-bottom: 1px solid #a7f3d0;
+}
+
+.producto-imagen-container {
+  flex-shrink: 0;
+}
+
+.producto-imagen {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.producto-imagen-placeholder {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 12px;
+  border: 2px dashed #cbd5e1;
+  color: #94a3b8;
+}
+
+.producto-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.producto-nombre {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #065f46;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.producto-categoria {
+  font-size: 0.9rem;
+  color: #059669;
+  font-weight: 500;
+}
+
+.producto-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-tipo {
+  color: white;
+}
+
+.tipo-directo {
+  background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+}
+
+.tipo-inventario {
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+}
+
+.tipo-receta {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+}
+
+.badge-activo {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.badge-inactivo {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+/* Body del Card */
+.producto-card-body {
+  padding: 1.5rem;
+  flex: 1;
+}
+
+.producto-descripcion {
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.producto-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 10px;
+  transition: all 0.2s;
+}
+
+.stat-item:hover {
+  background: #ecfdf5;
+}
+
+.stat-item svg {
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.stat-item.precio svg {
+  color: #059669;
+}
+
+.stat-item.costo svg {
+  color: #f59e0b;
+}
+
+.stat-item.receta svg,
+.stat-item.insumo svg {
+  color: #6366f1;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 0.95rem;
+  color: #1e293b;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Footer del Card */
+.producto-card-footer {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn-editar,
+.btn-eliminar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-editar {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  color: white;
+}
+
+.btn-editar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+.btn-eliminar {
+  background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+  color: white;
+}
+
+.btn-eliminar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+.btn-editar:active,
+.btn-eliminar:active {
+  transform: translateY(0);
+}
+
+/* Estado Vacío */
+.lista-productos-vacia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: #64748b;
+}
+
+.icono-vacio {
+  color: #cbd5e1;
+  margin-bottom: 1.5rem;
+}
+
+.lista-productos-vacia h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  color: #475569;
+}
+
+.lista-productos-vacia p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .lista-productos-web {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    max-height: calc(100vh - 300px);
+  }
+
+  .producto-card-header {
+    flex-wrap: wrap;
+    padding: 1rem;
+  }
+
+  .producto-imagen,
+  .producto-imagen-placeholder {
+    width: 60px;
+    height: 60px;
+  }
+
+  .producto-nombre {
+    font-size: 1rem;
+  }
+
+  .producto-badges {
+    flex-direction: row;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .producto-card-body {
+    padding: 1rem;
+  }
+
+  .producto-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .producto-card-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .btn-editar,
+  .btn-eliminar {
+    width: 100%;
+  }
+}

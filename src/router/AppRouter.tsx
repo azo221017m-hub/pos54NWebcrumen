@@ -16,6 +16,7 @@ import ConfigSubreceta from '../pages/ConfigSubreceta/ConfigSubreceta';
 import GestionRecetas from '../components/recetas/GestionRecetas/GestionRecetas';
 import GestionCategorias from '../components/categorias/GestionCategorias/GestionCategorias';
 import GestionCatModeradores from '../components/catModeradores/GestionCatModeradores/GestionCatModeradores';
+import GestionProductosWeb from '../components/productosWeb/GestionProductosWeb/GestionProductosWeb';
 
 const router = createBrowserRouter([
   {
@@ -85,6 +86,10 @@ const router = createBrowserRouter([
   {
     path: '/config-cat-moderadores',
     element: <GestionCatModeradores />,
+  },
+  {
+    path: '/config-productos',
+    element: <GestionProductosWeb />,
   },
 ]);
 
