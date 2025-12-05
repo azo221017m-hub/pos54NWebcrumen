@@ -290,11 +290,9 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
       nuevosErrores.idCategoria = 'La categoría es requerida';
     }
 
-    if (formData.precio === null || formData.precio === undefined) {
-      nuevosErrores.precio = 'El precio es requerido';
-    } else if (formData.precio < 0) {
+    if (formData.precio < 0) {
       nuevosErrores.precio = 'El precio no puede ser negativo';
-    } else if (formData.precio === 0) {
+    } else if (!formData.precio || formData.precio === 0) {
       nuevosErrores.precio = 'El precio no puede ser cero';
     }
 
@@ -302,9 +300,7 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
       nuevosErrores.idreferencia = 'Debe seleccionar un insumo';
     } else if (formData.tipoproducto === 'Inventario' && formData.idreferencia) {
       const insumoSeleccionado = insumos.find(i => i.id_insumo === formData.idreferencia);
-      if (insumoSeleccionado && (insumoSeleccionado.costo_promedio_ponderado === null || 
-          insumoSeleccionado.costo_promedio_ponderado === undefined || 
-          insumoSeleccionado.costo_promedio_ponderado === 0)) {
+      if (insumoSeleccionado && !insumoSeleccionado.costo_promedio_ponderado) {
         nuevosErrores.idreferencia = 'El insumo seleccionado no tiene un costo válido';
       }
     }
@@ -313,9 +309,7 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
       nuevosErrores.idreferencia = 'Debe seleccionar una receta';
     } else if (formData.tipoproducto === 'Receta' && formData.idreferencia) {
       const recetaSeleccionada = recetas.find(r => r.idReceta === formData.idreferencia);
-      if (recetaSeleccionada && (recetaSeleccionada.costoReceta === null || 
-          recetaSeleccionada.costoReceta === undefined || 
-          recetaSeleccionada.costoReceta === 0)) {
+      if (recetaSeleccionada && !recetaSeleccionada.costoReceta) {
         nuevosErrores.idreferencia = 'La receta seleccionada no tiene un costo válido';
       }
     }
