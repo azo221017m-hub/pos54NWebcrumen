@@ -92,25 +92,13 @@ const ListaProductosWeb: React.FC<Props> = ({ productos, onEditar, onEliminar })
                 </div>
               </div>
 
-              {producto.tipoproducto === 'Receta' && producto.nombreReceta && (
-                <div className="stat-item receta">
-                  <Package size={18} />
-                  <div className="stat-info">
-                    <span className="stat-label">Receta</span>
-                    <span className="stat-value">{producto.nombreReceta}</span>
-                  </div>
+              <div className="stat-item costo">
+                <DollarSign size={18} />
+                <div className="stat-info">
+                  <span className="stat-label">Costo</span>
+                  <span className="stat-value">{formatCurrency(producto.costoproducto)}</span>
                 </div>
-              )}
-
-              {producto.tipoproducto === 'Inventario' && producto.nombreInsumo && (
-                <div className="stat-item insumo">
-                  <Package size={18} />
-                  <div className="stat-info">
-                    <span className="stat-label">Insumo</span>
-                    <span className="stat-value">{producto.nombreInsumo}</span>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           </div>
 

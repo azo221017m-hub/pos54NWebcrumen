@@ -17,6 +17,7 @@ import GestionRecetas from '../components/recetas/GestionRecetas/GestionRecetas'
 import GestionCategorias from '../components/categorias/GestionCategorias/GestionCategorias';
 import GestionCatModeradores from '../components/catModeradores/GestionCatModeradores/GestionCatModeradores';
 import GestionProductosWeb from '../components/productosWeb/GestionProductosWeb/GestionProductosWeb';
+import { ConfigProveedores } from '../pages/ConfigProveedores/ConfigProveedores';
 
 const router = createBrowserRouter([
   {
@@ -90,6 +91,10 @@ const router = createBrowserRouter([
   {
     path: '/config-productos',
     element: <GestionProductosWeb />,
+  },
+  {
+    path: '/config-proveedores',
+    element: <ConfigProveedores />,
   },
 ]);
 
