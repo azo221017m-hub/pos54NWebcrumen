@@ -132,11 +132,11 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
   const costoCalculado = useMemo(() => {
     if (formData.tipoproducto === 'Inventario' && formData.idreferencia) {
       const insumo = insumos.find(i => i.id_insumo === formData.idreferencia);
-      return insumo?.costo_promedio_ponderado || 0;
+      return Number(insumo?.costo_promedio_ponderado ?? 0);
     }
     if (formData.tipoproducto === 'Receta' && formData.idreferencia) {
       const receta = recetas.find(r => r.idReceta === formData.idreferencia);
-      return receta?.costoReceta || 0;
+      return Number(receta?.costoReceta ?? 0);
     }
     return 0;
   }, [formData.tipoproducto, formData.idreferencia, insumos, recetas]);
@@ -195,10 +195,10 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
       
       if (formData.tipoproducto === 'Inventario' && idRef) {
         const insumo = insumos.find(i => i.id_insumo === idRef);
-        nuevoCosto = insumo?.costo_promedio_ponderado || 0;
+        nuevoCosto = Number(insumo?.costo_promedio_ponderado ?? 0);
       } else if (formData.tipoproducto === 'Receta' && idRef) {
         const receta = recetas.find(r => r.idReceta === idRef);
-        nuevoCosto = receta?.costoReceta || 0;
+        nuevoCosto = Number(receta?.costoReceta ?? 0);
       }
 
       setFormData(prev => ({
