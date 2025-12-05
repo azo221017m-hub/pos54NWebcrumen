@@ -1,0 +1,318 @@
+/* Lista de Proveedores */
+.lista-proveedores {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  max-height: calc(100vh - 350px);
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+/* Scrollbar personalizada */
+.lista-proveedores::-webkit-scrollbar {
+  width: 10px;
+}
+
+.lista-proveedores::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.lista-proveedores::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  border-radius: 10px;
+}
+
+.lista-proveedores::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+}
+
+/* Card de Proveedor */
+.proveedor-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s;
+  border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+}
+
+.proveedor-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(16, 185, 129, 0.2);
+  border-color: #a7f3d0;
+}
+
+/* Header del Card */
+.proveedor-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  color: white;
+}
+
+.proveedor-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.proveedor-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.proveedor-nombre {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.proveedor-rfc {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.proveedor-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-activo {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.badge-inactivo {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+/* Body del Card */
+.proveedor-card-body {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.proveedor-info-principal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.info-item svg {
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.info-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Datos Bancarios */
+.proveedor-datos-bancarios {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.dato-bancario {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dato-bancario svg {
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.dato-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dato-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dato-value {
+  font-size: 0.95rem;
+  color: #1e293b;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Footer del Card */
+.proveedor-card-footer {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn-accion {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-editar {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  color: white;
+}
+
+.btn-editar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+.btn-eliminar {
+  background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+  color: white;
+}
+
+.btn-eliminar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+.btn-editar:active,
+.btn-eliminar:active {
+  transform: translateY(0);
+}
+
+/* Estado Vacío */
+.lista-proveedores-vacia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: #64748b;
+}
+
+.icono-vacio {
+  color: #cbd5e1;
+  margin-bottom: 1.5rem;
+}
+
+.lista-proveedores-vacia h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  color: #475569;
+}
+
+.lista-proveedores-vacia p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .lista-proveedores {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    max-height: calc(100vh - 300px);
+  }
+
+  .proveedor-card-header {
+    flex-wrap: wrap;
+    padding: 1rem;
+  }
+
+  .proveedor-nombre {
+    font-size: 1rem;
+  }
+
+  .proveedor-badges {
+    flex-direction: row;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .proveedor-card-body {
+    padding: 1rem;
+  }
+
+  .proveedor-datos-bancarios {
+    grid-template-columns: 1fr;
+  }
+
+  .proveedor-card-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .btn-accion {
+    width: 100%;
+  }
+}
