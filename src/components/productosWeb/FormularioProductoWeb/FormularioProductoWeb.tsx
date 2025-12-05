@@ -292,7 +292,7 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
 
     if (formData.precio < 0) {
       nuevosErrores.precio = 'El precio no puede ser negativo';
-    } else if (!formData.precio || formData.precio === 0) {
+    } else if (!formData.precio) {
       nuevosErrores.precio = 'El precio no puede ser cero';
     }
 
