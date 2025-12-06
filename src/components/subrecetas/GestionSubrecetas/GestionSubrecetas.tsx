@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, ArrowLeft, ChefHat, Loader } from 'lucide-react';
 import ListaSubrecetas from '../ListaSubrecetas/ListaSubrecetas';
 import FormularioSubreceta from '../FormularioSubreceta/FormularioSubreceta';
 import type { Subreceta, SubrecetaCreate, SubrecetaUpdate } from '../../../types/subreceta.types';
@@ -12,6 +13,7 @@ import {
 import './GestionSubrecetas.css';
 
 const GestionSubrecetas: React.FC = () => {
+  const navigate = useNavigate();
   const [subrecetas, setSubrecetas] = useState<Subreceta[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -106,35 +108,49 @@ const GestionSubrecetas: React.FC = () => {
     setSubrecetaEditar(null);
   };
 
-  if (cargando) {
-    return (
-      <div className="gestion-subrecetas-cargando">
-        <div className="spinner"></div>
-        <p>Cargando subrecetas...</p>
-      </div>
-    );
-  }
+  const handleRegresar = () => {
+    navigate('/dashboard');
+  };
 
   return (
     <div className="gestion-subrecetas">
-      <div className="gestion-header">
-        <div className="header-info">
-          <h1>Gestión de Subrecetas</h1>
-          <p className="header-subtitle">
-            {subrecetas.length} subreceta{subrecetas.length !== 1 ? 's' : ''} registrada{subrecetas.length !== 1 ? 's' : ''}
-          </p>
+      <div className="subrecetas-header">
+        <div className="subrecetas-header-top">
+          <button onClick={handleRegresar} className="btn-regresar" title="Regresar al Dashboard">
+            <ArrowLeft size={20} />
+            Regresar
+          </button>
         </div>
-        <button className="btn-nuevo" onClick={handleNuevo}>
-          <Plus size={20} />
-          Nueva Subreceta
-        </button>
+        
+        <div className="subrecetas-header-content">
+          <div className="subrecetas-title">
+            <ChefHat size={32} className="subrecetas-icon" />
+            <div>
+              <h1>Gestión de Subrecetas</h1>
+              <p>{subrecetas.length} subreceta{subrecetas.length !== 1 ? 's' : ''} registrada{subrecetas.length !== 1 ? 's' : ''}</p>
+            </div>
+          </div>
+          <button onClick={handleNuevo} className="btn-nuevo">
+            <Plus size={20} />
+            Nueva Subreceta
+          </button>
+        </div>
       </div>
 
-      <ListaSubrecetas
-        subrecetas={subrecetas}
-        onEditar={handleEditar}
-        onEliminar={handleEliminar}
-      />
+      <div className="subrecetas-content">
+        {cargando ? (
+          <div className="subrecetas-cargando">
+            <Loader className="spinner" size={48} />
+            <p>Cargando subrecetas...</p>
+          </div>
+        ) : (
+          <ListaSubrecetas
+            subrecetas={subrecetas}
+            onEditar={handleEditar}
+            onEliminar={handleEliminar}
+          />
+        )}
+      </div>
 
       {mostrarFormulario && (
         <FormularioSubreceta

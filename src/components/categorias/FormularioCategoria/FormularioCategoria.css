@@ -51,7 +51,7 @@
 
 /* Header */
 .categoria-header {
-  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   color: white;
   padding: 1.5rem 2rem;
   display: flex;
@@ -155,8 +155,8 @@
 
 .categoria-input:focus {
   outline: none;
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .categoria-input.error {
@@ -176,8 +176,8 @@
 
 .categoria-textarea:focus {
   outline: none;
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .categoria-select {
@@ -192,8 +192,8 @@
 
 .categoria-select:focus {
   outline: none;
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .categoria-help-text {
@@ -242,14 +242,14 @@
 }
 
 .btn-guardar {
-  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   color: white;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .btn-guardar:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
 .btn-guardar:active {
@@ -260,7 +260,7 @@
 .categoria-selected-count {
   margin-left: 0.5rem;
   font-size: 0.875rem;
-  color: #8b5cf6;
+  color: #10b981;
   font-weight: 600;
 }
 
@@ -351,7 +351,7 @@
   width: 20px;
   height: 20px;
   cursor: pointer;
-  accent-color: #8b5cf6;
+  accent-color: #10b981;
   flex-shrink: 0;
 }
 
@@ -364,11 +364,11 @@
 
 .categoria-checklist-item:has(.categoria-checkbox:checked) {
   background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
-  border-color: #c4b5fd;
+  border-color: #a7f3d0;
 }
 
 .categoria-checklist-item:has(.categoria-checkbox:checked) .categoria-checkbox-label {
-  color: #6d28d9;
+  color: #065f46;
   font-weight: 600;
 }
 

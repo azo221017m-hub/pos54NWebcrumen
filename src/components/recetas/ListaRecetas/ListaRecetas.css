@@ -18,7 +18,7 @@
 }
 
 .lista-recetas::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #10b981 0%, #fb923c 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   border-radius: 10px;
 }
 
@@ -64,13 +64,13 @@
 }
 
 .receta-card:hover {
-  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
   transform: translateY(-2px);
 }
 
 /* Header del Card */
 .receta-card-header {
-  background: linear-gradient(135deg, #10b981 0%, #fb923c 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   color: white;
   padding: 1.25rem;
   display: flex;
@@ -220,7 +220,7 @@
 .btn-editar:hover {
   background: #34d399;
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(249, 115, 22, 0.3);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
 }
 
 .btn-eliminar {
@@ -303,7 +303,7 @@
 }
 
 .ingredientes-table thead {
-  background: linear-gradient(135deg, #10b981 0%, #fb923c 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   color: white;
 }
 
