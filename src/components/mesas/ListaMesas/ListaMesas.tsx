@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Mesa } from '../../../types/mesa.types';
 import { EstatusMesa, EstatusTiempo } from '../../../types/mesa.types';
-import { Users, Table2, Clock, AlertCircle } from 'lucide-react';
+import { Users, Table2, Clock, AlertCircle, Edit2, Trash2 } from 'lucide-react';
 import './ListaMesas.css';
 
 interface ListaMesasProps {
@@ -58,94 +58,88 @@ const ListaMesas: React.FC<ListaMesasProps> = ({ mesas, onEdit, onDelete }) => {
     return textos[estatus] || estatus;
   };
 
-  if (mesas.length === 0) {
+  const mesasArray = Array.isArray(mesas) ? mesas : [];
+
+  if (mesasArray.length === 0) {
     return (
-      <div className="lista-vacia">
-        <Table2 size={48} />
-        <p>No hay mesas registradas</p>
-        <span>Crea la primera mesa para comenzar</span>
+      <div className="lista-mesas-vacia">
+        <Table2 size={64} className="icono-vacio" />
+        <h3>No hay mesas registradas</h3>
+        <p>Crea tu primera mesa para comenzar</p>
       </div>
     );
   }
 
   return (
     <div className="lista-mesas">
-      {mesas.map((mesa) => (
+      {mesasArray.map((mesa) => (
         <div key={mesa.idmesa} className="mesa-card">
           <div className="mesa-card-header">
-            <div className="mesa-numero-badge">
-              <Table2 size={20} />
-              <span>Mesa #{mesa.numeromesa}</span>
+            <div className="mesa-icon-wrapper">
+              <Table2 size={24} className="mesa-icon" />
+            </div>
+            <div className="mesa-info">
+              <h3>{mesa.nombremesa}</h3>
+              <span className="mesa-numero">Mesa #{mesa.numeromesa}</span>
             </div>
             <div className="mesa-badges">
-              <span className={`badge-estatus ${getEstatusClass(mesa.estatusmesa)}`}>
+              <span className={`badge badge-estatus ${getEstatusClass(mesa.estatusmesa)}`}>
                 {formatearEstatusTexto(mesa.estatusmesa)}
               </span>
             </div>
           </div>
 
           <div className="mesa-card-body">
-            <h3 className="mesa-nombre">{mesa.nombremesa}</h3>
-
-            <div className="mesa-info-grid">
-              <div className="info-item">
+            <div className="mesa-stats">
+              <div className="stat-item capacidad">
                 <Users size={18} />
-                <div>
-                  <span className="info-label">Capacidad</span>
-                  <span className="info-value">{mesa.cantcomensales} comensales</span>
+                <div className="stat-info">
+                  <span className="stat-label">Capacidad</span>
+                  <span className="stat-value">{mesa.cantcomensales} comensales</span>
                 </div>
               </div>
 
-              <div className="info-item">
+              <div className="stat-item tiempo">
                 <Clock size={18} />
-                <div>
-                  <span className="info-label">Estado Tiempo</span>
-                  <span className={`info-value ${getEstatusTiempoClass(mesa.estatustiempo)}`}>
+                <div className="stat-info">
+                  <span className="stat-label">Estado Tiempo</span>
+                  <span className={`stat-value ${getEstatusTiempoClass(mesa.estatustiempo)}`}>
                     {formatearTiempoTexto(mesa.estatustiempo)}
                   </span>
                 </div>
               </div>
-
-              {mesa.tiempoactual && (
-                <div className="info-item">
-                  <AlertCircle size={18} />
-                  <div>
-                    <span className="info-label">Tiempo Transcurrido</span>
-                    <span className="info-value">{mesa.tiempoactual}</span>
-                  </div>
-                </div>
-              )}
             </div>
 
-            {mesa.tiempodeinicio && (
-              <div className="mesa-tiempo-inicio">
-                <Clock size={16} />
-                <span>Inicio: {new Date(mesa.tiempodeinicio).toLocaleString('es-MX')}</span>
+            {mesa.tiempoactual && (
+              <div className="mesa-tiempo-actual">
+                <AlertCircle size={16} />
+                <span>Tiempo transcurrido: {mesa.tiempoactual}</span>
               </div>
             )}
+
+            <div className="mesa-meta">
+              <span className="meta-label">Creado por:</span>
+              <span className="meta-value">{mesa.UsuarioCreo || 'Sistema'}</span>
+            </div>
           </div>
 
           <div className="mesa-card-footer">
-            <div className="mesa-meta">
-              <span className="meta-label">Creado por:</span>
-              <span className="meta-value">{mesa.UsuarioCreo}</span>
-            </div>
-            <div className="mesa-actions">
-              <button 
-                onClick={() => onEdit(mesa)} 
-                className="btn-edit"
-                title="Editar mesa"
-              >
-                Editar
-              </button>
-              <button 
-                onClick={() => onDelete(mesa.idmesa)} 
-                className="btn-delete"
-                title="Eliminar mesa"
-              >
-                Eliminar
-              </button>
-            </div>
+            <button
+              className="btn-editar"
+              onClick={() => onEdit(mesa)}
+              title="Editar mesa"
+            >
+              <Edit2 size={18} />
+              Editar
+            </button>
+            <button
+              className="btn-eliminar"
+              onClick={() => onDelete(mesa.idmesa)}
+              title="Eliminar mesa"
+            >
+              <Trash2 size={18} />
+              Eliminar
+            </button>
           </div>
         </div>
       ))}

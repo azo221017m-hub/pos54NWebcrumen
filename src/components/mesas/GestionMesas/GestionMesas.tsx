@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Mesa, MesaCreate, MesaUpdate } from '../../../types/mesa.types';
 import {
   obtenerMesas,
@@ -8,7 +9,7 @@ import {
 } from '../../../services/mesasService';
 import FormularioMesa from '../FormularioMesa/FormularioMesa';
 import ListaMesas from '../ListaMesas/ListaMesas';
-import { Plus, Table2, Loader } from 'lucide-react';
+import { Plus, Table2, Loader, ArrowLeft } from 'lucide-react';
 import './GestionMesas.css';
 
 interface GestionMesasProps {
@@ -16,6 +17,7 @@ interface GestionMesasProps {
 }
 
 const GestionMesas: React.FC<GestionMesasProps> = ({ idnegocio }) => {
+  const navigate = useNavigate();
   const [mesas, setMesas] = useState<Mesa[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -24,7 +26,7 @@ const GestionMesas: React.FC<GestionMesasProps> = ({ idnegocio }) => {
 
   const mostrarMensaje = (tipo: 'success' | 'error', texto: string) => {
     setMensaje({ tipo, texto });
-    setTimeout(() => setMensaje(null), 3000);
+    setTimeout(() => setMensaje(null), 4000);
   };
 
   const cargarMesas = useCallback(async () => {
@@ -101,75 +103,67 @@ const GestionMesas: React.FC<GestionMesasProps> = ({ idnegocio }) => {
     setMostrarFormulario(true);
   };
 
-  if (cargando) {
-    return (
-      <div className="gestion-mesas-cargando">
-        <Loader size={48} className="spinner" />
-        <p>Cargando mesas...</p>
-      </div>
-    );
-  }
+  const handleRegresar = () => {
+    navigate('/dashboard');
+  };
 
   return (
     <div className="gestion-mesas">
+      {/* Mensaje de Notificación */}
       {mensaje && (
-        <div className={`mensaje ${mensaje.tipo}`}>
-          {mensaje.texto}
+        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
+          <div className="mensaje-contenido">
+            <span className="mensaje-texto">{mensaje.texto}</span>
+            <button
+              className="mensaje-cerrar"
+              onClick={() => setMensaje(null)}
+              aria-label="Cerrar mensaje"
+            >
+              ×
+            </button>
+          </div>
         </div>
       )}
 
-      {!mostrarFormulario ? (
-        <>
-          <div className="gestion-header">
-            <div className="header-info">
-              <div className="header-icon">
-                <Table2 size={32} />
-              </div>
-              <div>
-                <h2>Gestión de Mesas</h2>
-                <p>Administra las mesas del restaurante</p>
-              </div>
+      <div className="mesas-header">
+        <div className="mesas-header-top">
+          <button onClick={handleRegresar} className="btn-regresar" title="Regresar al Dashboard">
+            <ArrowLeft size={20} />
+            Regresar
+          </button>
+        </div>
+        
+        <div className="mesas-header-content">
+          <div className="mesas-title">
+            <Table2 size={32} className="mesas-icon" />
+            <div>
+              <h1>Gestión de Mesas</h1>
+              <p>Administra las mesas del restaurante</p>
             </div>
-            <button onClick={handleNuevaMesa} className="btn-nueva-mesa">
-              <Plus size={20} />
-              Nueva Mesa
-            </button>
           </div>
+          <button onClick={handleNuevaMesa} className="btn-nuevo">
+            <Plus size={20} />
+            Nueva Mesa
+          </button>
+        </div>
+      </div>
 
-          <div className="gestion-stats">
-            <div className="stat-card">
-              <span className="stat-numero">{mesas.length}</span>
-              <span className="stat-label">Total Mesas</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-numero">
-                {mesas.filter(m => m.estatusmesa === 'DISPONIBLE').length}
-              </span>
-              <span className="stat-label">Disponibles</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-numero">
-                {mesas.filter(m => m.estatusmesa === 'OCUPADA').length}
-              </span>
-              <span className="stat-label">Ocupadas</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-numero">
-                {mesas.filter(m => m.estatusmesa === 'RESERVADA').length}
-              </span>
-              <span className="stat-label">Reservadas</span>
-            </div>
+      <div className="mesas-content">
+        {cargando ? (
+          <div className="mesas-cargando">
+            <Loader className="spinner" size={48} />
+            <p>Cargando mesas...</p>
           </div>
+        ) : (
+          <ListaMesas
+            mesas={mesas}
+            onEdit={handleEditarMesa}
+            onDelete={handleEliminarMesa}
+          />
+        )}
+      </div>
 
-          <div className="mesas-scroll-container">
-            <ListaMesas
-              mesas={mesas}
-              onEdit={handleEditarMesa}
-              onDelete={handleEliminarMesa}
-            />
-          </div>
-        </>
-      ) : (
+      {mostrarFormulario && (
         <FormularioMesa
           mesaInicial={mesaEditar}
           onSubmit={mesaEditar ? handleActualizarMesa : handleCrearMesa}

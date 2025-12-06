@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { X, Save, BadgePercent } from 'lucide-react';
 import type { Descuento, DescuentoCreate, DescuentoUpdate } from '../../../types/descuento.types';
 import { RequiereAutorizacion } from '../../../types/descuento.types';
 import { validarNombreDescuentoUnico } from '../../../services/descuentosService';
@@ -116,9 +117,18 @@ const FormularioDescuento: React.FC<FormularioDescuentoProps> = ({
   };
 
   return (
-    <div className="formulario-descuento">
-      <h2>{descuentoInicial ? 'Editar Descuento' : 'Nuevo Descuento'}</h2>
-      <form onSubmit={handleSubmit}>
+    <div className="formulario-descuento-overlay" onClick={onCancel}>
+      <div className="formulario-descuento-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="formulario-descuento-header">
+          <div className="formulario-header-content">
+            <BadgePercent className="formulario-header-icon" />
+            <h2>{descuentoInicial ? 'Editar Descuento' : 'Nuevo Descuento'}</h2>
+          </div>
+          <button onClick={onCancel} className="formulario-close-button" type="button">
+            <X size={24} />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="formulario-descuento-form">
         {/* Sección 1: Información Básica */}
         <div className="form-section">
           <h3>Información Básica</h3>
@@ -232,19 +242,22 @@ const FormularioDescuento: React.FC<FormularioDescuentoProps> = ({
         </div>
 
         {/* Botones */}
-        <div className="form-actions">
-          <button type="button" onClick={onCancel} className="btn-cancel">
+        <div className="formulario-descuento-actions">
+          <button type="button" onClick={onCancel} className="btn-cancelar">
+            <X size={20} />
             Cancelar
           </button>
           <button 
             type="submit" 
-            className="btn-submit"
+            className="btn-guardar"
             disabled={validandoNombre}
           >
-            {descuentoInicial ? 'Actualizar' : 'Crear'} Descuento
+            <Save size={20} />
+            {descuentoInicial ? 'Actualizar' : 'Guardar'}
           </button>
         </div>
       </form>
+      </div>
     </div>
   );
 };
