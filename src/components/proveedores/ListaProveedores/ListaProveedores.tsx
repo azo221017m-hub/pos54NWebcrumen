@@ -1,15 +1,15 @@
 import React from 'react';
+import { Edit2, Trash2, Truck, Phone, Mail, MapPin, Building2, CreditCard, CheckCircle, XCircle } from 'lucide-react';
 import type { Proveedor } from '../../../types/proveedor.types';
-import { Edit, Trash2, Truck, Phone, Mail, MapPin, Building2, CreditCard, CheckCircle, XCircle } from 'lucide-react';
 import './ListaProveedores.css';
 
 interface Props {
   proveedores: Proveedor[];
-  onEdit: (proveedor: Proveedor) => void;
-  onDelete: (id: number) => void;
+  onEditar: (proveedor: Proveedor) => void;
+  onEliminar: (id: number) => void;
 }
 
-const ListaProveedores: React.FC<Props> = ({ proveedores, onEdit, onDelete }) => {
+const ListaProveedores: React.FC<Props> = ({ proveedores, onEditar, onEliminar }) => {
   const proveedoresArray = Array.isArray(proveedores) ? proveedores : [];
   
   if (proveedoresArray.length === 0) {
@@ -17,7 +17,7 @@ const ListaProveedores: React.FC<Props> = ({ proveedores, onEdit, onDelete }) =>
       <div className="lista-proveedores-vacia">
         <Truck size={64} className="icono-vacio" />
         <h3>No hay proveedores registrados</h3>
-        <p>Comienza agregando un nuevo proveedor</p>
+        <p>Crea tu primer proveedor para comenzar</p>
       </div>
     );
   }
@@ -30,7 +30,7 @@ const ListaProveedores: React.FC<Props> = ({ proveedores, onEdit, onDelete }) =>
             <div className="proveedor-icon">
               <Truck size={24} />
             </div>
-            <div className="proveedor-header-info">
+            <div className="proveedor-info">
               <h3 className="proveedor-nombre">{proveedor.nombre}</h3>
               {proveedor.rfc && (
                 <span className="proveedor-rfc">RFC: {proveedor.rfc}</span>
@@ -52,43 +52,49 @@ const ListaProveedores: React.FC<Props> = ({ proveedores, onEdit, onDelete }) =>
           </div>
 
           <div className="proveedor-card-body">
-            <div className="proveedor-info-principal">
+            <div className="proveedor-stats">
               {proveedor.telefono && (
-                <div className="info-item">
-                  <Phone size={16} />
-                  <span>{proveedor.telefono}</span>
+                <div className="stat-item contacto">
+                  <Phone size={18} />
+                  <div className="stat-info">
+                    <span className="stat-label">Teléfono</span>
+                    <span className="stat-value">{proveedor.telefono}</span>
+                  </div>
                 </div>
               )}
               {proveedor.correo && (
-                <div className="info-item">
-                  <Mail size={16} />
-                  <span>{proveedor.correo}</span>
+                <div className="stat-item contacto">
+                  <Mail size={18} />
+                  <div className="stat-info">
+                    <span className="stat-label">Correo</span>
+                    <span className="stat-value">{proveedor.correo}</span>
+                  </div>
                 </div>
               )}
               {proveedor.direccion && (
-                <div className="info-item">
-                  <MapPin size={16} />
-                  <span className="info-truncate">{proveedor.direccion}</span>
+                <div className="stat-item direccion">
+                  <MapPin size={18} />
+                  <div className="stat-info">
+                    <span className="stat-label">Dirección</span>
+                    <span className="stat-value">{proveedor.direccion}</span>
+                  </div>
                 </div>
               )}
-            </div>
-
-            <div className="proveedor-datos-bancarios">
               {proveedor.banco && (
-                <div className="dato-bancario">
-                  <Building2 size={16} />
-                  <div className="dato-content">
-                    <span className="dato-label">Banco</span>
-                    <span className="dato-value">{proveedor.banco}</span>
+                <div className="stat-item banco">
+                  <Building2 size={18} />
+                  <div className="stat-info">
+                    <span className="stat-label">Banco</span>
+                    <span className="stat-value">{proveedor.banco}</span>
                   </div>
                 </div>
               )}
               {proveedor.cuenta && (
-                <div className="dato-bancario">
-                  <CreditCard size={16} />
-                  <div className="dato-content">
-                    <span className="dato-label">Cuenta</span>
-                    <span className="dato-value">{proveedor.cuenta}</span>
+                <div className="stat-item cuenta">
+                  <CreditCard size={18} />
+                  <div className="stat-info">
+                    <span className="stat-label">Cuenta</span>
+                    <span className="stat-value">{proveedor.cuenta}</span>
                   </div>
                 </div>
               )}
@@ -97,19 +103,19 @@ const ListaProveedores: React.FC<Props> = ({ proveedores, onEdit, onDelete }) =>
 
           <div className="proveedor-card-footer">
             <button
-              className="btn-accion btn-editar"
-              onClick={() => onEdit(proveedor)}
+              className="btn-editar"
+              onClick={() => onEditar(proveedor)}
               title="Editar proveedor"
             >
-              <Edit size={16} />
+              <Edit2 size={18} />
               Editar
             </button>
             <button
-              className="btn-accion btn-eliminar"
-              onClick={() => onDelete(proveedor.id_proveedor)}
+              className="btn-eliminar"
+              onClick={() => onEliminar(proveedor.id_proveedor)}
               title="Eliminar proveedor"
             >
-              <Trash2 size={16} />
+              <Trash2 size={18} />
               Eliminar
             </button>
           </div>
