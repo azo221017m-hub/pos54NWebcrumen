@@ -19,12 +19,12 @@
 }
 
 .lista-cat-moderadores::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   border-radius: 10px;
 }
 
 .lista-cat-moderadores::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
 }
 
 /* Card de Categoría Moderador */
@@ -41,13 +41,13 @@
 
 .cat-moderador-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(139, 92, 246, 0.2);
-  border-color: #c4b5fd;
+  box-shadow: 0 12px 24px rgba(16, 185, 129, 0.2);
+  border-color: #a7f3d0;
 }
 
 /* Header del Card */
 .cat-moderador-card-header {
-  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   padding: 1.5rem;
   display: flex;
   align-items: center;
@@ -125,12 +125,12 @@
 }
 
 .detail-icon {
-  color: #8b5cf6;
+  color: #10b981;
   flex-shrink: 0;
 }
 
 .detail-icon.moderadores {
-  color: #8b5cf6;
+  color: #10b981;
 }
 
 .status-icon {
@@ -169,7 +169,7 @@
 .badge.moderadores {
   background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
   color: #6d28d9;
-  border: 1px solid #c4b5fd;
+  border: 1px solid #a7f3d0;
 }
 
 /* Footer del Card */
@@ -198,13 +198,13 @@
 }
 
 .btn-editar {
-  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   color: white;
 }
 
 .btn-editar:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
 }
 
 .btn-eliminar {

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Descuento, DescuentoCreate, DescuentoUpdate } from '../../../types/descuento.types';
 import { obtenerDescuentos, crearDescuento, actualizarDescuento, eliminarDescuento } from '../../../services/descuentosService';
 import FormularioDescuento from '../FormularioDescuento/FormularioDescuento';
 import ListaDescuentos from '../ListaDescuentos/ListaDescuentos';
-import { Plus, BadgePercent, Loader } from 'lucide-react';
+import { Plus, BadgePercent, Loader, ArrowLeft } from 'lucide-react';
 import './GestionDescuentos.css';
 
 interface GestionDescuentosProps {
@@ -11,6 +12,7 @@ interface GestionDescuentosProps {
 }
 
 const GestionDescuentos: React.FC<GestionDescuentosProps> = ({ idnegocio }) => {
+  const navigate = useNavigate();
   const [descuentos, setDescuentos] = useState<Descuento[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -19,7 +21,7 @@ const GestionDescuentos: React.FC<GestionDescuentosProps> = ({ idnegocio }) => {
 
   const mostrarMensaje = (tipo: 'success' | 'error', texto: string) => {
     setMensaje({ tipo, texto });
-    setTimeout(() => setMensaje(null), 3000);
+    setTimeout(() => setMensaje(null), 4000);
   };
 
   const cargarDescuentos = useCallback(async () => {
@@ -96,65 +98,67 @@ const GestionDescuentos: React.FC<GestionDescuentosProps> = ({ idnegocio }) => {
     setMostrarFormulario(true);
   };
 
-  if (cargando) {
-    return (
-      <div className="gestion-descuentos-cargando">
-        <Loader size={48} className="spinner" />
-        <p>Cargando descuentos...</p>
-      </div>
-    );
-  }
+  const handleRegresar = () => {
+    navigate('/dashboard');
+  };
 
   return (
     <div className="gestion-descuentos">
-      {mensaje && <div className={`mensaje ${mensaje.tipo}`}>{mensaje.texto}</div>}
-
-      {!mostrarFormulario ? (
-        <>
-          <div className="gestion-header">
-            <div className="header-info">
-              <div className="header-icon">
-                <BadgePercent size={32} />
-              </div>
-              <div>
-                <h2>Gestión de Descuentos</h2>
-                <p>Administra los descuentos del negocio</p>
-              </div>
-            </div>
-            <button onClick={handleNuevoDescuento} className="btn-nuevo-descuento">
-              <Plus size={20} />
-              Nuevo Descuento
+      {/* Mensaje de Notificación */}
+      {mensaje && (
+        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
+          <div className="mensaje-contenido">
+            <span className="mensaje-texto">{mensaje.texto}</span>
+            <button
+              className="mensaje-cerrar"
+              onClick={() => setMensaje(null)}
+              aria-label="Cerrar mensaje"
+            >
+              ×
             </button>
           </div>
+        </div>
+      )}
 
-          <div className="gestion-stats">
-            <div className="stat-card">
-              <span className="stat-numero">{descuentos.length}</span>
-              <span className="stat-label">Total Descuentos</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-numero">
-                {descuentos.filter(d => d.estatusdescuento === 'ACTIVO').length}
-              </span>
-              <span className="stat-label">Activos</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-numero">
-                {descuentos.filter(d => d.requiereautorizacion === 'SI').length}
-              </span>
-              <span className="stat-label">Con Autorización</span>
+      <div className="descuentos-header">
+        <div className="descuentos-header-top">
+          <button onClick={handleRegresar} className="btn-regresar" title="Regresar al Dashboard">
+            <ArrowLeft size={20} />
+            Regresar
+          </button>
+        </div>
+        
+        <div className="descuentos-header-content">
+          <div className="descuentos-title">
+            <BadgePercent size={32} className="descuentos-icon" />
+            <div>
+              <h1>Gestión de Descuentos</h1>
+              <p>Administra los descuentos del negocio</p>
             </div>
           </div>
+          <button onClick={handleNuevoDescuento} className="btn-nuevo">
+            <Plus size={20} />
+            Nuevo Descuento
+          </button>
+        </div>
+      </div>
 
-          <div className="descuentos-scroll-container">
-            <ListaDescuentos
-              descuentos={descuentos}
-              onEdit={handleEditarDescuento}
-              onDelete={handleEliminarDescuento}
-            />
+      <div className="descuentos-content">
+        {cargando ? (
+          <div className="descuentos-cargando">
+            <Loader className="spinner" size={48} />
+            <p>Cargando descuentos...</p>
           </div>
-        </>
-      ) : (
+        ) : (
+          <ListaDescuentos
+            descuentos={descuentos}
+            onEdit={handleEditarDescuento}
+            onDelete={handleEliminarDescuento}
+          />
+        )}
+      </div>
+
+      {mostrarFormulario && (
         <FormularioDescuento
           descuentoInicial={descuentoEditar}
           onSubmit={descuentoEditar ? handleActualizarDescuento : handleCrearDescuento}

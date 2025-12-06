@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import type { Mesa, MesaCreate, MesaUpdate } from '../../../types/mesa.types';
 import { EstatusMesa, EstatusTiempo } from '../../../types/mesa.types';
 import { validarNumeroMesaUnico } from '../../../services/mesasService';
+import { Table2, X, Save } from 'lucide-react';
 import './FormularioMesa.css';
 
 interface FormularioMesaProps {
@@ -117,9 +118,18 @@ const FormularioMesa: React.FC<FormularioMesaProps> = ({
   };
 
   return (
-    <div className="formulario-mesa">
-      <h2>{mesaInicial ? 'Editar Mesa' : 'Nueva Mesa'}</h2>
-      <form onSubmit={handleSubmit}>
+    <div className="formulario-mesa-overlay" onClick={onCancel}>
+      <div className="formulario-mesa-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="formulario-mesa-header">
+          <div className="formulario-header-content">
+            <Table2 className="formulario-header-icon" />
+            <h2>{mesaInicial ? 'Editar Mesa' : 'Nueva Mesa'}</h2>
+          </div>
+          <button onClick={onCancel} className="formulario-close-button" type="button">
+            <X size={24} />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="formulario-mesa-form">
         {/* Sección 1: Información Básica */}
         <div className="form-section">
           <h3>Información Básica</h3>
@@ -222,19 +232,22 @@ const FormularioMesa: React.FC<FormularioMesaProps> = ({
         </div>
 
         {/* Botones */}
-        <div className="form-actions">
-          <button type="button" onClick={onCancel} className="btn-cancel">
+        <div className="formulario-mesa-actions">
+          <button type="button" onClick={onCancel} className="btn-cancelar">
+            <X size={20} />
             Cancelar
           </button>
           <button 
             type="submit" 
-            className="btn-submit"
+            className="btn-guardar"
             disabled={validandoNumero}
           >
-            {mesaInicial ? 'Actualizar' : 'Crear'} Mesa
+            <Save size={20} />
+            {mesaInicial ? 'Actualizar' : 'Guardar'}
           </button>
         </div>
       </form>
+      </div>
     </div>
   );
 };
