@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import type { Proveedor, ProveedorCreate } from '../../../types/proveedor.types';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Plus, Truck, Loader } from 'lucide-react';
+import type { Proveedor, ProveedorCreate, ProveedorUpdate } from '../../../types/proveedor.types';
 import {
   obtenerProveedores,
   crearProveedor,
@@ -8,22 +10,21 @@ import {
 } from '../../../services/proveedoresService';
 import ListaProveedores from '../ListaProveedores/ListaProveedores';
 import FormularioProveedor from '../FormularioProveedor/FormularioProveedor';
-import { Plus, Truck, Loader } from 'lucide-react';
 import './GestionProveedores.css';
 
-interface Props {
-  idnegocio: number;
-}
-
-const GestionProveedores: React.FC<Props> = ({ idnegocio }) => {
+const GestionProveedores: React.FC = () => {
+  const navigate = useNavigate();
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [cargando, setCargando] = useState(true);
+  const [guardando, setGuardando] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [proveedorEditar, setProveedorEditar] = useState<Proveedor | null>(null);
+  const [proveedorSeleccionado, setProveedorSeleccionado] = useState<Proveedor | null>(null);
   const [mensaje, setMensaje] = useState<{
     tipo: 'success' | 'error' | 'info';
     texto: string;
   } | null>(null);
+
+  const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
 
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
@@ -49,58 +50,20 @@ const GestionProveedores: React.FC<Props> = ({ idnegocio }) => {
   }, [cargarProveedores]);
 
   const handleNuevo = () => {
-    setProveedorEditar(null);
+    setProveedorSeleccionado(null);
     setMostrarFormulario(true);
   };
 
   const handleEditar = (proveedor: Proveedor) => {
-    setProveedorEditar(proveedor);
+    setProveedorSeleccionado(proveedor);
     setMostrarFormulario(true);
-  };
-
-  const handleCancelar = () => {
-    setMostrarFormulario(false);
-    setProveedorEditar(null);
-  };
-
-  const handleCrear = async (data: ProveedorCreate) => {
-    try {
-      await crearProveedor(data);
-      mostrarMensaje('success', 'Proveedor creado exitosamente');
-      setMostrarFormulario(false);
-      cargarProveedores();
-    } catch (error) {
-      console.error('Error al crear proveedor:', error);
-      mostrarMensaje('error', 'Error al crear el proveedor');
-    }
-  };
-
-  const handleActualizar = async (data: ProveedorCreate) => {
-    if (!proveedorEditar) return;
-
-    try {
-      const dataUpdate = {
-        ...data,
-        id_proveedor: proveedorEditar.id_proveedor,
-        activo: data.activo !== undefined ? data.activo : 1
-      };
-      
-      await actualizarProveedor(proveedorEditar.id_proveedor, dataUpdate);
-      mostrarMensaje('success', 'Proveedor actualizado exitosamente');
-      setMostrarFormulario(false);
-      setProveedorEditar(null);
-      cargarProveedores();
-    } catch (error) {
-      console.error('Error al actualizar proveedor:', error);
-      mostrarMensaje('error', 'Error al actualizar el proveedor');
-    }
   };
 
   const handleEliminar = async (id: number) => {
     const proveedor = proveedores.find(p => p.id_proveedor === id);
     
     if (!window.confirm(
-      `¿Está seguro de eliminar al proveedor "${proveedor?.nombre}"?\n\nEsta acción no se puede deshacer.`
+      `¿Está seguro de eliminar al proveedor "${proveedor?.nombre}"?\n\nEsta acción desactivará el proveedor.`
     )) {
       return;
     }
@@ -115,17 +78,42 @@ const GestionProveedores: React.FC<Props> = ({ idnegocio }) => {
     }
   };
 
-  if (cargando) {
-    return (
-      <div className="gestion-proveedores-cargando">
-        <Loader className="spinner" size={48} />
-        <p>Cargando proveedores...</p>
-      </div>
-    );
-  }
+  const handleSubmit = async (data: ProveedorCreate | ProveedorUpdate) => {
+    setGuardando(true);
+
+    try {
+      if ('id_proveedor' in data) {
+        await actualizarProveedor(data.id_proveedor, data);
+        mostrarMensaje('success', 'Proveedor actualizado exitosamente');
+        setMostrarFormulario(false);
+        setProveedorSeleccionado(null);
+        cargarProveedores();
+      } else {
+        await crearProveedor(data);
+        mostrarMensaje('success', 'Proveedor creado exitosamente');
+        setMostrarFormulario(false);
+        cargarProveedores();
+      }
+    } catch (error) {
+      console.error('Error al guardar proveedor:', error);
+      mostrarMensaje('error', 'Error al guardar el proveedor');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const handleCancelar = () => {
+    setMostrarFormulario(false);
+    setProveedorSeleccionado(null);
+  };
+
+  const handleRegresar = () => {
+    navigate('/dashboard');
+  };
 
   return (
     <div className="gestion-proveedores">
+      {/* Mensaje de Notificación */}
       {mensaje && (
         <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
           <div className="mensaje-contenido">
@@ -141,41 +129,52 @@ const GestionProveedores: React.FC<Props> = ({ idnegocio }) => {
         </div>
       )}
 
-      {!mostrarFormulario ? (
-        <>
-          <div className="gestion-header">
-            <div className="header-info">
-              <div className="header-icon">
-                <Truck size={32} />
-              </div>
-              <div className="header-text">
-                <h2>Gestión de Proveedores</h2>
-                <p>Administra tus proveedores</p>
-              </div>
-            </div>
-            <button className="btn-nuevo" onClick={handleNuevo}>
-              <Plus size={20} />
-              Nuevo Proveedor
-            </button>
-          </div>
-
-          <div className="proveedores-scroll-container">
-            <ListaProveedores
-              proveedores={proveedores}
-              onEdit={handleEditar}
-              onDelete={handleEliminar}
-            />
-          </div>
-        </>
-      ) : (
-        <div className="formulario-wrapper">
-          <FormularioProveedor
-            proveedorEditar={proveedorEditar}
-            onSubmit={proveedorEditar ? handleActualizar : handleCrear}
-            onCancel={handleCancelar}
-            loading={cargando}
-          />
+      <div className="proveedores-header">
+        <div className="proveedores-header-top">
+          <button onClick={handleRegresar} className="btn-regresar" title="Regresar al Dashboard">
+            <ArrowLeft size={20} />
+            Regresar
+          </button>
         </div>
+        
+        <div className="proveedores-header-content">
+          <div className="proveedores-title">
+            <Truck size={32} className="proveedores-icon" />
+            <div>
+              <h1>Gestión de Proveedores</h1>
+              <p>Administra los proveedores del sistema</p>
+            </div>
+          </div>
+          <button onClick={handleNuevo} className="btn-nuevo">
+            <Plus size={20} />
+            Nuevo Proveedor
+          </button>
+        </div>
+      </div>
+
+      <div className="proveedores-content">
+        {cargando ? (
+          <div className="proveedores-cargando">
+            <Loader className="spinner" size={48} />
+            <p>Cargando proveedores...</p>
+          </div>
+        ) : (
+          <ListaProveedores
+            proveedores={proveedores}
+            onEditar={handleEditar}
+            onEliminar={handleEliminar}
+          />
+        )}
+      </div>
+
+      {mostrarFormulario && (
+        <FormularioProveedor
+          proveedorEditar={proveedorSeleccionado}
+          idnegocio={idnegocio}
+          onSubmit={handleSubmit}
+          onCancel={handleCancelar}
+          loading={guardando}
+        />
       )}
     </div>
   );

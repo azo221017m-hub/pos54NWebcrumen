@@ -1,16 +1,17 @@
 import React, { useState, useMemo } from 'react';
-import type { Proveedor, ProveedorCreate } from '../../../types/proveedor.types';
-import { Save, X, Truck } from 'lucide-react';
+import { X, Save, Truck } from 'lucide-react';
+import type { Proveedor, ProveedorCreate, ProveedorUpdate } from '../../../types/proveedor.types';
 import './FormularioProveedor.css';
 
 interface Props {
   proveedorEditar: Proveedor | null;
-  onSubmit: (data: ProveedorCreate) => Promise<void>;
+  idnegocio: number;
+  onSubmit: (data: ProveedorCreate | ProveedorUpdate) => void;
   onCancel: () => void;
   loading: boolean;
 }
 
-const FormularioProveedor: React.FC<Props> = ({ proveedorEditar, onSubmit, onCancel, loading }) => {
+const FormularioProveedor: React.FC<Props> = ({ proveedorEditar, idnegocio, onSubmit, onCancel, loading }) => {
   const datosIniciales = useMemo(() => {
     if (proveedorEditar) {
       return {
@@ -38,9 +39,9 @@ const FormularioProveedor: React.FC<Props> = ({ proveedorEditar, onSubmit, onCan
       usuarioauditoria: localStorage.getItem('usuario') 
         ? JSON.parse(localStorage.getItem('usuario')!).alias 
         : '',
-      idnegocio: Number(localStorage.getItem('idnegocio')) || 1
+      idnegocio
     };
-  }, [proveedorEditar]);
+  }, [proveedorEditar, idnegocio]);
 
   const [formData, setFormData] = useState(datosIniciales);
   const [errores, setErrores] = useState<Record<string, string>>({});
@@ -87,191 +88,189 @@ const FormularioProveedor: React.FC<Props> = ({ proveedorEditar, onSubmit, onCan
     return Object.keys(nuevosErrores).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validarFormulario()) {
       return;
     }
 
-    try {
-      await onSubmit(formData);
-    } catch (error) {
-      console.error('Error en formulario:', error);
+    if (proveedorEditar) {
+      onSubmit({
+        ...formData,
+        id_proveedor: proveedorEditar.id_proveedor
+      } as ProveedorUpdate);
+    } else {
+      onSubmit(formData as ProveedorCreate);
     }
   };
 
   return (
-    <div className="formulario-proveedor-container">
-      <div className="formulario-header">
-        <div className="header-icon">
-          <Truck size={28} />
+    <div className="formulario-proveedor-overlay" onClick={onCancel}>
+      <div className="formulario-proveedor-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="formulario-proveedor-header">
+          <div className="formulario-header-content">
+            <Truck className="formulario-header-icon" />
+            <h2>{proveedorEditar ? 'Editar Proveedor' : 'Nuevo Proveedor'}</h2>
+          </div>
+          <button onClick={onCancel} className="formulario-close-button" type="button">
+            <X size={24} />
+          </button>
         </div>
-        <div>
-          <h2>{proveedorEditar ? 'Editar Proveedor' : 'Nuevo Proveedor'}</h2>
-          <p>Complete los datos del proveedor</p>
-        </div>
-      </div>
 
-      <form onSubmit={handleSubmit} className="formulario-proveedor">
-        <div className="form-scroll-container">
-          {/* Información Básica */}
-          <div className="form-section">
-            <h3 className="section-title">Información Básica</h3>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="nombre">
+        <form onSubmit={handleSubmit} className="formulario-proveedor-form">
+          <div className="formulario-proveedor-body">
+            {/* Información Básica */}
+            <div className="form-section">
+              <h3 className="section-title">Información Básica</h3>
+              
+              {/* Nombre del Proveedor */}
+              <div className="form-group full-width">
+                <label className="form-label">
                   Nombre del Proveedor <span className="required">*</span>
                 </label>
                 <input
                   type="text"
-                  id="nombre"
                   name="nombre"
                   value={formData.nombre}
                   onChange={handleChange}
-                  className={errores.nombre ? 'error' : ''}
                   placeholder="Ej: Distribuidora ABC S.A. de C.V."
+                  className={`form-input ${errores.nombre ? 'error' : ''}`}
                   maxLength={150}
                 />
                 {errores.nombre && <span className="error-message">{errores.nombre}</span>}
               </div>
 
+              {/* RFC */}
               <div className="form-group">
-                <label htmlFor="rfc">RFC</label>
+                <label className="form-label">RFC</label>
                 <input
                   type="text"
-                  id="rfc"
                   name="rfc"
                   value={formData.rfc}
                   onChange={handleChange}
-                  className={errores.rfc ? 'error' : ''}
                   placeholder="Ej: ABC123456789"
+                  className={`form-input ${errores.rfc ? 'error' : ''}`}
                   maxLength={20}
                 />
                 {errores.rfc && <span className="error-message">{errores.rfc}</span>}
               </div>
             </div>
-          </div>
 
-          {/* Contacto */}
-          <div className="form-section">
-            <h3 className="section-title">Información de Contacto</h3>
-            
-            <div className="form-row">
+            {/* Información de Contacto */}
+            <div className="form-section">
+              <h3 className="section-title">Información de Contacto</h3>
+              
+              {/* Teléfono */}
               <div className="form-group">
-                <label htmlFor="telefono">Teléfono</label>
+                <label className="form-label">Teléfono</label>
                 <input
                   type="tel"
-                  id="telefono"
                   name="telefono"
                   value={formData.telefono}
                   onChange={handleChange}
                   placeholder="Ej: 5512345678"
+                  className="form-input"
                   maxLength={30}
                 />
               </div>
 
+              {/* Correo Electrónico */}
               <div className="form-group">
-                <label htmlFor="correo">Correo Electrónico</label>
+                <label className="form-label">Correo Electrónico</label>
                 <input
                   type="email"
-                  id="correo"
                   name="correo"
                   value={formData.correo}
                   onChange={handleChange}
-                  className={errores.correo ? 'error' : ''}
                   placeholder="proveedor@ejemplo.com"
+                  className={`form-input ${errores.correo ? 'error' : ''}`}
                   maxLength={100}
                 />
                 {errores.correo && <span className="error-message">{errores.correo}</span>}
               </div>
+
+              {/* Dirección */}
+              <div className="form-group full-width">
+                <label className="form-label">Dirección</label>
+                <textarea
+                  name="direccion"
+                  value={formData.direccion}
+                  onChange={handleChange}
+                  placeholder="Dirección completa del proveedor"
+                  className="form-textarea"
+                  rows={3}
+                />
+              </div>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="direccion">Dirección</label>
-              <textarea
-                id="direccion"
-                name="direccion"
-                value={formData.direccion}
-                onChange={handleChange}
-                placeholder="Dirección completa del proveedor"
-                rows={2}
-              />
-            </div>
-          </div>
-
-          {/* Datos Bancarios */}
-          <div className="form-section">
-            <h3 className="section-title">Datos Bancarios</h3>
-            
-            <div className="form-row">
+            {/* Datos Bancarios */}
+            <div className="form-section">
+              <h3 className="section-title">Datos Bancarios</h3>
+              
+              {/* Banco */}
               <div className="form-group">
-                <label htmlFor="banco">Banco</label>
+                <label className="form-label">Banco</label>
                 <input
                   type="text"
-                  id="banco"
                   name="banco"
                   value={formData.banco}
                   onChange={handleChange}
                   placeholder="Ej: BBVA, Santander, Banorte"
+                  className="form-input"
                   maxLength={100}
                 />
               </div>
 
+              {/* Número de Cuenta */}
               <div className="form-group">
-                <label htmlFor="cuenta">Número de Cuenta</label>
+                <label className="form-label">Número de Cuenta</label>
                 <input
                   type="text"
-                  id="cuenta"
                   name="cuenta"
                   value={formData.cuenta}
                   onChange={handleChange}
                   placeholder="Ej: 1234567890"
+                  className="form-input"
                   maxLength={50}
                 />
               </div>
             </div>
-          </div>
 
-          {/* Estado */}
-          <div className="form-section">
-            <h3 className="section-title">Estado</h3>
-            
-            <div className="form-group-checkbox">
-              <input
-                type="checkbox"
-                id="activo"
-                name="activo"
-                checked={formData.activo === 1}
-                onChange={(e) => setFormData(prev => ({ ...prev, activo: e.target.checked ? 1 : 0 }))}
-              />
-              <label htmlFor="activo">Proveedor Activo</label>
+            {/* Estatus */}
+            <div className="form-group">
+              <label className="form-label">Estatus</label>
+              <div className="toggle-switch-container">
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={formData.activo === 1}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      activo: e.target.checked ? 1 : 0 
+                    }))}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+                <span className="toggle-label">
+                  {formData.activo === 1 ? 'Activo' : 'Inactivo'}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Botones de Acción */}
-        <div className="form-actions">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="btn-cancelar"
-            disabled={loading}
-          >
-            <X size={18} />
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            className="btn-guardar"
-            disabled={loading}
-          >
-            <Save size={18} />
-            {loading ? 'Guardando...' : proveedorEditar ? 'Actualizar' : 'Guardar'}
-          </button>
-        </div>
-      </form>
+          <div className="formulario-proveedor-actions">
+            <button type="button" onClick={onCancel} className="btn-cancelar" disabled={loading}>
+              <X size={20} />
+              Cancelar
+            </button>
+            <button type="submit" className="btn-guardar" disabled={loading}>
+              <Save size={20} />
+              {loading ? 'Guardando...' : proveedorEditar ? 'Actualizar' : 'Guardar'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

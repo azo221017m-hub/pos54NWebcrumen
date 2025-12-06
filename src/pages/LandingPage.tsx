@@ -7,7 +7,7 @@ const phrases = [
   'Control total de inventario en tiempo real',
   'Ventas rápidas y eficientes',
   'Reportes detallados al instante',
-  'La mejor solución para tu punto de venta'
+  'La mejor solución como tu punto de venta'
 ];
 
 export const LandingPage = () => {
@@ -22,12 +22,12 @@ export const LandingPage = () => {
       setTimeout(() => {
         setCurrentPhrase((prev) => (prev + 1) % phrases.length);
         setFadeIn(true);
-      }, 500);
-    }, 3000);
+      }, 300);
+    }, 1500);
 
     const redirectTimer = setTimeout(() => {
       navigate('/login');
-    }, phrases.length * 3000 + 1000);
+    }, phrases.length * 1500 + 500);
 
     return () => {
       clearInterval(phraseInterval);
@@ -51,15 +51,6 @@ export const LandingPage = () => {
 
         <div className={`phrase-container ${fadeIn ? 'fade-in' : 'fade-out'}`}>
           <p className="animated-phrase">{phrases[currentPhrase]}</p>
-        </div>
-
-        <div className="progress-dots">
-          {phrases.map((_, index) => (
-            <span
-              key={index}
-              className={`dot ${index === currentPhrase ? 'active' : ''}`}
-            />
-          ))}
         </div>
       </div>
     </div>
