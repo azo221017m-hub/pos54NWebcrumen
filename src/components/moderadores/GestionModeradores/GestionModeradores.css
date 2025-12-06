@@ -5,9 +5,73 @@
   padding: 2rem;
 }
 
+/* Mensaje de Notificación */
+.mensaje-notificacion {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1100;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.mensaje-contenido {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  font-weight: 600;
+}
+
+.mensaje-success .mensaje-contenido {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  color: white;
+}
+
+.mensaje-error .mensaje-contenido {
+  background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+  color: white;
+}
+
+.mensaje-info .mensaje-contenido {
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  color: white;
+}
+
+.mensaje-cerrar {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  line-height: 1;
+  transition: background 0.2s;
+}
+
+.mensaje-cerrar:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 /* Header */
-.gestion-header {
+.moderadores-header {
   margin-bottom: 2rem;
+}
+
+.moderadores-header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -19,36 +83,32 @@
   box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
 }
 
-.header-info {
+.moderadores-title {
   display: flex;
   align-items: center;
   gap: 1.5rem;
   color: white;
 }
 
-.header-icon {
+.moderadores-icon {
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-  color: white;
 }
 
-.header-info h2 {
+.moderadores-title h1 {
   margin: 0;
   font-size: 2rem;
   font-weight: 800;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  color: white;
 }
 
-.header-info p {
+.moderadores-title p {
   margin: 0.25rem 0 0 0;
   font-size: 1rem;
   opacity: 0.95;
   font-weight: 500;
-  color: white;
 }
 
-/* Botón nuevo moderador */
-.btn-nuevo-moderador {
+.btn-nuevo {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -64,57 +124,48 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.btn-nuevo-moderador:hover {
+.btn-nuevo:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   background: #f0fdf4;
 }
 
-.btn-nuevo-moderador:active {
+.btn-nuevo:active {
   transform: translateY(0);
 }
 
-/* Mensaje alerta */
-.mensaje-alerta {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  z-index: 1100;
-  padding: 1rem 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  font-weight: 600;
-  animation: slideIn 0.3s ease-out;
+/* Content */
+.moderadores-content {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  min-height: 400px;
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
 }
 
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+/* Scrollbar personalizada para contenido */
+.moderadores-content::-webkit-scrollbar {
+  width: 10px;
 }
 
-.mensaje-alerta.success {
+.moderadores-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.moderadores-content::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-  color: white;
+  border-radius: 10px;
 }
 
-.mensaje-alerta.error {
-  background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-  color: white;
-}
-
-.mensaje-alerta.info {
-  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-  color: white;
+.moderadores-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
 }
 
 /* Loading */
-.loading-container {
+.moderadores-cargando {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -135,38 +186,9 @@
   }
 }
 
-.loading-container p {
+.moderadores-cargando p {
   font-size: 1.1rem;
   font-weight: 600;
-}
-
-/* Content Container */
-.moderadores-content {
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  min-height: 400px;
-  max-height: calc(100vh - 280px);
-  overflow-y: auto;
-}
-
-.moderadores-content::-webkit-scrollbar {
-  width: 10px;
-}
-
-.moderadores-content::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 10px;
-}
-
-.moderadores-content::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-  border-radius: 10px;
-}
-
-.moderadores-content::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
 }
 
 /* Responsive */
@@ -175,22 +197,22 @@
     padding: 1rem;
   }
 
-  .gestion-header {
+  .moderadores-header-content {
     flex-direction: column;
     text-align: center;
     padding: 1.5rem;
   }
 
-  .header-info {
+  .moderadores-title {
     flex-direction: column;
     gap: 1rem;
   }
 
-  .header-info h2 {
+  .moderadores-title h1 {
     font-size: 1.5rem;
   }
 
-  .btn-nuevo-moderador {
+  .btn-nuevo {
     width: 100%;
     justify-content: center;
   }

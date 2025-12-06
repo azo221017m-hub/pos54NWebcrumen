@@ -84,7 +84,11 @@ const GestionModeradores: React.FC<Props> = ({ idnegocio }) => {
   };
 
   const handleEliminarModerador = async (id: number) => {
-    if (!window.confirm('¿Está seguro de eliminar este moderador?')) {
+    const moderador = moderadores.find(m => m.idmoderador === id);
+    
+    if (!window.confirm(
+      `¿Está seguro de eliminar el moderador "${moderador?.nombremoderador}"?\n\nEsta acción desactivará el moderador.`
+    )) {
       return;
     }
 
@@ -105,38 +109,52 @@ const GestionModeradores: React.FC<Props> = ({ idnegocio }) => {
 
   return (
     <div className="gestion-moderadores">
-      <div className="gestion-header">
-        <div className="header-info">
-          <Shield size={32} className="header-icon" />
-          <div>
-            <h2>Moderadores</h2>
-            <p>Gestiona los moderadores del sistema</p>
+      {/* Mensaje de Notificación */}
+      {mensaje && (
+        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
+          <div className="mensaje-contenido">
+            <span className="mensaje-texto">{mensaje.texto}</span>
+            <button
+              className="mensaje-cerrar"
+              onClick={() => setMensaje(null)}
+              aria-label="Cerrar mensaje"
+            >
+              ×
+            </button>
           </div>
         </div>
-        <button className="btn-nuevo-moderador" onClick={handleNuevoModerador}>
-          <Plus size={20} />
-          Nuevo Moderador
-        </button>
+      )}
+
+      <div className="moderadores-header">
+        <div className="moderadores-header-content">
+          <div className="moderadores-title">
+            <Shield size={32} className="moderadores-icon" />
+            <div>
+              <h1>Gestión de Moderadores</h1>
+              <p>Administra los moderadores del sistema</p>
+            </div>
+          </div>
+          <button onClick={handleNuevoModerador} className="btn-nuevo">
+            <Plus size={20} />
+            Nuevo Moderador
+          </button>
+        </div>
       </div>
 
-      {mensaje && (
-        <div className={`mensaje-alerta ${mensaje.tipo}`}>
-          {mensaje.texto}
-        </div>
-      )}
-
-      {cargando ? (
-        <div className="loading-container">
-          <Loader size={48} className="spinner" />
-          <p>Cargando moderadores...</p>
-        </div>
-      ) : (
-        <ListaModeradores
-          moderadores={moderadores}
-          onEdit={handleEditarModerador}
-          onDelete={handleEliminarModerador}
-        />
-      )}
+      <div className="moderadores-content">
+        {cargando ? (
+          <div className="moderadores-cargando">
+            <Loader className="spinner" size={48} />
+            <p>Cargando moderadores...</p>
+          </div>
+        ) : (
+          <ListaModeradores
+            moderadores={moderadores}
+            onEdit={handleEditarModerador}
+            onDelete={handleEliminarModerador}
+          />
+        )}
+      </div>
 
       {mostrarFormulario && (
         <FormularioModerador

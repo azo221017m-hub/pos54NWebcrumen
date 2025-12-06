@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { Mesa, MesaCreate, MesaUpdate } from '../../../types/mesa.types';
 import {
   obtenerMesas,
@@ -9,7 +8,7 @@ import {
 } from '../../../services/mesasService';
 import FormularioMesa from '../FormularioMesa/FormularioMesa';
 import ListaMesas from '../ListaMesas/ListaMesas';
-import { Plus, Table2, Loader, ArrowLeft } from 'lucide-react';
+import { Plus, Table2, Loader } from 'lucide-react';
 import './GestionMesas.css';
 
 interface GestionMesasProps {
@@ -17,7 +16,6 @@ interface GestionMesasProps {
 }
 
 const GestionMesas: React.FC<GestionMesasProps> = ({ idnegocio }) => {
-  const navigate = useNavigate();
   const [mesas, setMesas] = useState<Mesa[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -103,10 +101,6 @@ const GestionMesas: React.FC<GestionMesasProps> = ({ idnegocio }) => {
     setMostrarFormulario(true);
   };
 
-  const handleRegresar = () => {
-    navigate('/dashboard');
-  };
-
   return (
     <div className="gestion-mesas">
       {/* Mensaje de Notificación */}
@@ -126,13 +120,6 @@ const GestionMesas: React.FC<GestionMesasProps> = ({ idnegocio }) => {
       )}
 
       <div className="mesas-header">
-        <div className="mesas-header-top">
-          <button onClick={handleRegresar} className="btn-regresar" title="Regresar al Dashboard">
-            <ArrowLeft size={20} />
-            Regresar
-          </button>
-        </div>
-        
         <div className="mesas-header-content">
           <div className="mesas-title">
             <Table2 size={32} className="mesas-icon" />

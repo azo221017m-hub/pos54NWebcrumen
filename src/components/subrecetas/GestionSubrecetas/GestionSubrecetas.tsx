@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, ArrowLeft, ChefHat, Loader } from 'lucide-react';
+import { Plus, ChefHat, Loader } from 'lucide-react';
 import ListaSubrecetas from '../ListaSubrecetas/ListaSubrecetas';
 import FormularioSubreceta from '../FormularioSubreceta/FormularioSubreceta';
 import type { Subreceta, SubrecetaCreate, SubrecetaUpdate } from '../../../types/subreceta.types';
@@ -13,7 +12,6 @@ import {
 import './GestionSubrecetas.css';
 
 const GestionSubrecetas: React.FC = () => {
-  const navigate = useNavigate();
   const [subrecetas, setSubrecetas] = useState<Subreceta[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -108,20 +106,9 @@ const GestionSubrecetas: React.FC = () => {
     setSubrecetaEditar(null);
   };
 
-  const handleRegresar = () => {
-    navigate('/dashboard');
-  };
-
   return (
     <div className="gestion-subrecetas">
       <div className="subrecetas-header">
-        <div className="subrecetas-header-top">
-          <button onClick={handleRegresar} className="btn-regresar" title="Regresar al Dashboard">
-            <ArrowLeft size={20} />
-            Regresar
-          </button>
-        </div>
-        
         <div className="subrecetas-header-content">
           <div className="subrecetas-title">
             <ChefHat size={32} className="subrecetas-icon" />

@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Loader2, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Plus, Tags, Loader } from 'lucide-react';
 import type { Categoria, CategoriaCreate, CategoriaUpdate } from '../../../types/categoria.types';
 import { obtenerCategorias, crearCategoria, actualizarCategoria, eliminarCategoria } from '../../../services/categoriasService';
 import ListaCategorias from '../ListaCategorias/ListaCategorias';
@@ -8,26 +7,36 @@ import FormularioCategoria from '../FormularioCategoria/FormularioCategoria';
 import './GestionCategorias.css';
 
 const GestionCategorias: React.FC = () => {
-  const navigate = useNavigate();
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [categoriaEditar, setCategoriaEditar] = useState<Categoria | null>(null);
+  const [mensaje, setMensaje] = useState<{
+    tipo: 'success' | 'error' | 'info';
+    texto: string;
+  } | null>(null);
 
   // Obtener idnegocio del localStorage
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
 
+  const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
+    setMensaje({ tipo, texto });
+    setTimeout(() => setMensaje(null), 4000);
+  }, []);
+
   const cargarCategorias = useCallback(async () => {
-    setCargando(true);
     try {
+      setCargando(true);
       const data = await obtenerCategorias(idnegocio);
       setCategorias(data);
     } catch (error) {
       console.error('Error al cargar categorías:', error);
+      mostrarMensaje('error', 'Error al cargar las categorías');
+      setCategorias([]);
     } finally {
       setCargando(false);
     }
-  }, [idnegocio]);
+  }, [idnegocio, mostrarMensaje]);
 
   useEffect(() => {
     cargarCategorias();
@@ -48,45 +57,49 @@ const GestionCategorias: React.FC = () => {
       if (categoriaEditar) {
         const exito = await actualizarCategoria(categoriaEditar.idCategoria, data as CategoriaUpdate);
         if (exito) {
-          await cargarCategorias();
+          mostrarMensaje('success', 'Categoría actualizada exitosamente');
           setMostrarFormulario(false);
           setCategoriaEditar(null);
-          alert('Categoría actualizada exitosamente');
+          cargarCategorias();
         } else {
-          alert('Error al actualizar la categoría');
+          mostrarMensaje('error', 'Error al actualizar la categoría');
         }
       } else {
         const resultado = await crearCategoria(data as CategoriaCreate);
         if (resultado.success) {
-          await cargarCategorias();
+          mostrarMensaje('success', 'Categoría creada exitosamente');
           setMostrarFormulario(false);
-          alert('Categoría creada exitosamente');
+          cargarCategorias();
         } else {
-          alert('Error al crear la categoría');
+          mostrarMensaje('error', 'Error al crear la categoría');
         }
       }
     } catch (error) {
       console.error('Error al guardar categoría:', error);
-      alert('Error al guardar la categoría');
+      mostrarMensaje('error', 'Error al guardar la categoría');
     }
   };
 
   const handleEliminar = async (id: number) => {
-    if (!window.confirm('¿Está seguro de eliminar esta categoría? Esta acción no se puede deshacer.')) {
+    const categoria = categorias.find(c => c.idCategoria === id);
+    
+    if (!window.confirm(
+      `¿Está seguro de eliminar la categoría "${categoria?.nombre}"?\n\nEsta acción desactivará la categoría.`
+    )) {
       return;
     }
 
     try {
       const exito = await eliminarCategoria(id);
       if (exito) {
-        await cargarCategorias();
-        alert('Categoría eliminada exitosamente');
+        mostrarMensaje('success', 'Categoría eliminada exitosamente');
+        cargarCategorias();
       } else {
-        alert('Error al eliminar la categoría');
+        mostrarMensaje('error', 'Error al eliminar la categoría');
       }
     } catch (error) {
       console.error('Error al eliminar categoría:', error);
-      alert('Error al eliminar la categoría');
+      mostrarMensaje('error', 'Error al eliminar la categoría');
     }
   };
 
@@ -95,37 +108,53 @@ const GestionCategorias: React.FC = () => {
     setCategoriaEditar(null);
   };
 
-  if (cargando) {
-    return (
-      <div className="gestion-categorias-cargando">
-        <Loader2 size={48} className="spinner" />
-        <p>Cargando categorías...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="gestion-categorias">
-      <div className="gestion-categorias-header">
-        <div className="header-content">
-          <button className="btn-regresar" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft size={20} />
-            Regresar al Dashboard
-          </button>
-          <h1>Gestión de Categorías</h1>
-          <p className="subtitle">Administra las categorías de productos</p>
+      {/* Mensaje de Notificación */}
+      {mensaje && (
+        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
+          <div className="mensaje-contenido">
+            <span className="mensaje-texto">{mensaje.texto}</span>
+            <button
+              className="mensaje-cerrar"
+              onClick={() => setMensaje(null)}
+              aria-label="Cerrar mensaje"
+            >
+              ×
+            </button>
+          </div>
         </div>
-        <button onClick={handleNuevo} className="btn-nueva-categoria">
-          Nueva Categoría
-        </button>
+      )}
+
+      <div className="categorias-header">
+        <div className="categorias-header-content">
+          <div className="categorias-title">
+            <Tags size={32} className="categorias-icon" />
+            <div>
+              <h1>Gestión de Categorías</h1>
+              <p>Administra las categorías de productos</p>
+            </div>
+          </div>
+          <button onClick={handleNuevo} className="btn-nuevo">
+            <Plus size={20} />
+            Nueva Categoría
+          </button>
+        </div>
       </div>
 
-      <div className="gestion-categorias-contenido">
-        <ListaCategorias
-          categorias={categorias}
-          onEditar={handleEditar}
-          onEliminar={handleEliminar}
-        />
+      <div className="categorias-content">
+        {cargando ? (
+          <div className="categorias-cargando">
+            <Loader className="spinner" size={48} />
+            <p>Cargando categorías...</p>
+          </div>
+        ) : (
+          <ListaCategorias
+            categorias={categorias}
+            onEditar={handleEditar}
+            onEliminar={handleEliminar}
+          />
+        )}
       </div>
 
       {mostrarFormulario && (
