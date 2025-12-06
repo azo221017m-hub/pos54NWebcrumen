@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Plus, ChefHat, Loader } from 'lucide-react';
 import ListaRecetas from '../ListaRecetas/ListaRecetas';
 import FormularioReceta from '../FormularioReceta/FormularioReceta';
 import type { Receta, RecetaCreate, RecetaUpdate } from '../../../types/receta.types';
@@ -8,12 +7,20 @@ import { obtenerRecetas, crearReceta, actualizarReceta, eliminarReceta } from '.
 import './GestionRecetas.css';
 
 const GestionRecetas: React.FC = () => {
-  const navigate = useNavigate();
   const [recetas, setRecetas] = useState<Receta[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [recetaEditar, setRecetaEditar] = useState<Receta | null>(null);
   const [idnegocio, setIdnegocio] = useState<number>(1);
+  const [mensaje, setMensaje] = useState<{
+    tipo: 'success' | 'error' | 'info';
+    texto: string;
+  } | null>(null);
+
+  const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
+    setMensaje({ tipo, texto });
+    setTimeout(() => setMensaje(null), 4000);
+  }, []);
 
   useEffect(() => {
     const idnegocioStorage = localStorage.getItem('idnegocio');
@@ -31,11 +38,12 @@ const GestionRecetas: React.FC = () => {
       console.log('🔷 GestionRecetas: Recetas cargadas:', data.length);
     } catch (error) {
       console.error('🔴 GestionRecetas: Error al cargar recetas:', error);
+      mostrarMensaje('error', 'Error al cargar las recetas');
       setRecetas([]);
     } finally {
       setCargando(false);
     }
-  }, [idnegocio]);
+  }, [idnegocio, mostrarMensaje]);
 
   useEffect(() => {
     cargarRecetas();
@@ -56,45 +64,49 @@ const GestionRecetas: React.FC = () => {
       if (recetaEditar) {
         const exito = await actualizarReceta(recetaEditar.idReceta, data as RecetaUpdate);
         if (exito) {
-          await cargarRecetas();
+          mostrarMensaje('success', 'Receta actualizada exitosamente');
           setMostrarFormulario(false);
           setRecetaEditar(null);
-          alert('Receta actualizada exitosamente');
+          cargarRecetas();
         } else {
-          alert('Error al actualizar la receta');
+          mostrarMensaje('error', 'Error al actualizar la receta');
         }
       } else {
         const resultado = await crearReceta(data as RecetaCreate);
         if (resultado.success) {
-          await cargarRecetas();
+          mostrarMensaje('success', 'Receta creada exitosamente');
           setMostrarFormulario(false);
-          alert('Receta creada exitosamente');
+          cargarRecetas();
         } else {
-          alert('Error al crear la receta');
+          mostrarMensaje('error', 'Error al crear la receta');
         }
       }
     } catch (error) {
       console.error('Error al guardar receta:', error);
-      alert('Error al guardar la receta');
+      mostrarMensaje('error', 'Error al guardar la receta');
     }
   };
 
   const handleEliminar = async (id: number) => {
-    if (!window.confirm('¿Está seguro de eliminar esta receta? Esta acción no se puede deshacer.')) {
+    const receta = recetas.find(r => r.idReceta === id);
+    
+    if (!window.confirm(
+      `¿Está seguro de eliminar la receta "${receta?.nombreReceta}"?\n\nEsta acción desactivará la receta.`
+    )) {
       return;
     }
 
     try {
       const exito = await eliminarReceta(id);
       if (exito) {
-        await cargarRecetas();
-        alert('Receta eliminada exitosamente');
+        mostrarMensaje('success', 'Receta eliminada exitosamente');
+        cargarRecetas();
       } else {
-        alert('Error al eliminar la receta');
+        mostrarMensaje('error', 'Error al eliminar la receta');
       }
     } catch (error) {
       console.error('Error al eliminar receta:', error);
-      alert('Error al eliminar la receta');
+      mostrarMensaje('error', 'Error al eliminar la receta');
     }
   };
 
@@ -104,38 +116,54 @@ const GestionRecetas: React.FC = () => {
   };
 
   return (
-    <div className="gestion-recetas-container">
-      {/* Header */}
-      <div className="gestion-recetas-header">
-        <div className="header-content">
-          <button className="btn-regresar" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft size={20} />
-            Regresar al Dashboard
-          </button>
-          <h1>Gestión de Recetas</h1>
-          <p className="subtitle">{recetas.length} recetas registradas</p>
+    <div className="gestion-recetas">
+      {/* Mensaje de Notificación */}
+      {mensaje && (
+        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
+          <div className="mensaje-contenido">
+            <span className="mensaje-texto">{mensaje.texto}</span>
+            <button
+              className="mensaje-cerrar"
+              onClick={() => setMensaje(null)}
+              aria-label="Cerrar mensaje"
+            >
+              ×
+            </button>
+          </div>
         </div>
-        <button className="btn-nueva-receta" onClick={handleNuevo}>
-          <Plus size={20} />
-          Nueva Receta
-        </button>
-      </div>
-
-      {/* Lista de Recetas */}
-      {cargando ? (
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Cargando recetas...</p>
-        </div>
-      ) : (
-        <ListaRecetas
-          recetas={recetas}
-          onEditar={handleEditar}
-          onEliminar={handleEliminar}
-        />
       )}
 
-      {/* Formulario Modal */}
+      <div className="recetas-header">
+        <div className="recetas-header-content">
+          <div className="recetas-title">
+            <ChefHat size={32} className="recetas-icon" />
+            <div>
+              <h1>Gestión de Recetas</h1>
+              <p>{recetas.length} receta{recetas.length !== 1 ? 's' : ''} registrada{recetas.length !== 1 ? 's' : ''}</p>
+            </div>
+          </div>
+          <button onClick={handleNuevo} className="btn-nuevo">
+            <Plus size={20} />
+            Nueva Receta
+          </button>
+        </div>
+      </div>
+
+      <div className="recetas-content">
+        {cargando ? (
+          <div className="recetas-cargando">
+            <Loader className="spinner" size={48} />
+            <p>Cargando recetas...</p>
+          </div>
+        ) : (
+          <ListaRecetas
+            recetas={recetas}
+            onEditar={handleEditar}
+            onEliminar={handleEliminar}
+          />
+        )}
+      </div>
+
       {mostrarFormulario && (
         <FormularioReceta
           receta={recetaEditar}

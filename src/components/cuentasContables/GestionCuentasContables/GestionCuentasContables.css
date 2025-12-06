@@ -1,163 +1,224 @@
+/* Contenedor Principal */
 .gestion-cuentas-contables {
-  padding: 24px;
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
   min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  padding: 2rem;
+}
+
+/* Mensaje de Notificación */
+.mensaje-notificacion {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1100;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.mensaje-contenido {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  font-weight: 600;
+}
+
+.mensaje-success .mensaje-contenido {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  color: white;
+}
+
+.mensaje-error .mensaje-contenido {
+  background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+  color: white;
+}
+
+.mensaje-info .mensaje-contenido {
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  color: white;
+}
+
+.mensaje-cerrar {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  line-height: 1;
+  transition: background 0.2s;
+}
+
+.mensaje-cerrar:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* Header */
-.gestion-header {
+.cuentas-header {
+  margin-bottom: 2rem;
+}
+
+.cuentas-header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  padding: 20px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
 }
 
-.header-info {
+.cuentas-title {
   display: flex;
   align-items: center;
-  gap: 16px;
-}
-
-.header-icon {
-  color: #34d399;
-  padding: 12px;
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-  border-radius: 12px;
-}
-
-.header-info h2 {
-  margin: 0 0 4px 0;
-  font-size: 24px;
-  font-weight: 700;
-  color: #1f2937;
-}
-
-.header-info p {
-  margin: 0;
-  font-size: 14px;
-  color: #6b7280;
-}
-
-/* Botón nueva cuenta */
-.btn-nueva-cuenta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  gap: 1.5rem;
   color: white;
+}
+
+.cuentas-icon {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.cuentas-title h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cuentas-title p {
+  margin: 0.25rem 0 0 0;
+  font-size: 1rem;
+  opacity: 0.95;
+  font-weight: 500;
+}
+
+.btn-nuevo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.75rem;
+  background: white;
   border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 600;
+  border-radius: 12px;
+  color: #10b981;
+  font-size: 1rem;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.btn-nueva-cuenta:hover {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+.btn-nuevo:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  background: #f0fdf4;
 }
 
-.btn-nueva-cuenta:active {
+.btn-nuevo:active {
   transform: translateY(0);
 }
 
-/* Mensaje alerta */
-.mensaje-alerta {
-  padding: 16px 20px;
-  margin-bottom: 20px;
+/* Content */
+.cuentas-content {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  min-height: 400px;
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+}
+
+/* Scrollbar personalizada para contenido */
+.cuentas-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.cuentas-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
   border-radius: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  animation: slideDown 0.3s ease;
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.cuentas-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  border-radius: 10px;
 }
 
-.mensaje-alerta.success {
-  background: #d1fae5;
-  color: #065f46;
-  border-left: 4px solid #34d399;
-}
-
-.mensaje-alerta.error {
-  background: #fee2e2;
-  color: #991b1b;
-  border-left: 4px solid #ef4444;
-}
-
-.mensaje-alerta.info {
-  background: #dbeafe;
-  color: #1e40af;
-  border-left: 4px solid #34d399;
+.cuentas-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
 }
 
 /* Loading */
-.loading-container {
+.cuentas-cargando {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
-  text-align: center;
+  padding: 4rem 2rem;
+  color: #64748b;
 }
 
 .spinner {
-  color: #34d399;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 1.5rem;
+  color: #10b981;
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
   to {
     transform: rotate(360deg);
   }
 }
 
-.loading-container p {
-  margin-top: 16px;
-  color: #6b7280;
-  font-size: 16px;
+.cuentas-cargando p {
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .gestion-cuentas-contables {
-    padding: 16px;
+    padding: 1rem;
   }
 
-  .gestion-header {
+  .cuentas-header-content {
     flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-
-  .header-info {
-    flex-direction: column;
-    align-items: center;
     text-align: center;
+    padding: 1.5rem;
   }
 
-  .btn-nueva-cuenta {
+  .cuentas-title {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .cuentas-title h1 {
+    font-size: 1.5rem;
+  }
+
+  .btn-nuevo {
     width: 100%;
     justify-content: center;
+  }
+
+  .cuentas-content {
+    padding: 1rem;
+    max-height: calc(100vh - 250px);
   }
 }

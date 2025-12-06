@@ -87,7 +87,11 @@ const GestionCuentasContables: React.FC<Props> = ({ idnegocio }) => {
   };
 
   const handleEliminarCuenta = async (id: number) => {
-    if (!window.confirm('¿Está seguro de eliminar esta cuenta contable?')) {
+    const cuenta = cuentas.find(c => c.id_cuentacontable === id);
+    
+    if (!window.confirm(
+      `¿Está seguro de eliminar la cuenta "${cuenta?.nombrecuentacontable}"?\n\nEsta acción desactivará la cuenta contable.`
+    )) {
       return;
     }
 
@@ -108,38 +112,52 @@ const GestionCuentasContables: React.FC<Props> = ({ idnegocio }) => {
 
   return (
     <div className="gestion-cuentas-contables">
-      <div className="gestion-header">
-        <div className="header-info">
-          <FileText size={32} className="header-icon" />
-          <div>
-            <h2>Cuentas Contables</h2>
-            <p>Gestiona las cuentas contables del sistema</p>
+      {/* Mensaje de Notificación */}
+      {mensaje && (
+        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
+          <div className="mensaje-contenido">
+            <span className="mensaje-texto">{mensaje.texto}</span>
+            <button
+              className="mensaje-cerrar"
+              onClick={() => setMensaje(null)}
+              aria-label="Cerrar mensaje"
+            >
+              ×
+            </button>
           </div>
         </div>
-        <button className="btn-nueva-cuenta" onClick={handleNuevaCuenta}>
-          <Plus size={20} />
-          Nueva Cuenta
-        </button>
+      )}
+
+      <div className="cuentas-header">
+        <div className="cuentas-header-content">
+          <div className="cuentas-title">
+            <FileText size={32} className="cuentas-icon" />
+            <div>
+              <h1>Gestión de Cuentas Contables</h1>
+              <p>Administra las cuentas contables del sistema</p>
+            </div>
+          </div>
+          <button onClick={handleNuevaCuenta} className="btn-nuevo">
+            <Plus size={20} />
+            Nueva Cuenta
+          </button>
+        </div>
       </div>
 
-      {mensaje && (
-        <div className={`mensaje-alerta ${mensaje.tipo}`}>
-          {mensaje.texto}
-        </div>
-      )}
-
-      {cargando ? (
-        <div className="loading-container">
-          <Loader size={48} className="spinner" />
-          <p>Cargando cuentas contables...</p>
-        </div>
-      ) : (
-        <ListaCuentasContables
-          cuentas={cuentas}
-          onEdit={handleEditarCuenta}
-          onDelete={handleEliminarCuenta}
-        />
-      )}
+      <div className="cuentas-content">
+        {cargando ? (
+          <div className="cuentas-cargando">
+            <Loader className="spinner" size={48} />
+            <p>Cargando cuentas contables...</p>
+          </div>
+        ) : (
+          <ListaCuentasContables
+            cuentas={cuentas}
+            onEdit={handleEditarCuenta}
+            onDelete={handleEliminarCuenta}
+          />
+        )}
+      </div>
 
       {mostrarFormulario && (
         <FormularioCuentaContable

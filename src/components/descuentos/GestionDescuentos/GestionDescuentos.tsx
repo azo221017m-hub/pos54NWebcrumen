@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { Descuento, DescuentoCreate, DescuentoUpdate } from '../../../types/descuento.types';
 import { obtenerDescuentos, crearDescuento, actualizarDescuento, eliminarDescuento } from '../../../services/descuentosService';
 import FormularioDescuento from '../FormularioDescuento/FormularioDescuento';
 import ListaDescuentos from '../ListaDescuentos/ListaDescuentos';
-import { Plus, BadgePercent, Loader, ArrowLeft } from 'lucide-react';
+import { Plus, BadgePercent, Loader } from 'lucide-react';
 import './GestionDescuentos.css';
 
 interface GestionDescuentosProps {
@@ -12,7 +11,6 @@ interface GestionDescuentosProps {
 }
 
 const GestionDescuentos: React.FC<GestionDescuentosProps> = ({ idnegocio }) => {
-  const navigate = useNavigate();
   const [descuentos, setDescuentos] = useState<Descuento[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -98,10 +96,6 @@ const GestionDescuentos: React.FC<GestionDescuentosProps> = ({ idnegocio }) => {
     setMostrarFormulario(true);
   };
 
-  const handleRegresar = () => {
-    navigate('/dashboard');
-  };
-
   return (
     <div className="gestion-descuentos">
       {/* Mensaje de Notificación */}
@@ -121,13 +115,6 @@ const GestionDescuentos: React.FC<GestionDescuentosProps> = ({ idnegocio }) => {
       )}
 
       <div className="descuentos-header">
-        <div className="descuentos-header-top">
-          <button onClick={handleRegresar} className="btn-regresar" title="Regresar al Dashboard">
-            <ArrowLeft size={20} />
-            Regresar
-          </button>
-        </div>
-        
         <div className="descuentos-header-content">
           <div className="descuentos-title">
             <BadgePercent size={32} className="descuentos-icon" />

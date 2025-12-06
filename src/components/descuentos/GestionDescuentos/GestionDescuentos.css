@@ -66,32 +66,6 @@
   margin-bottom: 2rem;
 }
 
-.descuentos-header-top {
-  margin-bottom: 1rem;
-}
-
-.btn-regresar {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  background: white;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  color: #475569;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-regresar:hover {
-  background: #f8fafc;
-  border-color: #10b981;
-  color: #10b981;
-  transform: translateX(-4px);
-}
-
 .descuentos-header-content {
   display: flex;
   justify-content: space-between;
