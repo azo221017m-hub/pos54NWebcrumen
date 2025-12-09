@@ -1,5 +1,4 @@
 -- Migration script to add idnegocio column to legacy tables
--- This script adds idnegocio filtering capability to productos, ventas, and inventario tables
 -- Run this script on the production database before deploying the updated controllers
 
 -- =================================================================

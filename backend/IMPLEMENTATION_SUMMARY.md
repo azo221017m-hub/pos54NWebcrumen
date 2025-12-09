@@ -19,11 +19,6 @@ Successfully implemented `idnegocio` filtering across all queries and forms to e
 2. **Controller Updates**: Modify all queries to filter by authenticated user's `idnegocio`
 3. **Security Enforcement**: Validate ownership on all CREATE, UPDATE, and DELETE operations
 
-### Tables Affected
-- `productos` - Products table (legacy)
-- `ventas` - Sales table (legacy)
-- `inventario` - Inventory table (legacy)
-
 ## 📂 Files Created/Modified
 
 ### New Files
