@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
+import type { AuthRequest } from '../middlewares/auth';
 
 interface CuentaContable extends RowDataPacket {
   id_cuentacontable: number;
@@ -80,15 +81,22 @@ export const obtenerCuentaContable = async (req: Request, res: Response): Promis
 };
 
 // Crear nueva cuenta contable
-export const crearCuentaContable = async (req: Request, res: Response): Promise<void> => {
+export const crearCuentaContable = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const {
       naturalezacuentacontable,
       nombrecuentacontable,
       tipocuentacontable,
-      usuarioauditoria,
-      idnegocio
+      usuarioauditoria
     } = req.body;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ message: 'Usuario no autenticado' });
+      return;
+    }
 
     const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebcuentacontable (

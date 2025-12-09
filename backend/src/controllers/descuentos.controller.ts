@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import type { AuthRequest } from '../middlewares/auth';
 
 // Interface para Descuento
 interface Descuento extends RowDataPacket {
@@ -88,23 +89,25 @@ export const obtenerDescuentoPorId = async (req: Request, res: Response): Promis
 };
 
 // Crear nuevo descuento
-export const crearDescuento = async (req: Request, res: Response): Promise<void> => {
+export const crearDescuento = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const {
       nombre,
       tipodescuento,
       valor,
       estatusdescuento,
-      requiereautorizacion,
-      idnegocio
+      requiereautorizacion
     } = req.body;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
 
     console.log('Creando nuevo descuento:', nombre);
 
     // Validar campos requeridos
     if (!nombre || !tipodescuento || valor === undefined || !estatusdescuento || !requiereautorizacion || !idnegocio) {
       res.status(400).json({ 
-        message: 'Faltan campos requeridos',
+        message: 'Faltan campos requeridos o usuario no autenticado',
         campos: { nombre, tipodescuento, valor, estatusdescuento, requiereautorizacion, idnegocio }
       });
       return;

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import type { AuthRequest } from '../middlewares/auth';
 
 interface Receta extends RowDataPacket {
   idReceta: number;
@@ -161,7 +162,7 @@ export const obtenerRecetaPorId = async (req: Request, res: Response): Promise<v
 };
 
 // Crear nueva receta con detalles
-export const crearReceta = async (req: Request, res: Response): Promise<void> => {
+export const crearReceta = async (req: AuthRequest, res: Response): Promise<void> => {
   const connection = await pool.getConnection();
   
   try {
@@ -171,9 +172,16 @@ export const crearReceta = async (req: Request, res: Response): Promise<void> =>
       archivoInstrucciones,
       estatus,
       usuarioauditoria,
-      idnegocio,
       detalles
     } = req.body;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ mensaje: 'Usuario no autenticado' });
+      return;
+    }
 
     // Calcular el costo total basado en los detalles
     const costoReceta = calcularCostoTotal(detalles);

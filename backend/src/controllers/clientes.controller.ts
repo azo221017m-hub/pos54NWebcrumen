@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
+import type { AuthRequest } from '../middlewares/auth';
 
 interface Cliente extends RowDataPacket {
   idCliente: number;
@@ -119,7 +120,7 @@ export const obtenerClientePorId = async (req: Request, res: Response): Promise<
 };
 
 // Crear nuevo cliente
-export const crearCliente = async (req: Request, res: Response): Promise<void> => {
+export const crearCliente = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const {
       nombre,
@@ -138,13 +139,15 @@ export const crearCliente = async (req: Request, res: Response): Promise<void> =
       email,
       direccion,
       estatus,
-      usuarioauditoria,
-      idnegocio
+      usuarioauditoria
     } = req.body;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
 
     // Validar campos requeridos
     if (!nombre || !idnegocio) {
-      res.status(400).json({ message: 'Nombre e idnegocio son requeridos' });
+      res.status(400).json({ message: 'Nombre es requerido y usuario debe estar autenticado' });
       return;
     }
 
