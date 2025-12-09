@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
+import type { AuthRequest } from '../middlewares/auth';
 
 interface Moderador extends RowDataPacket {
   idmoderador: number;
@@ -89,14 +90,21 @@ export const obtenerModerador = async (req: Request, res: Response): Promise<voi
 };
 
 // Crear nuevo moderador
-export const crearModerador = async (req: Request, res: Response): Promise<void> => {
+export const crearModerador = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const {
       nombremoderador,
       usuarioauditoria,
-      idnegocio,
       estatus
     } = req.body;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ message: 'El usuario no está autenticado' });
+      return;
+    }
 
     const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebmoderadores (

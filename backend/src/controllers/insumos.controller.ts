@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
+import type { AuthRequest } from '../middlewares/auth';
 
 interface Insumo extends RowDataPacket {
   id_insumo: number;
@@ -106,7 +107,7 @@ export const obtenerInsumoPorId = async (req: Request, res: Response): Promise<v
 };
 
 // Crear nuevo insumo
-export const crearInsumo = async (req: Request, res: Response): Promise<void> => {
+export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const {
       nombre,
@@ -119,16 +120,18 @@ export const crearInsumo = async (req: Request, res: Response): Promise<void> =>
       id_cuentacontable,
       activo,
       inventariable,
-      usuarioauditoria,
-      idnegocio
+      usuarioauditoria
     } = req.body;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
 
     // Validar campos requeridos
     if (!nombre || !unidad_medida || stock_actual === undefined || 
         stock_minimo === undefined || costo_promedio_ponderado === undefined || 
         precio_venta === undefined || activo === undefined || 
         inventariable === undefined || !idnegocio) {
-      res.status(400).json({ message: 'Faltan campos requeridos' });
+      res.status(400).json({ message: 'Faltan campos requeridos o el usuario no está autenticado' });
       return;
     }
 

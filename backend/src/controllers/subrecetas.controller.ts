@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import type { AuthRequest } from '../middlewares/auth';
 
 interface Subreceta extends RowDataPacket {
   idSubReceta: number;
@@ -135,7 +136,7 @@ export const obtenerSubrecetaPorId = async (req: Request, res: Response): Promis
 };
 
 // Crear nueva subreceta con detalles
-export const crearSubreceta = async (req: Request, res: Response): Promise<void> => {
+export const crearSubreceta = async (req: AuthRequest, res: Response): Promise<void> => {
   const connection = await pool.getConnection();
   
   try {
@@ -145,9 +146,16 @@ export const crearSubreceta = async (req: Request, res: Response): Promise<void>
       archivoInstruccionesSubr,
       estatusSubr,
       usuarioauditoria,
-      idnegocio,
       detalles
     } = req.body;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      return;
+    }
 
     // Calcular el costo total basado en los detalles
     const costoSubReceta = calcularCostoTotal(detalles);

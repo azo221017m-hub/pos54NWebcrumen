@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import type { AuthRequest } from '../middlewares/auth';
 
 // Obtener todas las unidades de medida de compra
 export const obtenerUMCompras = async (_req: Request, res: Response): Promise<void> => {
@@ -80,22 +81,24 @@ export const obtenerUMCompraPorId = async (req: Request, res: Response): Promise
 };
 
 // Crear una nueva unidad de medida
-export const crearUMCompra = async (req: Request, res: Response): Promise<void> => {
+export const crearUMCompra = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const {
       nombreUmCompra,
       valor,
       umMatPrima,
       valorConvertido,
-      idnegocio,
       usuarioauditoria
     } = req.body;
 
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
     // Validaciones básicas
-    if (!nombreUmCompra) {
+    if (!nombreUmCompra || !idnegocio) {
       res.status(400).json({
         success: false,
-        message: 'El nombre de la unidad de medida es obligatorio'
+        message: 'El nombre de la unidad de medida es obligatorio y el usuario debe estar autenticado'
       });
       return;
     }

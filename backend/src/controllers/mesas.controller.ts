@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import type { AuthRequest } from '../middlewares/auth';
 
 // Interface para Mesa
 interface Mesa extends RowDataPacket {
@@ -94,7 +95,7 @@ export const obtenerMesaPorId = async (req: Request, res: Response): Promise<voi
 };
 
 // Crear nueva mesa
-export const crearMesa = async (req: Request, res: Response): Promise<void> => {
+export const crearMesa = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const {
       nombremesa,
@@ -103,16 +104,18 @@ export const crearMesa = async (req: Request, res: Response): Promise<void> => {
       estatusmesa,
       tiempodeinicio,
       tiempoactual,
-      estatustiempo,
-      idnegocio
+      estatustiempo
     } = req.body;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
 
     console.log('Creando nueva mesa:', nombremesa);
 
     // Validar campos requeridos
     if (!nombremesa || !numeromesa || !cantcomensales || !estatusmesa || !estatustiempo || !idnegocio) {
       res.status(400).json({ 
-        message: 'Faltan campos requeridos',
+        message: 'Faltan campos requeridos o el usuario no está autenticado',
         campos: { nombremesa, numeromesa, cantcomensales, estatusmesa, estatustiempo, idnegocio }
       });
       return;

@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
+import type { AuthRequest } from '../middlewares/auth';
 
 // Interface para tblposcrumenwebmodref
 interface CatModerador extends RowDataPacket {
@@ -87,17 +88,24 @@ export const obtenerCatModeradorPorId = async (req: Request, res: Response): Pro
 };
 
 // Crear nueva categoría moderador
-export const crearCatModerador = async (req: Request, res: Response): Promise<void> => {
+export const crearCatModerador = async (req: AuthRequest, res: Response): Promise<void> => {
   const connection = await pool.getConnection();
 
   try {
     const {
       nombremodref,
       usuarioauditoria,
-      idnegocio,
       estatus,
       moderadores
     } = req.body;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      return;
+    }
 
     console.log('🔵 Creando categoría moderador:', nombremodref);
 

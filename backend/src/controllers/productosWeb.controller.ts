@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
+import type { AuthRequest } from '../middlewares/auth';
 
 interface ProductoWeb extends RowDataPacket {
   idProducto: number;
@@ -170,7 +171,7 @@ export const verificarNombreProducto = async (req: Request, res: Response): Prom
 };
 
 // Crear nuevo producto web
-export const crearProductoWeb = async (req: Request, res: Response): Promise<void> => {
+export const crearProductoWeb = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const {
       idCategoria,
@@ -182,13 +183,15 @@ export const crearProductoWeb = async (req: Request, res: Response): Promise<voi
       imagenProducto,
       tipoproducto,
       costoproducto,
-      usuarioauditoria,
-      idnegocio
+      usuarioauditoria
     } = req.body;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
 
     // Validar campos requeridos
     if (!nombre || !idCategoria || precio === undefined || !tipoproducto || !idnegocio) {
-      res.status(400).json({ mensaje: 'Faltan campos requeridos' });
+      res.status(400).json({ mensaje: 'Faltan campos requeridos o el usuario no está autenticado' });
       return;
     }
 

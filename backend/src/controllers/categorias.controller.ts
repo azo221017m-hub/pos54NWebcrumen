@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import type { AuthRequest } from '../middlewares/auth';
 
 interface Categoria extends RowDataPacket {
   idCategoria: number;
@@ -83,7 +84,7 @@ export const obtenerCategoriaPorId = async (req: Request, res: Response): Promis
 };
 
 // Crear nueva categoría
-export const crearCategoria = async (req: Request, res: Response): Promise<void> => {
+export const crearCategoria = async (req: AuthRequest, res: Response): Promise<void> => {
   const connection = await pool.getConnection();
   
   try {
@@ -93,10 +94,17 @@ export const crearCategoria = async (req: Request, res: Response): Promise<void>
       descripcion,
       estatus,
       usuarioauditoria,
-      idnegocio,
       idmoderadordef,
       orden
     } = req.body;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      return;
+    }
 
     await connection.beginTransaction();
 

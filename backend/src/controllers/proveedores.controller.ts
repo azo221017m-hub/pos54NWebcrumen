@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
+import type { AuthRequest } from '../middlewares/auth';
 
 interface Proveedor extends RowDataPacket {
   id_proveedor: number;
@@ -95,7 +96,7 @@ export const obtenerProveedorPorId = async (req: Request, res: Response): Promis
 };
 
 // Crear nuevo proveedor
-export const crearProveedor = async (req: Request, res: Response): Promise<void> => {
+export const crearProveedor = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const {
       nombre,
@@ -106,13 +107,15 @@ export const crearProveedor = async (req: Request, res: Response): Promise<void>
       banco,
       cuenta,
       activo,
-      usuarioauditoria,
-      idnegocio
+      usuarioauditoria
     } = req.body;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
 
     // Validar campos requeridos
     if (!nombre || !idnegocio) {
-      res.status(400).json({ message: 'Nombre e idnegocio son requeridos' });
+      res.status(400).json({ message: 'El nombre es requerido y el usuario debe estar autenticado' });
       return;
     }
 
