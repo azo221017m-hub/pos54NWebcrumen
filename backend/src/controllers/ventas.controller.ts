@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { pool } from '../config/db';
 import type { RowDataPacket, ResultSetHeader } from 'mysql2';
+import type { AuthRequest } from '../middlewares/auth';
 
 interface Venta extends RowDataPacket {
   id: number;
@@ -11,6 +12,7 @@ interface Venta extends RowDataPacket {
   fecha: Date;
   cliente_nombre?: string;
   usuario_nombre?: string;
+  idnegocio?: number;
 }
 
 interface VentaItem {
@@ -20,8 +22,19 @@ interface VentaItem {
   subtotal: number;
 }
 
-export const getVentas = async (_req: Request, res: Response): Promise<void> => {
+export const getVentas = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
     const [rows] = await pool.execute<Venta[]>(
       `SELECT v.*, 
               u.nombre as usuario_nombre,
@@ -29,8 +42,10 @@ export const getVentas = async (_req: Request, res: Response): Promise<void> => 
        FROM ventas v
        LEFT JOIN usuarios u ON v.usuario_id = u.id
        LEFT JOIN clientes c ON v.cliente_id = c.id
+       WHERE v.idnegocio = ?
        ORDER BY v.fecha DESC
-       LIMIT 100`
+       LIMIT 100`,
+      [idnegocio]
     );
 
     res.json({
@@ -46,9 +61,20 @@ export const getVentas = async (_req: Request, res: Response): Promise<void> => 
   }
 };
 
-export const getVentaById = async (req: Request, res: Response): Promise<void> => {
+export const getVentaById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
 
     const [ventaRows] = await pool.execute<Venta[]>(
       `SELECT v.*, 
@@ -57,8 +83,8 @@ export const getVentaById = async (req: Request, res: Response): Promise<void> =
        FROM ventas v
        LEFT JOIN usuarios u ON v.usuario_id = u.id
        LEFT JOIN clientes c ON v.cliente_id = c.id
-       WHERE v.id = ?`,
-      [id]
+       WHERE v.id = ? AND v.idnegocio = ?`,
+      [id, idnegocio]
     );
 
     if (ventaRows.length === 0) {
@@ -94,16 +120,27 @@ export const getVentaById = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-export const createVenta = async (req: Request, res: Response): Promise<void> => {
+export const createVenta = async (req: AuthRequest, res: Response): Promise<void> => {
   const connection = await pool.getConnection();
   
   try {
     const { usuario_id, cliente_id, items, metodo_pago = 'efectivo' } = req.body;
 
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
     if (!usuario_id || !items || items.length === 0) {
       res.status(400).json({ 
         success: false, 
         message: 'Usuario e items son requeridos' 
+      });
+      return;
+    }
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
       });
       return;
     }
@@ -115,8 +152,8 @@ export const createVenta = async (req: Request, res: Response): Promise<void> =>
 
     // Insertar venta
     const [ventaResult] = await connection.execute<ResultSetHeader>(
-      'INSERT INTO ventas (usuario_id, cliente_id, total, metodo_pago) VALUES (?, ?, ?, ?)',
-      [usuario_id, cliente_id || null, total, metodo_pago]
+      'INSERT INTO ventas (usuario_id, cliente_id, total, metodo_pago, idnegocio) VALUES (?, ?, ?, ?, ?)',
+      [usuario_id, cliente_id || null, total, metodo_pago, idnegocio]
     );
 
     const ventaId = ventaResult.insertId;
@@ -150,15 +187,27 @@ export const createVenta = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-export const getVentasDelDia = async (_req: Request, res: Response): Promise<void> => {
+export const getVentasDelDia = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
          COUNT(*) as total_ventas,
          SUM(total) as total_vendido,
          AVG(total) as promedio_venta
        FROM ventas
-       WHERE DATE(fecha) = CURDATE()`
+       WHERE DATE(fecha) = CURDATE() AND idnegocio = ?`,
+      [idnegocio]
     );
 
     res.json({

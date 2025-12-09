@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { pool } from '../config/db';
 import type { RowDataPacket, ResultSetHeader } from 'mysql2';
+import type { AuthRequest } from '../middlewares/auth';
 
 interface Producto extends RowDataPacket {
   id: number;
@@ -13,17 +14,30 @@ interface Producto extends RowDataPacket {
   categoria_nombre?: string;
   stock_actual?: number;
   activo: boolean;
+  idnegocio?: number;
 }
 
-export const getProductos = async (_req: Request, res: Response): Promise<void> => {
+export const getProductos = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
     const [rows] = await pool.execute<Producto[]>(
       `SELECT p.*, c.nombre as categoria_nombre, i.cantidad as stock_actual
        FROM productos p
        LEFT JOIN categorias c ON p.categoria_id = c.id
-       LEFT JOIN inventario i ON p.id = i.producto_id
-       WHERE p.activo = 1
-       ORDER BY p.nombre ASC`
+       LEFT JOIN inventario i ON i.producto_id = p.id AND i.idnegocio = ?
+       WHERE p.activo = 1 AND p.idnegocio = ?
+       ORDER BY p.nombre ASC`,
+      [idnegocio, idnegocio]
     );
 
     res.json({
@@ -39,17 +53,28 @@ export const getProductos = async (_req: Request, res: Response): Promise<void> 
   }
 };
 
-export const getProductoById = async (req: Request, res: Response): Promise<void> => {
+export const getProductoById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
 
     const [rows] = await pool.execute<Producto[]>(
       `SELECT p.*, c.nombre as categoria_nombre, i.cantidad as stock_actual
        FROM productos p
        LEFT JOIN categorias c ON p.categoria_id = c.id
-       LEFT JOIN inventario i ON p.id = i.producto_id
-       WHERE p.id = ? AND p.activo = 1`,
-      [id]
+       LEFT JOIN inventario i ON i.producto_id = p.id AND i.idnegocio = ?
+       WHERE p.id = ? AND p.activo = 1 AND p.idnegocio = ?`,
+      [idnegocio, id, idnegocio]
     );
 
     if (rows.length === 0) {
@@ -73,9 +98,12 @@ export const getProductoById = async (req: Request, res: Response): Promise<void
   }
 };
 
-export const createProducto = async (req: Request, res: Response): Promise<void> => {
+export const createProducto = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { nombre, descripcion, precio, costo, codigo_barras, categoria_id } = req.body;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
 
     if (!nombre || !precio || !categoria_id) {
       res.status(400).json({ 
@@ -85,10 +113,18 @@ export const createProducto = async (req: Request, res: Response): Promise<void>
       return;
     }
 
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
     const [result] = await pool.execute<ResultSetHeader>(
-      `INSERT INTO productos (nombre, descripcion, precio, costo, codigo_barras, categoria_id, activo)
-       VALUES (?, ?, ?, ?, ?, ?, 1)`,
-      [nombre, descripcion || null, precio, costo || 0, codigo_barras || null, categoria_id]
+      `INSERT INTO productos (nombre, descripcion, precio, costo, codigo_barras, categoria_id, activo, idnegocio)
+       VALUES (?, ?, ?, ?, ?, ?, 1, ?)`,
+      [nombre, descripcion || null, precio, costo || 0, codigo_barras || null, categoria_id, idnegocio]
     );
 
     res.status(201).json({
@@ -105,10 +141,21 @@ export const createProducto = async (req: Request, res: Response): Promise<void>
   }
 };
 
-export const updateProducto = async (req: Request, res: Response): Promise<void> => {
+export const updateProducto = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { nombre, descripcion, precio, costo, codigo_barras, categoria_id } = req.body;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
 
     const [result] = await pool.execute<ResultSetHeader>(
       `UPDATE productos 
@@ -118,8 +165,8 @@ export const updateProducto = async (req: Request, res: Response): Promise<void>
            costo = COALESCE(?, costo),
            codigo_barras = COALESCE(?, codigo_barras),
            categoria_id = COALESCE(?, categoria_id)
-       WHERE id = ? AND activo = 1`,
-      [nombre, descripcion, precio, costo, codigo_barras, categoria_id, id]
+       WHERE id = ? AND activo = 1 AND idnegocio = ?`,
+      [nombre, descripcion, precio, costo, codigo_barras, categoria_id, id, idnegocio]
     );
 
     if (result.affectedRows === 0) {
@@ -143,13 +190,24 @@ export const updateProducto = async (req: Request, res: Response): Promise<void>
   }
 };
 
-export const deleteProducto = async (req: Request, res: Response): Promise<void> => {
+export const deleteProducto = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
     const [result] = await pool.execute<ResultSetHeader>(
-      'UPDATE productos SET activo = 0 WHERE id = ?',
-      [id]
+      'UPDATE productos SET activo = 0 WHERE id = ? AND idnegocio = ?',
+      [id, idnegocio]
     );
 
     if (result.affectedRows === 0) {
