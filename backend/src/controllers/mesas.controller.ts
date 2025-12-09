@@ -115,7 +115,7 @@ export const crearMesa = async (req: AuthRequest, res: Response): Promise<void> 
     // Validar campos requeridos
     if (!nombremesa || !numeromesa || !cantcomensales || !estatusmesa || !estatustiempo || !idnegocio) {
       res.status(400).json({ 
-        message: 'Faltan campos requeridos o usuario no autenticado',
+        message: 'Faltan campos requeridos o el usuario no está autenticado',
         campos: { nombremesa, numeromesa, cantcomensales, estatusmesa, estatustiempo, idnegocio }
       });
       return;

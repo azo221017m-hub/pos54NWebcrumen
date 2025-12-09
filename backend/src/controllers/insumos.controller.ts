@@ -131,7 +131,7 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
         stock_minimo === undefined || costo_promedio_ponderado === undefined || 
         precio_venta === undefined || activo === undefined || 
         inventariable === undefined || !idnegocio) {
-      res.status(400).json({ message: 'Faltan campos requeridos o usuario no autenticado' });
+      res.status(400).json({ message: 'Faltan campos requeridos o el usuario no está autenticado' });
       return;
     }
 

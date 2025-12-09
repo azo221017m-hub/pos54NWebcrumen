@@ -94,7 +94,7 @@ export const crearCuentaContable = async (req: AuthRequest, res: Response): Prom
     const idnegocio = req.user?.idNegocio;
 
     if (!idnegocio) {
-      res.status(400).json({ message: 'Usuario no autenticado' });
+      res.status(400).json({ message: 'El usuario no está autenticado' });
       return;
     }
 

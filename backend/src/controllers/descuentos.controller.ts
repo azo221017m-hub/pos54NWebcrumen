@@ -107,7 +107,7 @@ export const crearDescuento = async (req: AuthRequest, res: Response): Promise<v
     // Validar campos requeridos
     if (!nombre || !tipodescuento || valor === undefined || !estatusdescuento || !requiereautorizacion || !idnegocio) {
       res.status(400).json({ 
-        message: 'Faltan campos requeridos o usuario no autenticado',
+        message: 'Faltan campos requeridos o el usuario no está autenticado',
         campos: { nombre, tipodescuento, valor, estatusdescuento, requiereautorizacion, idnegocio }
       });
       return;

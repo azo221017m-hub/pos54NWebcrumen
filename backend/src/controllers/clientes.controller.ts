@@ -147,7 +147,7 @@ export const crearCliente = async (req: AuthRequest, res: Response): Promise<voi
 
     // Validar campos requeridos
     if (!nombre || !idnegocio) {
-      res.status(400).json({ message: 'Nombre es requerido y usuario debe estar autenticado' });
+      res.status(400).json({ message: 'El nombre es requerido y el usuario debe estar autenticado' });
       return;
     }
 

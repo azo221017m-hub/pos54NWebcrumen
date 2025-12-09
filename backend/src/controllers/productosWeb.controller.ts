@@ -191,7 +191,7 @@ export const crearProductoWeb = async (req: AuthRequest, res: Response): Promise
 
     // Validar campos requeridos
     if (!nombre || !idCategoria || precio === undefined || !tipoproducto || !idnegocio) {
-      res.status(400).json({ mensaje: 'Faltan campos requeridos o usuario no autenticado' });
+      res.status(400).json({ mensaje: 'Faltan campos requeridos o el usuario no está autenticado' });
       return;
     }
 

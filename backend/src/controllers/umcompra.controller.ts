@@ -98,7 +98,7 @@ export const crearUMCompra = async (req: AuthRequest, res: Response): Promise<vo
     if (!nombreUmCompra || !idnegocio) {
       res.status(400).json({
         success: false,
-        message: 'El nombre de la unidad de medida es obligatorio y usuario debe estar autenticado'
+        message: 'El nombre de la unidad de medida es obligatorio y el usuario debe estar autenticado'
       });
       return;
     }
