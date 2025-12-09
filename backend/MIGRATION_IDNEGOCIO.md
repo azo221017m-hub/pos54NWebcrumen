@@ -17,11 +17,6 @@ Translation: Queries and forms must show values from tables that correspond to t
 
 **SQL Migration Script**: `src/scripts/add_idnegocio_migration.sql`
 
-This script adds the `idnegocio` column to the following tables:
-- `productos` - Products table
-- `ventas` - Sales table  
-- `inventario` - Inventory table
-
 **IMPORTANT**: Run this migration script on the database BEFORE deploying the updated code.
 
 ### 2. Controller Updates
