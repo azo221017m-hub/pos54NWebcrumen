@@ -75,13 +75,13 @@ These controllers were already implemented correctly:
 ### Step 1: Backup Database
 ```bash
 # Create a backup of the database before running migrations
-mysqldump -h crumenprod01.mysql.database.azure.com -u azavala -p bdcdttx > backup_$(date +%Y%m%d_%H%M%S).sql
+mysqldump -h <DB_HOST> -u <DB_USER> -p <DB_NAME> > backup_$(date +%Y%m%d_%H%M%S).sql
 ```
 
 ### Step 2: Run Migration Script
 ```bash
 # Connect to the database
-mysql -h crumenprod01.mysql.database.azure.com -u azavala -p bdcdttx
+mysql -h <DB_HOST> -u <DB_USER> -p <DB_NAME>
 
 # Run the migration script
 source backend/src/scripts/add_idnegocio_migration.sql
@@ -96,7 +96,7 @@ SELECT
     DATA_TYPE,
     IS_NULLABLE
 FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_SCHEMA = 'bdcdttx'
+WHERE TABLE_SCHEMA = '<DB_NAME>'
     AND COLUMN_NAME = 'idnegocio'
     AND TABLE_NAME IN ('productos', 'ventas', 'inventario');
 

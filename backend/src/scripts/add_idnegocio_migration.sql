@@ -5,6 +5,8 @@
 -- =================================================================
 -- Add idnegocio column to productos table
 -- =================================================================
+-- NOTE: DEFAULT 1 assumes there is a business with idNegocio=1
+-- Update this default value if your primary business has a different ID
 ALTER TABLE productos 
 ADD COLUMN idnegocio INT NOT NULL DEFAULT 1 AFTER activo;
 
@@ -27,6 +29,8 @@ CREATE INDEX idx_productos_idnegocio ON productos(idnegocio);
 -- =================================================================
 -- Add idnegocio column to ventas table
 -- =================================================================
+-- NOTE: DEFAULT 1 assumes there is a business with idNegocio=1
+-- Update this default value if your primary business has a different ID
 ALTER TABLE ventas 
 ADD COLUMN idnegocio INT NOT NULL DEFAULT 1 AFTER metodo_pago;
 
@@ -36,6 +40,8 @@ CREATE INDEX idx_ventas_idnegocio ON ventas(idnegocio);
 -- =================================================================
 -- Add idnegocio column to inventario table
 -- =================================================================
+-- NOTE: DEFAULT 1 assumes there is a business with idNegocio=1
+-- Update this default value if your primary business has a different ID
 ALTER TABLE inventario 
 ADD COLUMN idnegocio INT NOT NULL DEFAULT 1 AFTER ultima_actualizacion;
 
@@ -45,30 +51,55 @@ CREATE INDEX idx_inventario_idnegocio ON inventario(idnegocio);
 -- =================================================================
 -- Update existing records to set proper idnegocio
 -- =================================================================
--- IMPORTANT: Update these queries based on your business logic
--- The examples below assume a default negocio with ID=1
--- You may need to update based on relationships with other tables
+-- IMPORTANT: These are EXAMPLE queries. You MUST customize them based on 
+-- your actual business logic and data relationships.
+--
+-- BEFORE running any UPDATE statements:
+-- 1. Review your data to understand which records belong to which business
+-- 2. Test the UPDATE query with a WHERE clause limiting to a few records
+-- 3. Verify the results before running on the full dataset
+--
+-- The examples below assume you can determine the correct idnegocio
+-- through relationships with other tables that already have this field.
 
--- Option 1: Set all to default negocio (simplest, may not be correct)
--- UPDATE productos SET idnegocio = 1;
--- UPDATE ventas SET idnegocio = 1;
--- UPDATE inventario SET idnegocio = 1;
+-- === STEP 1: Analyze current data ===
+-- Before updating, check the current distribution
+SELECT 'productos_with_default' as status, COUNT(*) as count FROM productos WHERE idnegocio = 1;
+SELECT 'ventas_with_default' as status, COUNT(*) as count FROM ventas WHERE idnegocio = 1;
+SELECT 'inventario_with_default' as status, COUNT(*) as count FROM inventario WHERE idnegocio = 1;
 
--- Option 2: Update based on relationships (more accurate)
--- Example: Update ventas based on usuario's negocio
+-- === STEP 2: Determine update strategy ===
+-- Check if you have relationships to determine the correct idnegocio
+
+-- Option A: All existing data belongs to ONE business
+-- If all your existing data belongs to business ID 1, no updates are needed
+-- The DEFAULT value of 1 is already correct
+
+-- Option B: Data belongs to MULTIPLE businesses - need to update based on relationships
+-- Example 1: Update ventas based on the usuario who created them
 -- UPDATE ventas v
 -- INNER JOIN tblposcrumenwebusuarios u ON v.usuario_id = u.idUsuario
--- SET v.idnegocio = u.idNegocio;
+-- SET v.idnegocio = u.idNegocio
+-- WHERE v.idnegocio = 1; -- Only update records still with default value
 
--- Example: Update productos based on categoria's negocio
+-- Example 2: Update productos based on their categoria
 -- UPDATE productos p
--- INNER JOIN tblposcrumenwebcategorias c ON p.categoria_id = c.idCategoria
--- SET p.idnegocio = c.idnegocio;
+-- INNER JOIN tblposcrumenwebcategorias c ON p.categoria_id = c.idCategoria  
+-- SET p.idnegocio = c.idnegocio
+-- WHERE p.idnegocio = 1; -- Only update records still with default value
 
--- Example: Update inventario based on producto's negocio (after productos is updated)
+-- Example 3: Update inventario based on the producto
+-- Run this AFTER updating productos table
 -- UPDATE inventario i
 -- INNER JOIN productos p ON i.producto_id = p.id
--- SET i.idnegocio = p.idnegocio;
+-- SET i.idnegocio = p.idnegocio
+-- WHERE i.idnegocio = 1; -- Only update records still with default value
+
+-- === STEP 3: Verify updates ===
+-- After updating, verify the distribution looks correct
+-- SELECT 'productos' as tabla, idnegocio, COUNT(*) as count FROM productos GROUP BY idnegocio;
+-- SELECT 'ventas' as tabla, idnegocio, COUNT(*) as count FROM ventas GROUP BY idnegocio;
+-- SELECT 'inventario' as tabla, idnegocio, COUNT(*) as count FROM inventario GROUP BY idnegocio;
 
 -- =================================================================
 -- Verification queries
