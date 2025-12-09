@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { pool } from '../config/db';
 import type { RowDataPacket, ResultSetHeader } from 'mysql2';
+import type { AuthRequest } from '../middlewares/auth';
 
 interface Inventario extends RowDataPacket {
   id: number;
@@ -10,16 +11,29 @@ interface Inventario extends RowDataPacket {
   ultima_actualizacion: Date;
   producto_nombre?: string;
   producto_precio?: number;
+  idnegocio?: number;
 }
 
-export const getInventario = async (_req: Request, res: Response): Promise<void> => {
+export const getInventario = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
     const [rows] = await pool.execute<Inventario[]>(
       `SELECT i.*, p.nombre as producto_nombre, p.precio as producto_precio
        FROM inventario i
        JOIN productos p ON i.producto_id = p.id
-       WHERE p.activo = 1
-       ORDER BY p.nombre ASC`
+       WHERE p.activo = 1 AND i.idnegocio = ? AND p.idnegocio = ?
+       ORDER BY p.nombre ASC`,
+      [idnegocio, idnegocio]
     );
 
     res.json({
@@ -35,16 +49,27 @@ export const getInventario = async (_req: Request, res: Response): Promise<void>
   }
 };
 
-export const getInventarioByProducto = async (req: Request, res: Response): Promise<void> => {
+export const getInventarioByProducto = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { producto_id } = req.params;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
 
     const [rows] = await pool.execute<Inventario[]>(
       `SELECT i.*, p.nombre as producto_nombre, p.precio as producto_precio
        FROM inventario i
        JOIN productos p ON i.producto_id = p.id
-       WHERE i.producto_id = ?`,
-      [producto_id]
+       WHERE i.producto_id = ? AND i.idnegocio = ? AND p.idnegocio = ?`,
+      [producto_id, idnegocio, idnegocio]
     );
 
     if (rows.length === 0) {
@@ -68,14 +93,27 @@ export const getInventarioByProducto = async (req: Request, res: Response): Prom
   }
 };
 
-export const getProductosBajoStock = async (_req: Request, res: Response): Promise<void> => {
+export const getProductosBajoStock = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
     const [rows] = await pool.execute<Inventario[]>(
       `SELECT i.*, p.nombre as producto_nombre, p.precio as producto_precio
        FROM inventario i
        JOIN productos p ON i.producto_id = p.id
-       WHERE i.cantidad <= i.stock_minimo AND p.activo = 1
-       ORDER BY i.cantidad ASC`
+       WHERE i.cantidad <= i.stock_minimo AND p.activo = 1 
+         AND i.idnegocio = ? AND p.idnegocio = ?
+       ORDER BY i.cantidad ASC`,
+      [idnegocio, idnegocio]
     );
 
     res.json({
@@ -91,10 +129,21 @@ export const getProductosBajoStock = async (_req: Request, res: Response): Promi
   }
 };
 
-export const actualizarInventario = async (req: Request, res: Response): Promise<void> => {
+export const actualizarInventario = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { producto_id } = req.params;
     const { cantidad, stock_minimo } = req.body;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
 
     if (cantidad === undefined && stock_minimo === undefined) {
       res.status(400).json({ 
@@ -106,15 +155,15 @@ export const actualizarInventario = async (req: Request, res: Response): Promise
 
     // Verificar si existe el registro de inventario
     const [existing] = await pool.execute<Inventario[]>(
-      'SELECT id FROM inventario WHERE producto_id = ?',
-      [producto_id]
+      'SELECT id FROM inventario WHERE producto_id = ? AND idnegocio = ?',
+      [producto_id, idnegocio]
     );
 
     if (existing.length === 0) {
       // Crear nuevo registro de inventario
       await pool.execute<ResultSetHeader>(
-        'INSERT INTO inventario (producto_id, cantidad, stock_minimo) VALUES (?, ?, ?)',
-        [producto_id, cantidad || 0, stock_minimo || 10]
+        'INSERT INTO inventario (producto_id, cantidad, stock_minimo, idnegocio) VALUES (?, ?, ?, ?)',
+        [producto_id, cantidad || 0, stock_minimo || 10, idnegocio]
       );
     } else {
       // Actualizar registro existente
@@ -132,9 +181,10 @@ export const actualizarInventario = async (req: Request, res: Response): Promise
       }
 
       values.push(producto_id);
+      values.push(idnegocio);
 
       await pool.execute<ResultSetHeader>(
-        `UPDATE inventario SET ${updates.join(', ')} WHERE producto_id = ?`,
+        `UPDATE inventario SET ${updates.join(', ')} WHERE producto_id = ? AND idnegocio = ?`,
         values
       );
     }
@@ -152,10 +202,21 @@ export const actualizarInventario = async (req: Request, res: Response): Promise
   }
 };
 
-export const ajustarStock = async (req: Request, res: Response): Promise<void> => {
+export const ajustarStock = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { producto_id } = req.params;
     const { cantidad, tipo } = req.body; // tipo: 'suma' o 'resta'
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
 
     if (!cantidad || !tipo) {
       res.status(400).json({ 
@@ -178,8 +239,8 @@ export const ajustarStock = async (req: Request, res: Response): Promise<void> =
     await pool.execute<ResultSetHeader>(
       `UPDATE inventario 
        SET cantidad = cantidad ${operador} ?
-       WHERE producto_id = ?`,
-      [cantidad, producto_id]
+       WHERE producto_id = ? AND idnegocio = ?`,
+      [cantidad, producto_id, idnegocio]
     );
 
     res.json({
