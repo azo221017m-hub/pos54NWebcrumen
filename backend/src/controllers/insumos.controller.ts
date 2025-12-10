@@ -23,9 +23,15 @@ interface Insumo extends RowDataPacket {
 }
 
 // Obtener todos los insumos por negocio
-export const obtenerInsumos = async (req: Request, res: Response): Promise<void> => {
+export const obtenerInsumos = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { idnegocio } = req.params;
+    // Usar idnegocio del usuario autenticado para seguridad
+    const idnegocio = req.user?.idNegocio;
+    
+    if (!idnegocio) {
+      res.status(401).json({ message: 'Usuario no autenticado o sin negocio asignado' });
+      return;
+    }
     
     const [rows] = await pool.query<Insumo[]>(
       `SELECT 

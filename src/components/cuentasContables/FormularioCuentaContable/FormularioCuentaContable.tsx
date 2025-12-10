@@ -77,11 +77,8 @@ const FormularioCuentaContable: React.FC<Props> = ({ cuenta, idnegocio, onSave, 
       return;
     }
 
-    const usuario = localStorage.getItem('usuario') || 'Admin';
-
     const cuentaData: CuentaContableCreate = {
       ...formData,
-      usuarioauditoria: usuario,
       idnegocio
     };
 

@@ -15,9 +15,15 @@ interface CuentaContable extends RowDataPacket {
 }
 
 // Obtener todas las cuentas contables por negocio
-export const obtenerCuentasContables = async (req: Request, res: Response): Promise<void> => {
+export const obtenerCuentasContables = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { idnegocio } = req.params;
+    // Usar idnegocio del usuario autenticado para seguridad
+    const idnegocio = req.user?.idNegocio;
+    
+    if (!idnegocio) {
+      res.status(401).json({ message: 'Usuario no autenticado o sin negocio asignado' });
+      return;
+    }
     
     const [rows] = await pool.query<CuentaContable[]>(
       `SELECT 
@@ -86,15 +92,15 @@ export const crearCuentaContable = async (req: AuthRequest, res: Response): Prom
     const {
       naturalezacuentacontable,
       nombrecuentacontable,
-      tipocuentacontable,
-      usuarioauditoria
+      tipocuentacontable
     } = req.body;
 
-    // Obtener idnegocio del usuario autenticado
+    // Obtener idnegocio y alias del usuario autenticado
     const idnegocio = req.user?.idNegocio;
+    const usuarioauditoria = req.user?.alias;
 
-    if (!idnegocio) {
-      res.status(400).json({ message: 'El usuario no está autenticado' });
+    if (!idnegocio || !usuarioauditoria) {
+      res.status(400).json({ message: 'Usuario no autenticado o sin negocio asignado' });
       return;
     }
 
@@ -130,15 +136,22 @@ export const crearCuentaContable = async (req: AuthRequest, res: Response): Prom
 };
 
 // Actualizar cuenta contable
-export const actualizarCuentaContable = async (req: Request, res: Response): Promise<void> => {
+export const actualizarCuentaContable = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const {
       naturalezacuentacontable,
       nombrecuentacontable,
-      tipocuentacontable,
-      usuarioauditoria
+      tipocuentacontable
     } = req.body;
+
+    // Usar alias del usuario autenticado para usuarioauditoria
+    const usuarioauditoria = req.user?.alias;
+
+    if (!usuarioauditoria) {
+      res.status(401).json({ message: 'Usuario no autenticado' });
+      return;
+    }
 
     const [result] = await pool.query<ResultSetHeader>(
       `UPDATE tblposcrumenwebcuentacontable 

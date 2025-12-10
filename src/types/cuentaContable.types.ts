@@ -16,7 +16,6 @@ export interface CuentaContableCreate {
   naturalezacuentacontable: NaturalezaCuentaContable;
   nombrecuentacontable: string;
   tipocuentacontable: string;
-  usuarioauditoria: string;
   idnegocio: number;
 }
 
@@ -24,5 +23,4 @@ export interface CuentaContableUpdate {
   naturalezacuentacontable: NaturalezaCuentaContable;
   nombrecuentacontable: string;
   tipocuentacontable: string;
-  usuarioauditoria: string;
 }
