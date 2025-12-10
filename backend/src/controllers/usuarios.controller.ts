@@ -2,10 +2,22 @@ import { Request, Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import bcrypt from 'bcrypt';
+import type { AuthRequest } from '../middlewares/auth';
 
 // Obtener todos los usuarios
-export const obtenerUsuarios = async (_req: Request, res: Response): Promise<void> => {
+export const obtenerUsuarios = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
         idUsuario, 
@@ -27,7 +39,9 @@ export const obtenerUsuarios = async (_req: Request, res: Response): Promise<voi
         LENGTH(fotoavatar) as fotoavatar_size,
         fotoavatar
       FROM tblposcrumenwebusuarios
-      ORDER BY fechaRegistroauditoria DESC`
+      WHERE idNegocio = ?
+      ORDER BY fechaRegistroauditoria DESC`,
+      [idnegocio]
     );
     
     // Convertir fotoavatar de Buffer a Base64
@@ -52,9 +66,20 @@ export const obtenerUsuarios = async (_req: Request, res: Response): Promise<voi
 };
 
 // Obtener un usuario por ID
-export const obtenerUsuarioPorId = async (req: Request, res: Response): Promise<void> => {
+export const obtenerUsuarioPorId = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
     
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
@@ -76,8 +101,8 @@ export const obtenerUsuarioPorId = async (req: Request, res: Response): Promise<
         fotopersona,
         fotoavatar
       FROM tblposcrumenwebusuarios 
-      WHERE idUsuario = ?`,
-      [id]
+      WHERE idUsuario = ? AND idNegocio = ?`,
+      [id, idnegocio]
     );
     
     if (rows.length === 0) {
@@ -219,7 +244,7 @@ export const crearUsuario = async (req: Request, res: Response): Promise<void> =
 };
 
 // Actualizar un usuario
-export const actualizarUsuario = async (req: Request, res: Response): Promise<void> => {
+export const actualizarUsuario = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const {
@@ -240,10 +265,21 @@ export const actualizarUsuario = async (req: Request, res: Response): Promise<vo
       fotoavatar
     } = req.body;
 
-    // Verificar si el usuario existe
+    // Obtener idnegocio del usuario autenticado
+    const userIdNegocio = req.user?.idNegocio;
+
+    if (!userIdNegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
+    // Verificar si el usuario existe y pertenece al mismo negocio
     const [existe] = await pool.execute<RowDataPacket[]>(
-      'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ?',
-      [id]
+      'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ? AND idNegocio = ?',
+      [id, userIdNegocio]
     );
 
     if (existe.length === 0) {
@@ -254,10 +290,10 @@ export const actualizarUsuario = async (req: Request, res: Response): Promise<vo
       return;
     }
 
-    // Verificar si el alias ya existe en otro usuario
+    // Verificar si el alias ya existe en otro usuario del mismo negocio
     const [aliasExiste] = await pool.execute<RowDataPacket[]>(
-      'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE alias = ? AND idUsuario != ?',
-      [alias, id]
+      'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE alias = ? AND idUsuario != ? AND idNegocio = ?',
+      [alias, id, userIdNegocio]
     );
 
     if (aliasExiste.length > 0) {
@@ -330,8 +366,9 @@ export const actualizarUsuario = async (req: Request, res: Response): Promise<vo
       params.push(fotoavatar ? Buffer.from(fotoavatar, 'base64') : null);
     }
 
-    query += ' WHERE idUsuario = ?';
+    query += ' WHERE idUsuario = ? AND idNegocio = ?';
     params.push(id);
+    params.push(userIdNegocio);
 
     await pool.execute(query, params);
 
@@ -350,13 +387,24 @@ export const actualizarUsuario = async (req: Request, res: Response): Promise<vo
 };
 
 // Eliminar un usuario (soft delete)
-export const eliminarUsuario = async (req: Request, res: Response): Promise<void> => {
+export const eliminarUsuario = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
     const [existe] = await pool.execute<RowDataPacket[]>(
-      'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ?',
-      [id]
+      'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ? AND idNegocio = ?',
+      [id, idnegocio]
     );
 
     if (existe.length === 0) {
@@ -368,8 +416,8 @@ export const eliminarUsuario = async (req: Request, res: Response): Promise<void
     }
 
     await pool.execute(
-      'UPDATE tblposcrumenwebusuarios SET estatus = 0, fehamodificacionauditoria = NOW() WHERE idUsuario = ?',
-      [id]
+      'UPDATE tblposcrumenwebusuarios SET estatus = 0, fehamodificacionauditoria = NOW() WHERE idUsuario = ? AND idNegocio = ?',
+      [id, idnegocio]
     );
 
     res.json({
@@ -387,14 +435,25 @@ export const eliminarUsuario = async (req: Request, res: Response): Promise<void
 };
 
 // Cambiar estatus de un usuario
-export const cambiarEstatusUsuario = async (req: Request, res: Response): Promise<void> => {
+export const cambiarEstatusUsuario = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { estatus } = req.body;
 
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
     const [existe] = await pool.execute<RowDataPacket[]>(
-      'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ?',
-      [id]
+      'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ? AND idNegocio = ?',
+      [id, idnegocio]
     );
 
     if (existe.length === 0) {
@@ -406,8 +465,8 @@ export const cambiarEstatusUsuario = async (req: Request, res: Response): Promis
     }
 
     await pool.execute(
-      'UPDATE tblposcrumenwebusuarios SET estatus = ?, fehamodificacionauditoria = NOW() WHERE idUsuario = ?',
-      [estatus, id]
+      'UPDATE tblposcrumenwebusuarios SET estatus = ?, fehamodificacionauditoria = NOW() WHERE idUsuario = ? AND idNegocio = ?',
+      [estatus, id, idnegocio]
     );
 
     res.json({
@@ -454,10 +513,21 @@ export const validarAliasUnico = async (req: Request, res: Response): Promise<vo
 };
 
 // Actualizar imagen de usuario
-export const actualizarImagenUsuario = async (req: Request, res: Response): Promise<void> => {
+export const actualizarImagenUsuario = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { tipoImagen, imagen } = req.body; // tipoImagen: 'fotoine' | 'fotopersona' | 'fotoavatar'
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
 
     if (!['fotoine', 'fotopersona', 'fotoavatar'].includes(tipoImagen)) {
       res.status(400).json({
@@ -468,8 +538,8 @@ export const actualizarImagenUsuario = async (req: Request, res: Response): Prom
     }
 
     const [existe] = await pool.execute<RowDataPacket[]>(
-      'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ?',
-      [id]
+      'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ? AND idNegocio = ?',
+      [id, idnegocio]
     );
 
     if (existe.length === 0) {
@@ -481,8 +551,8 @@ export const actualizarImagenUsuario = async (req: Request, res: Response): Prom
     }
 
     await pool.execute(
-      `UPDATE tblposcrumenwebusuarios SET ${tipoImagen} = ?, fehamodificacionauditoria = NOW() WHERE idUsuario = ?`,
-      [imagen, id]
+      `UPDATE tblposcrumenwebusuarios SET ${tipoImagen} = ?, fehamodificacionauditoria = NOW() WHERE idUsuario = ? AND idNegocio = ?`,
+      [imagen, id, idnegocio]
     );
 
     res.json({
@@ -500,9 +570,20 @@ export const actualizarImagenUsuario = async (req: Request, res: Response): Prom
 };
 
 // Obtener imagen de usuario por tipo
-export const obtenerImagenUsuario = async (req: Request, res: Response): Promise<void> => {
+export const obtenerImagenUsuario = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id, tipo } = req.params;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
 
     // Validar tipo de imagen
     const tiposValidos = ['fotoine', 'fotopersona', 'fotoavatar'];
@@ -515,8 +596,8 @@ export const obtenerImagenUsuario = async (req: Request, res: Response): Promise
     }
 
     const [rows] = await pool.execute<RowDataPacket[]>(
-      `SELECT ${tipo} FROM tblposcrumenwebusuarios WHERE idUsuario = ?`,
-      [id]
+      `SELECT ${tipo} FROM tblposcrumenwebusuarios WHERE idUsuario = ? AND idNegocio = ?`,
+      [id, idnegocio]
     );
 
     if (rows.length === 0 || !rows[0][tipo]) {
@@ -550,9 +631,20 @@ export const obtenerImagenUsuario = async (req: Request, res: Response): Promise
 };
 
 // Eliminar imagen de usuario
-export const eliminarImagenUsuario = async (req: Request, res: Response): Promise<void> => {
+export const eliminarImagenUsuario = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id, tipo } = req.params;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
 
     // Validar tipo de imagen
     const tiposValidos = ['fotoine', 'fotopersona', 'fotoavatar'];
@@ -565,8 +657,8 @@ export const eliminarImagenUsuario = async (req: Request, res: Response): Promis
     }
 
     await pool.execute(
-      `UPDATE tblposcrumenwebusuarios SET ${tipo} = NULL, fehamodificacionauditoria = NOW() WHERE idUsuario = ?`,
-      [id]
+      `UPDATE tblposcrumenwebusuarios SET ${tipo} = NULL, fehamodificacionauditoria = NOW() WHERE idUsuario = ? AND idNegocio = ?`,
+      [id, idnegocio]
     );
 
     res.json({

@@ -4,8 +4,19 @@ import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
 
 // Obtener todas las unidades de medida de compra
-export const obtenerUMCompras = async (_req: Request, res: Response): Promise<void> => {
+export const obtenerUMCompras = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
         idUmCompra,
@@ -18,7 +29,9 @@ export const obtenerUMCompras = async (_req: Request, res: Response): Promise<vo
         fehamodificacionauditoria,
         idnegocio
       FROM tblposrumenwebumcompra
-      ORDER BY fechaRegistroauditoria DESC`
+      WHERE idnegocio = ?
+      ORDER BY fechaRegistroauditoria DESC`,
+      [idnegocio]
     );
     
     res.json({
@@ -37,9 +50,20 @@ export const obtenerUMCompras = async (_req: Request, res: Response): Promise<vo
 };
 
 // Obtener una unidad de medida por ID
-export const obtenerUMCompraPorId = async (req: Request, res: Response): Promise<void> => {
+export const obtenerUMCompraPorId = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
     
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
@@ -53,8 +77,8 @@ export const obtenerUMCompraPorId = async (req: Request, res: Response): Promise
         fehamodificacionauditoria,
         idnegocio
       FROM tblposrumenwebumcompra 
-      WHERE idUmCompra = ?`,
-      [id]
+      WHERE idUmCompra = ? AND idnegocio = ?`,
+      [id, idnegocio]
     );
     
     if (rows.length === 0) {
@@ -153,7 +177,7 @@ export const crearUMCompra = async (req: AuthRequest, res: Response): Promise<vo
 };
 
 // Actualizar una unidad de medida
-export const actualizarUMCompra = async (req: Request, res: Response): Promise<void> => {
+export const actualizarUMCompra = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const {
@@ -161,14 +185,24 @@ export const actualizarUMCompra = async (req: Request, res: Response): Promise<v
       valor,
       umMatPrima,
       valorConvertido,
-      idnegocio,
       usuarioauditoria
     } = req.body;
 
-    // Verificar si existe
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
+    // Verificar si existe y pertenece al mismo negocio
     const [existe] = await pool.execute<RowDataPacket[]>(
-      'SELECT idUmCompra FROM tblposrumenwebumcompra WHERE idUmCompra = ?',
-      [id]
+      'SELECT idUmCompra FROM tblposrumenwebumcompra WHERE idUmCompra = ? AND idnegocio = ?',
+      [id, idnegocio]
     );
 
     if (existe.length === 0) {
@@ -179,10 +213,10 @@ export const actualizarUMCompra = async (req: Request, res: Response): Promise<v
       return;
     }
 
-    // Verificar si el nombre ya existe en otro registro
+    // Verificar si el nombre ya existe en otro registro del mismo negocio
     const [nombreExiste] = await pool.execute<RowDataPacket[]>(
-      'SELECT idUmCompra FROM tblposrumenwebumcompra WHERE nombreUmCompra = ? AND idUmCompra != ?',
-      [nombreUmCompra, id]
+      'SELECT idUmCompra FROM tblposrumenwebumcompra WHERE nombreUmCompra = ? AND idUmCompra != ? AND idnegocio = ?',
+      [nombreUmCompra, id, idnegocio]
     );
 
     if (nombreExiste.length > 0) {
@@ -199,18 +233,17 @@ export const actualizarUMCompra = async (req: Request, res: Response): Promise<v
         valor = ?,
         umMatPrima = ?,
         valorConvertido = ?,
-        idnegocio = ?,
         usuarioauditoria = ?,
         fehamodificacionauditoria = NOW()
-      WHERE idUmCompra = ?`,
+      WHERE idUmCompra = ? AND idnegocio = ?`,
       [
         nombreUmCompra,
         valor || 0,
         umMatPrima || null,
         valorConvertido || 0,
-        idnegocio || null,
         usuarioauditoria || 'sistema',
-        id
+        id,
+        idnegocio
       ]
     );
 
@@ -229,13 +262,24 @@ export const actualizarUMCompra = async (req: Request, res: Response): Promise<v
 };
 
 // Eliminar una unidad de medida
-export const eliminarUMCompra = async (req: Request, res: Response): Promise<void> => {
+export const eliminarUMCompra = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
     const [existe] = await pool.execute<RowDataPacket[]>(
-      'SELECT idUmCompra FROM tblposrumenwebumcompra WHERE idUmCompra = ?',
-      [id]
+      'SELECT idUmCompra FROM tblposrumenwebumcompra WHERE idUmCompra = ? AND idnegocio = ?',
+      [id, idnegocio]
     );
 
     if (existe.length === 0) {
@@ -247,8 +291,8 @@ export const eliminarUMCompra = async (req: Request, res: Response): Promise<voi
     }
 
     await pool.execute(
-      'DELETE FROM tblposrumenwebumcompra WHERE idUmCompra = ?',
-      [id]
+      'DELETE FROM tblposrumenwebumcompra WHERE idUmCompra = ? AND idnegocio = ?',
+      [id, idnegocio]
     );
 
     res.json({
