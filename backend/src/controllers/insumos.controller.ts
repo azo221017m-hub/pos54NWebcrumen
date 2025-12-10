@@ -20,6 +20,7 @@ interface Insumo extends RowDataPacket {
   usuarioauditoria: string | null;
   fechamodificacionauditoria: Date | null;
   idnegocio: number;
+  idproveedor: number | null;
 }
 
 // Obtener todos los insumos por negocio
@@ -50,7 +51,8 @@ export const obtenerInsumos = async (req: AuthRequest, res: Response): Promise<v
         i.fechaRegistroauditoria,
         i.usuarioauditoria,
         i.fechamodificacionauditoria,
-        i.idnegocio
+        i.idnegocio,
+        i.idproveedor
       FROM tblposcrumenwebinsumos i
       LEFT JOIN tblposcrumenwebcuentacontable cc ON i.id_cuentacontable = cc.id_cuentacontable
       WHERE i.idnegocio = ?
@@ -90,7 +92,8 @@ export const obtenerInsumoPorId = async (req: Request, res: Response): Promise<v
         i.fechaRegistroauditoria,
         i.usuarioauditoria,
         i.fechamodificacionauditoria,
-        i.idnegocio
+        i.idnegocio,
+        i.idproveedor
       FROM tblposcrumenwebinsumos i
       LEFT JOIN tblposcrumenwebcuentacontable cc ON i.id_cuentacontable = cc.id_cuentacontable
       WHERE i.id_insumo = ?`,
@@ -126,7 +129,8 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
       id_cuentacontable,
       activo,
       inventariable,
-      usuarioauditoria
+      usuarioauditoria,
+      idproveedor
     } = req.body;
 
     // Obtener idnegocio del usuario autenticado
@@ -155,8 +159,9 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
         inventariable,
         fechaRegistroauditoria,
         usuarioauditoria,
-        idnegocio
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)`,
+        idnegocio,
+        idproveedor
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?)`,
       [
         nombre,
         unidad_medida,
@@ -169,7 +174,8 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
         activo,
         inventariable,
         usuarioauditoria || null,
-        idnegocio
+        idnegocio,
+        idproveedor || null
       ]
     );
 
@@ -201,7 +207,8 @@ export const actualizarInsumo = async (req: Request, res: Response): Promise<voi
       id_cuentacontable,
       activo,
       inventariable,
-      usuarioauditoria
+      usuarioauditoria,
+      idproveedor
     } = req.body;
 
     // Verificar si existe el insumo
@@ -228,7 +235,8 @@ export const actualizarInsumo = async (req: Request, res: Response): Promise<voi
         activo = ?,
         inventariable = ?,
         fechamodificacionauditoria = NOW(),
-        usuarioauditoria = ?
+        usuarioauditoria = ?,
+        idproveedor = ?
       WHERE id_insumo = ?`,
       [
         nombre,
@@ -242,6 +250,7 @@ export const actualizarInsumo = async (req: Request, res: Response): Promise<voi
         activo,
         inventariable,
         usuarioauditoria || null,
+        idproveedor || null,
         id_insumo
       ]
     );

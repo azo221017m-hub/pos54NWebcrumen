@@ -1,7 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import type { Insumo, InsumoCreate } from '../../../types/insumo.types';
 import type { CuentaContable } from '../../../types/cuentaContable.types';
+import type { Proveedor } from '../../../types/proveedor.types';
 import { obtenerCuentasContables } from '../../../services/cuentasContablesService';
+import { obtenerProveedores } from '../../../services/proveedoresService';
 import { Save, X, Package } from 'lucide-react';
 import './FormularioInsumo.css';
 
@@ -27,7 +29,8 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
         activo: insumoEditar.activo,
         inventariable: insumoEditar.inventariable,
         usuarioauditoria: insumoEditar.usuarioauditoria || '',
-        idnegocio: insumoEditar.idnegocio
+        idnegocio: insumoEditar.idnegocio,
+        idproveedor: insumoEditar.idproveedor || null
       };
     }
     return {
@@ -44,7 +47,8 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
       usuarioauditoria: localStorage.getItem('usuario') 
         ? JSON.parse(localStorage.getItem('usuario')!).alias 
         : '',
-      idnegocio: Number(localStorage.getItem('idnegocio')) || 1
+      idnegocio: Number(localStorage.getItem('idnegocio')) || 1,
+      idproveedor: null
     };
   }, [insumoEditar]);
 
@@ -52,6 +56,8 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [cuentasContables, setCuentasContables] = useState<CuentaContable[]>([]);
   const [cargandoCuentas, setCargandoCuentas] = useState(false);
+  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
+  const [cargandoProveedores, setCargandoProveedores] = useState(false);
 
   // Cargar cuentas contables al montar el componente
   useEffect(() => {
@@ -72,15 +78,36 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
     cargarCuentas();
   }, []);
 
+  // Cargar proveedores al montar el componente
+  useEffect(() => {
+    const cargarProveedores = async () => {
+      setCargandoProveedores(true);
+      try {
+        const provs = await obtenerProveedores();
+        setProveedores(provs);
+      } catch (error) {
+        console.error('Error al cargar proveedores:', error);
+        setProveedores([]);
+      } finally {
+        setCargandoProveedores(false);
+      }
+    };
+
+    cargarProveedores();
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     
-    let valorFinal: string | number = value;
+    let valorFinal: string | number | null = value;
     
     if (type === 'number') {
       valorFinal = value === '' ? 0 : parseFloat(value);
     } else if (type === 'checkbox') {
       valorFinal = (e.target as HTMLInputElement).checked ? 1 : 0;
+    } else if (name === 'idproveedor') {
+      // Handle idproveedor as nullable number
+      valorFinal = value === '' ? null : Number(value);
     }
 
     setFormData(prev => ({
@@ -299,6 +326,27 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
                   ))}
                 </select>
                 {cargandoCuentas && <span className="loading-message">Cargando cuentas...</span>}
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="idproveedor">Proveedor</label>
+                <select
+                  id="idproveedor"
+                  name="idproveedor"
+                  value={formData.idproveedor || ''}
+                  onChange={handleChange}
+                  disabled={cargandoProveedores}
+                >
+                  <option value="">Seleccione un proveedor</option>
+                  {proveedores.map(proveedor => (
+                    <option key={proveedor.id_proveedor} value={proveedor.id_proveedor}>
+                      {proveedor.nombre}
+                    </option>
+                  ))}
+                </select>
+                {cargandoProveedores && <span className="loading-message">Cargando proveedores...</span>}
               </div>
             </div>
           </div>
