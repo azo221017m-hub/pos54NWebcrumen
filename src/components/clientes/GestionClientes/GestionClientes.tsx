@@ -15,7 +15,7 @@ interface Props {
   idnegocio: number;
 }
 
-const GestionClientes: React.FC<Props> = ({ idnegocio }) => {
+const GestionClientes: React.FC<Props> = ({ idnegocio: _idnegocio }) => {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
