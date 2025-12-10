@@ -34,7 +34,7 @@ const GestionProductosWeb: React.FC = () => {
   const cargarProductos = useCallback(async () => {
     try {
       setCargando(true);
-      const data = await obtenerProductosWeb(idnegocio);
+      const data = await obtenerProductosWeb();
       setProductos(data);
     } catch (error) {
       console.error('Error al cargar productos:', error);
@@ -43,7 +43,7 @@ const GestionProductosWeb: React.FC = () => {
     } finally {
       setCargando(false);
     }
-  }, [idnegocio, mostrarMensaje]);
+  }, [mostrarMensaje]);
 
   useEffect(() => {
     cargarProductos();

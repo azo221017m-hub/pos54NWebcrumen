@@ -13,12 +13,12 @@ const GestionCatModeradores: React.FC = () => {
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [catModeradorSeleccionada, setCatModeradorSeleccionada] = useState<CatModerador | null>(null);
-  const idnegocio = 1; // TODO: Obtener del contexto de autenticación
+  const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
 
   const cargarCatModeradores = async () => {
     try {
       setCargando(true);
-      const data = await obtenerCatModeradores(idnegocio);
+      const data = await obtenerCatModeradores();
       setCatModeradores(data);
     } catch (error) {
       console.error('Error al cargar categorías moderador:', error);

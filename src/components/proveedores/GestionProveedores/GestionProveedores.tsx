@@ -34,7 +34,7 @@ const GestionProveedores: React.FC = () => {
   const cargarProveedores = useCallback(async () => {
     try {
       setCargando(true);
-      const data = await obtenerProveedores(idnegocio);
+      const data = await obtenerProveedores();
       setProveedores(data);
     } catch (error) {
       console.error('Error al cargar proveedores:', error);
@@ -43,7 +43,7 @@ const GestionProveedores: React.FC = () => {
     } finally {
       setCargando(false);
     }
-  }, [idnegocio, mostrarMensaje]);
+  }, [mostrarMensaje]);
 
   useEffect(() => {
     cargarProveedores();
