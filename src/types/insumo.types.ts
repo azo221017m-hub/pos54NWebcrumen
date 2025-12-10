@@ -17,6 +17,7 @@ export interface Insumo {
   usuarioauditoria?: string | null;
   fechamodificacionauditoria?: Date | null;
   idnegocio: number;
+  idproveedor?: number | null;
 }
 
 export interface InsumoCreate {
@@ -32,6 +33,7 @@ export interface InsumoCreate {
   inventariable: number;
   usuarioauditoria?: string | null;
   idnegocio: number;
+  idproveedor?: number | null;
 }
 
 export interface InsumoUpdate {
@@ -46,4 +48,5 @@ export interface InsumoUpdate {
   activo: number;
   inventariable: number;
   usuarioauditoria?: string | null;
+  idproveedor?: number | null;
 }

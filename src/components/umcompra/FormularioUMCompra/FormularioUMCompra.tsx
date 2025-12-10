@@ -21,7 +21,6 @@ export const FormularioUMCompra: React.FC<FormularioUMCompraProps> = ({
     valor: umEditar?.valor || 0,
     umMatPrima: umEditar?.umMatPrima || '',
     valorConvertido: umEditar?.valorConvertido || 0,
-    idnegocio: umEditar?.idnegocio,
     usuarioauditoria: umEditar?.usuarioauditoria || ''
   }), [umEditar]);
 
@@ -51,7 +50,7 @@ export const FormularioUMCompra: React.FC<FormularioUMCompraProps> = ({
     
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'valor' || name === 'valorConvertido' || name === 'idnegocio'
+      [name]: name === 'valor' || name === 'valorConvertido'
         ? value === '' ? 0 : Number(value)
         : value
     }));
@@ -158,23 +157,6 @@ export const FormularioUMCompra: React.FC<FormularioUMCompraProps> = ({
                 <option value="Pieza">Pieza</option>
               </select>
               <small className="form-hint">Unidad base para la materia prima</small>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="idnegocio">
-                <Building2 size={16} className="inline-icon" />
-                ID Negocio
-              </label>
-              <input
-                type="number"
-                id="idnegocio"
-                name="idnegocio"
-                value={formData.idnegocio || ''}
-                onChange={handleChange}
-                min={1}
-                placeholder="ID del negocio"
-              />
-              <small className="form-hint">Asignar a un negocio específico</small>
             </div>
           </div>
         </div>

@@ -22,6 +22,5 @@ export interface UMCompraFormData {
   valor: number;
   umMatPrima?: string;
   valorConvertido: number;
-  idnegocio?: number;
   usuarioauditoria?: string;
 }
