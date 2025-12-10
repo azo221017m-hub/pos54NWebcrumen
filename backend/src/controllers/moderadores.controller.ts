@@ -26,9 +26,15 @@ interface ModeradorRef extends RowDataPacket {
 }
 
 // Obtener todos los moderadores por negocio
-export const obtenerModeradores = async (req: Request, res: Response): Promise<void> => {
+export const obtenerModeradores = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { idnegocio } = req.params;
+    // Usar idnegocio del usuario autenticado para seguridad
+    const idnegocio = req.user?.idNegocio;
+    
+    if (!idnegocio) {
+      res.status(401).json({ message: 'Usuario no autenticado o sin negocio asignado' });
+      return;
+    }
     
     const [rows] = await pool.query<Moderador[]>(
       `SELECT 
@@ -202,9 +208,15 @@ export const eliminarModerador = async (req: Request, res: Response): Promise<vo
 };
 
 // Obtener todos los moderadores de referencia por negocio
-export const obtenerModeradoresRef = async (req: Request, res: Response): Promise<void> => {
+export const obtenerModeradoresRef = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { idnegocio } = req.params;
+    // Usar idnegocio del usuario autenticado para seguridad
+    const idnegocio = req.user?.idNegocio;
+    
+    if (!idnegocio) {
+      res.status(401).json({ message: 'Usuario no autenticado o sin negocio asignado' });
+      return;
+    }
     
     console.log('🔵 Obteniendo moderadores de referencia para negocio:', idnegocio);
     

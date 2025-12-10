@@ -28,9 +28,15 @@ interface Cliente extends RowDataPacket {
 }
 
 // Obtener todos los clientes por negocio
-export const obtenerClientes = async (req: Request, res: Response): Promise<void> => {
+export const obtenerClientes = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { idnegocio } = req.params;
+    // Usar idnegocio del usuario autenticado para seguridad
+    const idnegocio = req.user?.idNegocio;
+    
+    if (!idnegocio) {
+      res.status(401).json({ message: 'Usuario no autenticado o sin negocio asignado' });
+      return;
+    }
     
     const [rows] = await pool.query<Cliente[]>(
       `SELECT 

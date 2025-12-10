@@ -67,8 +67,7 @@ const GestionCuentasContables: React.FC<Props> = ({ idnegocio }) => {
         const dataUpdate: CuentaContableUpdate = {
           naturalezacuentacontable: cuentaData.naturalezacuentacontable,
           nombrecuentacontable: cuentaData.nombrecuentacontable,
-          tipocuentacontable: cuentaData.tipocuentacontable,
-          usuarioauditoria: cuentaData.usuarioauditoria
+          tipocuentacontable: cuentaData.tipocuentacontable
         };
         await actualizarCuentaContable(cuentaEditar.id_cuentacontable, dataUpdate);
         mostrarMensaje('success', 'Cuenta contable actualizada correctamente');
