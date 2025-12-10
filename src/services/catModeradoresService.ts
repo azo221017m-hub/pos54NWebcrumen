@@ -2,9 +2,9 @@ import apiClient from './api';
 import type { CatModerador, CatModeradorCreate, CatModeradorUpdate } from '../types/catModerador.types';
 
 // Obtener todas las categorías moderador por negocio
-export const obtenerCatModeradores = async (idnegocio: number): Promise<CatModerador[]> => {
+export const obtenerCatModeradores = async (): Promise<CatModerador[]> => {
   try {
-    const response = await apiClient.get(`/cat-moderadores/negocio/${idnegocio}`);
+    const response = await apiClient.get(`/cat-moderadores`);
     return response.data;
   } catch (error) {
     console.error('Error al obtener categorías moderador:', error);

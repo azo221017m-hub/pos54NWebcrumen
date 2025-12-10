@@ -4,10 +4,10 @@ import type { ProductoWeb, ProductoWebCreate, ProductoWebUpdate } from '../types
 const API_BASE = '/productos-web';
 
 // Obtener todos los productos web por negocio
-export const obtenerProductosWeb = async (idnegocio: number): Promise<ProductoWeb[]> => {
+export const obtenerProductosWeb = async (): Promise<ProductoWeb[]> => {
   try {
-    console.log('🔵 productosWebService: Obteniendo productos web para negocio:', idnegocio);
-    const response = await apiClient.get<ProductoWeb[]>(`${API_BASE}/negocio/${idnegocio}`);
+    console.log('🔵 productosWebService: Obteniendo productos web del negocio autenticado');
+    const response = await apiClient.get<ProductoWeb[]>(`${API_BASE}`);
     console.log('🔵 productosWebService: Productos web obtenidos:', response.data.length);
     return response.data;
   } catch (error) {

@@ -4,10 +4,10 @@ import type { Proveedor, ProveedorCreate, ProveedorUpdate } from '../types/prove
 const API_BASE = '/proveedores';
 
 // Obtener todos los proveedores de un negocio
-export const obtenerProveedores = async (idnegocio: number): Promise<Proveedor[]> => {
+export const obtenerProveedores = async (): Promise<Proveedor[]> => {
   try {
-    console.log('🔵 proveedoresService - Solicitando proveedores del negocio:', idnegocio);
-    const response = await apiClient.get<Proveedor[]>(`${API_BASE}/negocio/${idnegocio}`);
+    console.log('🔵 proveedoresService - Solicitando proveedores del negocio autenticado');
+    const response = await apiClient.get<Proveedor[]>(`${API_BASE}`);
     console.log('✅ proveedoresService - Respuesta recibida:', response.data);
     
     if (Array.isArray(response.data)) {

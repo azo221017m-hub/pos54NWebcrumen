@@ -16,9 +16,15 @@ interface CatModerador extends RowDataPacket {
 }
 
 // Obtener todas las categorías moderador por negocio
-export const obtenerCatModeradores = async (req: Request, res: Response): Promise<void> => {
+export const obtenerCatModeradores = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { idnegocio } = req.params;
+    // Usar idnegocio del usuario autenticado para seguridad
+    const idnegocio = req.user?.idNegocio;
+    
+    if (!idnegocio) {
+      res.status(401).json({ mensaje: 'Usuario no autenticado o sin negocio asignado' });
+      return;
+    }
 
     console.log('🔵 Obteniendo categorías moderador para negocio:', idnegocio);
 

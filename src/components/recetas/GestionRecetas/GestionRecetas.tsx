@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, ChefHat, Loader } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, ChefHat, Loader, ArrowLeft } from 'lucide-react';
 import ListaRecetas from '../ListaRecetas/ListaRecetas';
 import FormularioReceta from '../FormularioReceta/FormularioReceta';
 import type { Receta, RecetaCreate, RecetaUpdate } from '../../../types/receta.types';
@@ -7,6 +8,7 @@ import { obtenerRecetas, crearReceta, actualizarReceta, eliminarReceta } from '.
 import './GestionRecetas.css';
 
 const GestionRecetas: React.FC = () => {
+  const navigate = useNavigate();
   const [recetas, setRecetas] = useState<Receta[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -115,6 +117,10 @@ const GestionRecetas: React.FC = () => {
     setRecetaEditar(null);
   };
 
+  const handleRegresar = () => {
+    navigate('/dashboard');
+  };
+
   return (
     <div className="gestion-recetas">
       {/* Mensaje de Notificación */}
@@ -134,6 +140,13 @@ const GestionRecetas: React.FC = () => {
       )}
 
       <div className="recetas-header">
+        <div className="recetas-header-top">
+          <button onClick={handleRegresar} className="btn-regresar" title="Regresar al Dashboard">
+            <ArrowLeft size={20} />
+            Regresar
+          </button>
+        </div>
+        
         <div className="recetas-header-content">
           <div className="recetas-title">
             <ChefHat size={32} className="recetas-icon" />
