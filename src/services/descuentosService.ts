@@ -4,10 +4,10 @@ import type { Descuento, DescuentoCreate, DescuentoUpdate } from '../types/descu
 const API_BASE = '/descuentos';
 
 // Obtener todos los descuentos de un negocio
-export const obtenerDescuentos = async (idnegocio: number): Promise<Descuento[]> => {
+export const obtenerDescuentos = async (): Promise<Descuento[]> => {
   try {
-    console.log('Servicio: Obteniendo descuentos del negocio', idnegocio);
-    const response = await apiClient.get<Descuento[]>(`${API_BASE}/negocio/${idnegocio}`);
+    console.log('Servicio: Obteniendo descuentos del negocio autenticado');
+    const response = await apiClient.get<Descuento[]>(API_BASE);
     console.log('Servicio: Descuentos obtenidos:', response.data.length);
     return response.data;
   } catch (error) {

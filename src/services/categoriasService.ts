@@ -4,10 +4,10 @@ import type { Categoria, CategoriaCreate, CategoriaUpdate } from '../types/categ
 const API_BASE = '/categorias';
 
 // Obtener todas las categorías por negocio
-export const obtenerCategorias = async (idnegocio: number): Promise<Categoria[]> => {
+export const obtenerCategorias = async (): Promise<Categoria[]> => {
   try {
-    console.log('🔵 categoriasService: Obteniendo categorías para negocio:', idnegocio);
-    const response = await apiClient.get<Categoria[]>(`${API_BASE}/negocio/${idnegocio}`);
+    console.log('🔵 categoriasService: Obteniendo categorías del negocio autenticado');
+    const response = await apiClient.get<Categoria[]>(API_BASE);
     console.log('🔵 categoriasService: Categorías obtenidas:', response.data.length);
     return response.data;
   } catch (error) {

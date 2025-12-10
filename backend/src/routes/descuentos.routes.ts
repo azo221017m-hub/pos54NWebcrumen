@@ -16,7 +16,7 @@ const router = Router();
 router.use(authMiddleware);
 
 // Rutas CRUD
-router.get('/negocio/:idnegocio', obtenerDescuentos);
+router.get('/', obtenerDescuentos);
 router.get('/validar/nombre-descuento', validarNombreDescuentoUnico);
 router.get('/:id_descuento', obtenerDescuentoPorId);
 router.post('/', crearDescuento);

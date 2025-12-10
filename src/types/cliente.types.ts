@@ -46,7 +46,7 @@ export interface ClienteCreate {
   direccion?: string | null;
   estatus?: number;
   usuarioauditoria?: string | null;
-  idnegocio: number;
+  idnegocio?: number; // Optional - backend uses authenticated user's idNegocio
 }
 
 export interface ClienteUpdate {

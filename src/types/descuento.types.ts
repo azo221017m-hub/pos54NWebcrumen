@@ -29,7 +29,7 @@ export interface DescuentoCreate {
   estatusdescuento: string;
   requiereautorizacion: RequiereAutorizacion;
   UsuarioCreo: string;
-  idnegocio: number;
+  idnegocio?: number; // Optional - backend uses authenticated user's idNegocio
 }
 
 // Interface para actualizar un descuento

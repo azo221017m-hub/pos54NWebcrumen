@@ -4,10 +4,10 @@ import type { Mesa, MesaCreate, MesaUpdate } from '../types/mesa.types';
 const API_BASE = '/mesas';
 
 // Obtener todas las mesas de un negocio
-export const obtenerMesas = async (idnegocio: number): Promise<Mesa[]> => {
+export const obtenerMesas = async (): Promise<Mesa[]> => {
   try {
-    console.log('Servicio: Obteniendo mesas del negocio', idnegocio);
-    const response = await apiClient.get<Mesa[]>(`${API_BASE}/negocio/${idnegocio}`);
+    console.log('Servicio: Obteniendo mesas del negocio autenticado');
+    const response = await apiClient.get<Mesa[]>(API_BASE);
     console.log('Servicio: Mesas obtenidas:', response.data.length);
     return response.data;
   } catch (error) {

@@ -4,11 +4,11 @@ import type { Cliente, ClienteCreate, ClienteUpdate } from '../types/cliente.typ
 const API_BASE = '/clientes';
 
 // Obtener todos los clientes de un negocio
-export const obtenerClientes = async (idnegocio: number): Promise<Cliente[]> => {
+export const obtenerClientes = async (): Promise<Cliente[]> => {
   try {
-    console.log('🔵 clientesService - Solicitando clientes del negocio:', idnegocio);
-    console.log('🔵 URL completa:', `${API_BASE}/negocio/${idnegocio}`);
-    const response = await apiClient.get<Cliente[]>(`${API_BASE}/negocio/${idnegocio}`);
+    console.log('🔵 clientesService - Solicitando clientes del negocio autenticado');
+    console.log('🔵 URL completa:', API_BASE);
+    const response = await apiClient.get<Cliente[]>(API_BASE);
     console.log('✅ clientesService - Respuesta recibida:', response.data);
     
     // Validación: asegurarse de devolver siempre un array

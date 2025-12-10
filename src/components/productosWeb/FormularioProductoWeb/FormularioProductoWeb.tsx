@@ -74,7 +74,7 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
       // Cargar categorías
       setCargandoCategorias(true);
       try {
-        const categoriasData = await obtenerCategorias(idnegocio);
+        const categoriasData = await obtenerCategorias();
         setCategorias(categoriasData);
       } catch (error) {
         console.error('Error al cargar categorías:', error);

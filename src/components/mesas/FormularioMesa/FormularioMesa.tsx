@@ -110,8 +110,7 @@ const FormularioMesa: React.FC<FormularioMesaProps> = ({
         ...formData,
         tiempodeinicio: formData.tiempodeinicio || undefined,
         tiempoactual: formData.tiempoactual || undefined,
-        UsuarioCreo: usuario,
-        idnegocio
+        UsuarioCreo: usuario
       };
       onSubmit(mesaCreate);
     }

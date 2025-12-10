@@ -13,8 +13,8 @@ import { ConfigClientes } from '../pages/ConfigClientes/ConfigClientes';
 import ConfigCuentaContable from '../pages/ConfigCuentaContable/ConfigCuentaContable';
 import ConfigModeradores from '../pages/ConfigModeradores/ConfigModeradores';
 import ConfigSubreceta from '../pages/ConfigSubreceta/ConfigSubreceta';
+import ConfigCategorias from '../pages/ConfigCategorias/ConfigCategorias';
 import GestionRecetas from '../components/recetas/GestionRecetas/GestionRecetas';
-import GestionCategorias from '../components/categorias/GestionCategorias/GestionCategorias';
 import GestionCatModeradores from '../components/catModeradores/GestionCatModeradores/GestionCatModeradores';
 import GestionProductosWeb from '../components/productosWeb/GestionProductosWeb/GestionProductosWeb';
 import { ConfigProveedores } from '../pages/ConfigProveedores/ConfigProveedores';
@@ -82,7 +82,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/config-categorias',
-    element: <GestionCategorias />,
+    element: <ConfigCategorias />,
   },
   {
     path: '/config-cat-moderadores',
