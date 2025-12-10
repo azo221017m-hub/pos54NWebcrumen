@@ -7,7 +7,7 @@ const API_BASE = '/categorias';
 export const obtenerCategorias = async (idnegocio: number): Promise<Categoria[]> => {
   try {
     console.log('🔵 categoriasService: Obteniendo categorías para negocio:', idnegocio);
-    const response = await apiClient.get<Categoria[]>(`${API_BASE}/negocio/${idnegocio}`);
+    const response = await apiClient.get<Categoria[]>(API_BASE);
     console.log('🔵 categoriasService: Categorías obtenidas:', response.data.length);
     return response.data;
   } catch (error) {

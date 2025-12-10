@@ -16,7 +16,7 @@ const router = Router();
 router.use(authMiddleware);
 
 // Rutas CRUD
-router.get('/negocio/:idnegocio', obtenerMesas);
+router.get('/', obtenerMesas);
 router.get('/validar/numero-mesa', validarNumeroMesaUnico);
 router.get('/:idmesa', obtenerMesaPorId);
 router.post('/', crearMesa);

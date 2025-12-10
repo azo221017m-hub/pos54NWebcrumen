@@ -7,7 +7,7 @@ const API_BASE = '/descuentos';
 export const obtenerDescuentos = async (idnegocio: number): Promise<Descuento[]> => {
   try {
     console.log('Servicio: Obteniendo descuentos del negocio', idnegocio);
-    const response = await apiClient.get<Descuento[]>(`${API_BASE}/negocio/${idnegocio}`);
+    const response = await apiClient.get<Descuento[]>(API_BASE);
     console.log('Servicio: Descuentos obtenidos:', response.data.length);
     return response.data;
   } catch (error) {

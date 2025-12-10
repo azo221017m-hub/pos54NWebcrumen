@@ -14,7 +14,7 @@ const router = Router();
 router.use(authMiddleware);
 
 // Rutas CRUD
-router.get('/negocio/:idnegocio', obtenerClientes);
+router.get('/', obtenerClientes);
 router.get('/:idCliente', obtenerClientePorId);
 router.post('/', crearCliente);
 router.put('/:idCliente', actualizarCliente);

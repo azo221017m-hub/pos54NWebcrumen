@@ -21,9 +21,17 @@ interface Mesa extends RowDataPacket {
 }
 
 // Obtener todas las mesas de un negocio
-export const obtenerMesas = async (req: Request, res: Response): Promise<void> => {
+export const obtenerMesas = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { idnegocio } = req.params;
+    // Usar idnegocio del usuario autenticado para seguridad
+    const idnegocio = req.user?.idNegocio;
+    
+    if (!idnegocio) {
+      res.status(401).json({ 
+        message: 'Usuario no autenticado o sin negocio asignado'
+      });
+      return;
+    }
     
     console.log('Obteniendo mesas del negocio:', idnegocio);
     

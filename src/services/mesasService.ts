@@ -7,7 +7,7 @@ const API_BASE = '/mesas';
 export const obtenerMesas = async (idnegocio: number): Promise<Mesa[]> => {
   try {
     console.log('Servicio: Obteniendo mesas del negocio', idnegocio);
-    const response = await apiClient.get<Mesa[]>(`${API_BASE}/negocio/${idnegocio}`);
+    const response = await apiClient.get<Mesa[]>(API_BASE);
     console.log('Servicio: Mesas obtenidas:', response.data.length);
     return response.data;
   } catch (error) {

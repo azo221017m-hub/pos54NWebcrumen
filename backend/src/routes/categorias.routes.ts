@@ -6,11 +6,15 @@ import {
   actualizarCategoria,
   eliminarCategoria
 } from '../controllers/categorias.controller';
+import { authMiddleware } from '../middlewares/auth';
 
 const router = Router();
 
-// GET /api/categorias/negocio/:idnegocio - Obtener todas las categorías
-router.get('/negocio/:idnegocio', obtenerCategorias);
+// Todas las rutas requieren autenticación
+router.use(authMiddleware);
+
+// GET /api/categorias - Obtener todas las categorías
+router.get('/', obtenerCategorias);
 
 // GET /api/categorias/:id - Obtener una categoría por ID
 router.get('/:id', obtenerCategoriaPorId);
