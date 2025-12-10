@@ -109,8 +109,7 @@ const FormularioDescuento: React.FC<FormularioDescuentoProps> = ({
       // Crear
       const descuentoCreate: DescuentoCreate = {
         ...formData,
-        UsuarioCreo: usuario,
-        idnegocio
+        UsuarioCreo: usuario
       };
       onSubmit(descuentoCreate);
     }

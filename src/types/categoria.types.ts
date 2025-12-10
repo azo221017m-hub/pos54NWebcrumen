@@ -19,7 +19,7 @@ export interface CategoriaCreate {
   descripcion: string;
   estatus: number;
   usuarioauditoria: string;
-  idnegocio: number;
+  idnegocio?: number; // Optional - backend uses authenticated user's idNegocio
   idmoderadordef: number | string; // Puede ser número único o string "1,2,3"
   orden: number;
 }

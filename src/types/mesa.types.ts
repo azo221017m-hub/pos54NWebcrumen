@@ -42,7 +42,7 @@ export interface MesaCreate {
   tiempoactual?: string;
   estatustiempo: EstatusTiempo;
   UsuarioCreo: string;
-  idnegocio: number;
+  idnegocio?: number; // Optional - backend uses authenticated user's idNegocio
 }
 
 // Interface para actualizar una mesa

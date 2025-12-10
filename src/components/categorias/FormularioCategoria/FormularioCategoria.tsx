@@ -131,7 +131,6 @@ const FormularioCategoria: React.FC<Props> = ({ categoria, idnegocio, onSubmit, 
     const dataToSubmit = {
       ...formData,
       idmoderadordef: moderadoresString, // Será string "1,2,3" o "0"
-      idnegocio,
       usuarioauditoria: 'admin'
     };
 

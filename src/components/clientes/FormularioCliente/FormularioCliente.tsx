@@ -32,8 +32,7 @@ const FormularioCliente: React.FC<Props> = ({ clienteEditar, onSubmit, onCancel,
         email: clienteEditar.email || '',
         direccion: clienteEditar.direccion || '',
         estatus: clienteEditar.estatus,
-        usuarioauditoria: clienteEditar.usuarioauditoria || '',
-        idnegocio: clienteEditar.idnegocio
+        usuarioauditoria: clienteEditar.usuarioauditoria || ''
       };
     }
     return {
@@ -55,8 +54,7 @@ const FormularioCliente: React.FC<Props> = ({ clienteEditar, onSubmit, onCancel,
       estatus: 1,
       usuarioauditoria: localStorage.getItem('usuario') 
         ? JSON.parse(localStorage.getItem('usuario')!).alias 
-        : '',
-      idnegocio: Number(localStorage.getItem('idnegocio')) || 1
+        : ''
     };
   }, [clienteEditar]);
 
