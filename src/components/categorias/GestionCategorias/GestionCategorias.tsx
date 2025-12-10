@@ -27,7 +27,7 @@ const GestionCategorias: React.FC = () => {
   const cargarCategorias = useCallback(async () => {
     try {
       setCargando(true);
-      const data = await obtenerCategorias(idnegocio);
+      const data = await obtenerCategorias();
       setCategorias(data);
     } catch (error) {
       console.error('Error al cargar categorías:', error);
@@ -36,7 +36,7 @@ const GestionCategorias: React.FC = () => {
     } finally {
       setCargando(false);
     }
-  }, [idnegocio, mostrarMensaje]);
+  }, [mostrarMensaje]);
 
   useEffect(() => {
     cargarCategorias();

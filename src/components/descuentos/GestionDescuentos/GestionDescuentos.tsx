@@ -25,7 +25,7 @@ const GestionDescuentos: React.FC<GestionDescuentosProps> = ({ idnegocio }) => {
   const cargarDescuentos = useCallback(async () => {
     try {
       setCargando(true);
-      const data = await obtenerDescuentos(idnegocio);
+      const data = await obtenerDescuentos();
       setDescuentos(data);
     } catch (error) {
       console.error('Error al cargar descuentos:', error);
@@ -33,7 +33,7 @@ const GestionDescuentos: React.FC<GestionDescuentosProps> = ({ idnegocio }) => {
     } finally {
       setCargando(false);
     }
-  }, [idnegocio]);
+  }, []);
 
   useEffect(() => {
     cargarDescuentos();

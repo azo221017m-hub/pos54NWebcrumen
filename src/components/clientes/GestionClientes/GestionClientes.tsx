@@ -33,7 +33,7 @@ const GestionClientes: React.FC<Props> = ({ idnegocio }) => {
   const cargarClientes = useCallback(async () => {
     try {
       setCargando(true);
-      const data = await obtenerClientes(idnegocio);
+      const data = await obtenerClientes();
       setClientes(data);
     } catch (error) {
       console.error('Error al cargar clientes:', error);
@@ -42,7 +42,7 @@ const GestionClientes: React.FC<Props> = ({ idnegocio }) => {
     } finally {
       setCargando(false);
     }
-  }, [idnegocio, mostrarMensaje]);
+  }, [mostrarMensaje]);
 
   useEffect(() => {
     cargarClientes();

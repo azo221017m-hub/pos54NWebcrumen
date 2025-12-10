@@ -30,7 +30,7 @@ const GestionMesas: React.FC<GestionMesasProps> = ({ idnegocio }) => {
   const cargarMesas = useCallback(async () => {
     try {
       setCargando(true);
-      const data = await obtenerMesas(idnegocio);
+      const data = await obtenerMesas();
       setMesas(data);
     } catch (error) {
       console.error('Error al cargar mesas:', error);
@@ -38,7 +38,7 @@ const GestionMesas: React.FC<GestionMesasProps> = ({ idnegocio }) => {
     } finally {
       setCargando(false);
     }
-  }, [idnegocio]);
+  }, []);
 
   useEffect(() => {
     cargarMesas();
