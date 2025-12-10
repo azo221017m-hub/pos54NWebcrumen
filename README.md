@@ -1,7 +1,7 @@
 # POS54N Web Crumen - Sistema POS y Comanda Digital
 
 **Versión:** 2.5.B12  
-**Proyecto**: Sistema de Punto de Venta Web Multi-tenant  
+**Proyecto**: Pos54nwebCrumen
 **Organización**: Crumen
 
 Frontend de la aplicación POS54N Web Crumen desarrollado con React, TypeScript y Vite. Sistema profesional de Punto de Venta (POS) con comanda digital para restaurantes.
@@ -99,3 +99,5 @@ VITE_APP_NAME=Web POS Crumen
 ## 📱 PWA
 
 La aplicación incluye capacidades de PWA configuradas en `vite.config.ts`.
+
+Equipo CRUMEN-420IA ♥️
