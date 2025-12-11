@@ -34,10 +34,14 @@ export const crearSubreceta = async (subreceta: SubrecetaCreate): Promise<{ succ
   try {
     console.log('🔵 subrecetasService: Creando subreceta:', subreceta);
     const response = await apiClient.post(API_BASE, subreceta);
-    console.log('🔵 subrecetasService: Subreceta creada exitosamente');
+    console.log('✅ subrecetasService: Subreceta creada exitosamente');
     return { success: true, idSubReceta: response.data.idSubReceta };
-  } catch (error) {
-    console.error('🔴 subrecetasService: Error al crear subreceta:', error);
+  } catch (error: any) {
+    console.error('❌ subrecetasService: Error al crear subreceta:', {
+      message: error?.response?.data?.mensaje || error?.response?.data?.message || error?.message || 'Error desconocido',
+      status: error?.response?.status,
+      data: error?.response?.data
+    });
     return { success: false };
   }
 };
@@ -47,10 +51,14 @@ export const actualizarSubreceta = async (id: number, subreceta: SubrecetaUpdate
   try {
     console.log('🔵 subrecetasService: Actualizando subreceta ID:', id);
     await apiClient.put(`${API_BASE}/${id}`, subreceta);
-    console.log('🔵 subrecetasService: Subreceta actualizada exitosamente');
+    console.log('✅ subrecetasService: Subreceta actualizada exitosamente');
     return true;
-  } catch (error) {
-    console.error('🔴 subrecetasService: Error al actualizar subreceta:', error);
+  } catch (error: any) {
+    console.error('❌ subrecetasService: Error al actualizar subreceta:', {
+      message: error?.response?.data?.mensaje || error?.response?.data?.message || error?.message || 'Error desconocido',
+      status: error?.response?.status,
+      data: error?.response?.data
+    });
     return false;
   }
 };
