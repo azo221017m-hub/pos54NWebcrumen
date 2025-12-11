@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
@@ -44,9 +44,15 @@ const calcularCostoTotal = (detalles: any[]): number => {
 };
 
 // Obtener todas las subrecetas por negocio
-export const obtenerSubrecetas = async (req: Request, res: Response): Promise<void> => {
+export const obtenerSubrecetas = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { idnegocio } = req.params;
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      return;
+    }
 
     const [subrecetas] = await pool.query<Subreceta[]>(
       `SELECT 
@@ -91,9 +97,17 @@ export const obtenerSubrecetas = async (req: Request, res: Response): Promise<vo
 };
 
 // Obtener una subreceta por ID con sus detalles
-export const obtenerSubrecetaPorId = async (req: Request, res: Response): Promise<void> => {
+export const obtenerSubrecetaPorId = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      return;
+    }
 
     const [subrecetas] = await pool.query<Subreceta[]>(
       `SELECT 
@@ -108,8 +122,8 @@ export const obtenerSubrecetaPorId = async (req: Request, res: Response): Promis
         fehamodificacionauditoria,
         idnegocio
       FROM tblposcrumenwebsubrecetas 
-      WHERE idSubReceta = ?`,
-      [id]
+      WHERE idSubReceta = ? AND idnegocio = ?`,
+      [id, idnegocio]
     );
 
     if (subrecetas.length === 0) {
@@ -120,9 +134,9 @@ export const obtenerSubrecetaPorId = async (req: Request, res: Response): Promis
     // Obtener detalles de la subreceta
     const [detalles] = await pool.query<DetalleSubreceta[]>(
       `SELECT * FROM tblposcrumenwebdetallesubrecetas 
-       WHERE dtlSubRecetaId = ?
+       WHERE dtlSubRecetaId = ? AND idnegocio = ?
        ORDER BY nombreInsumoSubr ASC`,
-      [id]
+      [id, idnegocio]
     );
 
     res.status(200).json({
@@ -206,7 +220,7 @@ export const crearSubreceta = async (req: AuthRequest, res: Response): Promise<v
 };
 
 // Actualizar subreceta con detalles
-export const actualizarSubreceta = async (req: Request, res: Response): Promise<void> => {
+export const actualizarSubreceta = async (req: AuthRequest, res: Response): Promise<void> => {
   const connection = await pool.getConnection();
   
   try {
@@ -219,6 +233,14 @@ export const actualizarSubreceta = async (req: Request, res: Response): Promise<
       usuarioauditoria,
       detalles
     } = req.body;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      return;
+    }
 
     // Calcular el costo total basado en los detalles
     const costoSubReceta = calcularCostoTotal(detalles);
@@ -235,21 +257,19 @@ export const actualizarSubreceta = async (req: Request, res: Response): Promise<
           estatusSubr = ?,
           usuarioauditoria = ?, 
           fehamodificacionauditoria = NOW()
-      WHERE idSubReceta = ?`,
+      WHERE idSubReceta = ? AND idnegocio = ?`,
       [nombreSubReceta, instruccionesSubr, archivoInstruccionesSubr, 
-       costoSubReceta, estatusSubr, usuarioauditoria, id]
+       costoSubReceta, estatusSubr, usuarioauditoria, id, idnegocio]
     );
 
     // Eliminar detalles existentes
     await connection.query(
-      'DELETE FROM tblposcrumenwebdetallesubrecetas WHERE dtlSubRecetaId = ?',
-      [id]
+      'DELETE FROM tblposcrumenwebdetallesubrecetas WHERE dtlSubRecetaId = ? AND idnegocio = ?',
+      [id, idnegocio]
     );
 
     // Insertar nuevos detalles
     if (detalles && Array.isArray(detalles) && detalles.length > 0) {
-      const idnegocio = req.body.idnegocio;
-      
       for (const detalle of detalles) {
         await connection.query(
           `INSERT INTO tblposcrumenwebdetallesubrecetas
@@ -277,24 +297,32 @@ export const actualizarSubreceta = async (req: Request, res: Response): Promise<
 };
 
 // Eliminar subreceta y sus detalles
-export const eliminarSubreceta = async (req: Request, res: Response): Promise<void> => {
+export const eliminarSubreceta = async (req: AuthRequest, res: Response): Promise<void> => {
   const connection = await pool.getConnection();
   
   try {
     const { id } = req.params;
+    
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      return;
+    }
 
     await connection.beginTransaction();
 
     // Eliminar detalles primero (FK constraint)
     await connection.query(
-      'DELETE FROM tblposcrumenwebdetallesubrecetas WHERE dtlSubRecetaId = ?',
-      [id]
+      'DELETE FROM tblposcrumenwebdetallesubrecetas WHERE dtlSubRecetaId = ? AND idnegocio = ?',
+      [id, idnegocio]
     );
 
     // Eliminar subreceta
     await connection.query(
-      'DELETE FROM tblposcrumenwebsubrecetas WHERE idSubReceta = ?',
-      [id]
+      'DELETE FROM tblposcrumenwebsubrecetas WHERE idSubReceta = ? AND idnegocio = ?',
+      [id, idnegocio]
     );
 
     await connection.commit();

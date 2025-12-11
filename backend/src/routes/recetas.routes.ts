@@ -6,14 +6,15 @@ import {
   actualizarReceta,
   eliminarReceta
 } from '../controllers/recetas.controller';
+import { authMiddleware } from '../middlewares/auth';
 
 const router = Router();
 
-// Rutas para recetas
-router.get('/negocio/:idnegocio', obtenerRecetas);
-router.get('/:id', obtenerRecetaPorId);
-router.post('/', crearReceta);
-router.put('/:id', actualizarReceta);
-router.delete('/:id', eliminarReceta);
+// Rutas para recetas - todas protegidas con autenticación
+router.get('/negocio/:idnegocio', authMiddleware, obtenerRecetas);
+router.get('/:id', authMiddleware, obtenerRecetaPorId);
+router.post('/', authMiddleware, crearReceta);
+router.put('/:id', authMiddleware, actualizarReceta);
+router.delete('/:id', authMiddleware, eliminarReceta);
 
 export default router;

@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
@@ -44,9 +44,15 @@ const calcularCostoTotal = (detalles: any[]): number => {
 };
 
 // Obtener todas las recetas por negocio
-export const obtenerRecetas = async (req: Request, res: Response): Promise<void> => {
+export const obtenerRecetas = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { idnegocio } = req.params;
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      return;
+    }
 
     const [recetas] = await pool.query<Receta[]>(
       `SELECT 
@@ -104,9 +110,17 @@ export const obtenerRecetas = async (req: Request, res: Response): Promise<void>
 };
 
 // Obtener una receta por ID con sus detalles
-export const obtenerRecetaPorId = async (req: Request, res: Response): Promise<void> => {
+export const obtenerRecetaPorId = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      return;
+    }
 
     const [recetas] = await pool.query<Receta[]>(
       `SELECT 
@@ -121,8 +135,8 @@ export const obtenerRecetaPorId = async (req: Request, res: Response): Promise<v
         fehamodificacionauditoria,
         idnegocio
       FROM tblposcrumenwebrecetas 
-      WHERE idReceta = ?`,
-      [id]
+      WHERE idReceta = ? AND idnegocio = ?`,
+      [id, idnegocio]
     );
 
     if (recetas.length === 0) {
@@ -146,9 +160,9 @@ export const obtenerRecetaPorId = async (req: Request, res: Response): Promise<v
         fehamodificacionauditoria,
         idnegocio
        FROM tblposcrumenwebdetallerecetas 
-       WHERE dtlRecetaId = ?
+       WHERE dtlRecetaId = ? AND idnegocio = ?
        ORDER BY idreferencia ASC`,
-      [id]
+      [id, idnegocio]
     );
 
     res.status(200).json({
@@ -232,7 +246,7 @@ export const crearReceta = async (req: AuthRequest, res: Response): Promise<void
 };
 
 // Actualizar receta con detalles
-export const actualizarReceta = async (req: Request, res: Response): Promise<void> => {
+export const actualizarReceta = async (req: AuthRequest, res: Response): Promise<void> => {
   const connection = await pool.getConnection();
   
   try {
@@ -245,6 +259,14 @@ export const actualizarReceta = async (req: Request, res: Response): Promise<voi
       usuarioauditoria,
       detalles
     } = req.body;
+
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      return;
+    }
 
     // Calcular el costo total basado en los detalles
     const costoReceta = calcularCostoTotal(detalles);
@@ -261,21 +283,19 @@ export const actualizarReceta = async (req: Request, res: Response): Promise<voi
           estatus = ?,
           usuarioauditoria = ?, 
           fehamodificacionauditoria = NOW()
-      WHERE idReceta = ?`,
+      WHERE idReceta = ? AND idnegocio = ?`,
       [nombreReceta, instrucciones, archivoInstrucciones, 
-       costoReceta, estatus, usuarioauditoria, id]
+       costoReceta, estatus, usuarioauditoria, id, idnegocio]
     );
 
     // Eliminar detalles existentes
     await connection.query(
-      'DELETE FROM tblposcrumenwebdetallerecetas WHERE dtlRecetaId = ?',
-      [id]
+      'DELETE FROM tblposcrumenwebdetallerecetas WHERE dtlRecetaId = ? AND idnegocio = ?',
+      [id, idnegocio]
     );
 
     // Insertar nuevos detalles
     if (detalles && Array.isArray(detalles) && detalles.length > 0) {
-      const idnegocio = req.body.idnegocio;
-      
       for (const detalle of detalles) {
         await connection.query(
           `INSERT INTO tblposcrumenwebdetallerecetas
@@ -303,13 +323,21 @@ export const actualizarReceta = async (req: Request, res: Response): Promise<voi
 };
 
 // Eliminar receta (soft delete)
-export const eliminarReceta = async (req: Request, res: Response): Promise<void> => {
+export const eliminarReceta = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      return;
+    }
 
     await pool.query(
-      'UPDATE tblposcrumenwebrecetas SET estatus = 0 WHERE idReceta = ?',
-      [id]
+      'UPDATE tblposcrumenwebrecetas SET estatus = 0 WHERE idReceta = ? AND idnegocio = ?',
+      [id, idnegocio]
     );
 
     res.status(200).json({ mensaje: 'Receta eliminada exitosamente' });
