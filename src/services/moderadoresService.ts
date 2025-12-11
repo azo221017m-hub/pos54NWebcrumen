@@ -39,7 +39,7 @@ export const crearModerador = async (moderador: ModeradorCreate): Promise<void> 
     await apiClient.post(API_BASE, moderador);
   } catch (error: any) {
     console.error('❌ moderadoresService - Error al crear moderador:', {
-      message: error?.response?.data?.message || error?.message || 'Error desconocido',
+      message: error?.response?.data?.message || error?.response?.data?.mensaje || error?.message || 'Error desconocido',
       status: error?.response?.status,
       data: error?.response?.data
     });
@@ -53,7 +53,7 @@ export const actualizarModerador = async (id: number, moderador: ModeradorUpdate
     await apiClient.put(`${API_BASE}/${id}`, moderador);
   } catch (error: any) {
     console.error('❌ moderadoresService - Error al actualizar moderador:', {
-      message: error?.response?.data?.message || error?.message || 'Error desconocido',
+      message: error?.response?.data?.message || error?.response?.data?.mensaje || error?.message || 'Error desconocido',
       status: error?.response?.status,
       data: error?.response?.data
     });
