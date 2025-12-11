@@ -129,18 +129,18 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
       id_cuentacontable,
       activo,
       inventariable,
-      usuarioauditoria,
       idproveedor
     } = req.body;
 
-    // Obtener idnegocio del usuario autenticado
+    // Obtener idnegocio y alias del usuario autenticado
     const idnegocio = req.user?.idNegocio;
+    const usuarioauditoria = req.user?.alias;
 
     // Validar campos requeridos
     if (!nombre || !unidad_medida || stock_actual === undefined || 
         stock_minimo === undefined || costo_promedio_ponderado === undefined || 
         precio_venta === undefined || activo === undefined || 
-        inventariable === undefined || !idnegocio) {
+        inventariable === undefined || !idnegocio || !usuarioauditoria) {
       res.status(400).json({ message: 'Faltan campos requeridos o el usuario no está autenticado' });
       return;
     }
@@ -173,7 +173,7 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
         id_cuentacontable || null,
         activo,
         inventariable,
-        usuarioauditoria || null,
+        usuarioauditoria,
         idnegocio,
         idproveedor || null
       ]

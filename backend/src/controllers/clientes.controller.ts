@@ -144,15 +144,15 @@ export const crearCliente = async (req: AuthRequest, res: Response): Promise<voi
       telefono,
       email,
       direccion,
-      estatus,
-      usuarioauditoria
+      estatus
     } = req.body;
 
-    // Obtener idnegocio del usuario autenticado
+    // Obtener idnegocio y alias del usuario autenticado
     const idnegocio = req.user?.idNegocio;
+    const usuarioauditoria = req.user?.alias;
 
     // Validar campos requeridos
-    if (!nombre || !idnegocio) {
+    if (!nombre || !idnegocio || !usuarioauditoria) {
       res.status(400).json({ message: 'El nombre es requerido y el usuario debe estar autenticado' });
       return;
     }
@@ -196,7 +196,7 @@ export const crearCliente = async (req: AuthRequest, res: Response): Promise<voi
         email || null,
         direccion || null,
         estatus !== undefined ? estatus : 1,
-        usuarioauditoria || null,
+        usuarioauditoria,
         idnegocio
       ]
     );

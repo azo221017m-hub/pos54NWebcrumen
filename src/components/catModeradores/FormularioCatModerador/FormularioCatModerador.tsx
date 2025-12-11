@@ -113,8 +113,7 @@ const FormularioCatModerador: React.FC<Props> = ({ catModerador, idnegocio, onSu
     const dataToSubmit = {
       ...formData,
       moderadores: moderadoresString,
-      idnegocio,
-      usuarioauditoria: 'admin'
+      idnegocio
     };
 
     if (catModerador) {
