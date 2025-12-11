@@ -145,17 +145,24 @@ export const crearCatModerador = async (req: AuthRequest, res: Response): Promis
 };
 
 // Actualizar categoría moderador
-export const actualizarCatModerador = async (req: Request, res: Response): Promise<void> => {
+export const actualizarCatModerador = async (req: AuthRequest, res: Response): Promise<void> => {
   const connection = await pool.getConnection();
 
   try {
     const { id } = req.params;
     const {
       nombremodref,
-      usuarioauditoria,
       estatus,
       moderadores
     } = req.body;
+
+    // Obtener alias del usuario autenticado
+    const usuarioauditoria = req.user?.alias;
+
+    if (!usuarioauditoria) {
+      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      return;
+    }
 
     console.log('🔵 Actualizando categoría moderador ID:', id);
 

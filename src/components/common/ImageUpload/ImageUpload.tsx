@@ -5,7 +5,7 @@ import './ImageUpload.css';
 interface Props {
   value?: string; // base64 or URL
   onChange: (base64Image: string) => void;
-  previewSize?: number; // Size in pixels, defaults to 20
+  previewSize?: number; // Size in pixels, defaults to 50
   shape?: 'circle' | 'square'; // Shape of preview, defaults to 'circle'
   label?: string;
   accept?: string; // File types to accept, defaults to images
@@ -14,7 +14,7 @@ interface Props {
 const ImageUpload: React.FC<Props> = ({ 
   value, 
   onChange, 
-  previewSize = 20, 
+  previewSize = 50, 
   shape = 'circle',
   label = 'Seleccionar imagen',
   accept = 'image/png,image/jpeg,image/jpg,image/gif,image/webp'

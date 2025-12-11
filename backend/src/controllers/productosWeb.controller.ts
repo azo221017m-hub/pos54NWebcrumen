@@ -260,7 +260,7 @@ export const crearProductoWeb = async (req: AuthRequest, res: Response): Promise
 };
 
 // Actualizar producto web
-export const actualizarProductoWeb = async (req: Request, res: Response): Promise<void> => {
+export const actualizarProductoWeb = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const {
@@ -272,9 +272,16 @@ export const actualizarProductoWeb = async (req: Request, res: Response): Promis
       estatus,
       imagenProducto,
       tipoproducto,
-      costoproducto,
-      usuarioauditoria
+      costoproducto
     } = req.body;
+
+    // Obtener alias del usuario autenticado
+    const usuarioauditoria = req.user?.alias;
+
+    if (!usuarioauditoria) {
+      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      return;
+    }
 
     // Verificar si existe el producto
     const [exist] = await pool.query<RowDataPacket[]>(
@@ -326,7 +333,7 @@ export const actualizarProductoWeb = async (req: Request, res: Response): Promis
       estatus,
       tipoproducto,
       costoproducto || 0,
-      usuarioauditoria || null
+      usuarioauditoria
     ];
 
     // Solo actualizar imagen si se proporcionó
