@@ -188,15 +188,15 @@ export const crearProductoWeb = async (req: AuthRequest, res: Response): Promise
       estatus,
       imagenProducto,
       tipoproducto,
-      costoproducto,
-      usuarioauditoria
+      costoproducto
     } = req.body;
 
-    // Obtener idnegocio del usuario autenticado
+    // Obtener idnegocio y alias del usuario autenticado
     const idnegocio = req.user?.idNegocio;
+    const usuarioauditoria = req.user?.alias;
 
     // Validar campos requeridos
-    if (!nombre || !idCategoria || precio === undefined || !tipoproducto || !idnegocio) {
+    if (!nombre || !idCategoria || precio === undefined || !tipoproducto || !idnegocio || !usuarioauditoria) {
       res.status(400).json({ mensaje: 'Faltan campos requeridos o el usuario no está autenticado' });
       return;
     }
@@ -241,7 +241,7 @@ export const crearProductoWeb = async (req: AuthRequest, res: Response): Promise
         imagenBuffer,
         tipoproducto,
         costoproducto || 0,
-        usuarioauditoria || null,
+        usuarioauditoria,
         idnegocio
       ]
     );

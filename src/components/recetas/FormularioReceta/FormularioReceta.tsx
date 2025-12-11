@@ -266,8 +266,7 @@ const FormularioReceta: React.FC<Props> = ({ receta, idnegocio, onSubmit, onCanc
     const dataToSubmit = {
       ...formData,
       costoReceta: costoTotal,
-      idnegocio,
-      usuarioauditoria: 'admin'
+      idnegocio
     };
 
     console.log('🔵 FormularioReceta: Datos a enviar:', dataToSubmit);

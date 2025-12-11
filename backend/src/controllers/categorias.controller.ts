@@ -99,15 +99,15 @@ export const crearCategoria = async (req: AuthRequest, res: Response): Promise<v
       imagencategoria,
       descripcion,
       estatus,
-      usuarioauditoria,
       idmoderadordef,
       orden
     } = req.body;
 
-    // Obtener idnegocio del usuario autenticado
+    // Obtener idnegocio y alias del usuario autenticado
     const idnegocio = req.user?.idNegocio;
+    const usuarioauditoria = req.user?.alias;
 
-    if (!idnegocio) {
+    if (!idnegocio || !usuarioauditoria) {
       res.status(400).json({ mensaje: 'El usuario no está autenticado' });
       return;
     }
@@ -139,7 +139,7 @@ export const crearCategoria = async (req: AuthRequest, res: Response): Promise<v
 };
 
 // Actualizar categoría
-export const actualizarCategoria = async (req: Request, res: Response): Promise<void> => {
+export const actualizarCategoria = async (req: AuthRequest, res: Response): Promise<void> => {
   const connection = await pool.getConnection();
   
   try {
@@ -149,10 +149,17 @@ export const actualizarCategoria = async (req: Request, res: Response): Promise<
       imagencategoria,
       descripcion,
       estatus,
-      usuarioauditoria,
       idmoderadordef,
       orden
     } = req.body;
+
+    // Obtener alias del usuario autenticado
+    const usuarioauditoria = req.user?.alias;
+
+    if (!usuarioauditoria) {
+      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      return;
+    }
 
     await connection.beginTransaction();
 

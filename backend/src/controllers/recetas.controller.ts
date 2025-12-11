@@ -185,14 +185,14 @@ export const crearReceta = async (req: AuthRequest, res: Response): Promise<void
       instrucciones,
       archivoInstrucciones,
       estatus,
-      usuarioauditoria,
       detalles
     } = req.body;
 
-    // Obtener idnegocio del usuario autenticado
+    // Obtener idnegocio y alias del usuario autenticado
     const idnegocio = req.user?.idNegocio;
+    const usuarioauditoria = req.user?.alias;
 
-    if (!idnegocio) {
+    if (!idnegocio || !usuarioauditoria) {
       res.status(400).json({ mensaje: 'El usuario no está autenticado' });
       return;
     }

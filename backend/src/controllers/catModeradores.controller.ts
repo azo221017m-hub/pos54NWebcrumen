@@ -100,15 +100,15 @@ export const crearCatModerador = async (req: AuthRequest, res: Response): Promis
   try {
     const {
       nombremodref,
-      usuarioauditoria,
       estatus,
       moderadores
     } = req.body;
 
-    // Obtener idnegocio del usuario autenticado
+    // Obtener idnegocio y alias del usuario autenticado
     const idnegocio = req.user?.idNegocio;
+    const usuarioauditoria = req.user?.alias;
 
-    if (!idnegocio) {
+    if (!idnegocio || !usuarioauditoria) {
       res.status(400).json({ mensaje: 'El usuario no está autenticado' });
       return;
     }
