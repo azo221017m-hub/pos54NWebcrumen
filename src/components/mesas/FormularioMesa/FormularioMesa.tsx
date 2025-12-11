@@ -94,7 +94,15 @@ const FormularioMesa: React.FC<FormularioMesaProps> = ({
     if (!esValido) return;
 
     const usuarioData = localStorage.getItem('usuario');
-    const usuario = usuarioData ? JSON.parse(usuarioData).alias : 'sistema';
+    let usuario = 'sistema';
+    try {
+      if (usuarioData) {
+        usuario = JSON.parse(usuarioData).alias || 'sistema';
+      }
+    } catch (error) {
+      console.error('Error parsing usuario from localStorage:', error);
+      usuario = 'sistema';
+    }
 
     if (mesaInicial) {
       // Actualizar
