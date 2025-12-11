@@ -263,9 +263,14 @@ const FormularioReceta: React.FC<Props> = ({ receta, idnegocio, onSubmit, onCanc
     console.log('✅ FormularioReceta: Validación exitosa');
 
     const costoTotal = calcularCostoTotal();
+    const usuario = localStorage.getItem('usuario') 
+      ? JSON.parse(localStorage.getItem('usuario')!).alias 
+      : '';
+    
     const dataToSubmit = {
       ...formData,
       costoReceta: costoTotal,
+      usuarioauditoria: usuario,
       idnegocio
     };
 
