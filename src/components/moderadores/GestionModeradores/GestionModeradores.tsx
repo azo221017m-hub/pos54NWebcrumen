@@ -77,9 +77,14 @@ const GestionModeradores: React.FC<Props> = ({ idnegocio }) => {
       setMostrarFormulario(false);
       setModeradorEditar(null);
       cargarModeradores();
-    } catch (error) {
-      console.error('Error al guardar moderador:', error);
-      mostrarMensaje('error', 'Error al guardar el moderador');
+    } catch (error: any) {
+      console.error('❌ Error al guardar moderador:', {
+        message: error?.response?.data?.message || error?.response?.data?.mensaje || error?.message || 'Error desconocido',
+        status: error?.response?.status,
+        data: error?.response?.data
+      });
+      const errorMessage = error?.response?.data?.message || error?.response?.data?.mensaje || error?.message || 'Error al guardar el moderador';
+      mostrarMensaje('error', errorMessage);
     }
   };
 

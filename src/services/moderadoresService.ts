@@ -35,12 +35,30 @@ export const obtenerModerador = async (id: number): Promise<Moderador | null> =>
 
 // Crear nuevo moderador
 export const crearModerador = async (moderador: ModeradorCreate): Promise<void> => {
-  await apiClient.post(API_BASE, moderador);
+  try {
+    await apiClient.post(API_BASE, moderador);
+  } catch (error: any) {
+    console.error('❌ moderadoresService - Error al crear moderador:', {
+      message: error?.response?.data?.message || error?.response?.data?.mensaje || error?.message || 'Error desconocido',
+      status: error?.response?.status,
+      data: error?.response?.data
+    });
+    throw error;
+  }
 };
 
 // Actualizar moderador
 export const actualizarModerador = async (id: number, moderador: ModeradorUpdate): Promise<void> => {
-  await apiClient.put(`${API_BASE}/${id}`, moderador);
+  try {
+    await apiClient.put(`${API_BASE}/${id}`, moderador);
+  } catch (error: any) {
+    console.error('❌ moderadoresService - Error al actualizar moderador:', {
+      message: error?.response?.data?.message || error?.response?.data?.mensaje || error?.message || 'Error desconocido',
+      status: error?.response?.status,
+      data: error?.response?.data
+    });
+    throw error;
+  }
 };
 
 // Eliminar moderador
