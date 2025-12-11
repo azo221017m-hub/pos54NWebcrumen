@@ -57,7 +57,8 @@ const FormularioModerador: React.FC<Props> = ({ moderador, idnegocio, onSave, on
       return;
     }
 
-    const usuario = localStorage.getItem('usuario') || 'Admin';
+    const usuarioData = localStorage.getItem('usuario');
+    const usuario = usuarioData ? JSON.parse(usuarioData).alias : 'Admin';
 
     const moderadorData: ModeradorCreate = {
       ...formData,

@@ -211,7 +211,8 @@ const FormularioSubreceta: React.FC<Props> = ({ subreceta, idnegocio, onSubmit, 
       return;
     }
 
-    const usuario = localStorage.getItem('usuario') || 'Admin';
+    const usuarioData = localStorage.getItem('usuario');
+    const usuario = usuarioData ? JSON.parse(usuarioData).alias : 'Admin';
 
     const data = {
       ...formData,

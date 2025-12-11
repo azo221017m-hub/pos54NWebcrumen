@@ -96,7 +96,8 @@ const FormularioDescuento: React.FC<FormularioDescuentoProps> = ({
     const esValido = await validarFormulario();
     if (!esValido) return;
 
-    const usuario = localStorage.getItem('usuario') || 'sistema';
+    const usuarioData = localStorage.getItem('usuario');
+    const usuario = usuarioData ? JSON.parse(usuarioData).alias : 'sistema';
 
     if (descuentoInicial) {
       // Actualizar
