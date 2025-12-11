@@ -3,6 +3,7 @@ import { Save, X, Tag } from 'lucide-react';
 import type { Categoria, CategoriaCreate, CategoriaUpdate } from '../../../types/categoria.types';
 import type { ModeradorRef } from '../../../types/moderadorRef.types';
 import { obtenerModeradoresRef } from '../../../services/moderadoresRefService';
+import ImageUpload from '../../common/ImageUpload/ImageUpload';
 import './FormularioCategoria.css';
 
 interface Props {
@@ -189,18 +190,15 @@ const FormularioCategoria: React.FC<Props> = ({ categoria, idnegocio, onSubmit, 
 
             <div className="categoria-form-group full-width">
               <label className="categoria-label">
-                URL de Imagen
+                Imagen de Categoría
               </label>
-              <input
-                type="text"
+              <ImageUpload
                 value={formData.imagencategoria}
-                onChange={(e) => setFormData({ ...formData, imagencategoria: e.target.value })}
-                className="categoria-input"
-                placeholder="https://ejemplo.com/imagen.jpg"
+                onChange={(base64Image) => setFormData({ ...formData, imagencategoria: base64Image })}
+                previewSize={50}
+                shape="circle"
+                label="Seleccionar imagen"
               />
-              <small className="categoria-help-text">
-                Ingresa la URL de una imagen para la categoría
-              </small>
             </div>
 
             <div className="categoria-form-group">
