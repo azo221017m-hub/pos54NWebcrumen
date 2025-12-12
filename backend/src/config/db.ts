@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Configuración de conexión a MySQL
+// Pool optimizado para manejar múltiples conexiones concurrentes
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
@@ -11,8 +12,10 @@ const dbConfig = {
   database: process.env.DB_NAME || 'pos_crumen',
   port: parseInt(process.env.DB_PORT || '3306'),
   waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
+  connectionLimit: 20, // Aumentado de 10 a 20 para mejor rendimiento
+  queueLimit: 0,
+  enableKeepAlive: true, // Mantener conexiones vivas
+  keepAliveInitialDelay: 0
 };
 
 // Pool de conexiones
