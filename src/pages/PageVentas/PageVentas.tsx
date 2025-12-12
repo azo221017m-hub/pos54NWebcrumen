@@ -111,10 +111,6 @@ const PageVentas: React.FC = () => {
     }
   };
 
-  const quitarDeComanda = (idProducto: number) => {
-    setComanda(comanda.filter(item => item.producto.idProducto !== idProducto));
-  };
-
   const obtenerCantidadEnComanda = (idProducto: number): number => {
     const item = comanda.find(item => item.producto.idProducto === idProducto);
     return item ? item.cantidad : 0;
