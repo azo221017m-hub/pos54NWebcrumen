@@ -126,8 +126,18 @@ const PageVentas: React.FC = () => {
 
   const handleProducir = () => {
     // Lógica para producir la comanda
+    if (comanda.length === 0) {
+      alert('No hay productos en la comanda');
+      return;
+    }
     console.log('Produciendo comanda:', comanda);
     alert('Funcionalidad de producción en desarrollo');
+  };
+
+  const handleListadoPagos = () => {
+    // Lógica para mostrar listado de pagos
+    console.log('Mostrando listado de pagos');
+    alert('Funcionalidad de listado de pagos en desarrollo');
   };
 
   return (
@@ -272,8 +282,8 @@ const PageVentas: React.FC = () => {
           </div>
 
           <div className="comanda-buttons">
-            <button className="btn-producir">Producir</button>
-            <button className="btn-listado">listado de pagos</button>
+            <button className="btn-producir" onClick={handleProducir}>Producir</button>
+            <button className="btn-listado" onClick={handleListadoPagos}>listado de pagos</button>
           </div>
 
           <div className="comanda-total">
