@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import { cacheMiddleware } from './middlewares/cache';
 
 // Importar rutas
 import productosRoutes from './routes/productos.routes';
@@ -52,7 +53,20 @@ const corsOptions = {
 // Middlewares globales
 app.use(helmet()); // Seguridad
 app.use(cors(corsOptions)); // CORS configurado
-app.use(morgan('dev')); // Logging
+
+// Configuración de logging mejorada
+// Usar formato 'combined' en producción y 'dev' en desarrollo
+// Skip logging de 304 responses para reducir ruido en consola
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev', {
+  skip: (req, res) => {
+    // Skip 304 responses para reducir mensajes en consola
+    return res.statusCode === 304;
+  }
+}));
+
+// Middleware de caché para optimizar respuestas 304
+app.use(cacheMiddleware);
+
 app.use(express.json({ limit: '10mb' })); // Parser JSON con límite aumentado
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 

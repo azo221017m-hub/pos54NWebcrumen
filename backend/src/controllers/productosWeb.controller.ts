@@ -26,6 +26,11 @@ interface ProductoWeb extends RowDataPacket {
 }
 
 // Obtener todos los productos web por negocio
+// NOTA: Esta query realiza múltiples JOINs y conversión de imágenes a Base64
+// Para mejorar rendimiento considerar:
+// 1. Agregar índices en: idCategoria, idreferencia, tipoproducto
+// 2. Cachear resultados si los datos no cambian frecuentemente
+// 3. Paginar resultados si hay muchos productos
 export const obtenerProductosWeb = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // Usar idnegocio del usuario autenticado para seguridad
