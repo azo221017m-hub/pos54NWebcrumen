@@ -520,7 +520,7 @@ export const DashboardPage = () => {
                 </div>
                 <p className="pedido-productos">{pedido.productos}</p>
                 <div className="pedido-footer">
-                  <span className="pedido-total">${Number(pedido.total).toFixed(2)}</span>
+                  <span className="pedido-total">${(Number(pedido.total) || 0).toFixed(2)}</span>
                   <button className="btn-small">Ver detalles</button>
                 </div>
               </div>

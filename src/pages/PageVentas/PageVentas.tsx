@@ -118,7 +118,10 @@ const PageVentas: React.FC = () => {
   };
 
   const calcularTotal = (): number => {
-    return comanda.reduce((total, item) => total + (Number(item.producto.precio) * item.cantidad), 0);
+    return comanda.reduce((total, item) => {
+      const precio = Number(item.producto.precio) || 0;
+      return total + (precio * item.cantidad);
+    }, 0);
   };
 
   const handleProducir = () => {
@@ -240,7 +243,7 @@ const PageVentas: React.FC = () => {
                   </div>
                   <div className="producto-info">
                     <h3 className="producto-nombre">{producto.nombre}</h3>
-                    <p className="producto-precio">$ {Number(producto.precio).toFixed(2)}</p>
+                    <p className="producto-precio">$ {(Number(producto.precio) || 0).toFixed(2)}</p>
                   </div>
                   <div className="producto-acciones">
                     <button 
@@ -295,7 +298,7 @@ const PageVentas: React.FC = () => {
                   <span className="comanda-item-cantidad">{item.cantidad}</span>
                   <span className="comanda-item-nombre">{item.producto.nombre}</span>
                   <span className="comanda-item-precio">
-                    $ {(Number(item.producto.precio) * item.cantidad).toFixed(2)}
+                    $ {((Number(item.producto.precio) || 0) * item.cantidad).toFixed(2)}
                   </span>
                 </div>
                 <div className="comanda-item-acciones">
