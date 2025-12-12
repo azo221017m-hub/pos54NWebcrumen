@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search, Plus, Minus } from 'lucide-react';
 import { obtenerProductosWeb } from '../../services/productosWebService';
 import { negociosService } from '../../services/negociosService';
+import { obtenerCategorias } from '../../services/categoriasService';
 import type { ProductoWeb } from '../../types/productoWeb.types';
 import type { Usuario } from '../../types/usuario.types';
 import type { Negocio } from '../../types/negocio.types';
+import type { Categoria } from '../../types/categoria.types';
 import './PageVentas.css';
 
 interface ItemComanda {
@@ -30,9 +32,12 @@ const PageVentas: React.FC = () => {
   const [productos, setProductos] = useState<ProductoWeb[]>([]);
   const [productosVisibles, setProductosVisibles] = useState<ProductoWeb[]>([]);
   const [comanda, setComanda] = useState<ItemComanda[]>([]);
-  const [isScreenLocked, setIsScreenLocked] = useState(true);
+  const [isScreenLocked, setIsScreenLocked] = useState(false);
   const [tipoServicio, setTipoServicio] = useState<TipoServicio>('Mesa');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showCategoriasModal, setShowCategoriasModal] = useState(false);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
 
   // Functions defined before they are used
   const cargarNegocio = async (idNegocio: number) => {
@@ -58,6 +63,17 @@ const PageVentas: React.FC = () => {
     }
   };
 
+  const cargarCategorias = async () => {
+    try {
+      const data = await obtenerCategorias();
+      // Filtrar solo categorías activas
+      const categoriasActivas = data.filter(c => c.estatus === 1);
+      setCategorias(categoriasActivas);
+    } catch (error) {
+      console.error('Error al cargar categorías:', error);
+    }
+  };
+
   // Cargar datos iniciales
   useEffect(() => {
     const usuarioData = localStorage.getItem('usuario');
@@ -72,6 +88,7 @@ const PageVentas: React.FC = () => {
     }
 
     cargarProductos();
+    cargarCategorias();
   }, []);
 
   // Filtrar productos por búsqueda
@@ -172,8 +189,12 @@ const PageVentas: React.FC = () => {
           Dashboard
         </button>
 
-        <div className="user-info-header">
-          <div className="user-avatar-ventas">
+        <div className="user-info-header" style={{ position: 'relative' }}>
+          <div 
+            className="user-avatar-ventas" 
+            style={{ cursor: 'pointer' }}
+            onClick={() => setShowUserMenu(!showUserMenu)}
+          >
             {usuario?.fotoavatar ? (
               <img src={usuario.fotoavatar} alt={usuario.nombre} />
             ) : (
@@ -186,6 +207,49 @@ const PageVentas: React.FC = () => {
             <p className="user-alias-ventas">@{usuario?.alias || 'Usuario'}</p>
             <p className="user-business-ventas">{negocio?.nombreNegocio || 'Negocio'}</p>
           </div>
+
+          {/* User Menu Dropdown */}
+          {showUserMenu && (
+            <div className="user-dropdown-ventas" style={{
+              position: 'absolute',
+              top: '100%',
+              right: 0,
+              backgroundColor: 'white',
+              border: '1px solid #e0e0e0',
+              borderRadius: '8px',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              minWidth: '200px',
+              zIndex: 1000,
+              marginTop: '8px'
+            }}>
+              <button 
+                onClick={() => {
+                  setIsScreenLocked(true);
+                  setShowUserMenu(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  textAlign: 'left',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '14px'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '20px', height: '20px' }}>
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                Bloquea Pantalla
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -225,7 +289,10 @@ const PageVentas: React.FC = () => {
               />
             </div>
 
-            <button className="btn-categoria">
+            <button 
+              className="btn-categoria"
+              onClick={() => setShowCategoriasModal(true)}
+            >
               <div className="categoria-icon">⚪</div>
               CATEGORIA
             </button>
@@ -343,6 +410,140 @@ const PageVentas: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal de Categorías */}
+      {showCategoriasModal && (
+        <div 
+          className="modal-overlay"
+          onClick={() => setShowCategoriasModal(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 2000
+          }}
+        >
+          <div 
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '24px',
+              maxWidth: '600px',
+              width: '90%',
+              maxHeight: '80vh',
+              overflow: 'auto'
+            }}
+          >
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              marginBottom: '20px'
+            }}>
+              <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>Categorías</h2>
+              <button 
+                onClick={() => setShowCategoriasModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  padding: '4px 8px'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gap: '12px' }}>
+              {categorias.length > 0 ? (
+                categorias.map((categoria) => (
+                  <div 
+                    key={categoria.idCategoria}
+                    style={{
+                      padding: '16px',
+                      border: '1px solid #e0e0e0',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f5f5f5';
+                      e.currentTarget.style.borderColor = '#2196F3';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'white';
+                      e.currentTarget.style.borderColor = '#e0e0e0';
+                    }}
+                    onClick={() => {
+                      console.log('Categoría seleccionada:', categoria.nombre);
+                      // Aquí puedes filtrar productos por categoría si es necesario
+                    }}
+                  >
+                    {categoria.imagencategoria && (
+                      <div style={{ 
+                        width: '50px', 
+                        height: '50px', 
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        flexShrink: 0
+                      }}>
+                        <img 
+                          src={categoria.imagencategoria} 
+                          alt={categoria.nombre}
+                          style={{ 
+                            width: '100%', 
+                            height: '100%', 
+                            objectFit: 'cover' 
+                          }}
+                        />
+                      </div>
+                    )}
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ 
+                        margin: 0, 
+                        fontSize: '18px', 
+                        fontWeight: '600',
+                        marginBottom: '4px'
+                      }}>
+                        {categoria.nombre}
+                      </h3>
+                      {categoria.descripcion && (
+                        <p style={{ 
+                          margin: 0, 
+                          fontSize: '14px', 
+                          color: '#666'
+                        }}>
+                          {categoria.descripcion}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div style={{ 
+                  padding: '40px', 
+                  textAlign: 'center', 
+                  color: '#666' 
+                }}>
+                  <p>No hay categorías disponibles</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
