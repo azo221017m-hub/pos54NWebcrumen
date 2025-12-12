@@ -58,7 +58,7 @@ app.use(cors(corsOptions)); // CORS configurado
 // Usar formato 'combined' en producción y 'dev' en desarrollo
 // Skip logging de 304 responses para reducir ruido en consola
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev', {
-  skip: (req, res) => {
+  skip: (_req, res) => {
     // Skip 304 responses para reducir mensajes en consola
     return res.statusCode === 304;
   }
