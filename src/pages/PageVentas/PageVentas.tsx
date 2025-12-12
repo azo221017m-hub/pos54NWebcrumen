@@ -19,6 +19,11 @@ type TipoServicio = 'Domicilio' | 'Llevar' | 'Mesa';
 const PageVentas: React.FC = () => {
   const navigate = useNavigate();
   
+  // Utility function to safely format prices
+  const formatPrice = (price: number | string | undefined | null): string => {
+    return (Number(price) || 0).toFixed(2);
+  };
+  
   // Estados
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [negocio, setNegocio] = useState<Negocio | null>(null);
@@ -243,7 +248,7 @@ const PageVentas: React.FC = () => {
                   </div>
                   <div className="producto-info">
                     <h3 className="producto-nombre">{producto.nombre}</h3>
-                    <p className="producto-precio">$ {(Number(producto.precio) || 0).toFixed(2)}</p>
+                    <p className="producto-precio">$ {formatPrice(producto.precio)}</p>
                   </div>
                   <div className="producto-acciones">
                     <button 
@@ -298,7 +303,7 @@ const PageVentas: React.FC = () => {
                   <span className="comanda-item-cantidad">{item.cantidad}</span>
                   <span className="comanda-item-nombre">{item.producto.nombre}</span>
                   <span className="comanda-item-precio">
-                    $ {((Number(item.producto.precio) || 0) * item.cantidad).toFixed(2)}
+                    $ {formatPrice((Number(item.producto.precio) || 0) * item.cantidad)}
                   </span>
                 </div>
                 <div className="comanda-item-acciones">
