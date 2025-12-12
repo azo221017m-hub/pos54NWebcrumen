@@ -42,6 +42,24 @@ const PageVentas: React.FC = () => {
   const [showCategoriasModal, setShowCategoriasModal] = useState(false);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
 
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showUserMenu && !target.closest('.user-info-header')) {
+        setShowUserMenu(false);
+      }
+    };
+
+    if (showUserMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserMenu]);
+
   // Functions defined before they are used
   const cargarNegocio = async (idNegocio: number) => {
     try {
@@ -69,6 +87,7 @@ const PageVentas: React.FC = () => {
   const cargarCategorias = async () => {
     try {
       const data = await obtenerCategorias();
+      // Note: Server already filters by user's idnegocio
       // Filtrar solo categorías activas
       const categoriasActivas = data.filter(c => c.estatus === ESTATUS_ACTIVO);
       setCategorias(categoriasActivas);
@@ -415,7 +434,6 @@ const PageVentas: React.FC = () => {
                     key={categoria.idCategoria}
                     className="category-item"
                     onClick={() => {
-                      // Filter products by category if needed
                       setShowCategoriasModal(false);
                     }}
                   >
