@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search, Plus, Minus } from 'lucide-react';
 import { obtenerProductosWeb } from '../../services/productosWebService';
 import { negociosService } from '../../services/negociosService';
+import { obtenerCategorias } from '../../services/categoriasService';
 import type { ProductoWeb } from '../../types/productoWeb.types';
 import type { Usuario } from '../../types/usuario.types';
 import type { Negocio } from '../../types/negocio.types';
+import type { Categoria } from '../../types/categoria.types';
 import './PageVentas.css';
 
 interface ItemComanda {
@@ -15,6 +17,9 @@ interface ItemComanda {
 }
 
 type TipoServicio = 'Domicilio' | 'Llevar' | 'Mesa';
+
+// Constants
+const ESTATUS_ACTIVO = 1;
 
 const PageVentas: React.FC = () => {
   const navigate = useNavigate();
@@ -30,9 +35,30 @@ const PageVentas: React.FC = () => {
   const [productos, setProductos] = useState<ProductoWeb[]>([]);
   const [productosVisibles, setProductosVisibles] = useState<ProductoWeb[]>([]);
   const [comanda, setComanda] = useState<ItemComanda[]>([]);
-  const [isScreenLocked, setIsScreenLocked] = useState(true);
+  const [isScreenLocked, setIsScreenLocked] = useState(false);
   const [tipoServicio, setTipoServicio] = useState<TipoServicio>('Mesa');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showCategoriasModal, setShowCategoriasModal] = useState(false);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showUserMenu && !target.closest('.user-info-header')) {
+        setShowUserMenu(false);
+      }
+    };
+
+    if (showUserMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserMenu]);
 
   // Functions defined before they are used
   const cargarNegocio = async (idNegocio: number) => {
@@ -50,11 +76,23 @@ const PageVentas: React.FC = () => {
     try {
       const data = await obtenerProductosWeb();
       // Filtrar solo productos activos
-      const productosActivos = data.filter(p => p.estatus === 1);
+      const productosActivos = data.filter(p => p.estatus === ESTATUS_ACTIVO);
       setProductos(productosActivos);
       setProductosVisibles(productosActivos);
     } catch (error) {
       console.error('Error al cargar productos:', error);
+    }
+  };
+
+  const cargarCategorias = async () => {
+    try {
+      const data = await obtenerCategorias();
+      // Note: Server already filters by user's idnegocio
+      // Filtrar solo categorías activas
+      const categoriasActivas = data.filter(c => c.estatus === ESTATUS_ACTIVO);
+      setCategorias(categoriasActivas);
+    } catch (error) {
+      console.error('Error al cargar categorías:', error);
     }
   };
 
@@ -72,6 +110,7 @@ const PageVentas: React.FC = () => {
     }
 
     cargarProductos();
+    cargarCategorias();
   }, []);
 
   // Filtrar productos por búsqueda
@@ -173,7 +212,10 @@ const PageVentas: React.FC = () => {
         </button>
 
         <div className="user-info-header">
-          <div className="user-avatar-ventas">
+          <div 
+            className="user-avatar-ventas" 
+            onClick={() => setShowUserMenu(!showUserMenu)}
+          >
             {usuario?.fotoavatar ? (
               <img src={usuario.fotoavatar} alt={usuario.nombre} />
             ) : (
@@ -186,6 +228,24 @@ const PageVentas: React.FC = () => {
             <p className="user-alias-ventas">@{usuario?.alias || 'Usuario'}</p>
             <p className="user-business-ventas">{negocio?.nombreNegocio || 'Negocio'}</p>
           </div>
+
+          {/* User Menu Dropdown */}
+          {showUserMenu && (
+            <div className="user-dropdown-ventas">
+              <button 
+                onClick={() => {
+                  setIsScreenLocked(true);
+                  setShowUserMenu(false);
+                }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                Bloquea Pantalla
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -225,7 +285,10 @@ const PageVentas: React.FC = () => {
               />
             </div>
 
-            <button className="btn-categoria">
+            <button 
+              className="btn-categoria"
+              onClick={() => setShowCategoriasModal(true)}
+            >
               <div className="categoria-icon">⚪</div>
               CATEGORIA
             </button>
@@ -343,6 +406,66 @@ const PageVentas: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal de Categorías */}
+      {showCategoriasModal && (
+        <div 
+          className="modal-overlay"
+          onClick={() => setShowCategoriasModal(false)}
+        >
+          <div 
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <h2>Categorías</h2>
+              <button 
+                className="modal-close-button"
+                onClick={() => setShowCategoriasModal(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="modal-categories-grid">
+              {categorias.length > 0 ? (
+                categorias.map((categoria) => (
+                  <div 
+                    key={categoria.idCategoria}
+                    className="category-item"
+                    onClick={() => {
+                      setShowCategoriasModal(false);
+                    }}
+                  >
+                    {categoria.imagencategoria && (
+                      <div className="category-image">
+                        <img 
+                          src={categoria.imagencategoria} 
+                          alt={categoria.nombre}
+                        />
+                      </div>
+                    )}
+                    <div className="category-info">
+                      <h3 className="category-name">
+                        {categoria.nombre}
+                      </h3>
+                      {categoria.descripcion && (
+                        <p className="category-description">
+                          {categoria.descripcion}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="modal-empty-state">
+                  <p>No hay categorías disponibles</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
