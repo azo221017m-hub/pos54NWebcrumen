@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search, Plus, Minus } from 'lucide-react';
 import { obtenerProductosWeb } from '../../services/productosWebService';
+import { negociosService } from '../../services/negociosService';
 import type { ProductoWeb } from '../../types/productoWeb.types';
 import type { Usuario } from '../../types/usuario.types';
 import type { Negocio } from '../../types/negocio.types';
@@ -34,15 +35,26 @@ const PageVentas: React.FC = () => {
     if (usuarioData) {
       const user = JSON.parse(usuarioData);
       setUsuario(user);
-    }
-
-    const negocioData = localStorage.getItem('negocio');
-    if (negocioData) {
-      setNegocio(JSON.parse(negocioData));
+      
+      // Cargar datos del negocio del usuario
+      if (user.idNegocio) {
+        cargarNegocio(user.idNegocio);
+      }
     }
 
     cargarProductos();
   }, []);
+
+  const cargarNegocio = async (idNegocio: number) => {
+    try {
+      const data = await negociosService.obtenerNegocioPorId(idNegocio);
+      if (data?.negocio) {
+        setNegocio(data.negocio);
+      }
+    } catch (error) {
+      console.error('Error al cargar negocio:', error);
+    }
+  };
 
   // Filtrar productos por búsqueda
   useEffect(() => {
