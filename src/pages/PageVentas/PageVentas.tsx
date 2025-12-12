@@ -29,6 +29,30 @@ const PageVentas: React.FC = () => {
   const [tipoServicio, setTipoServicio] = useState<TipoServicio>('Mesa');
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Functions defined before they are used
+  const cargarNegocio = async (idNegocio: number) => {
+    try {
+      const data = await negociosService.obtenerNegocioPorId(idNegocio);
+      if (data?.negocio) {
+        setNegocio(data.negocio);
+      }
+    } catch (error) {
+      console.error('Error al cargar negocio:', error);
+    }
+  };
+
+  const cargarProductos = async () => {
+    try {
+      const data = await obtenerProductosWeb();
+      // Filtrar solo productos activos
+      const productosActivos = data.filter(p => p.estatus === 1);
+      setProductos(productosActivos);
+      setProductosVisibles(productosActivos);
+    } catch (error) {
+      console.error('Error al cargar productos:', error);
+    }
+  };
+
   // Cargar datos iniciales
   useEffect(() => {
     const usuarioData = localStorage.getItem('usuario');
@@ -45,17 +69,6 @@ const PageVentas: React.FC = () => {
     cargarProductos();
   }, []);
 
-  const cargarNegocio = async (idNegocio: number) => {
-    try {
-      const data = await negociosService.obtenerNegocioPorId(idNegocio);
-      if (data?.negocio) {
-        setNegocio(data.negocio);
-      }
-    } catch (error) {
-      console.error('Error al cargar negocio:', error);
-    }
-  };
-
   // Filtrar productos por búsqueda
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -68,18 +81,6 @@ const PageVentas: React.FC = () => {
       setProductosVisibles(filtrados);
     }
   }, [searchTerm, productos]);
-
-  const cargarProductos = async () => {
-    try {
-      const data = await obtenerProductosWeb();
-      // Filtrar solo productos activos
-      const productosActivos = data.filter(p => p.estatus === 1);
-      setProductos(productosActivos);
-      setProductosVisibles(productosActivos);
-    } catch (error) {
-      console.error('Error al cargar productos:', error);
-    }
-  };
 
   const agregarAComanda = (producto: ProductoWeb) => {
     const itemExistente = comanda.find(item => item.producto.idProducto === producto.idProducto);
@@ -117,7 +118,7 @@ const PageVentas: React.FC = () => {
   };
 
   const calcularTotal = (): number => {
-    return comanda.reduce((total, item) => total + (item.producto.precio * item.cantidad), 0);
+    return comanda.reduce((total, item) => total + (Number(item.producto.precio) * item.cantidad), 0);
   };
 
   const handleProducir = () => {
@@ -239,7 +240,7 @@ const PageVentas: React.FC = () => {
                   </div>
                   <div className="producto-info">
                     <h3 className="producto-nombre">{producto.nombre}</h3>
-                    <p className="producto-precio">$ {producto.precio.toFixed(2)}</p>
+                    <p className="producto-precio">$ {Number(producto.precio).toFixed(2)}</p>
                   </div>
                   <div className="producto-acciones">
                     <button 
@@ -294,7 +295,7 @@ const PageVentas: React.FC = () => {
                   <span className="comanda-item-cantidad">{item.cantidad}</span>
                   <span className="comanda-item-nombre">{item.producto.nombre}</span>
                   <span className="comanda-item-precio">
-                    $ {(item.producto.precio * item.cantidad).toFixed(2)}
+                    $ {(Number(item.producto.precio) * item.cantidad).toFixed(2)}
                   </span>
                 </div>
                 <div className="comanda-item-acciones">
