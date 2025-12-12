@@ -18,6 +18,7 @@ import GestionRecetas from '../components/recetas/GestionRecetas/GestionRecetas'
 import GestionCatModeradores from '../components/catModeradores/GestionCatModeradores/GestionCatModeradores';
 import GestionProductosWeb from '../components/productosWeb/GestionProductosWeb/GestionProductosWeb';
 import { ConfigProveedores } from '../pages/ConfigProveedores/ConfigProveedores';
+import PageVentas from '../pages/PageVentas/PageVentas';
 
 const router = createBrowserRouter([
   {
@@ -95,6 +96,10 @@ const router = createBrowserRouter([
   {
     path: '/config-proveedores',
     element: <ConfigProveedores />,
+  },
+  {
+    path: '/ventas',
+    element: <PageVentas />,
   },
 ]);
 
