@@ -353,7 +353,7 @@ const PageVentas: React.FC = () => {
                 <div key={producto.idProducto} className="producto-card">
                   <div className="producto-imagen">
                     {producto.imagenProducto ? (
-                      <img src={producto.imagenProducto} alt={producto.nombre} />
+                      <img src={`data:image/jpeg;base64,${producto.imagenProducto}`} alt={producto.nombre} />
                     ) : (
                       <div className="imagen-placeholder">
                         <div className="icono-producto">🍽️</div>
