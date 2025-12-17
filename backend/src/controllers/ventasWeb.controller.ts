@@ -214,7 +214,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
           detalle.idproducto,
           detalle.nombreproducto,
           detalle.idreceta || null,
-          detalle.nombrereceta || null,
+          detalle.nombrereceta || '',
           detalle.cantidad,
           detalle.preciounitario,
           detalle.costounitario,
