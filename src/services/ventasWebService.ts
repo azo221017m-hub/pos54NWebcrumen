@@ -53,9 +53,12 @@ export const crearVentaWeb = async (venta: VentaWebCreate): Promise<{
       idventa: response.data.data.idventa,
       folioventa: response.data.data.folioventa
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('🔴 ventasWebService: Error al crear venta web:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+    // Extract meaningful error message from API response
+    const errorMessage = error?.response?.data?.message || 
+                        error?.message || 
+                        'Error desconocido al crear la venta';
     return { success: false, message: errorMessage };
   }
 };
@@ -70,9 +73,11 @@ export const actualizarVentaWeb = async (id: number, venta: VentaWebUpdate): Pro
     await apiClient.put<{ success: boolean; message: string }>(`${API_BASE}/${id}`, venta);
     console.log('🔵 ventasWebService: Venta web actualizada exitosamente');
     return { success: true };
-  } catch (error) {
+  } catch (error: any) {
     console.error('🔴 ventasWebService: Error al actualizar venta web:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+    const errorMessage = error?.response?.data?.message || 
+                        error?.message || 
+                        'Error desconocido al actualizar la venta';
     return { success: false, message: errorMessage };
   }
 };

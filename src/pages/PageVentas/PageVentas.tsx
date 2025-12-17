@@ -9,7 +9,7 @@ import type { ProductoWeb } from '../../types/productoWeb.types';
 import type { Usuario } from '../../types/usuario.types';
 import type { Negocio } from '../../types/negocio.types';
 import type { Categoria } from '../../types/categoria.types';
-import type { VentaWebCreate, TipoDeVenta, FormaDePago } from '../../types/ventasWeb.types';
+import type { VentaWebCreate, TipoDeVenta } from '../../types/ventasWeb.types';
 import './PageVentas.css';
 
 interface ItemComanda {
@@ -198,10 +198,13 @@ const PageVentas: React.FC = () => {
         detalles: comanda.map(item => ({
           idproducto: item.producto.idProducto,
           nombreproducto: item.producto.nombre,
-          idreceta: item.producto.idreferencia && item.producto.tipoproducto === 'Receta' 
+          // Priorizar receta: solo asignar si existe y tipo es Receta
+          idreceta: item.producto.tipoproducto === 'Receta' && item.producto.idreferencia 
             ? item.producto.idreferencia 
             : null,
-          nombrereceta: item.producto.nombreReceta || null,
+          nombrereceta: item.producto.tipoproducto === 'Receta' && item.producto.nombreReceta 
+            ? item.producto.nombreReceta 
+            : null,
           cantidad: item.cantidad,
           preciounitario: Number(item.producto.precio),
           costounitario: Number(item.producto.costoproducto),

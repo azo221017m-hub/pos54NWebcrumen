@@ -137,14 +137,16 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     ventaData.detalles.forEach(detalle => {
       const detalleSubtotal = detalle.cantidad * detalle.preciounitario;
       subtotal += detalleSubtotal;
-      // Por ahora, descuentos e impuestos por detalle serían 0
-      // Pero se pueden calcular según la lógica de negocio
+      // TODO: Implementar lógica de descuentos e impuestos según reglas de negocio
+      // Los cálculos de descuentos e impuestos deberán ser implementados según
+      // las reglas específicas del negocio (porcentajes, montos fijos, etc.)
     });
 
     const totaldeventa = subtotal - descuentos + impuestos;
 
-    // Generar folio único de venta (timestamp + random)
-    const folioventa = `V${Date.now()}${Math.floor(Math.random() * 1000)}`;
+    // Generar folio único de venta (timestamp + idnegocio + random)
+    // Formato: V{timestamp}{idnegocio}{random} para mayor unicidad
+    const folioventa = `V${Date.now()}${idnegocio}${Math.floor(Math.random() * 1000)}`;
 
     // Insertar venta
     const [ventaResult] = await connection.execute<ResultSetHeader>(
@@ -189,10 +191,12 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       let tipoafectacion: 'DIRECTO' | 'RECETA' | 'NO_APLICA' = 'NO_APLICA';
       let afectainventario = 0;
 
-      if (detalle.idreceta) {
+      // Priorizar receta sobre producto directo
+      if (detalle.idreceta && detalle.idreceta > 0) {
         tipoafectacion = 'RECETA';
         afectainventario = 1;
-      } else if (detalle.idproducto) {
+      } else if (detalle.idproducto && detalle.idproducto > 0) {
+        // Solo si no hay receta, considerar producto directo
         tipoafectacion = 'DIRECTO';
         afectainventario = 1;
       }
