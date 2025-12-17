@@ -4,10 +4,12 @@ import { ArrowLeft, Search, Plus, Minus } from 'lucide-react';
 import { obtenerProductosWeb } from '../../services/productosWebService';
 import { negociosService } from '../../services/negociosService';
 import { obtenerCategorias } from '../../services/categoriasService';
+import { crearVentaWeb } from '../../services/ventasWebService';
 import type { ProductoWeb } from '../../types/productoWeb.types';
 import type { Usuario } from '../../types/usuario.types';
 import type { Negocio } from '../../types/negocio.types';
 import type { Categoria } from '../../types/categoria.types';
+import type { VentaWebCreate, TipoDeVenta } from '../../types/ventasWeb.types';
 import './PageVentas.css';
 
 interface ItemComanda {
@@ -168,14 +170,63 @@ const PageVentas: React.FC = () => {
     }, 0);
   };
 
-  const handleProducir = () => {
+  const handleProducir = async () => {
     // Lógica para producir la comanda
     if (comanda.length === 0) {
       alert('No hay productos en la comanda');
       return;
     }
-    console.log('Produciendo comanda:', comanda);
-    alert('Funcionalidad de producción en desarrollo');
+
+    if (!usuario) {
+      alert('Usuario no autenticado');
+      return;
+    }
+
+    try {
+      // Mapear TipoServicio a TipoDeVenta
+      const tipoDeVentaMap: Record<TipoServicio, TipoDeVenta> = {
+        'Domicilio': 'DOMICILIO',
+        'Llevar': 'LLEVAR',
+        'Mesa': 'MESA'
+      };
+
+      // Construir datos de la venta
+      const ventaData: VentaWebCreate = {
+        tipodeventa: tipoDeVentaMap[tipoServicio],
+        cliente: usuario.nombre, // Por ahora usamos el nombre del usuario
+        formadepago: 'EFECTIVO', // Valor por defecto, se puede agregar selector en UI
+        detalles: comanda.map(item => ({
+          idproducto: item.producto.idProducto,
+          nombreproducto: item.producto.nombre,
+          // Priorizar receta: solo asignar si existe y tipo es Receta
+          idreceta: item.producto.tipoproducto === 'Receta' && item.producto.idreferencia 
+            ? item.producto.idreferencia 
+            : null,
+          nombrereceta: item.producto.tipoproducto === 'Receta' && item.producto.nombreReceta 
+            ? item.producto.nombreReceta 
+            : null,
+          cantidad: item.cantidad,
+          preciounitario: Number(item.producto.precio),
+          costounitario: Number(item.producto.costoproducto),
+          observaciones: item.notas || null
+        }))
+      };
+
+      console.log('Creando venta:', ventaData);
+      
+      const resultado = await crearVentaWeb(ventaData);
+
+      if (resultado.success) {
+        alert(`¡Venta registrada exitosamente!\nFolio: ${resultado.folioventa}`);
+        // Limpiar la comanda
+        setComanda([]);
+      } else {
+        alert(`Error al registrar la venta: ${resultado.message}`);
+      }
+    } catch (error) {
+      console.error('Error al producir comanda:', error);
+      alert('Error al registrar la venta. Por favor, intente nuevamente.');
+    }
   };
 
   const handleListadoPagos = () => {

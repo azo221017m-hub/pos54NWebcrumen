@@ -26,6 +26,7 @@ import categoriasRoutes from './routes/categorias.routes';
 import catModeradoresRoutes from './routes/catModeradores.routes';
 import productosWebRoutes from './routes/productosWeb.routes';
 import proveedoresRoutes from './routes/proveedores.routes';
+import ventasWebRoutes from './routes/ventasWeb.routes';
 
 dotenv.config();
 
@@ -117,6 +118,7 @@ app.use('/api/categorias', categoriasRoutes);
 app.use('/api/cat-moderadores', catModeradoresRoutes);
 app.use('/api/productos-web', productosWebRoutes);
 app.use('/api/proveedores', proveedoresRoutes);
+app.use('/api/ventas-web', ventasWebRoutes);
 
 // Manejo de rutas no encontradas (404)
 app.use((_req: Request, res: Response) => {
