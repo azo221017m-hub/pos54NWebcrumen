@@ -34,15 +34,49 @@ const formatTime = (seconds: number): string => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-// Helper to get icon SVG for sale type
-const getTipoVentaIcon = (tipo: TipoDeVenta): string => {
-  const icons: Record<TipoDeVenta, string> = {
-    'DOMICILIO': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
-    'LLEVAR': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
-    'MESA': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="12" rx="2"/><line x1="8" y1="8" x2="8" y2="4"/><line x1="16" y1="8" x2="16" y2="4"/></svg>`,
-    'ONLINE': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`
-  };
-  return icons[tipo] || icons['MESA'];
+// Helper to render icon SVG for sale type as React component
+const TipoVentaIcon: React.FC<{ tipo: TipoDeVenta }> = ({ tipo }) => {
+  switch (tipo) {
+    case 'DOMICILIO':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      );
+    case 'LLEVAR':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+      );
+    case 'MESA':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="3" y="8" width="18" height="12" rx="2"/>
+          <line x1="8" y1="8" x2="8" y2="4"/>
+          <line x1="16" y1="8" x2="16" y2="4"/>
+        </svg>
+      );
+    case 'ONLINE':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+      );
+    default:
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="3" y="8" width="18" height="12" rx="2"/>
+          <line x1="8" y1="8" x2="8" y2="4"/>
+          <line x1="16" y1="8" x2="16" y2="4"/>
+        </svg>
+      );
+  }
 };
 
 // Helper to get color class for sale type
@@ -108,6 +142,10 @@ export const DashboardPage = () => {
         format: [80, 200] // Ticket size: 80mm width
       });
 
+      // PDF Constants
+      const PRODUCT_NAME_MAX_LENGTH = 25;
+      const PRODUCT_NAME_WRAP_WIDTH = 35;
+
       let yPos = 10;
       const lineHeight = 5;
       const pageWidth = 80;
@@ -161,8 +199,8 @@ export const DashboardPage = () => {
         
         // Product name - wrap if too long
         const productName = detalle.nombreproducto;
-        if (productName.length > 25) {
-          const lines = doc.splitTextToSize(productName, 35);
+        if (productName.length > PRODUCT_NAME_MAX_LENGTH) {
+          const lines = doc.splitTextToSize(productName, PRODUCT_NAME_WRAP_WIDTH);
           doc.text(lines, 20, yPos);
           yPos += lineHeight * (lines.length - 1);
         } else {
@@ -716,10 +754,9 @@ export const DashboardPage = () => {
                     <div className="venta-card-header">
                       <span className="venta-folio">{venta.folioventa}</span>
                       <div className="venta-tipo-badge">
-                        <span 
-                          className={`tipo-venta-icon ${getTipoVentaColorClass(venta.tipodeventa)}`}
-                          dangerouslySetInnerHTML={{ __html: getTipoVentaIcon(venta.tipodeventa) }}
-                        />
+                        <span className={`tipo-venta-icon ${getTipoVentaColorClass(venta.tipodeventa)}`}>
+                          <TipoVentaIcon tipo={venta.tipodeventa} />
+                        </span>
                         <span className="tipo-venta-label">{venta.tipodeventa}</span>
                       </div>
                     </div>
