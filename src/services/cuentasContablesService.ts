@@ -7,7 +7,7 @@ const API_BASE = '/cuentas-contables';
 export const obtenerCuentasContables = async (idnegocio: number): Promise<CuentaContable[]> => {
   try {
     console.log('🔵 cuentasContablesService - Solicitando cuentas del negocio:', idnegocio);
-    const response = await apiClient.get<CuentaContable[]>(`${API_BASE}/negocio/${idnegocio}`);
+    const response = await apiClient.get<CuentaContable[]>(API_BASE);
     console.log('✅ cuentasContablesService - Respuesta recibida:', response.data);
     
     if (Array.isArray(response.data)) {

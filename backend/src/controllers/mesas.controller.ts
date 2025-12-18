@@ -149,6 +149,19 @@ export const crearMesa = async (req: AuthRequest, res: Response): Promise<void> 
       return;
     }
 
+    // Validar que no exista una mesa con el mismo nombre en el mismo negocio
+    const [existingMesas] = await pool.query<Mesa[]>(
+      'SELECT idmesa FROM tblposcrumenwebmesas WHERE nombremesa = ? AND idnegocio = ?',
+      [nombremesa, idnegocio]
+    );
+
+    if (existingMesas.length > 0) {
+      res.status(400).json({ 
+        message: 'Ya existe una mesa con ese nombre en este negocio'
+      });
+      return;
+    }
+
     const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebmesas (
         nombremesa,
