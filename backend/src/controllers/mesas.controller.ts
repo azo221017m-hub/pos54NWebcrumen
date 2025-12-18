@@ -200,7 +200,7 @@ export const crearMesa = async (req: AuthRequest, res: Response): Promise<void> 
 };
 
 // Actualizar mesa
-export const actualizarMesa = async (req: Request, res: Response): Promise<void> => {
+export const actualizarMesa = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { idmesa } = req.params;
     const {
@@ -213,11 +213,19 @@ export const actualizarMesa = async (req: Request, res: Response): Promise<void>
       estatustiempo
     } = req.body;
 
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({ message: 'Usuario no autenticado o sin negocio asignado' });
+      return;
+    }
+
     console.log('Actualizando mesa ID:', idmesa);
 
-    // Validar que la mesa existe
+    // Validar que la mesa existe y pertenece al negocio del usuario
     const [mesaExistente] = await pool.query<Mesa[]>(
-      'SELECT idmesa FROM tblposcrumenwebmesas WHERE idmesa = ?',
+      'SELECT idmesa, idnegocio FROM tblposcrumenwebmesas WHERE idmesa = ?',
       [idmesa]
     );
 
@@ -245,6 +253,21 @@ export const actualizarMesa = async (req: Request, res: Response): Promise<void>
         res.status(400).json({ 
           message: 'Estatus de tiempo inválido',
           valoresPermitidos: estatusValidosTiempo
+        });
+        return;
+      }
+    }
+
+    // Validar que no exista otra mesa con el mismo nombre en el mismo negocio
+    if (nombremesa) {
+      const [existingMesas] = await pool.query<Mesa[]>(
+        'SELECT idmesa FROM tblposcrumenwebmesas WHERE nombremesa = ? AND idnegocio = ? AND idmesa != ?',
+        [nombremesa, idnegocio, idmesa]
+      );
+
+      if (existingMesas.length > 0) {
+        res.status(400).json({ 
+          message: 'Ya existe otra mesa con ese nombre en este negocio'
         });
         return;
       }
