@@ -5,10 +5,13 @@ import { obtenerProductosWeb } from '../../services/productosWebService';
 import { negociosService } from '../../services/negociosService';
 import { obtenerCategorias } from '../../services/categoriasService';
 import { crearVentaWeb } from '../../services/ventasWebService';
+import ModalTipoServicio from '../../components/ventas/ModalTipoServicio';
+import type { MesaFormData, LlevarFormData, DomicilioFormData } from '../../components/ventas/ModalTipoServicio';
 import type { ProductoWeb } from '../../types/productoWeb.types';
 import type { Usuario } from '../../types/usuario.types';
 import type { Negocio } from '../../types/negocio.types';
 import type { Categoria } from '../../types/categoria.types';
+import type { TipoServicio } from '../../types/mesa.types';
 import type { VentaWebCreate, TipoDeVenta } from '../../types/ventasWeb.types';
 import './PageVentas.css';
 
@@ -17,8 +20,6 @@ interface ItemComanda {
   cantidad: number;
   notas?: string;
 }
-
-type TipoServicio = 'Domicilio' | 'Llevar' | 'Mesa';
 
 // Constants
 const ESTATUS_ACTIVO = 1;
@@ -44,6 +45,12 @@ const PageVentas: React.FC = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<number | null>(null);
+  
+  // Modal states
+  const [modalOpen, setModalOpen] = useState(false);
+  const [mesaData, setMesaData] = useState<MesaFormData | null>(null);
+  const [llevarData, setLlevarData] = useState<LlevarFormData | null>(null);
+  const [domicilioData, setDomicilioData] = useState<DomicilioFormData | null>(null);
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -190,6 +197,20 @@ const PageVentas: React.FC = () => {
       return;
     }
 
+    // Validar que se hayan configurado los datos del tipo de servicio
+    if (tipoServicio === 'Mesa' && !mesaData) {
+      alert('Por favor configure los datos de la mesa antes de producir');
+      return;
+    }
+    if (tipoServicio === 'Llevar' && !llevarData) {
+      alert('Por favor configure los datos de entrega antes de producir');
+      return;
+    }
+    if (tipoServicio === 'Domicilio' && !domicilioData) {
+      alert('Por favor configure los datos de domicilio antes de producir');
+      return;
+    }
+
     try {
       // Mapear TipoServicio a TipoDeVenta
       const tipoDeVentaMap: Record<TipoServicio, TipoDeVenta> = {
@@ -198,11 +219,34 @@ const PageVentas: React.FC = () => {
         'Mesa': 'MESA'
       };
 
-      // Construir datos de la venta
+      // Construir datos de la venta según el tipo de servicio
+      let cliente = usuario.nombre;
+      let direcciondeentrega: string | null = null;
+      let contactodeentrega: string | null = null;
+      let telefonodeentrega: string | null = null;
+      let fechaprogramadaventa: string | null = null;
+      
+      if (tipoServicio === 'Mesa' && mesaData) {
+        cliente = `Mesa: ${mesaData.nombremesa}`;
+      } else if (tipoServicio === 'Llevar' && llevarData) {
+        cliente = llevarData.cliente;
+        fechaprogramadaventa = llevarData.fechaprogramadaventa;
+      } else if (tipoServicio === 'Domicilio' && domicilioData) {
+        cliente = domicilioData.cliente;
+        fechaprogramadaventa = domicilioData.fechaprogramadaventa;
+        direcciondeentrega = domicilioData.direcciondeentrega;
+        telefonodeentrega = domicilioData.telefonodeentrega;
+        contactodeentrega = domicilioData.contactodeentrega || null;
+      }
+
       const ventaData: VentaWebCreate = {
         tipodeventa: tipoDeVentaMap[tipoServicio],
-        cliente: usuario.nombre, // Por ahora usamos el nombre del usuario
+        cliente: cliente,
         formadepago: 'EFECTIVO', // Valor por defecto, se puede agregar selector en UI
+        direcciondeentrega,
+        contactodeentrega,
+        telefonodeentrega,
+        fechaprogramadaventa: fechaprogramadaventa || undefined,
         detalles: comanda.map(item => ({
           idproducto: item.producto.idProducto,
           nombreproducto: item.producto.nombre,
@@ -216,7 +260,7 @@ const PageVentas: React.FC = () => {
           cantidad: item.cantidad,
           preciounitario: Number(item.producto.precio),
           costounitario: Number(item.producto.costoproducto),
-          observaciones: item.notas || null
+          observaciones: item.notas || (tipoServicio === 'Domicilio' && domicilioData?.observaciones) || null
         }))
       };
 
@@ -226,8 +270,11 @@ const PageVentas: React.FC = () => {
 
       if (resultado.success) {
         alert(`¡Venta registrada exitosamente!\nFolio: ${resultado.folioventa}`);
-        // Limpiar la comanda
+        // Limpiar la comanda y datos del servicio
         setComanda([]);
+        setMesaData(null);
+        setLlevarData(null);
+        setDomicilioData(null);
       } else {
         alert(`Error al registrar la venta: ${resultado.message}`);
       }
@@ -264,6 +311,37 @@ const PageVentas: React.FC = () => {
         behavior: 'smooth'
       });
     }
+  };
+
+  const handleTipoServicioClick = (tipo: TipoServicio) => {
+    setTipoServicio(tipo);
+    setModalOpen(true);
+  };
+
+  const handleModalSave = (data: MesaFormData | LlevarFormData | DomicilioFormData) => {
+    if (tipoServicio === 'Mesa') {
+      setMesaData(data as MesaFormData);
+    } else if (tipoServicio === 'Llevar') {
+      setLlevarData(data as LlevarFormData);
+    } else if (tipoServicio === 'Domicilio') {
+      setDomicilioData(data as DomicilioFormData);
+    }
+    setModalOpen(false);
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+  };
+
+  const getInitialModalData = (): MesaFormData | LlevarFormData | DomicilioFormData | undefined => {
+    if (tipoServicio === 'Mesa' && mesaData) {
+      return mesaData;
+    } else if (tipoServicio === 'Llevar' && llevarData) {
+      return llevarData;
+    } else if (tipoServicio === 'Domicilio' && domicilioData) {
+      return domicilioData;
+    }
+    return undefined;
   };
 
   return (
@@ -339,19 +417,19 @@ const PageVentas: React.FC = () => {
             <div className="tipo-servicio-selector">
               <button 
                 className={`btn-tipo-servicio ${tipoServicio === 'Domicilio' ? 'active' : ''}`}
-                onClick={() => setTipoServicio('Domicilio')}
+                onClick={() => handleTipoServicioClick('Domicilio')}
               >
                 Domicilio
               </button>
               <button 
                 className={`btn-tipo-servicio ${tipoServicio === 'Llevar' ? 'active' : ''}`}
-                onClick={() => setTipoServicio('Llevar')}
+                onClick={() => handleTipoServicioClick('Llevar')}
               >
                 Llevar
               </button>
               <button 
                 className={`btn-tipo-servicio ${tipoServicio === 'Mesa' ? 'active' : ''}`}
-                onClick={() => setTipoServicio('Mesa')}
+                onClick={() => handleTipoServicioClick('Mesa')}
               >
                 Mesa
               </button>
@@ -534,6 +612,15 @@ const PageVentas: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal para configuración de tipo de servicio */}
+      <ModalTipoServicio
+        tipoServicio={tipoServicio}
+        isOpen={modalOpen}
+        onClose={handleModalClose}
+        onSave={handleModalSave}
+        initialData={getInitialModalData()}
+      />
     </div>
   );
 };
