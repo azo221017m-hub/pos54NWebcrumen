@@ -14,7 +14,7 @@ const router = Router();
 router.use(authMiddleware);
 
 // Rutas
-router.get('/negocio/:idnegocio', obtenerCuentasContables);
+router.get('/', obtenerCuentasContables);
 router.get('/:id', obtenerCuentaContable);
 router.post('/', crearCuentaContable);
 router.put('/:id', actualizarCuentaContable);

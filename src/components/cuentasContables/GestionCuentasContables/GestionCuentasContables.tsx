@@ -34,7 +34,7 @@ const GestionCuentasContables: React.FC<Props> = ({ idnegocio }) => {
     try {
       console.log('🔷 GestionCuentasContables - Iniciando carga de cuentas...');
       setCargando(true);
-      const data = await obtenerCuentasContables(idnegocio);
+      const data = await obtenerCuentasContables();
       console.log('🔷 GestionCuentasContables - Datos recibidos:', data, 'Es array:', Array.isArray(data));
       setCuentas(data);
     } catch (error) {
@@ -44,7 +44,7 @@ const GestionCuentasContables: React.FC<Props> = ({ idnegocio }) => {
     } finally {
       setCargando(false);
     }
-  }, [idnegocio, mostrarMensaje]);
+  }, [mostrarMensaje]);
 
   useEffect(() => {
     cargarCuentas();

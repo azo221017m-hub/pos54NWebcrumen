@@ -64,8 +64,7 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
     const cargarCuentas = async () => {
       setCargandoCuentas(true);
       try {
-        const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
-        const cuentas = await obtenerCuentasContables(idnegocio);
+        const cuentas = await obtenerCuentasContables();
         setCuentasContables(cuentas);
       } catch (error) {
         console.error('Error al cargar cuentas contables:', error);

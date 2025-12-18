@@ -4,10 +4,10 @@ import type { CuentaContable, CuentaContableCreate, CuentaContableUpdate } from 
 const API_BASE = '/cuentas-contables';
 
 // Obtener todas las cuentas contables de un negocio
-export const obtenerCuentasContables = async (idnegocio: number): Promise<CuentaContable[]> => {
+export const obtenerCuentasContables = async (): Promise<CuentaContable[]> => {
   try {
-    console.log('🔵 cuentasContablesService - Solicitando cuentas del negocio:', idnegocio);
-    const response = await apiClient.get<CuentaContable[]>(`${API_BASE}/negocio/${idnegocio}`);
+    console.log('🔵 cuentasContablesService - Solicitando cuentas del negocio autenticado');
+    const response = await apiClient.get<CuentaContable[]>(API_BASE);
     console.log('✅ cuentasContablesService - Respuesta recibida:', response.data);
     
     if (Array.isArray(response.data)) {
