@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search, Plus, Minus } from 'lucide-react';
+import { ArrowLeft, Search, Plus, Minus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { obtenerProductosWeb } from '../../services/productosWebService';
 import { negociosService } from '../../services/negociosService';
 import { obtenerCategorias } from '../../services/categoriasService';
@@ -25,6 +25,7 @@ const ESTATUS_ACTIVO = 1;
 
 const PageVentas: React.FC = () => {
   const navigate = useNavigate();
+  const categoriasScrollRef = useRef<HTMLDivElement>(null);
   
   // Utility function to safely format prices
   const formatPrice = (price: number | string | undefined | null): string => {
@@ -41,8 +42,8 @@ const PageVentas: React.FC = () => {
   const [tipoServicio, setTipoServicio] = useState<TipoServicio>('Mesa');
   const [searchTerm, setSearchTerm] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showCategoriasModal, setShowCategoriasModal] = useState(false);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<number | null>(null);
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -115,18 +116,25 @@ const PageVentas: React.FC = () => {
     cargarCategorias();
   }, []);
 
-  // Filtrar productos por búsqueda
+  // Filtrar productos por búsqueda y categoría
   useEffect(() => {
-    if (searchTerm.trim() === '') {
-      setProductosVisibles(productos);
-    } else {
-      const filtrados = productos.filter(p => 
+    let filtrados = productos;
+    
+    // Filtrar por categoría seleccionada
+    if (categoriaSeleccionada !== null) {
+      filtrados = filtrados.filter(p => p.idCategoria === categoriaSeleccionada);
+    }
+    
+    // Filtrar por término de búsqueda
+    if (searchTerm.trim() !== '') {
+      filtrados = filtrados.filter(p => 
         p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setProductosVisibles(filtrados);
     }
-  }, [searchTerm, productos]);
+    
+    setProductosVisibles(filtrados);
+  }, [searchTerm, productos, categoriaSeleccionada]);
 
   const agregarAComanda = (producto: ProductoWeb) => {
     const itemExistente = comanda.find(item => item.producto.idProducto === producto.idProducto);
@@ -235,6 +243,29 @@ const PageVentas: React.FC = () => {
     alert('Funcionalidad de listado de pagos en desarrollo');
   };
 
+  const handleCategoriaClick = (idCategoria: number) => {
+    // Toggle: si es la misma categoría, deseleccionar
+    if (categoriaSeleccionada === idCategoria) {
+      setCategoriaSeleccionada(null);
+    } else {
+      setCategoriaSeleccionada(idCategoria);
+    }
+  };
+
+  const scrollCategorias = (direction: 'left' | 'right') => {
+    if (categoriasScrollRef.current) {
+      const scrollAmount = 200;
+      const newScrollLeft = direction === 'left' 
+        ? categoriasScrollRef.current.scrollLeft - scrollAmount
+        : categoriasScrollRef.current.scrollLeft + scrollAmount;
+      
+      categoriasScrollRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
     <div className="page-ventas">
       {/* Overlay de pantalla bloqueada */}
@@ -335,13 +366,48 @@ const PageVentas: React.FC = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+          </div>
+
+          {/* Carrusel de Categorías */}
+          <div className="categorias-carousel-container">
+            <button 
+              className="carousel-nav-button carousel-nav-left"
+              onClick={() => scrollCategorias('left')}
+              aria-label="Scroll left"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            
+            <div className="categorias-carousel" ref={categoriasScrollRef}>
+              {categorias.map((categoria) => (
+                <div 
+                  key={categoria.idCategoria}
+                  className={`categoria-slide-item ${categoriaSeleccionada === categoria.idCategoria ? 'selected' : ''}`}
+                  onClick={() => handleCategoriaClick(categoria.idCategoria)}
+                >
+                  {categoria.imagencategoria ? (
+                    <div className="categoria-slide-imagen">
+                      <img 
+                        src={categoria.imagencategoria} 
+                        alt={categoria.nombre}
+                      />
+                    </div>
+                  ) : (
+                    <div className="categoria-slide-imagen categoria-placeholder">
+                      <span>📁</span>
+                    </div>
+                  )}
+                  <span className="categoria-slide-nombre">{categoria.nombre}</span>
+                </div>
+              ))}
+            </div>
 
             <button 
-              className="btn-categoria"
-              onClick={() => setShowCategoriasModal(true)}
+              className="carousel-nav-button carousel-nav-right"
+              onClick={() => scrollCategorias('right')}
+              aria-label="Scroll right"
             >
-              <div className="categoria-icon">⚪</div>
-              CATEGORIA
+              <ChevronRight size={24} />
             </button>
           </div>
 
@@ -457,66 +523,6 @@ const PageVentas: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Modal de Categorías */}
-      {showCategoriasModal && (
-        <div 
-          className="modal-overlay"
-          onClick={() => setShowCategoriasModal(false)}
-        >
-          <div 
-            className="modal-content"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-header">
-              <h2>Categorías</h2>
-              <button 
-                className="modal-close-button"
-                onClick={() => setShowCategoriasModal(false)}
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="modal-categories-grid">
-              {categorias.length > 0 ? (
-                categorias.map((categoria) => (
-                  <div 
-                    key={categoria.idCategoria}
-                    className="category-item"
-                    onClick={() => {
-                      setShowCategoriasModal(false);
-                    }}
-                  >
-                    {categoria.imagencategoria && (
-                      <div className="category-image">
-                        <img 
-                          src={categoria.imagencategoria} 
-                          alt={categoria.nombre}
-                        />
-                      </div>
-                    )}
-                    <div className="category-info">
-                      <h3 className="category-name">
-                        {categoria.nombre}
-                      </h3>
-                      {categoria.descripcion && (
-                        <p className="category-description">
-                          {categoria.descripcion}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="modal-empty-state">
-                  <p>No hay categorías disponibles</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
