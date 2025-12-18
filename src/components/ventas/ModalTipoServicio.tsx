@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
 import { obtenerMesas } from '../../services/mesasService';
 import { obtenerClientes } from '../../services/clientesService';
-import type { Mesa } from '../../types/mesa.types';
+import type { Mesa, TipoServicio } from '../../types/mesa.types';
 import type { Cliente } from '../../types/cliente.types';
 import './ModalTipoServicio.css';
 
@@ -27,8 +27,6 @@ export interface DomicilioFormData {
   observaciones: string;
 }
 
-type TipoServicio = 'Mesa' | 'Llevar' | 'Domicilio';
-
 interface ModalTipoServicioProps {
   tipoServicio: TipoServicio;
   isOpen: boolean;
@@ -36,6 +34,28 @@ interface ModalTipoServicioProps {
   onSave: (data: MesaFormData | LlevarFormData | DomicilioFormData) => void;
   initialData?: MesaFormData | LlevarFormData | DomicilioFormData;
 }
+
+// Initial form states
+const INITIAL_MESA_DATA: MesaFormData = {
+  idmesa: null,
+  nombremesa: ''
+};
+
+const INITIAL_LLEVAR_DATA: LlevarFormData = {
+  cliente: '',
+  idcliente: null,
+  fechaprogramadaventa: ''
+};
+
+const INITIAL_DOMICILIO_DATA: DomicilioFormData = {
+  cliente: '',
+  idcliente: null,
+  fechaprogramadaventa: '',
+  direcciondeentrega: '',
+  telefonodeentrega: '',
+  contactodeentrega: '',
+  observaciones: ''
+};
 
 const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
   tipoServicio,
@@ -49,29 +69,10 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
   const [clientesFiltrados, setClientesFiltrados] = useState<Cliente[]>([]);
   const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
 
-  // Form data for Mesa
-  const [mesaFormData, setMesaFormData] = useState<MesaFormData>({
-    idmesa: null,
-    nombremesa: ''
-  });
-
-  // Form data for Llevar
-  const [llevarFormData, setLlevarFormData] = useState<LlevarFormData>({
-    cliente: '',
-    idcliente: null,
-    fechaprogramadaventa: ''
-  });
-
-  // Form data for Domicilio
-  const [domicilioFormData, setDomicilioFormData] = useState<DomicilioFormData>({
-    cliente: '',
-    idcliente: null,
-    fechaprogramadaventa: '',
-    direcciondeentrega: '',
-    telefonodeentrega: '',
-    contactodeentrega: '',
-    observaciones: ''
-  });
+  // Form data states
+  const [mesaFormData, setMesaFormData] = useState<MesaFormData>(INITIAL_MESA_DATA);
+  const [llevarFormData, setLlevarFormData] = useState<LlevarFormData>(INITIAL_LLEVAR_DATA);
+  const [domicilioFormData, setDomicilioFormData] = useState<DomicilioFormData>(INITIAL_DOMICILIO_DATA);
 
   useEffect(() => {
     if (isOpen) {
@@ -189,18 +190,10 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
   };
 
   const handleCancel = () => {
-    // Limpiar formularios
-    setMesaFormData({ idmesa: null, nombremesa: '' });
-    setLlevarFormData({ cliente: '', idcliente: null, fechaprogramadaventa: '' });
-    setDomicilioFormData({
-      cliente: '',
-      idcliente: null,
-      fechaprogramadaventa: '',
-      direcciondeentrega: '',
-      telefonodeentrega: '',
-      contactodeentrega: '',
-      observaciones: ''
-    });
+    // Reset all forms to initial state
+    setMesaFormData(INITIAL_MESA_DATA);
+    setLlevarFormData(INITIAL_LLEVAR_DATA);
+    setDomicilioFormData(INITIAL_DOMICILIO_DATA);
     setMostrarSugerencias(false);
     onClose();
   };

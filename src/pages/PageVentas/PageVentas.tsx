@@ -5,11 +5,13 @@ import { obtenerProductosWeb } from '../../services/productosWebService';
 import { negociosService } from '../../services/negociosService';
 import { obtenerCategorias } from '../../services/categoriasService';
 import { crearVentaWeb } from '../../services/ventasWebService';
-import ModalTipoServicio, { MesaFormData, LlevarFormData, DomicilioFormData } from '../../components/ventas/ModalTipoServicio';
+import ModalTipoServicio from '../../components/ventas/ModalTipoServicio';
+import type { MesaFormData, LlevarFormData, DomicilioFormData } from '../../components/ventas/ModalTipoServicio';
 import type { ProductoWeb } from '../../types/productoWeb.types';
 import type { Usuario } from '../../types/usuario.types';
 import type { Negocio } from '../../types/negocio.types';
 import type { Categoria } from '../../types/categoria.types';
+import type { TipoServicio } from '../../types/mesa.types';
 import type { VentaWebCreate, TipoDeVenta } from '../../types/ventasWeb.types';
 import './PageVentas.css';
 
@@ -18,8 +20,6 @@ interface ItemComanda {
   cantidad: number;
   notas?: string;
 }
-
-type TipoServicio = 'Domicilio' | 'Llevar' | 'Mesa';
 
 // Constants
 const ESTATUS_ACTIVO = 1;

@@ -15,6 +15,9 @@ export const EstatusTiempo = {
 
 export type EstatusTiempo = typeof EstatusTiempo[keyof typeof EstatusTiempo];
 
+// Tipo de servicio compartido
+export type TipoServicio = 'Domicilio' | 'Llevar' | 'Mesa';
+
 // Interface principal de Mesa
 export interface Mesa {
   idmesa: number;
