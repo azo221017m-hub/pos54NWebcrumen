@@ -93,13 +93,14 @@ export const crearNegocio = async (req: Request, res: Response): Promise<void> =
     await conn.beginTransaction();
 
     try {
-      // Insertar negocio (numeronegocio se generará después)
+      // Insertar negocio con numeronegocio temporal
       const [resultNegocio] = await conn.execute<ResultSetHeader>(
         `INSERT INTO tblposcrumenwebnegocio 
-        (nombreNegocio, rfcnegocio, direccionfiscalnegocio, contactonegocio, 
+        (numeronegocio, nombreNegocio, rfcnegocio, direccionfiscalnegocio, contactonegocio, 
          logotipo, telefonocontacto, estatusnegocio, fechaRegistroauditoria, usuarioauditoria)
-        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
         [
+          'TEMP', // Valor temporal que será actualizado inmediatamente
           negocio.nombreNegocio,
           negocio.rfcnegocio,
           negocio.direccionfiscalnegocio,
@@ -116,7 +117,7 @@ export const crearNegocio = async (req: Request, res: Response): Promise<void> =
       // Generar número de negocio automáticamente basado en el ID
       const numeronegocio = `NEG${String(idNegocio).padStart(3, '0')}`;
       
-      // Actualizar el número de negocio
+      // Actualizar el número de negocio con el valor correcto
       await conn.execute(
         'UPDATE tblposcrumenwebnegocio SET numeronegocio = ? WHERE idNegocio = ?',
         [numeronegocio, idNegocio]
