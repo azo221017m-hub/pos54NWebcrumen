@@ -13,7 +13,12 @@ export const obtenerVentasWeb = async (): Promise<VentaWebWithDetails[]> => {
     console.log('🔵 ventasWebService: Obteniendo ventas web del negocio autenticado');
     const response = await apiClient.get<{ success: boolean; data: VentaWebWithDetails[] }>(API_BASE);
     console.log('🔵 ventasWebService: Ventas web obtenidas:', response.data.data.length);
-    return response.data.data;
+    // Ensure detalles is always an array
+    const ventasConDetalles = response.data.data.map(venta => ({
+      ...venta,
+      detalles: venta.detalles || []
+    }));
+    return ventasConDetalles;
   } catch (error) {
     console.error('🔴 ventasWebService: Error al obtener ventas web:', error);
     return [];
@@ -26,7 +31,11 @@ export const obtenerVentaWebPorId = async (id: number): Promise<VentaWebWithDeta
     console.log('🔵 ventasWebService: Obteniendo venta web ID:', id);
     const response = await apiClient.get<{ success: boolean; data: VentaWebWithDetails }>(`${API_BASE}/${id}`);
     console.log('🔵 ventasWebService: Venta web obtenida:', response.data.data);
-    return response.data.data;
+    // Ensure detalles is always an array
+    return {
+      ...response.data.data,
+      detalles: response.data.data.detalles || []
+    };
   } catch (error) {
     console.error('🔴 ventasWebService: Error al obtener venta web:', error);
     return null;
