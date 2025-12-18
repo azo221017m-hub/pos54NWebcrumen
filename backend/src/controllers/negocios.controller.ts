@@ -127,7 +127,7 @@ export const crearNegocio = async (req: Request, res: Response): Promise<void> =
         `INSERT INTO tblposcrumenwebparametrosnegocio
         (idNegocio, telefonoNegocio, telefonoPedidos, ubicacion, tipoNegocio, 
          impresionRecibo, impresionTablero, envioWhats, encabezado, pie, 
-         impresionComanda, envioMensaje, estatus, fechaRegistroAuditoria, usuarioAuditoria)
+         impresionComanda, envioMensaje, estatus, fechaRegistroauditoria, usuarioauditoria)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
         [
           idNegocio,
@@ -227,7 +227,7 @@ export const actualizarNegocio = async (req: Request, res: Response): Promise<vo
         SET telefonoNegocio = ?, telefonoPedidos = ?, ubicacion = ?, tipoNegocio = ?,
             impresionRecibo = ?, impresionTablero = ?, envioWhats = ?, 
             encabezado = ?, pie = ?, impresionComanda = ?, envioMensaje = ?,
-            estatus = ?, fechaModificacionAuditoria = NOW(), usuarioAuditoria = ?
+            estatus = ?, fechamodificacionauditoria = NOW(), usuarioauditoria = ?
         WHERE idNegocio = ?`,
         [
           parametros.telefonoNegocio,
