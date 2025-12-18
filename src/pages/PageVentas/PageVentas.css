@@ -742,8 +742,7 @@
 }
 
 /* Hidden elements as per requirements */
-.categorias-carousel-container.hidden,
-.productos-grid.hidden {
+.hidden {
   display: none;
 }
 
