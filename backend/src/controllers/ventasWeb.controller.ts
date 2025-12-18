@@ -10,7 +10,7 @@ import type {
   VentaWebWithDetails
 } from '../types/ventasWeb.types';
 
-// Obtener todas las ventas web del negocio
+// Obtener todas las ventas web del negocio con sus detalles
 export const getVentasWeb = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idnegocio = req.user?.idNegocio;
@@ -23,7 +23,8 @@ export const getVentasWeb = async (req: AuthRequest, res: Response): Promise<voi
       return;
     }
 
-    const [rows] = await pool.execute<(VentaWeb & RowDataPacket)[]>(
+    // Obtener todas las ventas
+    const [ventasRows] = await pool.execute<(VentaWeb & RowDataPacket)[]>(
       `SELECT * FROM tblposcrumenwebventas 
        WHERE idnegocio = ? 
        ORDER BY fechadeventa DESC
@@ -31,9 +32,26 @@ export const getVentasWeb = async (req: AuthRequest, res: Response): Promise<voi
       [idnegocio]
     );
 
+    // Obtener los detalles para todas las ventas
+    const ventasConDetalles: VentaWebWithDetails[] = [];
+    
+    for (const venta of ventasRows) {
+      const [detallesRows] = await pool.execute<(DetalleVentaWeb & RowDataPacket)[]>(
+        `SELECT * FROM tblposcrumenwebdetalleventas 
+         WHERE idventa = ? AND idnegocio = ?
+         ORDER BY iddetalleventa ASC`,
+        [venta.idventa, idnegocio]
+      );
+
+      ventasConDetalles.push({
+        ...venta,
+        detalles: detallesRows
+      });
+    }
+
     res.json({
       success: true,
-      data: rows
+      data: ventasConDetalles
     });
   } catch (error) {
     console.error('Error al obtener ventas web:', error);

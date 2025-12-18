@@ -142,10 +142,6 @@ export const DashboardPage = () => {
         format: [80, 200] // Ticket size: 80mm width
       });
 
-      // PDF Constants
-      const PRODUCT_NAME_MAX_LENGTH = 25;
-      const PRODUCT_NAME_WRAP_WIDTH = 35;
-
       let yPos = 10;
       const lineHeight = 5;
       const pageWidth = 80;
@@ -179,8 +175,9 @@ export const DashboardPage = () => {
       // Products header
       doc.setFont('helvetica', 'bold');
       doc.text('Cant.', 5, yPos);
-      doc.text('Producto', 20, yPos);
-      doc.text('Total', pageWidth - 5, yPos, { align: 'right' });
+      doc.text('Producto', 15, yPos);
+      doc.text('P.Unit', 48, yPos, { align: 'right' });
+      doc.text('Subtotal', pageWidth - 5, yPos, { align: 'right' });
       yPos += lineHeight;
 
       doc.line(5, yPos, pageWidth - 5, yPos);
@@ -195,19 +192,27 @@ export const DashboardPage = () => {
           yPos = 10;
         }
 
-        doc.text(`${detalle.cantidad}x`, 5, yPos);
+        // Cantidad
+        doc.text(`${detalle.cantidad}`, 5, yPos);
         
         // Product name - wrap if too long
         const productName = detalle.nombreproducto;
-        if (productName.length > PRODUCT_NAME_MAX_LENGTH) {
-          const lines = doc.splitTextToSize(productName, PRODUCT_NAME_WRAP_WIDTH);
-          doc.text(lines, 20, yPos);
+        const maxProductNameLength = 20;
+        const productNameWrapWidth = 28;
+        if (productName.length > maxProductNameLength) {
+          const lines = doc.splitTextToSize(productName, productNameWrapWidth);
+          doc.text(lines, 15, yPos);
           yPos += lineHeight * (lines.length - 1);
         } else {
-          doc.text(productName, 20, yPos);
+          doc.text(productName, 15, yPos);
         }
         
-        doc.text(`$${Number(detalle.total).toFixed(2)}`, pageWidth - 5, yPos, { align: 'right' });
+        // Precio unitario
+        doc.text(`$${Number(detalle.preciounitario).toFixed(2)}`, 48, yPos, { align: 'right' });
+        
+        // Subtotal (cantidad * preciounitario)
+        const subtotal = detalle.cantidad * Number(detalle.preciounitario);
+        doc.text(`$${subtotal.toFixed(2)}`, pageWidth - 5, yPos, { align: 'right' });
         yPos += lineHeight;
 
         // Observations if any
