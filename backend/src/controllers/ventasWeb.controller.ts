@@ -32,22 +32,40 @@ export const getVentasWeb = async (req: AuthRequest, res: Response): Promise<voi
       [idnegocio]
     );
 
-    // Obtener los detalles para todas las ventas
-    const ventasConDetalles: VentaWebWithDetails[] = [];
-    
-    for (const venta of ventasRows) {
-      const [detallesRows] = await pool.execute<(DetalleVentaWeb & RowDataPacket)[]>(
-        `SELECT * FROM tblposcrumenwebdetalleventas 
-         WHERE idventa = ? AND idnegocio = ?
-         ORDER BY iddetalleventa ASC`,
-        [venta.idventa, idnegocio]
-      );
-
-      ventasConDetalles.push({
-        ...venta,
-        detalles: detallesRows
+    if (ventasRows.length === 0) {
+      res.json({
+        success: true,
+        data: []
       });
+      return;
     }
+
+    // Obtener todos los IDs de ventas
+    const ventaIds = ventasRows.map(v => v.idventa);
+
+    // Obtener todos los detalles en una sola query
+    const placeholders = ventaIds.map(() => '?').join(',');
+    const [allDetallesRows] = await pool.execute<(DetalleVentaWeb & RowDataPacket)[]>(
+      `SELECT * FROM tblposcrumenwebdetalleventas 
+       WHERE idventa IN (${placeholders}) AND idnegocio = ?
+       ORDER BY idventa, iddetalleventa ASC`,
+      [...ventaIds, idnegocio]
+    );
+
+    // Agrupar detalles por idventa
+    const detallesPorVenta = new Map<number, DetalleVentaWeb[]>();
+    allDetallesRows.forEach(detalle => {
+      if (!detallesPorVenta.has(detalle.idventa)) {
+        detallesPorVenta.set(detalle.idventa, []);
+      }
+      detallesPorVenta.get(detalle.idventa)!.push(detalle);
+    });
+
+    // Combinar ventas con sus detalles
+    const ventasConDetalles: VentaWebWithDetails[] = ventasRows.map(venta => ({
+      ...venta,
+      detalles: detallesPorVenta.get(venta.idventa) || []
+    }));
 
     res.json({
       success: true,

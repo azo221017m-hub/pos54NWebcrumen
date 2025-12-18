@@ -142,6 +142,10 @@ export const DashboardPage = () => {
         format: [80, 200] // Ticket size: 80mm width
       });
 
+      // PDF Constants
+      const PRODUCT_NAME_MAX_LENGTH = 20;
+      const PRODUCT_NAME_WRAP_WIDTH = 28;
+
       let yPos = 10;
       const lineHeight = 5;
       const pageWidth = 80;
@@ -197,10 +201,8 @@ export const DashboardPage = () => {
         
         // Product name - wrap if too long
         const productName = detalle.nombreproducto;
-        const maxProductNameLength = 20;
-        const productNameWrapWidth = 28;
-        if (productName.length > maxProductNameLength) {
-          const lines = doc.splitTextToSize(productName, productNameWrapWidth);
+        if (productName.length > PRODUCT_NAME_MAX_LENGTH) {
+          const lines = doc.splitTextToSize(productName, PRODUCT_NAME_WRAP_WIDTH);
           doc.text(lines, 15, yPos);
           yPos += lineHeight * (lines.length - 1);
         } else {
