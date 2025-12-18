@@ -234,6 +234,12 @@ export const actualizarMesa = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
+    // Validar que la mesa pertenece al negocio del usuario autenticado
+    if (mesaExistente[0].idnegocio !== idnegocio) {
+      res.status(403).json({ message: 'No tienes permiso para modificar esta mesa' });
+      return;
+    }
+
     // Validar ENUM estatusmesa si se proporciona
     if (estatusmesa) {
       const estatusValidosMesa = ['DISPONIBLE', 'OCUPADA', 'RESERVADA'];
