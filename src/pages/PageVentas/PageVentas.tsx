@@ -51,6 +51,7 @@ const PageVentas: React.FC = () => {
   const [mesaData, setMesaData] = useState<MesaFormData | null>(null);
   const [llevarData, setLlevarData] = useState<LlevarFormData | null>(null);
   const [domicilioData, setDomicilioData] = useState<DomicilioFormData | null>(null);
+  const [isServiceConfigured, setIsServiceConfigured] = useState(false);
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -315,6 +316,7 @@ const PageVentas: React.FC = () => {
 
   const handleTipoServicioClick = (tipo: TipoServicio) => {
     setTipoServicio(tipo);
+    setIsServiceConfigured(false);
     setModalOpen(true);
   };
 
@@ -326,6 +328,7 @@ const PageVentas: React.FC = () => {
     } else if (tipoServicio === 'Domicilio') {
       setDomicilioData(data as DomicilioFormData);
     }
+    setIsServiceConfigured(true);
     setModalOpen(false);
   };
 
@@ -446,8 +449,8 @@ const PageVentas: React.FC = () => {
             </div>
           </div>
 
-          {/* Carrusel de Categorías - Hidden as per requirements */}
-          <div className="categorias-carousel-container hidden">
+          {/* Carrusel de Categorías - Show when service is configured */}
+          <div className={`categorias-carousel-container ${!isServiceConfigured ? 'hidden' : ''}`}>
             <button 
               className="carousel-nav-button carousel-nav-left"
               onClick={() => scrollCategorias('left')}
@@ -500,8 +503,8 @@ const PageVentas: React.FC = () => {
             </button>
           </div>
 
-          {/* Grid de productos - Hidden as per requirements */}
-          <div className="productos-grid hidden">
+          {/* Grid de productos - Show when service is configured */}
+          <div className={`productos-grid ${!isServiceConfigured ? 'hidden' : ''}`}>
             {productosVisibles.map((producto) => {
               const cantidadEnComanda = obtenerCantidadEnComanda(producto.idProducto);
               return (
@@ -556,8 +559,8 @@ const PageVentas: React.FC = () => {
           </div>
 
           <div className="comanda-buttons">
-            <button className="btn-producir" onClick={handleProducir} disabled>Producir</button>
-            <button className="btn-listado" onClick={handleListadoPagos} disabled>listado de pagos</button>
+            <button className="btn-producir" onClick={handleProducir} disabled={!isServiceConfigured}>Producir</button>
+            <button className="btn-listado" onClick={handleListadoPagos} disabled={!isServiceConfigured}>listado de pagos</button>
           </div>
 
           <div className="comanda-total">
