@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
-import { obtenerVentasWeb } from '../services/ventasWebService';
-import type { VentaWebWithDetails } from '../types/ventasWeb.types';
+import { obtenerVentasWeb, actualizarVentaWeb } from '../services/ventasWebService';
+import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
+import jsPDF from 'jspdf';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -33,6 +34,28 @@ const formatTime = (seconds: number): string => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
+// Helper to get icon SVG for sale type
+const getTipoVentaIcon = (tipo: TipoDeVenta): string => {
+  const icons: Record<TipoDeVenta, string> = {
+    'DOMICILIO': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+    'LLEVAR': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
+    'MESA': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="12" rx="2"/><line x1="8" y1="8" x2="8" y2="4"/><line x1="16" y1="8" x2="16" y2="4"/></svg>`,
+    'ONLINE': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`
+  };
+  return icons[tipo] || icons['MESA'];
+};
+
+// Helper to get color class for sale type
+const getTipoVentaColorClass = (tipo: TipoDeVenta): string => {
+  const colors: Record<TipoDeVenta, string> = {
+    'DOMICILIO': 'tipo-domicilio',
+    'LLEVAR': 'tipo-llevar',
+    'MESA': 'tipo-mesa',
+    'ONLINE': 'tipo-online'
+  };
+  return colors[tipo] || 'tipo-mesa';
+};
+
 export const DashboardPage = () => {
   const navigate = useNavigate();
   const [usuario] = useState<Usuario | null>(getUsuarioFromStorage());
@@ -61,6 +84,133 @@ export const DashboardPage = () => {
       console.error('Error al cargar ventas solicitadas:', error);
     }
   }, []);
+
+  const handleStatusChange = async (ventaId: number, newStatus: EstadoDeVenta) => {
+    try {
+      const result = await actualizarVentaWeb(ventaId, { estadodeventa: newStatus });
+      if (result.success) {
+        // Reload sales after status change
+        await cargarVentasSolicitadas();
+      } else {
+        alert(`Error al actualizar estado: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error al cambiar estado:', error);
+      alert('Error al actualizar el estado de la venta');
+    }
+  };
+
+  const handleGenerateComandaPDF = (venta: VentaWebWithDetails) => {
+    try {
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [80, 200] // Ticket size: 80mm width
+      });
+
+      let yPos = 10;
+      const lineHeight = 5;
+      const pageWidth = 80;
+
+      // Header
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('POS CRUMEN', pageWidth / 2, yPos, { align: 'center' });
+      yPos += lineHeight * 1.5;
+
+      doc.setFontSize(12);
+      doc.text('COMANDA', pageWidth / 2, yPos, { align: 'center' });
+      yPos += lineHeight * 1.5;
+
+      // Sale info
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Folio: ${venta.folioventa}`, 5, yPos);
+      yPos += lineHeight;
+      doc.text(`Tipo: ${venta.tipodeventa}`, 5, yPos);
+      yPos += lineHeight;
+      doc.text(`Cliente: ${venta.cliente}`, 5, yPos);
+      yPos += lineHeight;
+      doc.text(`Fecha: ${new Date(venta.fechadeventa).toLocaleString()}`, 5, yPos);
+      yPos += lineHeight * 1.5;
+
+      // Line separator
+      doc.line(5, yPos, pageWidth - 5, yPos);
+      yPos += lineHeight;
+
+      // Products header
+      doc.setFont('helvetica', 'bold');
+      doc.text('Cant.', 5, yPos);
+      doc.text('Producto', 20, yPos);
+      doc.text('Total', pageWidth - 5, yPos, { align: 'right' });
+      yPos += lineHeight;
+
+      doc.line(5, yPos, pageWidth - 5, yPos);
+      yPos += lineHeight;
+
+      // Products
+      doc.setFont('helvetica', 'normal');
+      venta.detalles.forEach((detalle) => {
+        // Check if we need a new page
+        if (yPos > 180) {
+          doc.addPage();
+          yPos = 10;
+        }
+
+        doc.text(`${detalle.cantidad}x`, 5, yPos);
+        
+        // Product name - wrap if too long
+        const productName = detalle.nombreproducto;
+        if (productName.length > 25) {
+          const lines = doc.splitTextToSize(productName, 35);
+          doc.text(lines, 20, yPos);
+          yPos += lineHeight * (lines.length - 1);
+        } else {
+          doc.text(productName, 20, yPos);
+        }
+        
+        doc.text(`$${Number(detalle.total).toFixed(2)}`, pageWidth - 5, yPos, { align: 'right' });
+        yPos += lineHeight;
+
+        // Observations if any
+        if (detalle.observaciones) {
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'italic');
+          doc.text(`  * ${detalle.observaciones}`, 20, yPos);
+          yPos += lineHeight;
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'normal');
+        }
+      });
+
+      yPos += lineHeight * 0.5;
+      doc.line(5, yPos, pageWidth - 5, yPos);
+      yPos += lineHeight;
+
+      // Totals
+      doc.setFont('helvetica', 'bold');
+      doc.text('TOTAL:', 5, yPos);
+      doc.text(`$${Number(venta.totaldeventa).toFixed(2)}`, pageWidth - 5, yPos, { align: 'right' });
+      yPos += lineHeight * 2;
+
+      // Footer
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Gracias por su preferencia', pageWidth / 2, yPos, { align: 'center' });
+
+      // Print the PDF
+      doc.autoPrint();
+      window.open(doc.output('bloburl'), '_blank');
+    } catch (error) {
+      console.error('Error al generar PDF:', error);
+      alert('Error al generar la comanda en PDF');
+    }
+  };
+
+  const handleVerDetalle = (venta: VentaWebWithDetails) => {
+    // Navigate to sales page with the sale data
+    navigate('/ventas', { state: { ventaToLoad: venta } });
+  };
 
   useEffect(() => {
     // Verificar si hay usuario
@@ -565,7 +715,13 @@ export const DashboardPage = () => {
                   <div key={venta.idventa} className="venta-solicitada-card">
                     <div className="venta-card-header">
                       <span className="venta-folio">{venta.folioventa}</span>
-                      <span className="badge badge-warning-sm">SOLICITADO</span>
+                      <div className="venta-tipo-badge">
+                        <span 
+                          className={`tipo-venta-icon ${getTipoVentaColorClass(venta.tipodeventa)}`}
+                          dangerouslySetInnerHTML={{ __html: getTipoVentaIcon(venta.tipodeventa) }}
+                        />
+                        <span className="tipo-venta-label">{venta.tipodeventa}</span>
+                      </div>
                     </div>
                     <div className="venta-card-body">
                       <p className="venta-cliente">
@@ -575,22 +731,57 @@ export const DashboardPage = () => {
                         </svg>
                         {venta.cliente}
                       </p>
-                      <p className="venta-tipo">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                        </svg>
-                        {venta.tipodeventa}
+                      <p className="venta-items">
+                        <strong>{venta.detalles?.reduce((sum, d) => sum + d.cantidad, 0) || 0}</strong> producto(s)
                       </p>
-                      <p className="venta-items">{venta.detalles?.length || 0} producto(s)</p>
+                      
+                      {/* Status selector */}
+                      <div className="venta-status-selector">
+                        <label htmlFor={`status-${venta.idventa}`}>Estado:</label>
+                        <select
+                          id={`status-${venta.idventa}`}
+                          value={venta.estadodeventa}
+                          onChange={(e) => handleStatusChange(venta.idventa, e.target.value as EstadoDeVenta)}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <option value="SOLICITADO">Solicitado</option>
+                          <option value="PREPARANDO">Preparando</option>
+                          <option value="EN_CAMINO">En Camino</option>
+                          <option value="ENTREGADO">Entregado</option>
+                          <option value="CANCELADO">Cancelado</option>
+                          <option value="DEVUELTO">Devuelto</option>
+                        </select>
+                      </div>
                     </div>
                     <div className="venta-card-footer">
                       <span className="venta-total">${(Number(venta.totaldeventa) || 0).toFixed(2)}</span>
-                      <button 
-                        className="btn-ver-detalle"
-                        onClick={() => navigate('/ventas')}
-                      >
-                        Ver detalle
-                      </button>
+                      <div className="venta-card-actions">
+                        <button 
+                          className="btn-comanda"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleGenerateComandaPDF(venta);
+                          }}
+                          title="Generar comanda PDF"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                          </svg>
+                        </button>
+                        <button 
+                          className="btn-ver-detalle"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleVerDetalle(venta);
+                          }}
+                        >
+                          Ver detalle
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
