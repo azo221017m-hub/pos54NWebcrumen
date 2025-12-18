@@ -369,7 +369,7 @@ const PageVentas: React.FC = () => {
           </div>
 
           {/* Carrusel de Categorías - Hidden as per requirements */}
-          <div className="categorias-carousel-container" style={{ display: 'none' }}>
+          <div className="categorias-carousel-container hidden">
             <button 
               className="carousel-nav-button carousel-nav-left"
               onClick={() => scrollCategorias('left')}
@@ -395,7 +395,9 @@ const PageVentas: React.FC = () => {
                           e.currentTarget.style.display = 'none';
                           const parent = e.currentTarget.parentElement;
                           if (parent) {
-                            parent.innerHTML = '<span>📁</span>';
+                            const fallbackSpan = document.createElement('span');
+                            fallbackSpan.textContent = '📁';
+                            parent.appendChild(fallbackSpan);
                             parent.classList.add('categoria-placeholder');
                           }
                         }}
@@ -421,7 +423,7 @@ const PageVentas: React.FC = () => {
           </div>
 
           {/* Grid de productos - Hidden as per requirements */}
-          <div className="productos-grid" style={{ display: 'none' }}>
+          <div className="productos-grid hidden">
             {productosVisibles.map((producto) => {
               const cantidadEnComanda = obtenerCantidadEnComanda(producto.idProducto);
               return (

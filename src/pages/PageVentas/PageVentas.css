@@ -741,6 +741,12 @@
   background: #2980b9;
 }
 
+/* Hidden elements as per requirements */
+.categorias-carousel-container.hidden,
+.productos-grid.hidden {
+  display: none;
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
   .comanda-panel {
