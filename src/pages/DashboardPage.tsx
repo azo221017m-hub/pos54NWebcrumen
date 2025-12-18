@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
+import { obtenerVentasWeb } from '../services/ventasWebService';
+import type { VentaWebWithDetails } from '../types/ventasWeb.types';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -41,6 +43,7 @@ export const DashboardPage = () => {
   const [showDashboardSubmenu, setShowDashboardSubmenu] = useState(false);
   const [isScreenLocked, setIsScreenLocked] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [ventasSolicitadas, setVentasSolicitadas] = useState<VentaWebWithDetails[]>([]);
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
@@ -48,12 +51,26 @@ export const DashboardPage = () => {
     navigate('/login');
   }, [navigate]);
 
+  const cargarVentasSolicitadas = useCallback(async () => {
+    try {
+      const ventas = await obtenerVentasWeb();
+      // Filter only sales with SOLICITADO status
+      const ventasFiltradas = ventas.filter(venta => venta.estadodeventa === 'SOLICITADO');
+      setVentasSolicitadas(ventasFiltradas);
+    } catch (error) {
+      console.error('Error al cargar ventas solicitadas:', error);
+    }
+  }, []);
+
   useEffect(() => {
     // Verificar si hay usuario
     if (!usuario) {
       navigate('/login');
       return;
     }
+
+    // Load sales with SOLICITADO status
+    cargarVentasSolicitadas();
 
     // Contador de sesión
     const timer = setInterval(() => {
@@ -68,7 +85,7 @@ export const DashboardPage = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [usuario, navigate]);
+  }, [usuario, navigate, cargarVentasSolicitadas]);
 
   useEffect(() => {
     // Cuando la sesión expira, hacer logout automático
@@ -528,6 +545,58 @@ export const DashboardPage = () => {
               <div className="card-stat">0 alertas</div>
             </div>
           </div>
+
+          {/* Sección de Ventas Solicitadas */}
+          {ventasSolicitadas.length > 0 && (
+            <div className="ventas-solicitadas-section">
+              <div className="section-header">
+                <h3 className="section-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="9" cy="21" r="1"/>
+                    <circle cx="20" cy="21" r="1"/>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                  </svg>
+                  Ventas Solicitadas
+                </h3>
+                <span className="badge badge-warning">{ventasSolicitadas.length}</span>
+              </div>
+              <div className="ventas-solicitadas-grid">
+                {ventasSolicitadas.map((venta) => (
+                  <div key={venta.idventa} className="venta-solicitada-card">
+                    <div className="venta-card-header">
+                      <span className="venta-folio">{venta.folioventa}</span>
+                      <span className="badge badge-warning-sm">SOLICITADO</span>
+                    </div>
+                    <div className="venta-card-body">
+                      <p className="venta-cliente">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                          <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        {venta.cliente}
+                      </p>
+                      <p className="venta-tipo">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        </svg>
+                        {venta.tipodeventa}
+                      </p>
+                      <p className="venta-items">{venta.detalles.length} producto(s)</p>
+                    </div>
+                    <div className="venta-card-footer">
+                      <span className="venta-total">${(Number(venta.totaldeventa) || 0).toFixed(2)}</span>
+                      <button 
+                        className="btn-ver-detalle"
+                        onClick={() => navigate('/ventas')}
+                      >
+                        Ver detalle
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Tablero de Pedidos Online - Lado Derecho */}
