@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Search, Plus, Minus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { obtenerProductosWeb } from '../../services/productosWebService';
 import { negociosService } from '../../services/negociosService';
@@ -12,7 +12,7 @@ import type { Usuario } from '../../types/usuario.types';
 import type { Negocio } from '../../types/negocio.types';
 import type { Categoria } from '../../types/categoria.types';
 import type { TipoServicio } from '../../types/mesa.types';
-import type { VentaWebCreate, TipoDeVenta } from '../../types/ventasWeb.types';
+import type { VentaWebCreate, VentaWebWithDetails, TipoDeVenta } from '../../types/ventasWeb.types';
 import './PageVentas.css';
 
 interface ItemComanda {
@@ -26,7 +26,11 @@ const ESTATUS_ACTIVO = 1;
 
 const PageVentas: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const categoriasScrollRef = useRef<HTMLDivElement>(null);
+  
+  // Get sale data from navigation state
+  const ventaToLoad = (location.state as { ventaToLoad?: VentaWebWithDetails })?.ventaToLoad;
   
   // Utility function to safely format prices
   const formatPrice = (price: number | string | undefined | null): string => {
@@ -122,6 +126,76 @@ const PageVentas: React.FC = () => {
 
     cargarProductos();
     cargarCategorias();
+
+    // If a sale is being loaded from dashboard
+    if (ventaToLoad) {
+      // Set service type based on sale type
+      const tipoServicioMap: Record<TipoDeVenta, TipoServicio> = {
+        'DOMICILIO': 'Domicilio',
+        'LLEVAR': 'Llevar',
+        'MESA': 'Mesa',
+        'ONLINE': 'Llevar' // Map ONLINE to Llevar as closest match
+      };
+      
+      setTipoServicio(tipoServicioMap[ventaToLoad.tipodeventa] || 'Mesa');
+      setIsServiceConfigured(true);
+
+      // Load products into comanda
+      const itemsComanda: ItemComanda[] = ventaToLoad.detalles.map(detalle => ({
+        producto: {
+          idProducto: detalle.idproducto,
+          nombre: detalle.nombreproducto,
+          precio: detalle.preciounitario,
+          costoproducto: detalle.costounitario,
+          descripcion: '',
+          idCategoria: 0,
+          codigoSKU: '',
+          tipoproducto: detalle.idreceta ? 'Receta' : 'Directo',
+          idreferencia: detalle.idreceta || null,
+          nombreReceta: detalle.nombrereceta || null,
+          unidaddemedida: 'Pieza',
+          imagenProducto: null,
+          estatus: 1,
+          idnegocio: detalle.idnegocio,
+          usuarioauditoria: detalle.usuarioauditoria,
+          fechamodificacionauditoria: detalle.fechamodificacionauditoria,
+          fechaRegistroauditoria: new Date().toISOString(),
+          fehamodificacionauditoria: new Date().toISOString()
+        } as ProductoWeb,
+        cantidad: detalle.cantidad,
+        notas: detalle.observaciones || undefined
+      }));
+      
+      setComanda(itemsComanda);
+
+      // Set service data based on type
+      if (ventaToLoad.tipodeventa === 'MESA') {
+        setMesaData({
+          idmesa: null,
+          nombremesa: ventaToLoad.cliente.replace('Mesa: ', '')
+        });
+      } else if (ventaToLoad.tipodeventa === 'LLEVAR') {
+        setLlevarData({
+          cliente: ventaToLoad.cliente,
+          idcliente: null,
+          fechaprogramadaventa: ventaToLoad.fechaprogramadaventa 
+            ? new Date(ventaToLoad.fechaprogramadaventa).toISOString().slice(0, 16)
+            : ''
+        });
+      } else if (ventaToLoad.tipodeventa === 'DOMICILIO') {
+        setDomicilioData({
+          cliente: ventaToLoad.cliente,
+          idcliente: null,
+          fechaprogramadaventa: ventaToLoad.fechaprogramadaventa 
+            ? new Date(ventaToLoad.fechaprogramadaventa).toISOString().slice(0, 16)
+            : '',
+          direcciondeentrega: ventaToLoad.direcciondeentrega || '',
+          telefonodeentrega: ventaToLoad.telefonodeentrega || '',
+          contactodeentrega: ventaToLoad.contactodeentrega || '',
+          observaciones: ventaToLoad.detalles[0]?.observaciones || ''
+        });
+      }
+    }
   }, []);
 
   // Filtrar productos por búsqueda y categoría
