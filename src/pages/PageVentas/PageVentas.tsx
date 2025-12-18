@@ -368,8 +368,8 @@ const PageVentas: React.FC = () => {
             </div>
           </div>
 
-          {/* Carrusel de Categorías */}
-          <div className="categorias-carousel-container">
+          {/* Carrusel de Categorías - Hidden as per requirements */}
+          <div className="categorias-carousel-container hidden">
             <button 
               className="carousel-nav-button carousel-nav-left"
               onClick={() => scrollCategorias('left')}
@@ -390,6 +390,17 @@ const PageVentas: React.FC = () => {
                       <img 
                         src={categoria.imagencategoria} 
                         alt={categoria.nombre}
+                        onError={(e) => {
+                          // Fallback if image fails to load
+                          e.currentTarget.style.display = 'none';
+                          const parent = e.currentTarget.parentElement;
+                          if (parent) {
+                            const fallbackSpan = document.createElement('span');
+                            fallbackSpan.textContent = '📁';
+                            parent.appendChild(fallbackSpan);
+                            parent.classList.add('categoria-placeholder');
+                          }
+                        }}
                       />
                     </div>
                   ) : (
@@ -411,8 +422,8 @@ const PageVentas: React.FC = () => {
             </button>
           </div>
 
-          {/* Grid de productos */}
-          <div className="productos-grid">
+          {/* Grid de productos - Hidden as per requirements */}
+          <div className="productos-grid hidden">
             {productosVisibles.map((producto) => {
               const cantidadEnComanda = obtenerCantidadEnComanda(producto.idProducto);
               return (
@@ -467,8 +478,8 @@ const PageVentas: React.FC = () => {
           </div>
 
           <div className="comanda-buttons">
-            <button className="btn-producir" onClick={handleProducir}>Producir</button>
-            <button className="btn-listado" onClick={handleListadoPagos}>listado de pagos</button>
+            <button className="btn-producir" onClick={handleProducir} disabled>Producir</button>
+            <button className="btn-listado" onClick={handleListadoPagos} disabled>listado de pagos</button>
           </div>
 
           <div className="comanda-total">
