@@ -10,7 +10,7 @@ import type {
   VentaWebWithDetails
 } from '../types/ventasWeb.types';
 
-// Obtener todas las ventas web del negocio
+// Obtener todas las ventas web del negocio con sus detalles
 export const getVentasWeb = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idnegocio = req.user?.idNegocio;
@@ -23,7 +23,8 @@ export const getVentasWeb = async (req: AuthRequest, res: Response): Promise<voi
       return;
     }
 
-    const [rows] = await pool.execute<(VentaWeb & RowDataPacket)[]>(
+    // Obtener todas las ventas
+    const [ventasRows] = await pool.execute<(VentaWeb & RowDataPacket)[]>(
       `SELECT * FROM tblposcrumenwebventas 
        WHERE idnegocio = ? 
        ORDER BY fechadeventa DESC
@@ -31,9 +32,44 @@ export const getVentasWeb = async (req: AuthRequest, res: Response): Promise<voi
       [idnegocio]
     );
 
+    if (ventasRows.length === 0) {
+      res.json({
+        success: true,
+        data: []
+      });
+      return;
+    }
+
+    // Obtener todos los IDs de ventas
+    const ventaIds = ventasRows.map(v => v.idventa);
+
+    // Obtener todos los detalles en una sola query
+    const placeholders = ventaIds.map(() => '?').join(',');
+    const [allDetallesRows] = await pool.execute<(DetalleVentaWeb & RowDataPacket)[]>(
+      `SELECT * FROM tblposcrumenwebdetalleventas 
+       WHERE idventa IN (${placeholders}) AND idnegocio = ?
+       ORDER BY idventa, iddetalleventa ASC`,
+      [...ventaIds, idnegocio]
+    );
+
+    // Agrupar detalles por idventa
+    const detallesPorVenta = new Map<number, DetalleVentaWeb[]>();
+    allDetallesRows.forEach(detalle => {
+      if (!detallesPorVenta.has(detalle.idventa)) {
+        detallesPorVenta.set(detalle.idventa, []);
+      }
+      detallesPorVenta.get(detalle.idventa)!.push(detalle);
+    });
+
+    // Combinar ventas con sus detalles
+    const ventasConDetalles: VentaWebWithDetails[] = ventasRows.map(venta => ({
+      ...venta,
+      detalles: detallesPorVenta.get(venta.idventa) || []
+    }));
+
     res.json({
       success: true,
-      data: rows
+      data: ventasConDetalles
     });
   } catch (error) {
     console.error('Error al obtener ventas web:', error);
