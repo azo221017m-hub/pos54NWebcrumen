@@ -581,7 +581,7 @@ export const DashboardPage = () => {
                         </svg>
                         {venta.tipodeventa}
                       </p>
-                      <p className="venta-items">{venta.detalles.length} producto(s)</p>
+                      <p className="venta-items">{venta.detalles?.length || 0} producto(s)</p>
                     </div>
                     <div className="venta-card-footer">
                       <span className="venta-total">${(Number(venta.totaldeventa) || 0).toFixed(2)}</span>
