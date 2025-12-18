@@ -286,7 +286,7 @@ export const LoginPage = () => {
             <p className="footer-text">
               ¿No tienes una cuenta? <a href="#" className="footer-link">Contacta al administrador</a>
             </p>
-            <p className="version-text">Ver 12.25.11-8.49</p>
+            <p className="version-text">Ver 12.25.18-55</p>
           </div>
         </div>
       </div>
