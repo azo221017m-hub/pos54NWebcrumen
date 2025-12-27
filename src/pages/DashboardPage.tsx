@@ -31,12 +31,6 @@ const getUsuarioFromStorage = (): Usuario | null => {
 const TIPO_VENTA_FILTER_ALL = 'TODOS' as const;
 type TipoVentaFilterOption = TipoDeVenta | typeof TIPO_VENTA_FILTER_ALL;
 
-const formatTime = (seconds: number): string => {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-};
-
 // Helper to render icon SVG for sale type as React component
 const TipoVentaIcon: React.FC<{ tipo: TipoDeVenta }> = ({ tipo }) => {
   switch (tipo) {
@@ -96,8 +90,6 @@ const getTipoVentaColorClass = (tipo: TipoDeVenta): string => {
 export const DashboardPage = () => {
   const navigate = useNavigate();
   const [usuario] = useState<Usuario | null>(getUsuarioFromStorage());
-  const [timeRemaining, setTimeRemaining] = useState(600); // 10 minutos (600 segundos)
-  const [sessionExpired, setSessionExpired] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showConfigSubmenu, setShowConfigSubmenu] = useState(false);
   const [showDashboardSubmenu, setShowDashboardSubmenu] = useState(false);
@@ -278,32 +270,7 @@ export const DashboardPage = () => {
 
     // Load sales with SOLICITADO status
     cargarVentasSolicitadas();
-
-    // Contador de sesión
-    const timer = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          setSessionExpired(true);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
   }, [usuario, navigate, cargarVentasSolicitadas]);
-
-  useEffect(() => {
-    // Cuando la sesión expira, hacer logout automático
-    if (sessionExpired) {
-      const timeout = setTimeout(() => {
-        handleLogout();
-      }, 1000);
-
-      return () => clearTimeout(timeout);
-    }
-  }, [sessionExpired, handleLogout]);
 
   if (!usuario) {
     return null;
@@ -372,14 +339,6 @@ export const DashboardPage = () => {
         </div>
 
         <div className="header-right">
-          <div className={`session-timer ${timeRemaining <= 60 ? 'warning' : ''}`}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
-            </svg>
-            <span>{formatTime(timeRemaining)}</span>
-          </div>
-
           <div className="user-menu-container">
             <button 
               className="user-icon-button"
@@ -694,20 +653,6 @@ export const DashboardPage = () => {
       {/* Contenido Principal */}
       <div className="dashboard-main-content">
         <div className="content-left">
-          {sessionExpired && (
-            <div className="session-expired-banner">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-              </svg>
-              <div>
-                <h3>Sesión Expirada</h3>
-                <p>Tu sesión ha finalizado. Serás redirigido al login...</p>
-              </div>
-            </div>
-          )}
-
           <div className="welcome-section">
             <h2 className="welcome-title">¡Bienvenido, {usuario?.nombre}!</h2>
             <p className="welcome-subtitle">

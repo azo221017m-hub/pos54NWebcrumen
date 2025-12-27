@@ -43,7 +43,7 @@ apiClient.interceptors.response.use(
       
       if (!isAuthEndpoint) {
         // Token expirado, inválido o no autorizado (en endpoints protegidos)
-        autoLogout('/login', 'Tu sesión ha expirado o es inválida. Por favor, inicia sesión nuevamente.');
+        autoLogout('/login');
       }
       return Promise.reject(error);
     }
