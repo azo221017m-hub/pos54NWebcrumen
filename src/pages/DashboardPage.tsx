@@ -29,6 +29,7 @@ const getUsuarioFromStorage = (): Usuario | null => {
 };
 
 const TIPO_VENTA_FILTER_ALL = 'TODOS' as const;
+type TipoVentaFilterOption = TipoDeVenta | typeof TIPO_VENTA_FILTER_ALL;
 
 const formatTime = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
@@ -103,7 +104,7 @@ export const DashboardPage = () => {
   const [isScreenLocked, setIsScreenLocked] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [ventasSolicitadas, setVentasSolicitadas] = useState<VentaWebWithDetails[]>([]);
-  const [tipoVentaFilter, setTipoVentaFilter] = useState<TipoDeVenta | typeof TIPO_VENTA_FILTER_ALL>(TIPO_VENTA_FILTER_ALL);
+  const [tipoVentaFilter, setTipoVentaFilter] = useState<TipoVentaFilterOption>(TIPO_VENTA_FILTER_ALL);
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
@@ -762,7 +763,7 @@ export const DashboardPage = () => {
                   <select 
                     id="tipo-venta-filter"
                     value={tipoVentaFilter}
-                    onChange={(e) => setTipoVentaFilter(e.target.value as TipoDeVenta | typeof TIPO_VENTA_FILTER_ALL)}
+                    onChange={(e) => setTipoVentaFilter(e.target.value as TipoVentaFilterOption)}
                     className="tipo-venta-filter-select"
                   >
                     <option value={TIPO_VENTA_FILTER_ALL}>Todos</option>
