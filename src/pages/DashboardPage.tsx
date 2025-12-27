@@ -769,6 +769,7 @@ export const DashboardPage = () => {
                     <option value="LLEVAR">Llevar</option>
                     <option value="DOMICILIO">Domicilio</option>
                     <option value="MESA">Mesa</option>
+                    <option value="ONLINE">Online</option>
                   </select>
                 </div>
                 
