@@ -15,11 +15,18 @@ interface Usuario extends RowDataPacket {
 
 /**
  * Script para crear/actualizar el SUPERUSUARIO del sistema
- * alias: Crumen
- * Password: Crumen.*
+ * 
+ * NOTA DE SEGURIDAD: Las credenciales están hardcodeadas según los requisitos
+ * del sistema. Este es un usuario administrativo especial con credenciales
+ * predefinidas para acceso de emergencia o configuración inicial.
+ * 
+ * Credenciales:
+ * - alias: Crumen
+ * - Password: Crumen.*
  */
 const createSuperuser = async () => {
   try {
+    // Credenciales predefinidas según requisitos del sistema
     const superuserAlias = 'Crumen';
     const superuserPassword = 'Crumen.*';
     
@@ -77,11 +84,16 @@ const createSuperuser = async () => {
     console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('📝 Credenciales del SUPERUSUARIO:');
     console.log(`   Usuario: ${superuserAlias}`);
-    console.log(`   Password: ${superuserPassword}`);
+    console.log(`   Password: ${superuserPassword.replace(/./g, '*')}`);
+    console.log('   (Consultar documentación para la contraseña completa)');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error('❌ Error al crear/actualizar SUPERUSUARIO');
+    if (error instanceof Error) {
+      console.error('Detalles:', error.message);
+    }
+    process.exit(1);
   } finally {
     await pool.end();
   }
