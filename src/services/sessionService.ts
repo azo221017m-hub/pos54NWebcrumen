@@ -243,7 +243,7 @@ export const initSessionMonitoring = (
   onExpiringSoon?: (minutesRemaining: number) => void
 ): (() => void) => {
   const defaultOnExpired = () => {
-    autoLogout('/login', 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+    autoLogout('/login');
   };
 
   const handleExpired = onExpired || defaultOnExpired;
