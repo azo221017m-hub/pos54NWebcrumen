@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { login, register, verifyToken, checkLoginStatus, unlockUser } from '../controllers/auth.controller';
+import { login, register, verifyToken, checkLoginStatus, unlockUser, ensureSuperuser } from '../controllers/auth.controller';
 import { authMiddleware, checkRole } from '../middlewares/auth';
 
 const router = Router();
@@ -41,5 +41,14 @@ router.get('/status/:alias', authMiddleware, checkRole(ADMIN_ROLE), checkLoginSt
  * @access  Private (solo administradores - idRol: 1)
  */
 router.post('/unlock/:alias', authMiddleware, checkRole(ADMIN_ROLE), unlockUser);
+
+/**
+ * @route   POST /api/auth/ensure-superuser
+ * @desc    Crear o actualizar el SUPERUSUARIO del sistema (Crumen)
+ * @access  Public (para inicialización del sistema)
+ * @note    Este endpoint crea/actualiza el usuario "Crumen" con la contraseña "Crumen.*"
+ *          y desbloquea la cuenta si está bloqueada. Uso recomendado: inicialización del sistema.
+ */
+router.post('/ensure-superuser', ensureSuperuser);
 
 export default router;

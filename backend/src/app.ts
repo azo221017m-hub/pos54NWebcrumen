@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import path from 'path';
 import { cacheMiddleware } from './middlewares/cache';
 
 // Importar rutas
@@ -70,6 +71,9 @@ app.use(cacheMiddleware);
 
 app.use(express.json({ limit: '10mb' })); // Parser JSON con límite aumentado
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Servir archivos estáticos desde la carpeta public
+app.use('/public', express.static(path.join(__dirname, '../public')));
 
 // Ruta raíz - Información de la API
 app.get('/', (_req: Request, res: Response) => {
