@@ -28,6 +28,8 @@ const getUsuarioFromStorage = (): Usuario | null => {
   return usuarioData ? JSON.parse(usuarioData) : null;
 };
 
+const TIPO_VENTA_FILTER_ALL = 'TODOS' as const;
+
 const formatTime = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -101,7 +103,7 @@ export const DashboardPage = () => {
   const [isScreenLocked, setIsScreenLocked] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [ventasSolicitadas, setVentasSolicitadas] = useState<VentaWebWithDetails[]>([]);
-  const [tipoVentaFilter, setTipoVentaFilter] = useState<TipoDeVenta | 'TODOS'>('TODOS');
+  const [tipoVentaFilter, setTipoVentaFilter] = useState<TipoDeVenta | typeof TIPO_VENTA_FILTER_ALL>(TIPO_VENTA_FILTER_ALL);
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
@@ -752,10 +754,10 @@ export const DashboardPage = () => {
                   <select 
                     id="tipo-venta-filter"
                     value={tipoVentaFilter}
-                    onChange={(e) => setTipoVentaFilter(e.target.value as TipoDeVenta | 'TODOS')}
+                    onChange={(e) => setTipoVentaFilter(e.target.value as TipoDeVenta | typeof TIPO_VENTA_FILTER_ALL)}
                     className="tipo-venta-filter-select"
                   >
-                    <option value="TODOS">Todos</option>
+                    <option value={TIPO_VENTA_FILTER_ALL}>Todos</option>
                     <option value="LLEVAR">Llevar</option>
                     <option value="DOMICILIO">Domicilio</option>
                     <option value="MESA">Mesa</option>
@@ -771,14 +773,14 @@ export const DashboardPage = () => {
                   Ventas Solicitadas
                 </h3>
                 <span className="badge badge-warning">
-                  {tipoVentaFilter === 'TODOS' 
+                  {tipoVentaFilter === TIPO_VENTA_FILTER_ALL 
                     ? ventasSolicitadas.length 
                     : ventasSolicitadas.filter(v => v.tipodeventa === tipoVentaFilter).length}
                 </span>
               </div>
               <div className="ventas-solicitadas-grid">
                 {ventasSolicitadas
-                  .filter(venta => tipoVentaFilter === 'TODOS' || venta.tipodeventa === tipoVentaFilter)
+                  .filter(venta => tipoVentaFilter === TIPO_VENTA_FILTER_ALL || venta.tipodeventa === tipoVentaFilter)
                   .map((venta) => (
                   <div key={venta.idventa} className="venta-solicitada-card">
                     <div className="venta-card-header">
