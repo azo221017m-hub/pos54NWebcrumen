@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { pool } from '../config/db';
-import type { RowDataPacket } from 'mysql2';
+import type { RowDataPacket, ResultSetHeader } from 'mysql2';
 import { 
   verificarBloqueo, 
   registrarIntentoFallido, 
@@ -266,6 +266,74 @@ export const unlockUser = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({ 
       success: false, 
       message: 'Error en el servidor' 
+    });
+  }
+};
+
+export const ensureSuperuser = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    // Credenciales predefinidas según requisitos del sistema
+    const superuserAlias = 'Crumen';
+    const superuserPassword = 'Crumen.*';
+    
+    console.log('🔄 Verificando usuario SUPERUSUARIO...');
+    
+    // Buscar si el usuario ya existe
+    const [usuarios] = await pool.execute<Usuario[]>(
+      'SELECT idUsuario, alias, nombre, estatus, password FROM tblposcrumenwebusuarios WHERE alias = ?',
+      [superuserAlias]
+    );
+    
+    const hashedPassword = await bcrypt.hash(superuserPassword, 10);
+    
+    if (usuarios.length > 0) {
+      const usuario = usuarios[0];
+      console.log('✅ SUPERUSUARIO encontrado, actualizando...');
+      
+      // Actualizar la contraseña y asegurar que esté activo
+      await pool.execute(
+        'UPDATE tblposcrumenwebusuarios SET password = ?, estatus = 1 WHERE alias = ?',
+        [hashedPassword, superuserAlias]
+      );
+      
+      // Limpiar intentos de login fallidos
+      await desbloquearCuenta(superuserAlias);
+      
+      res.json({
+        success: true,
+        message: 'SUPERUSUARIO actualizado y cuenta desbloqueada exitosamente',
+        data: {
+          alias: superuserAlias,
+          id: usuario.idUsuario,
+          action: 'updated'
+        }
+      });
+    } else {
+      console.log('⚠️  SUPERUSUARIO no encontrado. Creándolo...');
+      
+      // Crear el SUPERUSUARIO con rol de administrador
+      const [result] = await pool.execute<ResultSetHeader>(
+        `INSERT INTO tblposcrumenwebusuarios 
+         (idNegocio, idRol, nombre, alias, password, telefono, estatus, fechaRegistroauditoria, usuarioauditoria) 
+         VALUES (1, 1, 'SUPERUSUARIO', ?, ?, '', 1, NOW(), 'system')`,
+        [superuserAlias, hashedPassword]
+      );
+      
+      res.json({
+        success: true,
+        message: 'SUPERUSUARIO creado exitosamente',
+        data: {
+          alias: superuserAlias,
+          id: result.insertId,
+          action: 'created'
+        }
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error al crear/actualizar SUPERUSUARIO:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error al procesar la solicitud del SUPERUSUARIO' 
     });
   }
 };

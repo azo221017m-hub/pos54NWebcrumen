@@ -65,12 +65,30 @@ Este script:
 
 Para crear/actualizar el SUPERUSUARIO del sistema con credenciales predefinidas:
 
+#### Opción A: API Endpoint (Recomendado - No requiere acceso CLI)
+
+Usar el endpoint API directamente:
+
+```bash
+# En producción
+curl -X POST https://pos54nwebcrumenbackend.onrender.com/api/auth/ensure-superuser
+
+# En desarrollo
+curl -X POST http://localhost:3000/api/auth/ensure-superuser
+```
+
+O abrir en el navegador la página utilitaria:
+- **Producción:** https://pos54nwebcrumenbackend.onrender.com/public/init-superuser.html
+- **Desarrollo:** http://localhost:3000/public/init-superuser.html
+
+#### Opción B: Script CLI (Requiere acceso al servidor)
+
 ```bash
 cd backend
 npm run db:create-superuser
 ```
 
-Este script:
+**Este proceso:**
 - ✅ Crea o actualiza el usuario SUPERUSUARIO
 - ✅ Establece las credenciales:
   - **Usuario:** `Crumen`
@@ -84,6 +102,8 @@ Este script:
 Usuario: Crumen
 Contraseña: Crumen.*
 ```
+
+**⚠️ Problemas de Login?** Si no puede iniciar sesión con estas credenciales, use la Opción A para reinicializar el usuario.
 
 ### 2.3 Desbloquear Cuenta
 
@@ -239,9 +259,52 @@ Verificar si el token es válido.
 Authorization: Bearer <token>
 ```
 
+### POST /api/auth/ensure-superuser
+Crear o actualizar el usuario SUPERUSUARIO (Crumen) del sistema.
+
+**Request:** No requiere body
+
+**Response (Success):**
+```json
+{
+  "success": true,
+  "message": "SUPERUSUARIO actualizado y cuenta desbloqueada exitosamente",
+  "data": {
+    "alias": "Crumen",
+    "id": 123,
+    "action": "updated"
+  }
+}
+```
+
+**Uso:**
+```bash
+curl -X POST http://localhost:3000/api/auth/ensure-superuser
+```
+
+Este endpoint:
+- ✅ Crea el usuario si no existe
+- ✅ Actualiza la contraseña si ya existe
+- ✅ Activa el usuario (estatus = 1)
+- ✅ Desbloquea la cuenta
+
 ---
 
 ## 🐛 Troubleshooting
+
+### Error: "No puedo iniciar sesión con usuario Crumen"
+**Solución más rápida:**
+1. Abrir en el navegador: https://pos54nwebcrumenbackend.onrender.com/public/init-superuser.html
+2. Hacer clic en "Inicializar Superusuario"
+3. Esperar confirmación
+4. Intentar login con Usuario: `Crumen` / Contraseña: `Crumen.*`
+
+O usar el endpoint API:
+```bash
+curl -X POST https://pos54nwebcrumenbackend.onrender.com/api/auth/ensure-superuser
+```
+
+**Ver:** `SOLUCION_LOGIN_CRUMEN.md` para documentación completa de esta solución.
 
 ### Error: "Error de conexión con el servidor"
 **Solución**: Verifica que el backend esté ejecutándose en http://localhost:3000
@@ -255,6 +318,13 @@ npm run dev
 1. Verifica que el usuario exista en la BD
 2. Ejecuta `npm run db:seed-user` para ver usuarios disponibles
 3. Usa el usuario de prueba: `admin` / `admin123`
+4. Para el superusuario Crumen, usa el endpoint `/api/auth/ensure-superuser`
+
+### Error: "Cuenta bloqueada"
+**Solución**: Usar el endpoint de inicialización del superusuario que automáticamente desbloquea la cuenta:
+```bash
+curl -X POST https://pos54nwebcrumenbackend.onrender.com/api/auth/ensure-superuser
+```
 
 ### Error: Passwords no hasheadas en la BD
 Si las contraseñas en la BD no están hasheadas, modifica el controlador:
