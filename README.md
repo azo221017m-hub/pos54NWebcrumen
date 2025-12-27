@@ -20,6 +20,7 @@ Frontend de la aplicación POS54N Web Crumen desarrollado con React, TypeScript 
 
 ### Seguridad y Autenticación
 - [🔐 **Authentication Guide**](./AUTHENTICATION_GUIDE.md) - Sistema de autenticación
+- [🔐 **Solución Login Crumen**](./SOLUCION_LOGIN_CRUMEN.md) - ⚠️ Solución para problemas de login con usuario Crumen
 - [🔐 **Sistema de Auditoría de Login**](./SISTEMA_AUDITORIA_LOGIN.md) - Auditoría completa
 - [🔐 **Sistema de Sesiones**](./SISTEMA_SESIONES.md) - Gestión de sesiones JWT
 - [🔐 **Comportamiento de Expiración**](./COMPORTAMIENTO_EXPIRACION_SESION.md) - Sesiones con pantalla bloqueada
