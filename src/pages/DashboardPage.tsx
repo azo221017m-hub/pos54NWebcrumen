@@ -371,7 +371,7 @@ export const DashboardPage = () => {
                   </div>
                 </div>
                 <div className="dropdown-divider"></div>
-                <button className="dropdown-item logout-item" onClick={handleLogout}>
+                <button className="dropdown-item logout-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleLogout(); }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                     <polyline points="16 17 21 12 16 7"/>
@@ -400,7 +400,9 @@ export const DashboardPage = () => {
         <div className="nav-item-container">
           <button 
             className={`nav-item ${showDashboardSubmenu ? 'active' : ''}`}
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               setShowDashboardSubmenu(!showDashboardSubmenu);
               setShowConfigSubmenu(false); // Cerrar otros menús
             }}
@@ -431,7 +433,9 @@ export const DashboardPage = () => {
             <div className="submenu">
               <button 
                 className="submenu-item"
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   setIsScreenLocked(true);
                   setShowDashboardSubmenu(false);
                   setMobileMenuOpen(false);
@@ -451,7 +455,9 @@ export const DashboardPage = () => {
         <div className="nav-item-container">
           <button 
             className={`nav-item ${showConfigSubmenu ? 'active' : ''}`}
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               setShowConfigSubmenu(!showConfigSubmenu);
               setShowDashboardSubmenu(false); // Cerrar otros menús
             }}
@@ -479,7 +485,7 @@ export const DashboardPage = () => {
           {/* Submenú */}
           {showConfigSubmenu && (
             <div className="submenu">
-              <button className="submenu-item" onClick={() => { navigate('/config-negocios'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-negocios'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="3" width="7" height="7" />
                   <rect x="14" y="3" width="7" height="7" />
@@ -488,7 +494,7 @@ export const DashboardPage = () => {
                 </svg>
                 Negocios
               </button>
-              <button className="submenu-item" onClick={() => { navigate('/config-roles'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-roles'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                   <circle cx="9" cy="7" r="4"/>
@@ -497,7 +503,7 @@ export const DashboardPage = () => {
                 </svg>
                 Rol de Usuarios
               </button>
-              <button className="submenu-item" onClick={() => { navigate('/config-usuarios'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-usuarios'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                   <circle cx="8.5" cy="7" r="4"/>
@@ -506,7 +512,7 @@ export const DashboardPage = () => {
                 </svg>
                 Usuarios
               </button>
-              <button className="submenu-item" onClick={() => { navigate('/config-um-compra'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-um-compra'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                   <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
@@ -514,7 +520,7 @@ export const DashboardPage = () => {
                 </svg>
                 Unidades de Medida
               </button>
-              <button className="submenu-item" onClick={() => { navigate('/config-insumos'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-insumos'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="3" width="18" height="18" rx="3" />
                   <path d="M8 12h8" />
@@ -522,7 +528,7 @@ export const DashboardPage = () => {
                 </svg>
                 Insumos
               </button>
-              <button className="submenu-item" onClick={() => { navigate('/config-clientes'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-clientes'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                   <circle cx="9" cy="7" r="4"/>
@@ -531,7 +537,7 @@ export const DashboardPage = () => {
                 </svg>
                 Clientes
               </button>
-              <button className="submenu-item" onClick={() => { navigate('/config-cuentas-contables'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-cuentas-contables'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                   <polyline points="14 2 14 8 20 8"/>
@@ -540,13 +546,13 @@ export const DashboardPage = () => {
                 </svg>
                 Cuentas Contables
               </button>
-              <button className="submenu-item" onClick={() => { navigate('/config-moderadores'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-moderadores'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                 </svg>
                 Moderadores
               </button>
-              <button className="submenu-item" onClick={() => { navigate('/config-subrecetas'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-subrecetas'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
                   <line x1="3" y1="6" x2="21" y2="6"/>
@@ -554,7 +560,7 @@ export const DashboardPage = () => {
                 </svg>
                 SubRecetas
               </button>
-              <button className="submenu-item" onClick={() => { navigate('/config-recetas'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-recetas'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
                   <path d="M7 2v20"/>
@@ -562,7 +568,7 @@ export const DashboardPage = () => {
                 </svg>
                 Recetas
               </button>
-              <button className="submenu-item" onClick={() => { navigate('/config-categorias'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-categorias'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 2H2v10h10V2z"/>
                   <path d="M22 2h-10v10h10V2z"/>
@@ -571,7 +577,7 @@ export const DashboardPage = () => {
                 </svg>
                 Categorías
               </button>
-              <button className="submenu-item" onClick={() => { navigate('/config-cat-moderadores'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-cat-moderadores'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                   <circle cx="9" cy="7" r="4"/>
@@ -580,7 +586,7 @@ export const DashboardPage = () => {
                 </svg>
                 Categoría Moderadores
               </button>
-              <button className="submenu-item" onClick={() => { navigate('/config-mesas'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-mesas'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="8" width="18" height="12" rx="2"/>
                   <circle cx="8" cy="16" r="2"/>
@@ -590,7 +596,7 @@ export const DashboardPage = () => {
                 </svg>
                 Mesas
               </button>
-              <button className="submenu-item" onClick={() => { navigate('/config-descuentos'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-descuentos'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10"/>
                   <path d="M9 9l6 6"/>
@@ -598,14 +604,14 @@ export const DashboardPage = () => {
                 </svg>
                 Descuentos
               </button>
-              <button className="submenu-item" onClick={() => { navigate('/config-productos'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-productos'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="2" y="7" width="20" height="15" rx="2"/>
                   <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
                 </svg>
                 Productos
               </button>
-              <button className="submenu-item" onClick={() => { navigate('/config-proveedores'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-proveedores'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 18H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.19M15 6h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2"/>
                   <path d="M14 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
@@ -615,7 +621,7 @@ export const DashboardPage = () => {
                 </svg>
                 Proveedores
               </button>
-              <button className="submenu-item" onClick={() => { navigate('/ventas'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/ventas'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="9" cy="21" r="1"/>
                   <circle cx="20" cy="21" r="1"/>
@@ -627,14 +633,14 @@ export const DashboardPage = () => {
           )}
         </div>
 
-        <button className="nav-item" onClick={() => { navigate('/config-productos'); setMobileMenuOpen(false); }}>
+        <button className="nav-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-productos'); setMobileMenuOpen(false); }}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="2" y="7" width="20" height="15" rx="2"/>
             <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
           </svg>
           Productos
         </button>
-        <button className="nav-item" onClick={() => { navigate('/ventas'); setMobileMenuOpen(false); }}>
+        <button className="nav-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/ventas'); setMobileMenuOpen(false); }}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="9" cy="21" r="1"/>
             <circle cx="20" cy="21" r="1"/>
