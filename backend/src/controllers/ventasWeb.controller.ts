@@ -196,7 +196,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       [
         ventaData.tipodeventa,
         folioventa,
-        'SOLICITADO', // Estado inicial
+        ventaData.estadodeventa || 'SOLICITADO', // Estado inicial o proporcionado
         ventaData.fechaprogramadaventa || null,
         subtotal,
         descuentos,
@@ -243,8 +243,8 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
           cantidad, preciounitario, costounitario, subtotal, descuento,
           impuesto, total, afectainventario, tipoafectacion, 
           inventarioprocesado, fechadetalleventa, estadodetalle, 
-          observaciones, idnegocio, usuarioauditoria, fechamodificacionauditoria
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, NOW())`,
+          observaciones, moderadores, idnegocio, usuarioauditoria, fechamodificacionauditoria
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, NOW())`,
         [
           ventaId,
           detalle.idproducto,
@@ -261,8 +261,9 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
           afectainventario,
           tipoafectacion,
           0, // inventario no procesado inicialmente
-          'ORDENADO', // Estado inicial
+          ventaData.estadodetalle || 'ORDENADO', // Estado inicial o proporcionado
           detalle.observaciones || null,
+          detalle.moderadores || null,
           idnegocio,
           usuarioauditoria
         ]

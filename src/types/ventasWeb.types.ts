@@ -1,11 +1,11 @@
 // Tipos para tblposcrumenwebventas y tblposcrumenwebdetalleventas - Frontend
 
 export type TipoDeVenta = 'DOMICILIO' | 'LLEVAR' | 'MESA' | 'ONLINE';
-export type EstadoDeVenta = 'SOLICITADO' | 'LEIDO' | 'PREPARANDO' | 'EN_CAMINO' | 'ENTREGADO' | 'CANCELADO' | 'DEVUELTO' | 'COBRADO';
+export type EstadoDeVenta = 'SOLICITADO' | 'LEIDO' | 'PREPARANDO' | 'EN_CAMINO' | 'ENTREGADO' | 'CANCELADO' | 'DEVUELTO' | 'COBRADO' | 'ESPERAR';
 export type FormaDePago = 'EFECTIVO' | 'TARJETA' | 'TRANSFERENCIA' | 'MIXTO';
 export type EstatusDePago = 'PENDIENTE' | 'PAGADO' | 'PARCIAL';
 export type TipoAfectacion = 'DIRECTO' | 'RECETA' | 'NO_APLICA';
-export type EstadoDetalle = 'ORDENADO' | 'CANCELADO' | 'DEVUELTO' | 'PREPARACION' | 'COBRADO';
+export type EstadoDetalle = 'ORDENADO' | 'CANCELADO' | 'DEVUELTO' | 'PREPARACION' | 'COBRADO' | 'ESPERAR';
 
 export interface VentaWeb {
   idventa: number;
@@ -54,6 +54,7 @@ export interface DetalleVentaWeb {
   fechadetalleventa: Date | string;
   estadodetalle: EstadoDetalle;
   observaciones: string | null;
+  moderadores: string | null;
   idnegocio: number;
   usuarioauditoria: string;
   fechamodificacionauditoria: Date | string;
@@ -67,6 +68,8 @@ export interface VentaWebCreate {
   telefonodeentrega?: string | null;
   formadepago: FormaDePago;
   fechaprogramadaventa?: Date | string | null;
+  estadodeventa?: EstadoDeVenta;
+  estadodetalle?: EstadoDetalle;
   detalles: DetalleVentaWebCreate[];
 }
 
@@ -79,6 +82,7 @@ export interface DetalleVentaWebCreate {
   preciounitario: number;
   costounitario: number;
   observaciones?: string | null;
+  moderadores?: string | null;
 }
 
 export interface VentaWebUpdate {
