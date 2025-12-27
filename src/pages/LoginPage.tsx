@@ -60,8 +60,7 @@ export const LoginPage = () => {
     
     // If no user exists, automatically create mock user for development
     // This simulates an auto-login for prototype/development purposes
-    let loginTimer: ReturnType<typeof setTimeout> | null = null;
-    loginTimer = setTimeout(() => {
+    const loginTimer = setTimeout(() => {
       // Create mock token to prevent 401 errors
       const mockToken = createMockToken();
       
@@ -74,9 +73,7 @@ export const LoginPage = () => {
     }, AUTO_LOGIN_DELAY_MS);
     
     return () => {
-      if (loginTimer) {
-        clearTimeout(loginTimer);
-      }
+      clearTimeout(loginTimer);
     };
   }, [navigate]);
 
