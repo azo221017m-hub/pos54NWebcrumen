@@ -56,6 +56,8 @@ const PageVentas: React.FC = () => {
   const [llevarData, setLlevarData] = useState<LlevarFormData | null>(null);
   const [domicilioData, setDomicilioData] = useState<DomicilioFormData | null>(null);
   const [isServiceConfigured, setIsServiceConfigured] = useState(false);
+  const [isLoadedFromDashboard, setIsLoadedFromDashboard] = useState(false);
+
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -139,6 +141,7 @@ const PageVentas: React.FC = () => {
       
       setTipoServicio(tipoServicioMap[ventaToLoad.tipodeventa] || 'Mesa');
       setIsServiceConfigured(true);
+      setIsLoadedFromDashboard(true);
 
       // Load products into comanda
       const itemsComanda: ItemComanda[] = ventaToLoad.detalles.map(detalle => ({
@@ -495,18 +498,21 @@ const PageVentas: React.FC = () => {
               <button 
                 className={`btn-tipo-servicio ${tipoServicio === 'Domicilio' ? 'active' : ''}`}
                 onClick={() => handleTipoServicioClick('Domicilio')}
+                disabled={isLoadedFromDashboard}
               >
                 Domicilio
               </button>
               <button 
                 className={`btn-tipo-servicio ${tipoServicio === 'Llevar' ? 'active' : ''}`}
                 onClick={() => handleTipoServicioClick('Llevar')}
+                disabled={isLoadedFromDashboard}
               >
                 Llevar
               </button>
               <button 
                 className={`btn-tipo-servicio ${tipoServicio === 'Mesa' ? 'active' : ''}`}
                 onClick={() => handleTipoServicioClick('Mesa')}
+                disabled={isLoadedFromDashboard}
               >
                 Mesa
               </button>

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { obtenerVentasWeb, actualizarVentaWeb } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import jsPDF from 'jspdf';
@@ -27,6 +27,9 @@ const getUsuarioFromStorage = (): Usuario | null => {
   const usuarioData = localStorage.getItem('usuario');
   return usuarioData ? JSON.parse(usuarioData) : null;
 };
+
+const TIPO_VENTA_FILTER_ALL = 'TODOS' as const;
+type TipoVentaFilterOption = TipoDeVenta | typeof TIPO_VENTA_FILTER_ALL;
 
 const formatTime = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
@@ -101,6 +104,7 @@ export const DashboardPage = () => {
   const [isScreenLocked, setIsScreenLocked] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [ventasSolicitadas, setVentasSolicitadas] = useState<VentaWebWithDetails[]>([]);
+  const [tipoVentaFilter, setTipoVentaFilter] = useState<TipoVentaFilterOption>(TIPO_VENTA_FILTER_ALL);
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
@@ -256,6 +260,14 @@ export const DashboardPage = () => {
     // Navigate to sales page with the sale data
     navigate('/ventas', { state: { ventaToLoad: venta } });
   };
+
+  // Memoize filtered ventas to avoid redundant filtering
+  const ventasFiltradas = useMemo(() => {
+    if (tipoVentaFilter === TIPO_VENTA_FILTER_ALL) {
+      return ventasSolicitadas;
+    }
+    return ventasSolicitadas.filter(v => v.tipodeventa === tipoVentaFilter);
+  }, [ventasSolicitadas, tipoVentaFilter]);
 
   useEffect(() => {
     // Verificar si hay usuario
@@ -745,6 +757,23 @@ export const DashboardPage = () => {
           {ventasSolicitadas.length > 0 && (
             <div className="ventas-solicitadas-section">
               <div className="section-header">
+                {/* Filter by Tipo de Venta */}
+                <div className="tipo-venta-filter">
+                  <label htmlFor="tipo-venta-filter">Tipo:</label>
+                  <select 
+                    id="tipo-venta-filter"
+                    value={tipoVentaFilter}
+                    onChange={(e) => setTipoVentaFilter(e.target.value as TipoVentaFilterOption)}
+                    className="tipo-venta-filter-select"
+                  >
+                    <option value={TIPO_VENTA_FILTER_ALL}>Todos</option>
+                    <option value="LLEVAR">Llevar</option>
+                    <option value="DOMICILIO">Domicilio</option>
+                    <option value="MESA">Mesa</option>
+                    <option value="ONLINE">Online</option>
+                  </select>
+                </div>
+                
                 <h3 className="section-title">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="9" cy="21" r="1"/>
@@ -753,10 +782,12 @@ export const DashboardPage = () => {
                   </svg>
                   Ventas Solicitadas
                 </h3>
-                <span className="badge badge-warning">{ventasSolicitadas.length}</span>
+                <span className="badge badge-warning">
+                  {ventasFiltradas.length}
+                </span>
               </div>
               <div className="ventas-solicitadas-grid">
-                {ventasSolicitadas.map((venta) => (
+                {ventasFiltradas.map((venta) => (
                   <div key={venta.idventa} className="venta-solicitada-card">
                     <div className="venta-card-header">
                       <span className="venta-folio">{venta.folioventa}</span>
@@ -776,7 +807,7 @@ export const DashboardPage = () => {
                         {venta.cliente}
                       </p>
                       <p className="venta-items">
-                        <strong>{venta.detalles?.reduce((sum, d) => sum + d.cantidad, 0) || 0}</strong> producto(s)
+                        <strong>{venta.detalles?.reduce((sum, d) => sum + Number(d.cantidad), 0) || 0}</strong> producto(s)
                       </p>
                       
                       {/* Status selector */}

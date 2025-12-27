@@ -199,6 +199,20 @@
   background: #e9ecef;
 }
 
+.btn-tipo-servicio:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-tipo-servicio:disabled:hover {
+  background: transparent;
+}
+
+.btn-tipo-servicio.active:disabled {
+  background: #3498db;
+  opacity: 0.8;
+}
+
 .search-bar {
   flex: 1;
   display: flex;
