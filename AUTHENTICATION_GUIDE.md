@@ -61,7 +61,31 @@ Este script:
 
 **Nota:** La contraseña debe proporcionarse mediante variable de entorno por seguridad.
 
-### 2.2 Desbloquear Cuenta
+### 2.2 SUPERUSUARIO (Crumen)
+
+Para crear/actualizar el SUPERUSUARIO del sistema con credenciales predefinidas:
+
+```bash
+cd backend
+npm run db:create-superuser
+```
+
+Este script:
+- ✅ Crea o actualiza el usuario SUPERUSUARIO
+- ✅ Establece las credenciales:
+  - **Usuario:** `Crumen`
+  - **Contraseña:** `Crumen.*`
+- ✅ Asigna rol de Administrador (idRol = 1)
+- ✅ Activa el usuario (estatus = 1)
+- ✅ Limpia el historial de intentos de login fallidos
+
+**Uso para login:**
+```
+Usuario: Crumen
+Contraseña: Crumen.*
+```
+
+### 2.3 Desbloquear Cuenta
 
 Si una cuenta está bloqueada por múltiples intentos fallidos:
 
