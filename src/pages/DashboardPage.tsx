@@ -270,7 +270,8 @@ export const DashboardPage = () => {
 
     // Load sales with SOLICITADO status
     cargarVentasSolicitadas();
-  }, [usuario, navigate, cargarVentasSolicitadas]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usuario, navigate]);
 
   if (!usuario) {
     return null;
