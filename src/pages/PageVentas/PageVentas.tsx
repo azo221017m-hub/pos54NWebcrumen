@@ -14,7 +14,7 @@ import type { Usuario } from '../../types/usuario.types';
 import type { Negocio } from '../../types/negocio.types';
 import type { Categoria } from '../../types/categoria.types';
 import type { TipoServicio } from '../../types/mesa.types';
-import type { VentaWebCreate, VentaWebWithDetails, TipoDeVenta } from '../../types/ventasWeb.types';
+import type { VentaWebCreate, VentaWebWithDetails, TipoDeVenta, EstadoDeVenta, EstadoDetalle } from '../../types/ventasWeb.types';
 import type { Moderador } from '../../types/moderador.types';
 import type { CatModerador } from '../../types/catModerador.types';
 import './PageVentas.css';
@@ -288,7 +288,7 @@ const PageVentas: React.FC = () => {
     }, 0);
   };
 
-  const crearVenta = async (estadodeventa?: 'SOLICITADO' | 'ESPERAR', estadodetalle?: 'ORDENADO' | 'ESPERAR') => {
+  const crearVenta = async (estadodeventa: EstadoDeVenta = 'SOLICITADO', estadodetalle: EstadoDetalle = 'ORDENADO') => {
     // Lógica común para crear ventas
     if (comanda.length === 0) {
       alert('No hay productos en la comanda');
@@ -424,6 +424,19 @@ const PageVentas: React.FC = () => {
 
     setShowModModal(false);
     setSelectedProductoIdForMod(null);
+  };
+
+  const handleModeradorToggle = (moderadorId: number, isChecked: boolean) => {
+    if (selectedProductoIdForMod === null) return;
+    
+    const currentItem = comanda.find(i => i.producto.idProducto === selectedProductoIdForMod);
+    const currentMods = currentItem?.moderadores?.split(',').map(Number) || [];
+    
+    const newMods = isChecked
+      ? [...currentMods, moderadorId]
+      : currentMods.filter(id => id !== moderadorId);
+    
+    handleModeradorSelection(newMods);
   };
 
   const getAvailableModeradores = (idProducto: number): Moderador[] => {
@@ -809,12 +822,7 @@ const PageVentas: React.FC = () => {
                     <input
                       type="checkbox"
                       checked={isSelected}
-                      onChange={(e) => {
-                        const newMods = e.target.checked
-                          ? [...currentMods, mod.idmoderador]
-                          : currentMods.filter(id => id !== mod.idmoderador);
-                        handleModeradorSelection(newMods);
-                      }}
+                      onChange={(e) => handleModeradorToggle(mod.idmoderador, e.target.checked)}
                     />
                     <span>{mod.nombremoderador}</span>
                   </label>
