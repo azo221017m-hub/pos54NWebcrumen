@@ -5,6 +5,7 @@ import './LoginPage.css';
 
 // Constants for mock authentication (development/prototype only)
 const AUTO_LOGIN_DELAY_MS = 1500;
+const MOCK_TOKEN_EXPIRY_SECONDS = 365 * 24 * 60 * 60; // 1 year
 const MOCK_USER_DATA = {
   id: 1,
   alias: 'usuario',
@@ -29,7 +30,7 @@ const createMockToken = () => {
     idNegocio: MOCK_USER_DATA.idNegocio,
     idRol: MOCK_USER_DATA.idRol,
     iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60) // Expires in 1 year
+    exp: Math.floor(Date.now() / 1000) + MOCK_TOKEN_EXPIRY_SECONDS
   }));
   const signature = btoa('mock-signature-dev-only');
   return `${header}.${payload}.${signature}`;
@@ -59,7 +60,8 @@ export const LoginPage = () => {
     
     // If no user exists, automatically create mock user for development
     // This simulates an auto-login for prototype/development purposes
-    const loginTimer = setTimeout(() => {
+    let loginTimer: ReturnType<typeof setTimeout> | null = null;
+    loginTimer = setTimeout(() => {
       // Create mock token to prevent 401 errors
       const mockToken = createMockToken();
       
@@ -71,7 +73,11 @@ export const LoginPage = () => {
       navigate('/dashboard');
     }, AUTO_LOGIN_DELAY_MS);
     
-    return () => clearTimeout(loginTimer);
+    return () => {
+      if (loginTimer) {
+        clearTimeout(loginTimer);
+      }
+    };
   }, [navigate]);
 
   return (
