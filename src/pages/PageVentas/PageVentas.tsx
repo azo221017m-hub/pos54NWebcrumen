@@ -131,7 +131,20 @@ const PageVentas: React.FC = () => {
       setModeradores(mods.filter(m => m.estatus === ESTATUS_ACTIVO));
       
       const catMods = await obtenerModeradoresRef(idNegocio);
-      setCatModeradores(catMods.filter(cm => cm.estatus === ESTATUS_ACTIVO));
+      // Map ModeradorRef to CatModerador format
+      const mappedCatMods = catMods
+        .filter(cm => cm.estatus === ESTATUS_ACTIVO)
+        .map(cm => ({
+          idmodref: cm.idmoderadorref,
+          nombremodref: cm.nombremodref,
+          fechaRegistroauditoria: cm.fechaRegistroauditoria,
+          usuarioauditoria: cm.usuarioauditoria,
+          fehamodificacionauditoria: cm.fehamodificacionauditoria,
+          idnegocio: cm.idnegocio,
+          estatus: cm.estatus,
+          moderadores: cm.moderadores || ''
+        }));
+      setCatModeradores(mappedCatMods);
     } catch (error) {
       console.error('Error al cargar moderadores:', error);
     }
@@ -274,11 +287,6 @@ const PageVentas: React.FC = () => {
         setComanda(comanda.filter(item => item.producto.idProducto !== producto.idProducto));
       }
     }
-  };
-
-  const obtenerCantidadEnComanda = (idProducto: number): number => {
-    const item = comanda.find(item => item.producto.idProducto === idProducto);
-    return item ? item.cantidad : 0;
   };
 
   const calcularTotal = (): number => {
@@ -685,9 +693,7 @@ const PageVentas: React.FC = () => {
 
           {/* Grid de productos - Show when service is configured */}
           <div className={`productos-grid ${!isServiceConfigured ? 'hidden' : ''}`}>
-            {productosVisibles.map((producto) => {
-              const cantidadEnComanda = obtenerCantidadEnComanda(producto.idProducto);
-              return (
+            {productosVisibles.map((producto) => (
                 <div key={producto.idProducto} className="producto-card">
                   <div className="producto-imagen">
                     {producto.imagenProducto ? (
@@ -718,8 +724,7 @@ const PageVentas: React.FC = () => {
                     </button>
                   </div>
                 </div>
-              );
-            })}
+              ))}
           </div>
 
           {productosVisibles.length === 0 && (
