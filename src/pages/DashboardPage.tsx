@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { obtenerVentasWeb, actualizarVentaWeb } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import jsPDF from 'jspdf';
@@ -259,6 +259,14 @@ export const DashboardPage = () => {
     // Navigate to sales page with the sale data
     navigate('/ventas', { state: { ventaToLoad: venta } });
   };
+
+  // Memoize filtered ventas to avoid redundant filtering
+  const ventasFiltradas = useMemo(() => {
+    if (tipoVentaFilter === TIPO_VENTA_FILTER_ALL) {
+      return ventasSolicitadas;
+    }
+    return ventasSolicitadas.filter(v => v.tipodeventa === tipoVentaFilter);
+  }, [ventasSolicitadas, tipoVentaFilter]);
 
   useEffect(() => {
     // Verificar si hay usuario
@@ -748,7 +756,7 @@ export const DashboardPage = () => {
           {ventasSolicitadas.length > 0 && (
             <div className="ventas-solicitadas-section">
               <div className="section-header">
-                {/* Filter by tipo de venta */}
+                {/* Filter by Tipo de Venta */}
                 <div className="tipo-venta-filter">
                   <label htmlFor="tipo-venta-filter">Tipo:</label>
                   <select 
@@ -773,15 +781,11 @@ export const DashboardPage = () => {
                   Ventas Solicitadas
                 </h3>
                 <span className="badge badge-warning">
-                  {tipoVentaFilter === TIPO_VENTA_FILTER_ALL 
-                    ? ventasSolicitadas.length 
-                    : ventasSolicitadas.filter(v => v.tipodeventa === tipoVentaFilter).length}
+                  {ventasFiltradas.length}
                 </span>
               </div>
               <div className="ventas-solicitadas-grid">
-                {ventasSolicitadas
-                  .filter(venta => tipoVentaFilter === TIPO_VENTA_FILTER_ALL || venta.tipodeventa === tipoVentaFilter)
-                  .map((venta) => (
+                {ventasFiltradas.map((venta) => (
                   <div key={venta.idventa} className="venta-solicitada-card">
                     <div className="venta-card-header">
                       <span className="venta-folio">{venta.folioventa}</span>
