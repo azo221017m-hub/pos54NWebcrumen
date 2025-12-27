@@ -1,7 +1,17 @@
 import { api } from './api';
 
+export interface Usuario {
+  id: number;
+  nombre: string;
+  alias: string;
+  telefono: string;
+  idNegocio: number;
+  idRol: number;
+  estatus: number;
+}
+
 export interface LoginRequest {
-  email: string;
+  alias: string;
   password: string;
 }
 
@@ -10,15 +20,7 @@ export interface LoginResponse {
   message: string;
   data?: {
     token: string;
-    usuario: {
-      id: number;
-      nombre: string;
-      alias: string;
-      telefono: string;
-      idNegocio: number;
-      idRol: number;
-      estatus: number;
-    };
+    usuario: Usuario;
   };
   bloqueado?: boolean;
   fechaBloqueado?: string;
@@ -40,7 +42,7 @@ export const authService = {
   login: async (alias: string, password: string): Promise<LoginResponse> => {
     try {
       const response = await api.post<LoginResponse>('/auth/login', {
-        email: alias, // El backend espera 'email' pero valida contra 'alias'
+        email: alias, // El backend espera el campo 'email' pero valida contra 'alias' en la BD
         password
       });
       return response.data;
@@ -56,7 +58,7 @@ export const authService = {
   /**
    * Almacena los datos del usuario y token en localStorage
    */
-  saveAuthData: (token: string, usuario: any) => {
+  saveAuthData: (token: string, usuario: Usuario) => {
     localStorage.setItem('token', token);
     localStorage.setItem('usuario', JSON.stringify(usuario));
   },
