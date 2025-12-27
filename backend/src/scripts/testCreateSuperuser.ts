@@ -7,7 +7,12 @@
 
 import axios from 'axios';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
+// Determinar URL del backend según entorno
+// En desarrollo usa HTTP localhost, en producción requiere BACKEND_URL configurado con HTTPS
+const BACKEND_URL = process.env.BACKEND_URL || 
+  (process.env.NODE_ENV === 'production' 
+    ? 'https://pos54nwebcrumenbackend.onrender.com' 
+    : 'http://localhost:3000');
 
 /**
  * Prueba del endpoint API para crear/actualizar SUPERUSUARIO
