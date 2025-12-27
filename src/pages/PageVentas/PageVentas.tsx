@@ -5,6 +5,8 @@ import { obtenerProductosWeb } from '../../services/productosWebService';
 import { negociosService } from '../../services/negociosService';
 import { obtenerCategorias } from '../../services/categoriasService';
 import { crearVentaWeb } from '../../services/ventasWebService';
+import { obtenerModeradores } from '../../services/moderadoresService';
+import { obtenerModeradoresRef } from '../../services/moderadoresRefService';
 import ModalTipoServicio from '../../components/ventas/ModalTipoServicio';
 import type { MesaFormData, LlevarFormData, DomicilioFormData } from '../../components/ventas/ModalTipoServicio';
 import type { ProductoWeb } from '../../types/productoWeb.types';
@@ -13,12 +15,16 @@ import type { Negocio } from '../../types/negocio.types';
 import type { Categoria } from '../../types/categoria.types';
 import type { TipoServicio } from '../../types/mesa.types';
 import type { VentaWebCreate, VentaWebWithDetails, TipoDeVenta } from '../../types/ventasWeb.types';
+import type { Moderador } from '../../types/moderador.types';
+import type { CatModerador } from '../../types/catModerador.types';
 import './PageVentas.css';
 
 interface ItemComanda {
   producto: ProductoWeb;
   cantidad: number;
   notas?: string;
+  moderadores?: string; // Comma-separated IDs
+  moderadoresNames?: string[]; // Array of names for display
 }
 
 // Constants
@@ -49,6 +55,12 @@ const PageVentas: React.FC = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<number | null>(null);
+  
+  // Moderadores states
+  const [moderadores, setModeradores] = useState<Moderador[]>([]);
+  const [catModeradores, setCatModeradores] = useState<CatModerador[]>([]);
+  const [showModModal, setShowModModal] = useState(false);
+  const [selectedProductoIdForMod, setSelectedProductoIdForMod] = useState<number | null>(null);
   
   // Modal states
   const [modalOpen, setModalOpen] = useState(false);
@@ -113,6 +125,18 @@ const PageVentas: React.FC = () => {
     }
   };
 
+  const cargarModeradores = async (idNegocio: number) => {
+    try {
+      const mods = await obtenerModeradores(idNegocio);
+      setModeradores(mods.filter(m => m.estatus === ESTATUS_ACTIVO));
+      
+      const catMods = await obtenerModeradoresRef(idNegocio);
+      setCatModeradores(catMods.filter(cm => cm.estatus === ESTATUS_ACTIVO));
+    } catch (error) {
+      console.error('Error al cargar moderadores:', error);
+    }
+  };
+
   // Cargar datos iniciales
   useEffect(() => {
     const usuarioData = localStorage.getItem('usuario');
@@ -123,6 +147,7 @@ const PageVentas: React.FC = () => {
       // Cargar datos del negocio del usuario
       if (user.idNegocio) {
         cargarNegocio(user.idNegocio);
+        cargarModeradores(user.idNegocio);
       }
     }
 
@@ -263,8 +288,8 @@ const PageVentas: React.FC = () => {
     }, 0);
   };
 
-  const handleProducir = async () => {
-    // Lógica para producir la comanda
+  const crearVenta = async (estadodeventa?: 'SOLICITADO' | 'ESPERAR', estadodetalle?: 'ORDENADO' | 'ESPERAR') => {
+    // Lógica común para crear ventas
     if (comanda.length === 0) {
       alert('No hay productos en la comanda');
       return;
@@ -277,15 +302,15 @@ const PageVentas: React.FC = () => {
 
     // Validar que se hayan configurado los datos del tipo de servicio
     if (tipoServicio === 'Mesa' && !mesaData) {
-      alert('Por favor configure los datos de la mesa antes de producir');
+      alert('Por favor configure los datos de la mesa antes de continuar');
       return;
     }
     if (tipoServicio === 'Llevar' && !llevarData) {
-      alert('Por favor configure los datos de entrega antes de producir');
+      alert('Por favor configure los datos de entrega antes de continuar');
       return;
     }
     if (tipoServicio === 'Domicilio' && !domicilioData) {
-      alert('Por favor configure los datos de domicilio antes de producir');
+      alert('Por favor configure los datos de domicilio antes de continuar');
       return;
     }
 
@@ -325,6 +350,8 @@ const PageVentas: React.FC = () => {
         contactodeentrega,
         telefonodeentrega,
         fechaprogramadaventa: fechaprogramadaventa || undefined,
+        estadodeventa: estadodeventa,
+        estadodetalle: estadodetalle,
         detalles: comanda.map(item => ({
           idproducto: item.producto.idProducto,
           nombreproducto: item.producto.nombre,
@@ -338,7 +365,8 @@ const PageVentas: React.FC = () => {
           cantidad: item.cantidad,
           preciounitario: Number(item.producto.precio),
           costounitario: Number(item.producto.costoproducto),
-          observaciones: item.notas || (tipoServicio === 'Domicilio' && domicilioData?.observaciones) || null
+          observaciones: item.notas || (tipoServicio === 'Domicilio' && domicilioData?.observaciones) || null,
+          moderadores: item.moderadores || null
         }))
       };
 
@@ -357,9 +385,68 @@ const PageVentas: React.FC = () => {
         alert(`Error al registrar la venta: ${resultado.message}`);
       }
     } catch (error) {
-      console.error('Error al producir comanda:', error);
+      console.error('Error al crear venta:', error);
       alert('Error al registrar la venta. Por favor, intente nuevamente.');
     }
+  };
+
+  const handleProducir = async () => {
+    await crearVenta('SOLICITADO', 'ORDENADO');
+  };
+
+  const handleEsperar = async () => {
+    await crearVenta('ESPERAR', 'ESPERAR');
+  };
+
+  const handleModClick = (idProducto: number) => {
+    setSelectedProductoIdForMod(idProducto);
+    setShowModModal(true);
+  };
+
+  const handleModeradorSelection = (selectedModeradores: number[]) => {
+    if (selectedProductoIdForMod === null) return;
+
+    // Get moderadores names
+    const modNames = selectedModeradores
+      .map(id => moderadores.find(m => m.idmoderador === id)?.nombremoderador)
+      .filter(Boolean) as string[];
+
+    // Update comanda item with moderadores
+    setComanda(comanda.map(item => 
+      item.producto.idProducto === selectedProductoIdForMod
+        ? { 
+            ...item, 
+            moderadores: selectedModeradores.join(','),
+            moderadoresNames: modNames
+          }
+        : item
+    ));
+
+    setShowModModal(false);
+    setSelectedProductoIdForMod(null);
+  };
+
+  const getAvailableModeradores = (idProducto: number): Moderador[] => {
+    // Find the product's category
+    const producto = productos.find(p => p.idProducto === idProducto);
+    if (!producto) return [];
+
+    // Find the category
+    const categoria = categorias.find(c => c.idCategoria === producto.idCategoria);
+    if (!categoria || !categoria.idmoderadordef) return [];
+
+    // Get the catModerador
+    const catModerador = catModeradores.find(cm => 
+      cm.idmodref === Number(categoria.idmoderadordef)
+    );
+    
+    if (!catModerador || !catModerador.moderadores) return [];
+
+    // Parse moderadores IDs from comma-separated string
+    const moderadorIds = catModerador.moderadores.split(',').map(id => Number(id.trim()));
+    
+    // Filter and return moderadores
+    return moderadores.filter(m => moderadorIds.includes(m.idmoderador));
   };
 
   const handleListadoPagos = () => {
@@ -604,19 +691,16 @@ const PageVentas: React.FC = () => {
                   </div>
                   <div className="producto-acciones">
                     <button 
-                      className="btn-accion btn-minus"
-                      onClick={() => disminuirCantidad(producto)}
-                      disabled={cantidadEnComanda === 0}
-                    >
-                      <Minus size={16} />
-                    </button>
-                    <button 
                       className="btn-accion btn-plus"
                       onClick={() => agregarAComanda(producto)}
                     >
                       <Plus size={16} />
                     </button>
-                    <button className="btn-accion btn-mod">
+                    <button 
+                      className="btn-accion btn-mod"
+                      onClick={() => handleModClick(producto.idProducto)}
+                      disabled={getAvailableModeradores(producto.idProducto).length === 0}
+                    >
                       Mod
                     </button>
                   </div>
@@ -640,6 +724,7 @@ const PageVentas: React.FC = () => {
 
           <div className="comanda-buttons">
             <button className="btn-producir" onClick={handleProducir} disabled={!isServiceConfigured}>Producir</button>
+            <button className="btn-esperar" onClick={handleEsperar} disabled={!isServiceConfigured}>Esperar</button>
             <button className="btn-listado" onClick={handleListadoPagos} disabled={!isServiceConfigured}>listado de pagos</button>
           </div>
 
@@ -658,6 +743,12 @@ const PageVentas: React.FC = () => {
                     $ {formatPrice((Number(item.producto.precio) || 0) * item.cantidad)}
                   </span>
                 </div>
+                {item.moderadoresNames && item.moderadoresNames.length > 0 && (
+                  <div className="comanda-item-moderadores">
+                    <span className="moderadores-label">Mod:</span>
+                    <span className="moderadores-list">{item.moderadoresNames.join(', ')}</span>
+                  </div>
+                )}
                 <div className="comanda-item-acciones">
                   <button 
                     className="btn-comanda-accion btn-minus"
@@ -670,9 +761,6 @@ const PageVentas: React.FC = () => {
                     onClick={() => agregarAComanda(item.producto)}
                   >
                     <Plus size={14} />
-                  </button>
-                  <button className="btn-comanda-accion btn-mod">
-                    Mod
                   </button>
                 </div>
               </div>
@@ -704,6 +792,43 @@ const PageVentas: React.FC = () => {
         onSave={handleModalSave}
         initialData={getInitialModalData()}
       />
+
+      {/* Modal para selección de moderadores */}
+      {showModModal && selectedProductoIdForMod && (
+        <div className="modal-overlay" onClick={() => setShowModModal(false)}>
+          <div className="modal-mod-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Seleccionar Moderadores</h3>
+            <div className="moderadores-list">
+              {getAvailableModeradores(selectedProductoIdForMod).map((mod) => {
+                const currentItem = comanda.find(i => i.producto.idProducto === selectedProductoIdForMod);
+                const currentMods = currentItem?.moderadores?.split(',').map(Number) || [];
+                const isSelected = currentMods.includes(mod.idmoderador);
+                
+                return (
+                  <label key={mod.idmoderador} className="moderador-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={(e) => {
+                        const newMods = e.target.checked
+                          ? [...currentMods, mod.idmoderador]
+                          : currentMods.filter(id => id !== mod.idmoderador);
+                        handleModeradorSelection(newMods);
+                      }}
+                    />
+                    <span>{mod.nombremoderador}</span>
+                  </label>
+                );
+              })}
+            </div>
+            <div className="modal-actions">
+              <button className="btn-modal-close" onClick={() => setShowModModal(false)}>
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
