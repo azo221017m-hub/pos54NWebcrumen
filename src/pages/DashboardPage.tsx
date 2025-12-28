@@ -379,6 +379,7 @@ export const DashboardPage = () => {
                     <p className="user-full-name">{usuario?.nombre}</p>
                     <p className="user-alias">@{usuario?.alias}</p>
                     <p className="user-role">{usuario?.idRol === 1 ? 'Administrador' : 'Vendedor'}</p>
+                    <p className="user-negocio" style={{ fontSize: '0.85em', color: '#888', marginTop: '4px' }}>ID Negocio: {usuario?.idNegocio}</p>
                   </div>
                 </div>
                 <div className="dropdown-divider"></div>
@@ -514,7 +515,14 @@ export const DashboardPage = () => {
                 </svg>
                 Rol de Usuarios
               </button>
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-usuarios'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { 
+                e.preventDefault(); 
+                e.stopPropagation(); 
+                // Log visual de producción con datos del usuario logueado
+                console.log(`📋 [USUARIOS] Mostrando usuarios con idNegocio: ${usuario?.idNegocio} | Usuario: ${usuario?.nombre} (${usuario?.alias}) | Timestamp: ${new Date().toISOString()}`);
+                navigate('/config-usuarios'); 
+                setMobileMenuOpen(false); 
+              }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                   <circle cx="8.5" cy="7" r="4"/>

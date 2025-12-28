@@ -4,11 +4,18 @@ import type { Usuario, UsuarioFormData, UsuarioResponse } from '../types/usuario
 // Obtener todos los usuarios
 export const obtenerUsuarios = async (): Promise<Usuario[]> => {
   try {
+    // Obtener datos del usuario actual para logging
+    const usuarioData = localStorage.getItem('usuario');
+    const usuario = usuarioData ? JSON.parse(usuarioData) : null;
+    
     console.log('🔄 Obteniendo usuarios...');
+    console.log(`📋 [USUARIOS FRONTEND] Solicitando usuarios para idNegocio: ${usuario?.idNegocio} | Usuario: ${usuario?.nombre} (${usuario?.alias})`);
+    
     const response = await api.get<UsuarioResponse>('/usuarios');
     console.log('✅ Usuarios obtenidos:', response.data);
     
     if (response.data.success && Array.isArray(response.data.data)) {
+      console.log(`✅ [USUARIOS FRONTEND] Recibidos ${response.data.data.length} usuarios`);
       return response.data.data;
     }
     return [];
