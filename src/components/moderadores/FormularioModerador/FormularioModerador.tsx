@@ -43,7 +43,7 @@ const FormularioModerador: React.FC<Props> = ({ moderador, idnegocio, onSave, on
     const nuevosErrores: Record<string, string> = {};
 
     if (!formData.nombremoderador.trim()) {
-      nuevosErrores.nombremoderador = 'El nombre del moderador es obligatorio';
+      nuevosErrores.nombremoderador = 'La opción de modificación es obligatoria';
     }
 
     setErrores(nuevosErrores);
