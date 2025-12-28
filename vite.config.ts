@@ -49,7 +49,10 @@ export default defineConfig({
               cacheName: 'api-cache',
               networkTimeoutSeconds: 10,
               expiration: {
-                maxEntries: 0, // Don't cache API responses
+                // maxEntries: 0 is intentional - we want NO caching of API responses
+                // Even with NetworkFirst, we don't want stale API data as fallback
+                // This ensures fresh user data after logout/login
+                maxEntries: 0,
                 maxAgeSeconds: 0
               }
             }
