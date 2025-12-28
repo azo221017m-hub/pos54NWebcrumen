@@ -13,7 +13,6 @@ window.addEventListener('error', (event) => {
     message.includes('Extension context invalidated')
   ) {
     event.preventDefault();
-    event.stopPropagation();
     return;
   }
 });
@@ -27,7 +26,6 @@ window.addEventListener('unhandledrejection', (event) => {
     message.includes('Extension context invalidated')
   ) {
     event.preventDefault();
-    event.stopPropagation();
     return;
   }
 });

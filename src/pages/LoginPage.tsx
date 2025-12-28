@@ -81,7 +81,6 @@ export const LoginPage = () => {
         errorMessage.includes('Extension context invalidated')
       ) {
         // No mostrar error, es solo una extensión del navegador
-        setIsLoading(false);
         return;
       }
       
