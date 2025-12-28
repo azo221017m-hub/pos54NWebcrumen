@@ -27,8 +27,13 @@ export const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({
 
   // Obtener información del usuario autenticado
   const usuarioAutenticado = useMemo(() => {
-    const usuarioStorage = localStorage.getItem('usuario');
-    return usuarioStorage ? JSON.parse(usuarioStorage) : null;
+    try {
+      const usuarioStorage = localStorage.getItem('usuario');
+      return usuarioStorage ? JSON.parse(usuarioStorage) : null;
+    } catch (error) {
+      console.error('Error al obtener usuario autenticado:', error);
+      return null;
+    }
   }, []);
 
   // Determinar si el usuario es superusuario

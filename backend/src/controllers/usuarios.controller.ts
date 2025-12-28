@@ -316,10 +316,10 @@ export const actualizarUsuario = async (req: AuthRequest, res: Response): Promis
       return;
     }
 
-    // Verificar si el usuario existe
+    // Verificar si el usuario existe y obtener su idNegocio actual
     // Si idnegocio == 99999, permitir editar cualquier usuario
     // Si idnegocio != 99999, solo editar usuarios del mismo negocio
-    let queryExiste = 'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ?';
+    let queryExiste = 'SELECT idUsuario, idNegocio FROM tblposcrumenwebusuarios WHERE idUsuario = ?';
     const paramsExiste: any[] = [id];
     
     if (userIdNegocio !== 99999) {
@@ -337,6 +337,8 @@ export const actualizarUsuario = async (req: AuthRequest, res: Response): Promis
       return;
     }
 
+    const usuarioActual = existe[0];
+
     // Verificar si el alias ya existe en otro usuario del mismo negocio
     const [aliasExiste] = await pool.execute<RowDataPacket[]>(
       'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE alias = ? AND idUsuario != ? AND idNegocio = ?',
@@ -353,14 +355,8 @@ export const actualizarUsuario = async (req: AuthRequest, res: Response): Promis
 
     // Validar que el idNegocio no pueda ser cambiado por usuarios no-superusuarios
     // Si se intenta cambiar el idNegocio y el usuario no es superusuario, rechazar
-    if (idNegocio && userIdNegocio !== 99999) {
-      // Obtener el idNegocio actual del usuario que se está editando
-      const [usuarioActual] = await pool.execute<RowDataPacket[]>(
-        'SELECT idNegocio FROM tblposcrumenwebusuarios WHERE idUsuario = ?',
-        [id]
-      );
-      
-      if (usuarioActual.length > 0 && usuarioActual[0].idNegocio !== idNegocio) {
+    if (idNegocio !== undefined && idNegocio !== null && userIdNegocio !== 99999) {
+      if (usuarioActual.idNegocio !== idNegocio) {
         res.status(403).json({
           success: false,
           message: 'No tiene permiso para cambiar el negocio de un usuario'
