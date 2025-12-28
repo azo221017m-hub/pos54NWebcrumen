@@ -18,8 +18,9 @@ export const obtenerUsuarios = async (req: AuthRequest, res: Response): Promise<
       return;
     }
 
-    const [rows] = await pool.execute<RowDataPacket[]>(
-      `SELECT 
+    // Si idnegocio == 99999, mostrar todos los usuarios
+    // Si idnegocio != 99999, mostrar solo usuarios con el mismo idnegocio
+    let query = `SELECT 
         idUsuario, 
         idNegocio, 
         idRol, 
@@ -38,11 +39,18 @@ export const obtenerUsuarios = async (req: AuthRequest, res: Response): Promise<
         LENGTH(fotopersona) as fotopersona_size,
         LENGTH(fotoavatar) as fotoavatar_size,
         fotoavatar
-      FROM tblposcrumenwebusuarios
-      WHERE idNegocio = ?
-      ORDER BY fechaRegistroauditoria DESC`,
-      [idnegocio]
-    );
+      FROM tblposcrumenwebusuarios`;
+    
+    const params: any[] = [];
+    
+    if (idnegocio !== 99999) {
+      query += ` WHERE idNegocio = ?`;
+      params.push(idnegocio);
+    }
+    
+    query += ` ORDER BY fechaRegistroauditoria DESC`;
+
+    const [rows] = await pool.execute<RowDataPacket[]>(query, params);
     
     // Convertir fotoavatar de Buffer a Base64
     const usuariosConAvatares = rows.map(usuario => ({
@@ -81,8 +89,9 @@ export const obtenerUsuarioPorId = async (req: AuthRequest, res: Response): Prom
       return;
     }
     
-    const [rows] = await pool.execute<RowDataPacket[]>(
-      `SELECT 
+    // Si idnegocio == 99999, permitir ver cualquier usuario
+    // Si idnegocio != 99999, solo ver usuarios del mismo negocio
+    let query = `SELECT 
         idUsuario, 
         idNegocio, 
         idRol, 
@@ -101,9 +110,16 @@ export const obtenerUsuarioPorId = async (req: AuthRequest, res: Response): Prom
         fotopersona,
         fotoavatar
       FROM tblposcrumenwebusuarios 
-      WHERE idUsuario = ? AND idNegocio = ?`,
-      [id, idnegocio]
-    );
+      WHERE idUsuario = ?`;
+    
+    const params: any[] = [id];
+    
+    if (idnegocio !== 99999) {
+      query += ` AND idNegocio = ?`;
+      params.push(idnegocio);
+    }
+    
+    const [rows] = await pool.execute<RowDataPacket[]>(query, params);
     
     if (rows.length === 0) {
       res.status(404).json({
@@ -276,11 +292,18 @@ export const actualizarUsuario = async (req: AuthRequest, res: Response): Promis
       return;
     }
 
-    // Verificar si el usuario existe y pertenece al mismo negocio
-    const [existe] = await pool.execute<RowDataPacket[]>(
-      'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ? AND idNegocio = ?',
-      [id, userIdNegocio]
-    );
+    // Verificar si el usuario existe
+    // Si idnegocio == 99999, permitir editar cualquier usuario
+    // Si idnegocio != 99999, solo editar usuarios del mismo negocio
+    let queryExiste = 'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ?';
+    const paramsExiste: any[] = [id];
+    
+    if (userIdNegocio !== 99999) {
+      queryExiste += ' AND idNegocio = ?';
+      paramsExiste.push(userIdNegocio);
+    }
+    
+    const [existe] = await pool.execute<RowDataPacket[]>(queryExiste, paramsExiste);
 
     if (existe.length === 0) {
       res.status(404).json({
@@ -366,9 +389,13 @@ export const actualizarUsuario = async (req: AuthRequest, res: Response): Promis
       params.push(fotoavatar ? Buffer.from(fotoavatar, 'base64') : null);
     }
 
-    query += ' WHERE idUsuario = ? AND idNegocio = ?';
+    query += ' WHERE idUsuario = ?';
     params.push(id);
-    params.push(userIdNegocio);
+    
+    if (userIdNegocio !== 99999) {
+      query += ' AND idNegocio = ?';
+      params.push(userIdNegocio);
+    }
 
     await pool.execute(query, params);
 
@@ -402,10 +429,18 @@ export const eliminarUsuario = async (req: AuthRequest, res: Response): Promise<
       return;
     }
 
-    const [existe] = await pool.execute<RowDataPacket[]>(
-      'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ? AND idNegocio = ?',
-      [id, idnegocio]
-    );
+    // Verificar si el usuario existe
+    // Si idnegocio == 99999, permitir eliminar cualquier usuario
+    // Si idnegocio != 99999, solo eliminar usuarios del mismo negocio
+    let queryExiste = 'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ?';
+    const paramsExiste: any[] = [id];
+    
+    if (idnegocio !== 99999) {
+      queryExiste += ' AND idNegocio = ?';
+      paramsExiste.push(idnegocio);
+    }
+    
+    const [existe] = await pool.execute<RowDataPacket[]>(queryExiste, paramsExiste);
 
     if (existe.length === 0) {
       res.status(404).json({
@@ -415,10 +450,16 @@ export const eliminarUsuario = async (req: AuthRequest, res: Response): Promise<
       return;
     }
 
-    await pool.execute(
-      'UPDATE tblposcrumenwebusuarios SET estatus = 0, fehamodificacionauditoria = NOW() WHERE idUsuario = ? AND idNegocio = ?',
-      [id, idnegocio]
-    );
+    // Construir query de eliminación
+    let queryDelete = 'UPDATE tblposcrumenwebusuarios SET estatus = 0, fehamodificacionauditoria = NOW() WHERE idUsuario = ?';
+    const paramsDelete: any[] = [id];
+    
+    if (idnegocio !== 99999) {
+      queryDelete += ' AND idNegocio = ?';
+      paramsDelete.push(idnegocio);
+    }
+    
+    await pool.execute(queryDelete, paramsDelete);
 
     res.json({
       success: true,
@@ -451,10 +492,18 @@ export const cambiarEstatusUsuario = async (req: AuthRequest, res: Response): Pr
       return;
     }
 
-    const [existe] = await pool.execute<RowDataPacket[]>(
-      'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ? AND idNegocio = ?',
-      [id, idnegocio]
-    );
+    // Verificar si el usuario existe
+    // Si idnegocio == 99999, permitir cambiar estatus de cualquier usuario
+    // Si idnegocio != 99999, solo cambiar estatus de usuarios del mismo negocio
+    let queryExiste = 'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ?';
+    const paramsExiste: any[] = [id];
+    
+    if (idnegocio !== 99999) {
+      queryExiste += ' AND idNegocio = ?';
+      paramsExiste.push(idnegocio);
+    }
+    
+    const [existe] = await pool.execute<RowDataPacket[]>(queryExiste, paramsExiste);
 
     if (existe.length === 0) {
       res.status(404).json({
@@ -464,10 +513,16 @@ export const cambiarEstatusUsuario = async (req: AuthRequest, res: Response): Pr
       return;
     }
 
-    await pool.execute(
-      'UPDATE tblposcrumenwebusuarios SET estatus = ?, fehamodificacionauditoria = NOW() WHERE idUsuario = ? AND idNegocio = ?',
-      [estatus, id, idnegocio]
-    );
+    // Construir query de actualización
+    let queryUpdate = 'UPDATE tblposcrumenwebusuarios SET estatus = ?, fehamodificacionauditoria = NOW() WHERE idUsuario = ?';
+    const paramsUpdate: any[] = [estatus, id];
+    
+    if (idnegocio !== 99999) {
+      queryUpdate += ' AND idNegocio = ?';
+      paramsUpdate.push(idnegocio);
+    }
+    
+    await pool.execute(queryUpdate, paramsUpdate);
 
     res.json({
       success: true,
@@ -537,10 +592,18 @@ export const actualizarImagenUsuario = async (req: AuthRequest, res: Response): 
       return;
     }
 
-    const [existe] = await pool.execute<RowDataPacket[]>(
-      'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ? AND idNegocio = ?',
-      [id, idnegocio]
-    );
+    // Verificar si el usuario existe
+    // Si idnegocio == 99999, permitir actualizar imagen de cualquier usuario
+    // Si idnegocio != 99999, solo actualizar imagen de usuarios del mismo negocio
+    let queryExiste = 'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ?';
+    const paramsExiste: any[] = [id];
+    
+    if (idnegocio !== 99999) {
+      queryExiste += ' AND idNegocio = ?';
+      paramsExiste.push(idnegocio);
+    }
+    
+    const [existe] = await pool.execute<RowDataPacket[]>(queryExiste, paramsExiste);
 
     if (existe.length === 0) {
       res.status(404).json({
@@ -550,10 +613,16 @@ export const actualizarImagenUsuario = async (req: AuthRequest, res: Response): 
       return;
     }
 
-    await pool.execute(
-      `UPDATE tblposcrumenwebusuarios SET ${tipoImagen} = ?, fehamodificacionauditoria = NOW() WHERE idUsuario = ? AND idNegocio = ?`,
-      [imagen, id, idnegocio]
-    );
+    // Construir query de actualización
+    let queryUpdate = `UPDATE tblposcrumenwebusuarios SET ${tipoImagen} = ?, fehamodificacionauditoria = NOW() WHERE idUsuario = ?`;
+    const paramsUpdate: any[] = [imagen, id];
+    
+    if (idnegocio !== 99999) {
+      queryUpdate += ' AND idNegocio = ?';
+      paramsUpdate.push(idnegocio);
+    }
+    
+    await pool.execute(queryUpdate, paramsUpdate);
 
     res.json({
       success: true,
@@ -595,10 +664,17 @@ export const obtenerImagenUsuario = async (req: AuthRequest, res: Response): Pro
       return;
     }
 
-    const [rows] = await pool.execute<RowDataPacket[]>(
-      `SELECT ${tipo} FROM tblposcrumenwebusuarios WHERE idUsuario = ? AND idNegocio = ?`,
-      [id, idnegocio]
-    );
+    // Si idnegocio == 99999, permitir obtener imagen de cualquier usuario
+    // Si idnegocio != 99999, solo obtener imagen de usuarios del mismo negocio
+    let query = `SELECT ${tipo} FROM tblposcrumenwebusuarios WHERE idUsuario = ?`;
+    const params: any[] = [id];
+    
+    if (idnegocio !== 99999) {
+      query += ' AND idNegocio = ?';
+      params.push(idnegocio);
+    }
+    
+    const [rows] = await pool.execute<RowDataPacket[]>(query, params);
 
     if (rows.length === 0 || !rows[0][tipo]) {
       res.status(404).json({
@@ -656,10 +732,17 @@ export const eliminarImagenUsuario = async (req: AuthRequest, res: Response): Pr
       return;
     }
 
-    await pool.execute(
-      `UPDATE tblposcrumenwebusuarios SET ${tipo} = NULL, fehamodificacionauditoria = NOW() WHERE idUsuario = ? AND idNegocio = ?`,
-      [id, idnegocio]
-    );
+    // Si idnegocio == 99999, permitir eliminar imagen de cualquier usuario
+    // Si idnegocio != 99999, solo eliminar imagen de usuarios del mismo negocio
+    let query = `UPDATE tblposcrumenwebusuarios SET ${tipo} = NULL, fehamodificacionauditoria = NOW() WHERE idUsuario = ?`;
+    const params: any[] = [id];
+    
+    if (idnegocio !== 99999) {
+      query += ' AND idNegocio = ?';
+      params.push(idnegocio);
+    }
+    
+    await pool.execute(query, params);
 
     res.json({
       success: true,
