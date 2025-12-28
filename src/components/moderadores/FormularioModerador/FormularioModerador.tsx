@@ -92,7 +92,7 @@ const FormularioModerador: React.FC<Props> = ({ moderador, idnegocio, onSave, on
             {/* Nombre del Moderador */}
             <div className="form-group">
               <label htmlFor="nombremoderador">
-                Nombre del Moderador <span className="required">*</span>
+                Opción de Modificación <span className="required">*</span>
               </label>
               <input
                 type="text"
@@ -101,13 +101,16 @@ const FormularioModerador: React.FC<Props> = ({ moderador, idnegocio, onSave, on
                 value={formData.nombremoderador}
                 onChange={handleChange}
                 className={`form-control ${errores.nombremoderador ? 'error' : ''}`}
-                placeholder="Ej: Juan Pérez"
+                placeholder="Ej: Sin picante, Extra queso, Sin cebolla"
                 maxLength={150}
                 required
               />
               {errores.nombremoderador && (
                 <span className="error-message">{errores.nombremoderador}</span>
               )}
+              <small className="form-help-text" style={{ display: 'block', marginTop: '0.5rem', color: '#666', fontSize: '0.875rem' }}>
+                Los moderadores son opciones de modificación para productos (ej: ingredientes, preparación)
+              </small>
             </div>
 
             {/* Estatus */}
