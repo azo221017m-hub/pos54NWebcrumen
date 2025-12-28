@@ -11,6 +11,7 @@ interface FormularioNegocioProps {
 }
 
 export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: FormularioNegocioProps) => {
+  const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -130,7 +131,7 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
     const file = e.target.files?.[0];
     if (file) {
       // Validate file size (max 2MB)
-      if (file.size > 2 * 1024 * 1024) {
+      if (file.size > MAX_FILE_SIZE) {
         alert('La imagen no debe superar los 2MB');
         return;
       }
