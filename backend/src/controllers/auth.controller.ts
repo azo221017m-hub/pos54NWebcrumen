@@ -337,3 +337,93 @@ export const ensureSuperuser = async (_req: Request, res: Response): Promise<voi
     });
   }
 };
+
+/**
+ * Verifica si la tabla tblposcrumenwebusuarios está vacía
+ */
+export const checkUsersTableEmpty = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      'SELECT COUNT(*) as count FROM tblposcrumenwebusuarios'
+    );
+    
+    const isEmpty = rows[0].count === 0;
+    
+    res.json({
+      success: true,
+      data: {
+        isEmpty,
+        count: rows[0].count
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error al verificar tabla de usuarios:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error al verificar el estado de la tabla de usuarios' 
+    });
+  }
+};
+
+/**
+ * Auto-login cuando la tabla está vacía
+ * Crea una sesión temporal de 2 minutos con credenciales del sistema
+ */
+export const autoLogin = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    // PASO 1: Verificar si la tabla está vacía
+    const [countRows] = await pool.execute<RowDataPacket[]>(
+      'SELECT COUNT(*) as count FROM tblposcrumenwebusuarios'
+    );
+    
+    if (countRows[0].count > 0) {
+      res.status(403).json({ 
+        success: false, 
+        message: 'Auto-login solo disponible cuando la tabla de usuarios está vacía' 
+      });
+      return;
+    }
+
+    // PASO 2: Datos del usuario temporal del sistema
+    const systemUser = {
+      idUsuario: 99999,
+      alias: 'crumensys',
+      nombre: 'adminsistemas',
+      idNegocio: 99999,
+      idRol: 1, // Rol de administrador
+      estatus: 1
+    };
+
+    // PASO 3: Generar token JWT temporal de 2 minutos
+    const token = jwt.sign(
+      { 
+        id: systemUser.idUsuario, 
+        alias: systemUser.alias,
+        nombre: systemUser.nombre,
+        idNegocio: systemUser.idNegocio,
+        idRol: systemUser.idRol
+      },
+      process.env.JWT_SECRET || 'secret_key_pos54nwebcrumen_2024',
+      { expiresIn: '2m' } // Token válido por 2 minutos
+    );
+
+    console.log('🔓 Auto-login realizado - Sesión temporal de 2 minutos');
+
+    res.json({
+      success: true,
+      message: 'Auto-login exitoso - Sesión temporal de 2 minutos',
+      data: {
+        token,
+        usuario: systemUser,
+        isTemporary: true,
+        expiresIn: '2m'
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error en auto-login:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error en el auto-login' 
+    });
+  }
+};

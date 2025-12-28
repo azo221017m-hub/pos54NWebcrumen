@@ -1,5 +1,14 @@
 import { Router } from 'express';
-import { login, register, verifyToken, checkLoginStatus, unlockUser, ensureSuperuser } from '../controllers/auth.controller';
+import { 
+  login, 
+  register, 
+  verifyToken, 
+  checkLoginStatus, 
+  unlockUser, 
+  ensureSuperuser,
+  checkUsersTableEmpty,
+  autoLogin
+} from '../controllers/auth.controller';
 import { authMiddleware, checkRole } from '../middlewares/auth';
 
 const router = Router();
@@ -50,5 +59,26 @@ router.post('/unlock/:alias', authMiddleware, checkRole(ADMIN_ROLE), unlockUser)
  *          y desbloquea la cuenta si está bloqueada. Uso recomendado: inicialización del sistema.
  */
 router.post('/ensure-superuser', ensureSuperuser);
+
+/**
+ * @route   GET /api/auth/check-users-empty
+ * @desc    Verificar si la tabla tblposcrumenwebusuarios está vacía
+ * @access  Public
+ * @note    Retorna isEmpty: true si la tabla está vacía
+ */
+router.get('/check-users-empty', checkUsersTableEmpty);
+
+/**
+ * @route   POST /api/auth/auto-login
+ * @desc    Auto-login cuando la tabla está vacía
+ * @access  Public
+ * @note    Solo funciona si la tabla tblposcrumenwebusuarios está vacía.
+ *          Crea una sesión temporal de 2 minutos con credenciales:
+ *          - alias: crumensys
+ *          - password: Crumen420.
+ *          - idNegocio: 99999
+ *          - nombre: adminsistemas
+ */
+router.post('/auto-login', autoLogin);
 
 export default router;
