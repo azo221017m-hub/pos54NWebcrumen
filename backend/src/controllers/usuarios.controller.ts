@@ -18,8 +18,9 @@ export const obtenerUsuarios = async (req: AuthRequest, res: Response): Promise<
       return;
     }
 
-    const [rows] = await pool.execute<RowDataPacket[]>(
-      `SELECT 
+    // Si idnegocio == 99999, mostrar todos los usuarios
+    // Si idnegocio != 99999, mostrar solo usuarios con el mismo idnegocio
+    let query = `SELECT 
         idUsuario, 
         idNegocio, 
         idRol, 
@@ -38,11 +39,18 @@ export const obtenerUsuarios = async (req: AuthRequest, res: Response): Promise<
         LENGTH(fotopersona) as fotopersona_size,
         LENGTH(fotoavatar) as fotoavatar_size,
         fotoavatar
-      FROM tblposcrumenwebusuarios
-      WHERE idNegocio = ?
-      ORDER BY fechaRegistroauditoria DESC`,
-      [idnegocio]
-    );
+      FROM tblposcrumenwebusuarios`;
+    
+    const params: any[] = [];
+    
+    if (idnegocio !== 99999) {
+      query += ` WHERE idNegocio = ?`;
+      params.push(idnegocio);
+    }
+    
+    query += ` ORDER BY fechaRegistroauditoria DESC`;
+
+    const [rows] = await pool.execute<RowDataPacket[]>(query, params);
     
     // Convertir fotoavatar de Buffer a Base64
     const usuariosConAvatares = rows.map(usuario => ({
