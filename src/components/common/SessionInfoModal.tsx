@@ -24,9 +24,9 @@ export const SessionInfoModal = ({ isOpen, onClose, alias, idNegocio }: SessionI
           const remaining = getTimeUntilExpiration(token);
           setTimeRemaining(remaining);
           
-          // Formatear fecha de expiración
+          // Formatear fecha de expiración usando locale del navegador
           const expDate = new Date(decoded.exp * 1000);
-          setExpirationDate(expDate.toLocaleString('es-MX', {
+          setExpirationDate(expDate.toLocaleString(undefined, {
             dateStyle: 'medium',
             timeStyle: 'medium'
           }));

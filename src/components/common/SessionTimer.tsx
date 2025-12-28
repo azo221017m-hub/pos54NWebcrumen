@@ -3,6 +3,9 @@ import { Clock } from 'lucide-react';
 import { getToken, getTimeUntilExpiration, formatTimeRemaining } from '../../services/sessionService';
 import './SessionTimer.css';
 
+// Warning threshold: 2 minutes in milliseconds
+const WARNING_THRESHOLD_MS = 2 * 60 * 1000; // 120000ms
+
 export const SessionTimer = () => {
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [isWarning, setIsWarning] = useState(false);
@@ -15,7 +18,7 @@ export const SessionTimer = () => {
         setTimeRemaining(remaining);
         
         // Show warning when less than 2 minutes remaining
-        setIsWarning(remaining > 0 && remaining <= 120000);
+        setIsWarning(remaining > 0 && remaining <= WARNING_THRESHOLD_MS);
       } else {
         setTimeRemaining(0);
       }

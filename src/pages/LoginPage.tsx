@@ -5,6 +5,11 @@ import { authService } from '../services/authService';
 import { SessionInfoModal } from '../components/common/SessionInfoModal';
 import './LoginPage.css';
 
+interface SessionData {
+  alias: string;
+  idNegocio: number;
+}
+
 export const LoginPage = () => {
   const navigate = useNavigate();
   const [logoutMessage, setLogoutMessage] = useState<string | null>(null);
@@ -14,7 +19,7 @@ export const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSessionModal, setShowSessionModal] = useState(false);
-  const [sessionData, setSessionData] = useState<{ alias: string; idNegocio: number } | null>(null);
+  const [sessionData, setSessionData] = useState<SessionData | null>(null);
 
   // Check for logout message and if user is already logged in
   useEffect(() => {
