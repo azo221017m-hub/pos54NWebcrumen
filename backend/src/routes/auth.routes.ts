@@ -5,7 +5,8 @@ import {
   verifyToken, 
   checkLoginStatus, 
   unlockUser, 
-  ensureSuperuser
+  ensureSuperuser,
+  refreshToken
 } from '../controllers/auth.controller';
 import { authMiddleware, checkRole } from '../middlewares/auth';
 
@@ -27,6 +28,13 @@ router.post('/login', login);
  * @access  Public
  */
 router.post('/register', register);
+
+/**
+ * @route   POST /api/auth/refresh
+ * @desc    Renovar token JWT (sliding session)
+ * @access  Private
+ */
+router.post('/refresh', authMiddleware, refreshToken);
 
 /**
  * @route   GET /api/auth/verify
