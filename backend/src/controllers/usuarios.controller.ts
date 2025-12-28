@@ -9,6 +9,8 @@ export const obtenerUsuarios = async (req: AuthRequest, res: Response): Promise<
   try {
     // Obtener idnegocio del usuario autenticado
     const idnegocio = req.user?.idNegocio;
+    const usuarioAlias = req.user?.alias;
+    const usuarioNombre = req.user?.nombre;
 
     if (!idnegocio) {
       res.status(401).json({
@@ -17,6 +19,10 @@ export const obtenerUsuarios = async (req: AuthRequest, res: Response): Promise<
       });
       return;
     }
+
+    // Log de producción para depuración (requerido por especificaciones del sistema)
+    // Este log es intencional para rastrear accesos a usuarios y depurar problemas de filtrado
+    console.log(`📋 [USUARIOS] Mostrando usuarios con idNegocio: ${idnegocio} | Usuario: ${usuarioNombre} (${usuarioAlias}) | Timestamp: ${new Date().toISOString()}`);
 
     // Si idnegocio == 99999, mostrar todos los usuarios
     // Si idnegocio != 99999, mostrar solo usuarios con el mismo idnegocio
@@ -51,6 +57,9 @@ export const obtenerUsuarios = async (req: AuthRequest, res: Response): Promise<
     query += ` ORDER BY fechaRegistroauditoria DESC`;
 
     const [rows] = await pool.execute<RowDataPacket[]>(query, params);
+    
+    // Log adicional con resultados
+    console.log(`✅ [USUARIOS] Encontrados ${rows.length} usuarios para idNegocio: ${idnegocio}`);
     
     // Convertir fotoavatar de Buffer a Base64
     const usuariosConAvatares = rows.map(usuario => ({

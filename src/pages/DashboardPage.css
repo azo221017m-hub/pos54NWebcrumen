@@ -218,6 +218,12 @@
   border-radius: 4px;
 }
 
+.user-negocio {
+  font-size: 0.85em;
+  color: #888;
+  margin-top: 4px;
+}
+
 .dropdown-divider {
   height: 1px;
   background: #e2e8f0;
