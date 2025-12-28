@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import bcrypt from 'bcrypt';
@@ -145,7 +145,7 @@ export const obtenerUsuarioPorId = async (req: AuthRequest, res: Response): Prom
 };
 
 // Crear un nuevo usuario
-export const crearUsuario = async (req: Request, res: Response): Promise<void> => {
+export const crearUsuario = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const {
       idNegocio,
@@ -165,6 +165,30 @@ export const crearUsuario = async (req: Request, res: Response): Promise<void> =
       fotoavatar
     } = req.body;
 
+    // Obtener idnegocio del usuario autenticado
+    const userIdNegocio = req.user?.idNegocio;
+
+    if (!userIdNegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
+    // Si no se proporciona idNegocio, usar el del usuario autenticado
+    const finalIdNegocio = idNegocio ?? userIdNegocio;
+
+    // Validar que el idNegocio proporcionado coincida con el del usuario autenticado
+    // (a menos que sea superusuario con idNegocio = 99999)
+    if (userIdNegocio !== 99999 && finalIdNegocio !== userIdNegocio) {
+      res.status(403).json({
+        success: false,
+        message: 'No tiene permiso para crear usuarios en otro negocio'
+      });
+      return;
+    }
+
     // Validaciones básicas
     if (!nombre || !alias || !password) {
       res.status(400).json({
@@ -174,10 +198,10 @@ export const crearUsuario = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    // Verificar si el alias ya existe
+    // Verificar si el alias ya existe en el mismo negocio
     const [existente] = await pool.execute<RowDataPacket[]>(
-      'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE alias = ?',
-      [alias]
+      'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE alias = ? AND idNegocio = ?',
+      [alias, finalIdNegocio]
     );
 
     if (existente.length > 0) {
@@ -226,7 +250,7 @@ export const crearUsuario = async (req: Request, res: Response): Promise<void> =
         usuarioauditoria
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
       [
-        idNegocio || null,
+        finalIdNegocio,
         idRol || null,
         nombre,
         alias,
@@ -539,12 +563,30 @@ export const cambiarEstatusUsuario = async (req: AuthRequest, res: Response): Pr
 };
 
 // Validar si un alias es único
-export const validarAliasUnico = async (req: Request, res: Response): Promise<void> => {
+export const validarAliasUnico = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { alias, idUsuario } = req.body;
 
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
+    // Verificar si el alias es único dentro del negocio
     let query = 'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE alias = ?';
     const params: any[] = [alias];
+
+    // Si idnegocio != 99999, filtrar por negocio
+    if (idnegocio !== 99999) {
+      query += ' AND idNegocio = ?';
+      params.push(idnegocio);
+    }
 
     if (idUsuario) {
       query += ' AND idUsuario != ?';
