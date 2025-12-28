@@ -16,6 +16,7 @@
     "db:create-superuser": "ts-node src/scripts/createSuperuser.ts",
     "db:init-crumensys": "ts-node src/scripts/initializeCrumensys.ts",
     "test:superuser": "ts-node src/scripts/testCreateSuperuser.ts",
+    "test:image-conversion": "ts-node src/scripts/testImageConversion.ts",
     "verify:user-filtering": "ts-node src/scripts/verifyUserFiltering.ts"
   },
   "keywords": [

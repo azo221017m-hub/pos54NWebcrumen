@@ -44,7 +44,9 @@ export const obtenerUsuarios = async (req: AuthRequest, res: Response): Promise<
         LENGTH(fotoine) as fotoine_size,
         LENGTH(fotopersona) as fotopersona_size,
         LENGTH(fotoavatar) as fotoavatar_size,
-        fotoavatar
+        fotoine,  -- Actual image data for conversion to Base64
+        fotopersona,  -- Actual image data for conversion to Base64
+        fotoavatar  -- Actual image data for conversion to Base64
       FROM tblposcrumenwebusuarios`;
     
     const params: any[] = [];
@@ -61,15 +63,17 @@ export const obtenerUsuarios = async (req: AuthRequest, res: Response): Promise<
     // Log adicional con resultados
     console.log(`✅ [USUARIOS] Encontrados ${rows.length} usuarios para idNegocio: ${idnegocio}`);
     
-    // Convertir fotoavatar de Buffer a Base64
-    const usuariosConAvatares = rows.map(usuario => ({
+    // Convertir todas las imágenes de Buffer a Base64
+    const usuariosConImagenes = rows.map(usuario => ({
       ...usuario,
+      fotoine: usuario.fotoine ? (usuario.fotoine as Buffer).toString('base64') : null,
+      fotopersona: usuario.fotopersona ? (usuario.fotopersona as Buffer).toString('base64') : null,
       fotoavatar: usuario.fotoavatar ? (usuario.fotoavatar as Buffer).toString('base64') : null
     }));
     
     res.json({
       success: true,
-      data: usuariosConAvatares,
+      data: usuariosConImagenes,
       message: 'Usuarios obtenidos exitosamente'
     });
   } catch (error) {
@@ -138,9 +142,18 @@ export const obtenerUsuarioPorId = async (req: AuthRequest, res: Response): Prom
       return;
     }
     
+    // Convertir imágenes de Buffer a Base64
+    const usuario = rows[0];
+    const usuarioConImagenes = {
+      ...usuario,
+      fotoine: usuario.fotoine ? (usuario.fotoine as Buffer).toString('base64') : null,
+      fotopersona: usuario.fotopersona ? (usuario.fotopersona as Buffer).toString('base64') : null,
+      fotoavatar: usuario.fotoavatar ? (usuario.fotoavatar as Buffer).toString('base64') : null
+    };
+    
     res.json({
       success: true,
-      data: rows[0],
+      data: usuarioConImagenes,
       message: 'Usuario obtenido exitosamente'
     });
   } catch (error) {
