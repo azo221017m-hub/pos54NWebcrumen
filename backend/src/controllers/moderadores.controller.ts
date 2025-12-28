@@ -3,9 +3,14 @@ import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
 
+/**
+ * IMPORTANTE: Los moderadores son opciones de modificación para productos
+ * (ej: "Sin picante", "Extra queso", "Sin cebolla", "Término medio")
+ * NO deben confundirse con usuarios del sistema.
+ */
 interface Moderador extends RowDataPacket {
   idmoderador: number;
-  nombremoderador: string;
+  nombremoderador: string; // Nombre de la opción de modificación (ej: "Sin picante")
   fechaRegistroauditoria: Date | null;
   usuarioauditoria: string | null;
   fehamodificacionauditoria: Date | null;
@@ -13,19 +18,21 @@ interface Moderador extends RowDataPacket {
   estatus: number;
 }
 
-// Interface para tblposcrumenwebmodref
+// Interface para tblposcrumenwebmodref (Categorías de moderadores)
 interface ModeradorRef extends RowDataPacket {
   idmoderadorref: number; // Mapeado desde idmodref
-  nombremodref: string;
+  nombremodref: string; // Nombre de la categoría (ej: "Ingredientes", "Punto de cocción")
   fechaRegistroauditoria: Date | null;
   usuarioauditoria: string | null;
   fehamodificacionauditoria: Date | null;
   idnegocio: number;
   estatus: number;
-  moderadores?: string; // Campo longtext de la tabla original
+  moderadores?: string; // IDs separados por comas de los moderadores en esta categoría
 }
 
 // Obtener todos los moderadores por negocio
+// NOTA: Los moderadores son opciones de modificación para productos (ej: "Sin picante", "Extra queso", "Sin cebolla")
+// NO deben ser nombres de usuarios del sistema
 export const obtenerModeradores = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // Usar idnegocio del usuario autenticado para seguridad
@@ -96,6 +103,8 @@ export const obtenerModerador = async (req: Request, res: Response): Promise<voi
 };
 
 // Crear nuevo moderador
+// NOTA: Los moderadores son opciones de modificación para productos (ej: "Sin picante", "Extra queso")
+// NO deben ser nombres de usuarios. Validar que el nombre sea una opción de modificación válida.
 export const crearModerador = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const {
