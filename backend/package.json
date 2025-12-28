@@ -14,6 +14,7 @@
     "db:update-poscrumen": "ts-node src/scripts/updatePoscrumenPassword.ts",
     "db:reset-login-attempts": "ts-node src/scripts/resetLoginAttempts.ts",
     "db:create-superuser": "ts-node src/scripts/createSuperuser.ts",
+    "db:init-crumensys": "ts-node src/scripts/initializeCrumensys.ts",
     "test:superuser": "ts-node src/scripts/testCreateSuperuser.ts"
   },
   "keywords": [
