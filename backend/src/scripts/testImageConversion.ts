@@ -84,6 +84,8 @@ async function testImageConversion() {
   } finally {
     await pool.end();
     console.log('\n🔌 Conexión cerrada');
+    // Dar tiempo para que el log se escriba antes de salir
+    setTimeout(() => process.exit(0), 100);
   }
 }
 

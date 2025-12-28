@@ -44,9 +44,9 @@ export const obtenerUsuarios = async (req: AuthRequest, res: Response): Promise<
         LENGTH(fotoine) as fotoine_size,
         LENGTH(fotopersona) as fotopersona_size,
         LENGTH(fotoavatar) as fotoavatar_size,
-        fotoine,
-        fotopersona,
-        fotoavatar
+        fotoine,  -- Actual image data for conversion to Base64
+        fotopersona,  -- Actual image data for conversion to Base64
+        fotoavatar  -- Actual image data for conversion to Base64
       FROM tblposcrumenwebusuarios`;
     
     const params: any[] = [];
