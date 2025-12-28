@@ -22,6 +22,11 @@ interface Usuario extends RowDataPacket {
  * - idNegocio: 99999
  * - nombre: adminsistemas
  * - idRol: 1 (Administrador)
+ * 
+ * NOTA DE SEGURIDAD: 
+ * La contraseña 'Crumen.' es una contraseña por defecto para inicialización.
+ * Se DEBE cambiar inmediatamente después del primer login.
+ * No usar esta contraseña en ambientes de producción.
  */
 const initializeCrumensys = async () => {
   try {
@@ -63,6 +68,9 @@ const initializeCrumensys = async () => {
       console.log('📝 Credenciales del usuario crumensys:');
       console.log(`   Usuario: ${crumensysAlias}`);
       console.log('   Password: Crumen.');
+      console.log('');
+      console.log('⚠️  IMPORTANTE: Por seguridad, cambie esta contraseña');
+      console.log('   inmediatamente después del primer login.');
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
       
     } else {

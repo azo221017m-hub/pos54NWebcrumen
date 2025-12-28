@@ -58,6 +58,8 @@ Password: Crumen.
 - La contraseña se almacena hasheada usando bcrypt con un factor de 10
 - Solo se crea el usuario si la tabla está completamente vacía
 - El usuario tiene rol de administrador (idRol: 1) con permisos completos
+- ⚠️ **IMPORTANTE**: Por razones de seguridad, se recomienda encarecidamente cambiar la contraseña del usuario crumensys después del primer login
+- La contraseña por defecto 'Crumen.' es conocida y está documentada, por lo que no debe usarse en ambientes de producción sin cambiarla
 
 ## Ejemplo de Salida
 
@@ -118,4 +120,5 @@ Este script está diseñado para:
 - ⚠️ **El usuario solo se crea si la tabla está completamente vacía**
 - ✅ **El usuario tiene permisos de administrador completos (idRol: 1)**
 - ✅ **La contraseña se hashea con bcrypt antes de almacenarse**
-- ⚠️ **Se recomienda cambiar la contraseña después del primer login**
+- ⚠️ **CRÍTICO: Se DEBE cambiar la contraseña después del primer login por razones de seguridad**
+- ⚠️ **No usar la contraseña por defecto en ambientes de producción**
