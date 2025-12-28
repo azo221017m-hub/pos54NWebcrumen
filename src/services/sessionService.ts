@@ -82,11 +82,35 @@ export const isTokenExpiringSoon = (token: string): boolean => {
 
 /**
  * Limpia la sesión del usuario (logout)
+ * Elimina todos los datos de autenticación y sesión de localStorage y sessionStorage
  */
 export const clearSession = (): void => {
+  // Limpiar localStorage - datos de autenticación
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USUARIO_KEY);
   localStorage.removeItem('idnegocio');
+  
+  // Limpiar sessionStorage - excepto el mensaje de logout si existe
+  const logoutMessage = sessionStorage.getItem('logoutMessage');
+  sessionStorage.clear();
+  if (logoutMessage) {
+    sessionStorage.setItem('logoutMessage', logoutMessage);
+  }
+  
+  // Limpiar cualquier otro dato relacionado con la sesión del usuario anterior
+  // que pueda estar en localStorage
+  const keysToRemove: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && (
+      key.startsWith('user_') || 
+      key.startsWith('session_') || 
+      key.startsWith('cache_')
+    )) {
+      keysToRemove.push(key);
+    }
+  }
+  keysToRemove.forEach(key => localStorage.removeItem(key));
 };
 
 /**

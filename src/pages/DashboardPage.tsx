@@ -101,9 +101,13 @@ export const DashboardPage = () => {
   const [tipoVentaFilter, setTipoVentaFilter] = useState<TipoVentaFilterOption>(TIPO_VENTA_FILTER_ALL);
 
   const handleLogout = useCallback(() => {
+    // Limpiar completamente la sesión
     clearSession();
-    navigate('/login');
-  }, [navigate]);
+    
+    // Forzar recarga completa de la página para limpiar todo el estado de React
+    // Esto garantiza que no quede ningún dato del usuario anterior en memoria
+    window.location.href = '/login';
+  }, []);
 
   const cargarVentasSolicitadas = useCallback(async () => {
     try {

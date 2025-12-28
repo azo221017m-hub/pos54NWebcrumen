@@ -49,6 +49,9 @@ export const LoginPage = () => {
       const response = await authService.login(alias, password);
 
       if (response.success && response.data) {
+        // Limpiar cualquier sesión anterior antes de guardar la nueva
+        authService.clearAuthData();
+        
         // Guardar token y datos del usuario
         authService.saveAuthData(response.data.token, response.data.usuario);
         

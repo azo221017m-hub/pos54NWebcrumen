@@ -69,11 +69,34 @@ export const authService = {
 
   /**
    * Elimina los datos de autenticación
+   * Limpia localStorage y sessionStorage (excepto mensajes de logout)
    */
   clearAuthData: () => {
+    // Limpiar localStorage - datos de autenticación
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
     localStorage.removeItem('idnegocio');
+    
+    // Limpiar sessionStorage - excepto el mensaje de logout si existe
+    const logoutMessage = sessionStorage.getItem('logoutMessage');
+    sessionStorage.clear();
+    if (logoutMessage) {
+      sessionStorage.setItem('logoutMessage', logoutMessage);
+    }
+    
+    // Limpiar cualquier otro dato relacionado con la sesión del usuario anterior
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (
+        key.startsWith('user_') || 
+        key.startsWith('session_') || 
+        key.startsWith('cache_')
+      )) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
   },
 
   /**
