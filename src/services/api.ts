@@ -9,6 +9,10 @@ const apiClient: AxiosInstance = axios.create({
   timeout: config.timeout,
   headers: {
     'Content-Type': 'application/json',
+    // Prevent caching of API responses - always fetch fresh data
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
   },
 });
 

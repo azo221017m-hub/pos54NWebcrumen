@@ -37,7 +37,27 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        // Exclude API endpoints from caching to always fetch fresh data
+        navigateFallbackDenylist: [/^\/api/],
+        runtimeCaching: [
+          {
+            // Network-first strategy for API calls - always try to fetch from network first
+            urlPattern: /^https?:\/\/.*\/api\/.*/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              networkTimeoutSeconds: 10,
+              expiration: {
+                // maxEntries: 0 is intentional - we want NO caching of API responses
+                // Even with NetworkFirst, we don't want stale API data as fallback
+                // This ensures fresh user data after logout/login
+                maxEntries: 0,
+                maxAgeSeconds: 0
+              }
+            }
+          }
+        ]
       }
     })
   ],

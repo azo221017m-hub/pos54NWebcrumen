@@ -29,8 +29,16 @@ export const GestionUsuarios: React.FC = () => {
   const cargarUsuarios = useCallback(async () => {
     try {
       setLoading(true);
+      
+      // Log para depuración - verificar que se está solicitando usuarios
+      const usuarioData = localStorage.getItem('usuario');
+      const usuario = usuarioData ? JSON.parse(usuarioData) : null;
+      console.log(`🔄 [FRONTEND] Cargando usuarios para idNegocio: ${usuario?.idNegocio} | Usuario: ${usuario?.nombre} (${usuario?.alias})`);
+      
       const data = await obtenerUsuarios();
       setUsuarios(data);
+      
+      console.log(`✅ [FRONTEND] Usuarios cargados exitosamente: ${data.length} usuarios`);
     } catch (error) {
       console.error('Error al cargar usuarios:', error);
       mostrarMensaje('error', 'Error al cargar los usuarios');

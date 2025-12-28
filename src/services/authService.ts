@@ -1,4 +1,5 @@
 import { api } from './api';
+import { clearServiceWorkerCache } from './sessionService';
 
 export interface Usuario {
   id: number;
@@ -97,6 +98,14 @@ export const authService = {
       }
     }
     keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    // Limpiar cache del service worker (PWA) de forma asíncrona
+    // Esto previene que datos cacheados de API se muestren al siguiente usuario
+    // Se ejecuta sin await (fire-and-forget) para no bloquear el flujo de logout
+    // Si falla, se loggea pero no interrumpe la sesión
+    clearServiceWorkerCache().catch(err => {
+      console.error('Error al limpiar cache del service worker:', err);
+    });
   },
 
   /**

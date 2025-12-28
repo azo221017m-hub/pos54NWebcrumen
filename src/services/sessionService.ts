@@ -111,6 +111,48 @@ export const clearSession = (): void => {
     }
   }
   keysToRemove.forEach(key => localStorage.removeItem(key));
+  
+  // Limpiar cache del service worker (PWA) de forma asíncrona
+  // Esto previene que datos cacheados de API se muestren al siguiente usuario
+  // Se ejecuta sin await (fire-and-forget) para no bloquear el flujo de logout
+  // Si falla, se loggea pero no interrumpe la sesión
+  clearServiceWorkerCache().catch(err => {
+    console.error('Error al limpiar cache del service worker:', err);
+  });
+};
+
+/**
+ * Limpia el cache del Service Worker para prevenir datos cacheados entre sesiones
+ * Esta función es crucial para PWA que cachean respuestas de API
+ */
+export const clearServiceWorkerCache = async (): Promise<void> => {
+  try {
+    // Verificar si el navegador soporta Service Workers
+    if ('serviceWorker' in navigator && 'caches' in window) {
+      // Obtener todos los nombres de cache
+      const cacheNames = await caches.keys();
+      
+      // Eliminar todos los caches
+      await Promise.all(
+        cacheNames.map(cacheName => {
+          console.log(`🗑️ Eliminando cache PWA: ${cacheName}`);
+          return caches.delete(cacheName);
+        })
+      );
+      
+      console.log('✅ Cache del Service Worker limpiado completamente');
+      
+      // Si hay un service worker activo, notificarle para que se limpie
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'CLEAR_CACHE'
+        });
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error al limpiar cache del Service Worker:', error);
+    // No lanzar error para no interrumpir el flujo de logout
+  }
 };
 
 /**
@@ -465,6 +507,7 @@ export default {
   getTimeUntilExpiration,
   isTokenExpiringSoon,
   clearSession,
+  clearServiceWorkerCache,
   setupSessionClearOnReload,
   checkTokenExpiration,
   autoLogout,
