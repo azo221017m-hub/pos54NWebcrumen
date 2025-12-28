@@ -91,7 +91,6 @@ export const LoginPage = () => {
           idNegocio={sessionData.idNegocio}
         />
       )}
-      
     <div className="login-page">
       <div className="login-background">
         <div className="blob blob-1"></div>

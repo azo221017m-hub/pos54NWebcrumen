@@ -119,5 +119,3 @@ export const SessionInfoModal = ({ isOpen, onClose, alias, idNegocio }: SessionI
     </div>
   );
 };
-
-export default SessionInfoModal;

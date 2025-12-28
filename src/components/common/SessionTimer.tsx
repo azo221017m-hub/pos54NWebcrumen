@@ -41,5 +41,3 @@ export const SessionTimer = () => {
     </div>
   );
 };
-
-export default SessionTimer;
