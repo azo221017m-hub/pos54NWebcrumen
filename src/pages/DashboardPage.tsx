@@ -379,7 +379,7 @@ export const DashboardPage = () => {
                     <p className="user-full-name">{usuario?.nombre}</p>
                     <p className="user-alias">@{usuario?.alias}</p>
                     <p className="user-role">{usuario?.idRol === 1 ? 'Administrador' : 'Vendedor'}</p>
-                    <p className="user-negocio" style={{ fontSize: '0.85em', color: '#888', marginTop: '4px' }}>ID Negocio: {usuario?.idNegocio}</p>
+                    <p className="user-negocio">ID Negocio: {usuario?.idNegocio}</p>
                   </div>
                 </div>
                 <div className="dropdown-divider"></div>

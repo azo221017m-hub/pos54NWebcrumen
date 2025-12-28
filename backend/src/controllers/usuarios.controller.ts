@@ -20,7 +20,8 @@ export const obtenerUsuarios = async (req: AuthRequest, res: Response): Promise<
       return;
     }
 
-    // Log de producción para depuración
+    // Log de producción para depuración (requerido por especificaciones del sistema)
+    // Este log es intencional para rastrear accesos a usuarios y depurar problemas de filtrado
     console.log(`📋 [USUARIOS] Mostrando usuarios con idNegocio: ${idnegocio} | Usuario: ${usuarioNombre} (${usuarioAlias}) | Timestamp: ${new Date().toISOString()}`);
 
     // Si idnegocio == 99999, mostrar todos los usuarios
