@@ -31,6 +31,14 @@ import ventasWebRoutes from './routes/ventasWeb.routes';
 
 dotenv.config();
 
+// Validación de variables de entorno críticas
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('❌ ERROR FATAL: JWT_SECRET no está configurado en las variables de entorno');
+  console.error('Por favor, configure JWT_SECRET en el archivo .env antes de iniciar el servidor');
+  process.exit(1);
+}
+
 const app: Application = express();
 
 // Configuración de CORS para producción

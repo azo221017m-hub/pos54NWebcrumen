@@ -94,6 +94,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     // PASO 5: Login exitoso - Generar token JWT
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) {
+      throw new Error('JWT_SECRET no configurado');
+    }
+    
     const token = jwt.sign(
       { 
         id: usuario.idUsuario, 
@@ -102,7 +107,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         idNegocio: usuario.idNegocio,
         idRol: usuario.idRol
       },
-      process.env.JWT_SECRET || 'secret_key_pos54nwebcrumen_2024',
+      JWT_SECRET,
       { expiresIn: '10m' } // Token válido por 10 minutos
     );
 
@@ -338,4 +343,95 @@ export const ensureSuperuser = async (_req: Request, res: Response): Promise<voi
   }
 };
 
+/**
+ * Endpoint para renovar el token JWT
+ * Permite extender la sesión del usuario sin necesidad de volver a autenticarse
+ */
+export const refreshToken = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // El token actual viene en el header Authorization
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      res.status(401).json({
+        success: false,
+        message: 'Token no proporcionado'
+      });
+      return;
+    }
+
+    const currentToken = authHeader.split(' ')[1];
+    
+    // Validar que JWT_SECRET esté configurado
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) {
+      res.status(500).json({
+        success: false,
+        message: 'Error de configuración del servidor'
+      });
+      return;
+    }
+    
+    // Verificar y decodificar el token actual
+    const decoded = jwt.verify(
+      currentToken,
+      JWT_SECRET
+    ) as { id: number; alias: string; nombre: string; idNegocio: number; idRol: number };
+
+    // Verificar que el usuario todavía esté activo en la base de datos
+    const [rows] = await pool.execute<Usuario[]>(
+      'SELECT idUsuario, idNegocio, idRol, nombre, alias, estatus FROM tblposcrumenwebusuarios WHERE idUsuario = ? AND estatus = 1',
+      [decoded.id]
+    );
+
+    if (rows.length === 0) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no encontrado o inactivo'
+      });
+      return;
+    }
+
+    const usuario = rows[0];
+
+    // Generar un nuevo token con los mismos datos pero con nueva expiración
+    const newToken = jwt.sign(
+      {
+        id: usuario.idUsuario,
+        alias: usuario.alias,
+        nombre: usuario.nombre,
+        idNegocio: usuario.idNegocio,
+        idRol: usuario.idRol
+      },
+      JWT_SECRET,
+      { expiresIn: '10m' } // Token válido por 10 minutos
+    );
+
+    res.json({
+      success: true,
+      message: 'Token renovado exitosamente',
+      data: {
+        token: newToken
+      }
+    });
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      res.status(401).json({
+        success: false,
+        message: 'Token expirado'
+      });
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      res.status(401).json({
+        success: false,
+        message: 'Token inválido'
+      });
+    } else {
+      console.error('Error al renovar token:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error en el servidor'
+      });
+    }
+  }
+};
 
