@@ -262,8 +262,11 @@ export const DashboardPage = () => {
   }, [ventasSolicitadas, tipoVentaFilter]);
 
   useEffect(() => {
-    // Verificar si hay usuario
-    if (!usuario) {
+    // Verificar si hay usuario - check localStorage directly to avoid stale state
+    const usuarioData = localStorage.getItem('usuario');
+    const token = localStorage.getItem('token');
+    
+    if (!usuarioData || !token) {
       navigate('/login');
       return;
     }
@@ -271,7 +274,7 @@ export const DashboardPage = () => {
     // Load sales with SOLICITADO status
     cargarVentasSolicitadas();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas omitted to prevent infinite refresh loop
-  }, [usuario, navigate]);
+  }, [navigate]);
 
   if (!usuario) {
     return null;
