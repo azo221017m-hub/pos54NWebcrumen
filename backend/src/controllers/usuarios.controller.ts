@@ -177,7 +177,7 @@ export const crearUsuario = async (req: AuthRequest, res: Response): Promise<voi
     }
 
     // Si no se proporciona idNegocio, usar el del usuario autenticado
-    const finalIdNegocio = idNegocio || userIdNegocio;
+    const finalIdNegocio = idNegocio ?? userIdNegocio;
 
     // Validar que el idNegocio proporcionado coincida con el del usuario autenticado
     // (a menos que sea superusuario con idNegocio = 99999)
