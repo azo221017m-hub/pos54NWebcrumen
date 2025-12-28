@@ -62,7 +62,9 @@ export const authService = {
     localStorage.setItem('token', token);
     localStorage.setItem('usuario', JSON.stringify(usuario));
     // Almacenar idnegocio por separado para compatibilidad con código legacy
-    localStorage.setItem('idnegocio', usuario.idNegocio.toString());
+    if (usuario.idNegocio !== null && usuario.idNegocio !== undefined) {
+      localStorage.setItem('idnegocio', usuario.idNegocio.toString());
+    }
   },
 
   /**
