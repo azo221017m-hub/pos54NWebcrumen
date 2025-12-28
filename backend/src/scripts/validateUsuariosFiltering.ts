@@ -23,9 +23,12 @@
  * 1 - Al menos una prueba falló o error fatal
  */
 
-import { pool } from '../config/db';
-import type { RowDataPacket } from 'mysql2';
-import jwt from 'jsonwebtoken';
+import { pool } from '../config/db';  // Database connection pool for MySQL
+import type { RowDataPacket } from 'mysql2';  // Type definitions for MySQL result sets
+import jwt from 'jsonwebtoken';  // JWT library for token generation and verification
+
+// JWT Secret constant - same as used in auth middleware
+const JWT_SECRET = process.env.JWT_SECRET || 'secret_key_pos54nwebcrumen_2024';
 
 interface Usuario extends RowDataPacket {
   idUsuario: number;
@@ -222,15 +225,12 @@ async function testAuthMiddleware(): Promise<void> {
         idNegocio: user.idNegocio,
         idRol: user.idRol
       },
-      process.env.JWT_SECRET || 'secret_key_pos54nwebcrumen_2024',
+      JWT_SECRET,
       { expiresIn: '10m' }
     );
 
     // Verificar token
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || 'secret_key_pos54nwebcrumen_2024'
-    ) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
 
     const hasIdNegocio = decoded.idNegocio !== undefined;
     const idNegocioMatches = decoded.idNegocio === user.idNegocio;
