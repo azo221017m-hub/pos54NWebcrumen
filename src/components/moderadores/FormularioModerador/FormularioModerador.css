@@ -167,6 +167,14 @@
   font-weight: 500;
 }
 
+.form-help-text {
+  display: block;
+  margin-top: 0.5rem;
+  color: #666;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
 select.form-control {
   cursor: pointer;
   background-color: white;

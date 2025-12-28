@@ -108,7 +108,7 @@ const FormularioModerador: React.FC<Props> = ({ moderador, idnegocio, onSave, on
               {errores.nombremoderador && (
                 <span className="error-message">{errores.nombremoderador}</span>
               )}
-              <small className="form-help-text" style={{ display: 'block', marginTop: '0.5rem', color: '#666', fontSize: '0.875rem' }}>
+              <small className="form-help-text">
                 Los moderadores son opciones de modificación para productos (ej: ingredientes, preparación)
               </small>
             </div>
