@@ -61,6 +61,10 @@ export const authService = {
   saveAuthData: (token: string, usuario: Usuario) => {
     localStorage.setItem('token', token);
     localStorage.setItem('usuario', JSON.stringify(usuario));
+    // Store idnegocio separately for backward compatibility with legacy components
+    if (usuario.idNegocio) {
+      localStorage.setItem('idnegocio', usuario.idNegocio.toString());
+    }
   },
 
   /**
@@ -69,6 +73,7 @@ export const authService = {
   clearAuthData: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
+    localStorage.removeItem('idnegocio');
   },
 
   /**

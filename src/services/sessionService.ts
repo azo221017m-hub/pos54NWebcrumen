@@ -86,6 +86,7 @@ export const isTokenExpiringSoon = (token: string): boolean => {
 export const clearSession = (): void => {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USUARIO_KEY);
+  localStorage.removeItem('idnegocio');
 };
 
 /**
@@ -104,6 +105,7 @@ export const setupSessionClearOnReload = (): (() => void) => {
       // Limpieza síncrona de localStorage
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USUARIO_KEY);
+      localStorage.removeItem('idnegocio');
     }
   };
 
