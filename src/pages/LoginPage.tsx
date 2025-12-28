@@ -214,7 +214,7 @@ export const LoginPage = () => {
           </form>
 
           <div className="login-footer">
-            <p className="version-text">POS Crumen v2.5</p>
+            <p className="version-text">Ver 25.27.2210</p>
           </div>
         </div>
       </div>

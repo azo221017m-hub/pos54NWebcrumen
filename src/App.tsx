@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import AppRouter from './router/AppRouter';
-import { initSessionMonitoring } from './services/sessionService';
+import { initSessionMonitoring, setupSessionClearOnReload } from './services/sessionService';
 import './App.css';
 
 function App() {
@@ -17,8 +17,14 @@ function App() {
       }
     );
 
+    // Configurar limpieza de sesión al recargar la página
+    const cleanupReload = setupSessionClearOnReload();
+
     // Cleanup al desmontar
-    return cleanup;
+    return () => {
+      cleanup();
+      cleanupReload();
+    };
   }, []);
 
   return (

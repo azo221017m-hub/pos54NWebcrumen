@@ -89,6 +89,29 @@ export const clearSession = (): void => {
 };
 
 /**
+ * Configura el listener para limpiar la sesión cuando se recarga la página
+ * Esta función debe llamarse una vez al iniciar la aplicación
+ * @returns Función de limpieza para remover el listener
+ */
+export const setupSessionClearOnReload = (): (() => void) => {
+  const handleBeforeUnload = () => {
+    // Solo limpiar si hay una sesión activa (no estamos en login)
+    const token = getToken();
+    if (token && window.location.pathname !== '/login') {
+      clearSession();
+    }
+  };
+
+  // Registrar listener para cuando se recarga o cierra la página
+  window.addEventListener('beforeunload', handleBeforeUnload);
+
+  // Retornar función de limpieza
+  return () => {
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+  };
+};
+
+/**
  * Verifica el estado del token y ejecuta callback si está expirado
  * 
  * IMPORTANTE: Esta verificación se basa en el timestamp 'exp' del JWT,
@@ -411,6 +434,7 @@ export default {
   getTimeUntilExpiration,
   isTokenExpiringSoon,
   clearSession,
+  setupSessionClearOnReload,
   checkTokenExpiration,
   autoLogout,
   getLogoutMessage,

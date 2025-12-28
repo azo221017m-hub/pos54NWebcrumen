@@ -4,6 +4,7 @@ import { obtenerVentasWeb, actualizarVentaWeb } from '../services/ventasWebServi
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import jsPDF from 'jspdf';
 import { SessionTimer } from '../components/common/SessionTimer';
+import { clearSession } from '../services/sessionService';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -100,8 +101,7 @@ export const DashboardPage = () => {
   const [tipoVentaFilter, setTipoVentaFilter] = useState<TipoVentaFilterOption>(TIPO_VENTA_FILTER_ALL);
 
   const handleLogout = useCallback(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
+    clearSession();
     navigate('/login');
   }, [navigate]);
 
