@@ -176,9 +176,12 @@ export const crearUsuario = async (req: AuthRequest, res: Response): Promise<voi
       return;
     }
 
+    // Si no se proporciona idNegocio, usar el del usuario autenticado
+    const finalIdNegocio = idNegocio || userIdNegocio;
+
     // Validar que el idNegocio proporcionado coincida con el del usuario autenticado
     // (a menos que sea superusuario con idNegocio = 99999)
-    if (userIdNegocio !== 99999 && idNegocio !== userIdNegocio) {
+    if (userIdNegocio !== 99999 && finalIdNegocio !== userIdNegocio) {
       res.status(403).json({
         success: false,
         message: 'No tiene permiso para crear usuarios en otro negocio'
@@ -198,7 +201,7 @@ export const crearUsuario = async (req: AuthRequest, res: Response): Promise<voi
     // Verificar si el alias ya existe en el mismo negocio
     const [existente] = await pool.execute<RowDataPacket[]>(
       'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE alias = ? AND idNegocio = ?',
-      [alias, idNegocio || userIdNegocio]
+      [alias, finalIdNegocio]
     );
 
     if (existente.length > 0) {
@@ -226,9 +229,6 @@ export const crearUsuario = async (req: AuthRequest, res: Response): Promise<voi
 
     // Hash de la contraseña con bcrypt
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Si no se proporciona idNegocio, usar el del usuario autenticado
-    const finalIdNegocio = idNegocio || userIdNegocio;
 
     const [result] = await pool.execute<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebusuarios (
