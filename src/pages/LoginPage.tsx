@@ -30,6 +30,33 @@ export const LoginPage = () => {
       navigate('/dashboard');
       return;
     }
+
+    // Check if users table is empty and perform auto-login if needed
+    const checkAndAutoLogin = async () => {
+      try {
+        const { isEmpty } = await authService.checkUsersTableEmpty();
+        
+        if (isEmpty) {
+          console.log('🔓 Tabla de usuarios vacía - Iniciando auto-login...');
+          const response = await authService.autoLogin();
+          
+          if (response.success && response.data) {
+            // Guardar token y datos del usuario temporal
+            authService.saveAuthData(response.data.token, response.data.usuario);
+            
+            console.log('✅ Auto-login exitoso - Sesión temporal de 2 minutos');
+            
+            // Redirigir al dashboard
+            navigate('/dashboard');
+          }
+        }
+      } catch (err) {
+        console.error('Error al verificar/auto-login:', err);
+        // Si falla el auto-login, simplemente continuar con el login normal
+      }
+    };
+
+    checkAndAutoLogin();
   }, [navigate]);
 
   const handleSubmit = async (e: FormEvent) => {
