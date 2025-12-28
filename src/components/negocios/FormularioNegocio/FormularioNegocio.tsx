@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Negocio, ParametrosNegocio, NegocioCompleto } from '../../../types/negocio.types';
 import { negociosService } from '../../../services/negociosService';
 import './FormularioNegocio.css';
@@ -13,6 +13,7 @@ interface FormularioNegocioProps {
 export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: FormularioNegocioProps) => {
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<NegocioCompleto>({
     negocio: {
       numeronegocio: '', // Se generará automáticamente
@@ -281,6 +282,7 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
               <label htmlFor="logotipo">Imagen del Logotipo</label>
               <div className="image-upload-container">
                 <input
+                  ref={fileInputRef}
                   id="logotipo"
                   type="file"
                   accept="image/*"
@@ -294,7 +296,7 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
                     <div className="image-actions">
                       <button
                         type="button"
-                        onClick={() => document.getElementById('logotipo')?.click()}
+                        onClick={() => fileInputRef.current?.click()}
                         className="btn-change-image"
                       >
                         <Upload size={16} />
@@ -311,7 +313,7 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
                     </div>
                   </div>
                 ) : (
-                  <div className="image-upload-placeholder" onClick={() => document.getElementById('logotipo')?.click()}>
+                  <div className="image-upload-placeholder" onClick={() => fileInputRef.current?.click()}>
                     <Upload size={40} />
                     <p>Haz clic para seleccionar una imagen</p>
                     <small>Formatos: JPG, PNG, GIF (máx. 2MB)</small>
