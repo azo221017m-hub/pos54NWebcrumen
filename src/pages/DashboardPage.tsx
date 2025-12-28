@@ -276,7 +276,9 @@ export const DashboardPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas omitted to prevent infinite refresh loop
   }, [navigate]);
 
-  if (!usuario) {
+  // Early return if not authenticated
+  const usuarioData = localStorage.getItem('usuario');
+  if (!usuarioData || !usuario) {
     return null;
   }
 
