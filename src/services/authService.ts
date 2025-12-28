@@ -1,4 +1,5 @@
 import { api } from './api';
+import { clearServiceWorkerCache } from './sessionService';
 
 export interface Usuario {
   id: number;
@@ -97,6 +98,10 @@ export const authService = {
       }
     }
     keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    // Limpiar cache del service worker (PWA)
+    // Esto previene que datos cacheados de API se muestren al siguiente usuario
+    clearServiceWorkerCache();
   },
 
   /**

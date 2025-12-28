@@ -37,7 +37,24 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        // Exclude API endpoints from caching to always fetch fresh data
+        navigateFallbackDenylist: [/^\/api/],
+        runtimeCaching: [
+          {
+            // Network-first strategy for API calls - always try to fetch from network first
+            urlPattern: /^https?:\/\/.*\/api\/.*/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              networkTimeoutSeconds: 10,
+              expiration: {
+                maxEntries: 0, // Don't cache API responses
+                maxAgeSeconds: 0
+              }
+            }
+          }
+        ]
       }
     })
   ],
