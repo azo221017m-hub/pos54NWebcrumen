@@ -351,6 +351,24 @@ export const actualizarUsuario = async (req: AuthRequest, res: Response): Promis
       return;
     }
 
+    // Validar que el idNegocio no pueda ser cambiado por usuarios no-superusuarios
+    // Si se intenta cambiar el idNegocio y el usuario no es superusuario, rechazar
+    if (idNegocio && userIdNegocio !== 99999) {
+      // Obtener el idNegocio actual del usuario que se está editando
+      const [usuarioActual] = await pool.execute<RowDataPacket[]>(
+        'SELECT idNegocio FROM tblposcrumenwebusuarios WHERE idUsuario = ?',
+        [id]
+      );
+      
+      if (usuarioActual.length > 0 && usuarioActual[0].idNegocio !== idNegocio) {
+        res.status(403).json({
+          success: false,
+          message: 'No tiene permiso para cambiar el negocio de un usuario'
+        });
+        return;
+      }
+    }
+
     // Formatear fecha de cumpleaños si existe
     let cumpleFormatted = cumple;
     if (cumple) {

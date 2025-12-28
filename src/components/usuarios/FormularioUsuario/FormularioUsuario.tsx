@@ -25,23 +25,40 @@ export const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({
   const [roles, setRoles] = useState<Rol[]>([]);
   const [cargando, setCargando] = useState(true);
 
-  const initialFormData = useMemo(() => ({
-    nombre: usuarioEditar?.nombre || '',
-    alias: usuarioEditar?.alias || '',
-    password: '', // No mostrar password por seguridad
-    telefono: usuarioEditar?.telefono || '',
-    cumple: usuarioEditar?.cumple || '',
-    frasepersonal: usuarioEditar?.frasepersonal || '',
-    idNegocio: usuarioEditar?.idNegocio,
-    idRol: usuarioEditar?.idRol,
-    desempeno: usuarioEditar?.desempeno || 0,
-    popularidad: usuarioEditar?.popularidad || 0,
-    estatus: usuarioEditar?.estatus || 1,
-    usuarioauditoria: usuarioEditar?.usuarioauditoria || '',
-    fotoine: usuarioEditar?.fotoine || undefined,
-    fotopersona: usuarioEditar?.fotopersona || undefined,
-    fotoavatar: usuarioEditar?.fotoavatar || undefined
-  }), [usuarioEditar]);
+  // Obtener información del usuario autenticado
+  const usuarioAutenticado = useMemo(() => {
+    const usuarioStorage = localStorage.getItem('usuario');
+    return usuarioStorage ? JSON.parse(usuarioStorage) : null;
+  }, []);
+
+  // Determinar si el usuario es superusuario
+  const esSuperUsuario = useMemo(() => {
+    return usuarioAutenticado?.idNegocio === 99999;
+  }, [usuarioAutenticado]);
+
+  const initialFormData = useMemo(() => {
+    // Si estamos editando, usar los datos del usuario a editar
+    // Si estamos creando, usar el idNegocio del usuario autenticado
+    const idNegocioInicial = usuarioEditar?.idNegocio ?? usuarioAutenticado?.idNegocio;
+    
+    return {
+      nombre: usuarioEditar?.nombre || '',
+      alias: usuarioEditar?.alias || '',
+      password: '', // No mostrar password por seguridad
+      telefono: usuarioEditar?.telefono || '',
+      cumple: usuarioEditar?.cumple || '',
+      frasepersonal: usuarioEditar?.frasepersonal || '',
+      idNegocio: idNegocioInicial,
+      idRol: usuarioEditar?.idRol,
+      desempeno: usuarioEditar?.desempeno || 0,
+      popularidad: usuarioEditar?.popularidad || 0,
+      estatus: usuarioEditar?.estatus || 1,
+      usuarioauditoria: usuarioEditar?.usuarioauditoria || '',
+      fotoine: usuarioEditar?.fotoine || undefined,
+      fotopersona: usuarioEditar?.fotopersona || undefined,
+      fotoavatar: usuarioEditar?.fotoavatar || undefined
+    };
+  }, [usuarioEditar, usuarioAutenticado]);
 
   const [formData, setFormData] = useState<UsuarioFormData>(initialFormData);
 
@@ -260,7 +277,7 @@ export const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({
                 value={formData.idNegocio || ''}
                 onChange={handleChange}
                 required
-                disabled={cargando || loading}
+                disabled={cargando || loading || !esSuperUsuario}
               >
                 <option value="">Seleccione un negocio</option>
                 {negocios.map((negocio) => (
@@ -269,7 +286,11 @@ export const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({
                   </option>
                 ))}
               </select>
-              <small className="form-hint">Asignar usuario a un negocio específico</small>
+              <small className="form-hint">
+                {esSuperUsuario 
+                  ? 'Asignar usuario a un negocio específico' 
+                  : 'Los usuarios solo pueden crear usuarios en su propio negocio'}
+              </small>
             </div>
 
             <div className="form-group">
