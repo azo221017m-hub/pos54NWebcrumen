@@ -73,6 +73,18 @@ export const LoginPage = () => {
         }
       }
     } catch (err: any) {
+      // Ignorar errores de extensiones del navegador
+      const errorMessage = err?.message || err?.toString() || '';
+      if (
+        errorMessage.includes('message channel closed') ||
+        errorMessage.includes('listener indicated an asynchronous response') ||
+        errorMessage.includes('Extension context invalidated')
+      ) {
+        // No mostrar error, es solo una extensión del navegador
+        setIsLoading(false);
+        return;
+      }
+      
       console.error('Error en login:', err);
       setError('Error de conexión. Por favor, intenta de nuevo.');
     } finally {
