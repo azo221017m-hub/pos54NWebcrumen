@@ -68,21 +68,6 @@ export const GestionRoles = ({ onVistaChange }: GestionRolesProps = {}) => {
     }
   };
 
-  const handleEliminarRol = async (id: number) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este rol?')) {
-      return;
-    }
-
-    try {
-      await rolesService.eliminarRol(id);
-      mostrarMensaje('success', 'Rol eliminado exitosamente');
-      await cargarRoles();
-    } catch (error) {
-      mostrarMensaje('error', 'Error al eliminar el rol');
-      console.error('Error:', error);
-    }
-  };
-
   const handleSubmitFormulario = async (data: Rol) => {
     try {
       // Validar nombre único
@@ -186,7 +171,6 @@ export const GestionRoles = ({ onVistaChange }: GestionRolesProps = {}) => {
           <ListaRoles
             roles={roles}
             onEditar={handleEditarRol}
-            onEliminar={handleEliminarRol}
             loading={loading}
           />
         </>

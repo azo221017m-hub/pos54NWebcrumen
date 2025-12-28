@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Negocio, ParametrosNegocio, NegocioCompleto } from '../../../types/negocio.types';
 import { negociosService } from '../../../services/negociosService';
 import './FormularioNegocio.css';
-import { Store, Building2, Phone, FileText, Printer, MessageSquare, Check, X } from 'lucide-react';
+import { Store, Building2, Phone, FileText, Printer, MessageSquare, Check, X, Upload, Image as ImageIcon } from 'lucide-react';
 
 interface FormularioNegocioProps {
   negocioEditar?: NegocioCompleto | null;
@@ -12,6 +12,7 @@ interface FormularioNegocioProps {
 
 export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: FormularioNegocioProps) => {
   const [loading, setLoading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState<NegocioCompleto>({
     negocio: {
       numeronegocio: '', // Se generará automáticamente
@@ -61,6 +62,10 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
           estatus: 1,
         },
       });
+      // Set image preview if exists
+      if (negocioEditar.negocio.logotipo) {
+        setImagePreview(negocioEditar.negocio.logotipo);
+      }
     } else {
       // Si es nuevo, cargar el próximo número anticipado
       const cargarProximoNumero = async () => {
@@ -116,6 +121,48 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
       parametros: {
         ...prev.parametros,
         [field]: value,
+      },
+    }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        alert('La imagen no debe superar los 2MB');
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Por favor seleccione un archivo de imagen válido');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setImagePreview(base64String);
+        setFormData((prev) => ({
+          ...prev,
+          negocio: {
+            ...prev.negocio,
+            logotipo: base64String,
+          },
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImagePreview(null);
+    setFormData((prev) => ({
+      ...prev,
+      negocio: {
+        ...prev.negocio,
+        logotipo: null,
       },
     }));
   };
@@ -218,6 +265,59 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
                 onChange={(e) => handleParametrosChange('ubicacion', e.target.value)}
                 placeholder="Ej: https://maps.google.com/..."
               />
+            </div>
+          </div>
+        </div>
+
+        {/* Sección: Logotipo */}
+        <div className="formulario-seccion">
+          <h3 className="seccion-titulo">
+            <ImageIcon size={20} />
+            Logotipo del Negocio
+          </h3>
+
+          <div className="formulario-grid">
+            <div className="form-group full-width">
+              <label htmlFor="logotipo">Imagen del Logotipo</label>
+              <div className="image-upload-container">
+                <input
+                  id="logotipo"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  style={{ display: 'none' }}
+                />
+                
+                {imagePreview ? (
+                  <div className="image-preview-container">
+                    <img src={imagePreview} alt="Vista previa del logotipo" className="image-preview" />
+                    <div className="image-actions">
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('logotipo')?.click()}
+                        className="btn-change-image"
+                      >
+                        <Upload size={16} />
+                        Cambiar Imagen
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="btn-remove-image"
+                      >
+                        <X size={16} />
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="image-upload-placeholder" onClick={() => document.getElementById('logotipo')?.click()}>
+                    <Upload size={40} />
+                    <p>Haz clic para seleccionar una imagen</p>
+                    <small>Formatos: JPG, PNG, GIF (máx. 2MB)</small>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

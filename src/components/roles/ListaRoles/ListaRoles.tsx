@@ -1,11 +1,10 @@
 import type { Rol } from '../../../types/rol.types';
 import './ListaRoles.css';
-import { Shield, Edit, Trash2, CheckCircle, XCircle, Award } from 'lucide-react';
+import { Shield, Edit, CheckCircle, XCircle, Award } from 'lucide-react';
 
 interface ListaRolesProps {
   roles: Rol[];
   onEditar: (rol: Rol) => void;
-  onEliminar: (id: number) => void;
   loading?: boolean;
 }
 
@@ -22,7 +21,7 @@ const obtenerInfoNivel = (nivel: string) => {
   return niveles.find(n => n.valor === nivelNum) || niveles[0];
 };
 
-export const ListaRoles = ({ roles, onEditar, onEliminar, loading }: ListaRolesProps) => {
+export const ListaRoles = ({ roles, onEditar, loading }: ListaRolesProps) => {
   console.log('🎨 ListaRoles - Props recibidas:', {
     rolesCount: roles.length,
     loading,
@@ -111,19 +110,6 @@ export const ListaRoles = ({ roles, onEditar, onEliminar, loading }: ListaRolesP
               >
                 <Edit size={14} />
                 Editar
-              </button>
-              <button
-                className="btn-accion btn-eliminar"
-                onClick={() => {
-                  if (rol.idRol) {
-                    console.log('🗑️ Eliminando rol:', rol);
-                    onEliminar(rol.idRol);
-                  }
-                }}
-                title="Eliminar rol"
-              >
-                <Trash2 size={14} />
-                Eliminar
               </button>
             </div>
           </div>
