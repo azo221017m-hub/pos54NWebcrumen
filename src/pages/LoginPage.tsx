@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getLogoutMessage } from '../services/sessionService';
 import { authService } from '../services/authService';
+import { SessionInfoModal } from '../components/common/SessionInfoModal';
 import './LoginPage.css';
 
 export const LoginPage = () => {
@@ -12,6 +13,8 @@ export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSessionModal, setShowSessionModal] = useState(false);
+  const [sessionData, setSessionData] = useState<{ alias: string; idNegocio: number } | null>(null);
 
   // Check for logout message and if user is already logged in
   useEffect(() => {
@@ -44,8 +47,12 @@ export const LoginPage = () => {
         // Guardar token y datos del usuario
         authService.saveAuthData(response.data.token, response.data.usuario);
         
-        // Redirigir al dashboard
-        navigate('/dashboard');
+        // Mostrar modal con información de sesión
+        setSessionData({
+          alias: response.data.usuario.alias,
+          idNegocio: response.data.usuario.idNegocio
+        });
+        setShowSessionModal(true);
       } else {
         // Mostrar mensaje de error
         setError(response.message || 'Error al iniciar sesión');
@@ -68,7 +75,23 @@ export const LoginPage = () => {
     }
   };
 
+  const handleCloseSessionModal = () => {
+    setShowSessionModal(false);
+    // Redirigir al dashboard después de cerrar el modal
+    navigate('/dashboard');
+  };
+
   return (
+    <>
+      {showSessionModal && sessionData && (
+        <SessionInfoModal
+          isOpen={showSessionModal}
+          onClose={handleCloseSessionModal}
+          alias={sessionData.alias}
+          idNegocio={sessionData.idNegocio}
+        />
+      )}
+      
     <div className="login-page">
       <div className="login-background">
         <div className="blob blob-1"></div>
@@ -192,6 +215,7 @@ export const LoginPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

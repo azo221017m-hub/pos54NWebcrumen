@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { obtenerVentasWeb, actualizarVentaWeb } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import jsPDF from 'jspdf';
+import { SessionTimer } from '../components/common/SessionTimer';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -345,6 +346,7 @@ export const DashboardPage = () => {
         </div>
 
         <div className="header-right">
+          <SessionTimer />
           <div className="user-menu-container">
             <button 
               className="user-icon-button"

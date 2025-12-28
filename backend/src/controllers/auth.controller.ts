@@ -103,7 +103,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         idRol: usuario.idRol
       },
       process.env.JWT_SECRET || 'secret_key_pos54nwebcrumen_2024',
-      { expiresIn: '8h' } // Token válido por 8 horas
+      { expiresIn: '10m' } // Token válido por 10 minutos
     );
 
     // AUDITORÍA: Registrar login exitoso
