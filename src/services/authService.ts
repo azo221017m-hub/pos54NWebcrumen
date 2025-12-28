@@ -61,6 +61,8 @@ export const authService = {
   saveAuthData: (token: string, usuario: Usuario) => {
     localStorage.setItem('token', token);
     localStorage.setItem('usuario', JSON.stringify(usuario));
+    // Almacenar idnegocio por separado para compatibilidad con código legacy
+    localStorage.setItem('idnegocio', usuario.idNegocio.toString());
   },
 
   /**
@@ -69,6 +71,7 @@ export const authService = {
   clearAuthData: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
+    localStorage.removeItem('idnegocio');
   },
 
   /**
