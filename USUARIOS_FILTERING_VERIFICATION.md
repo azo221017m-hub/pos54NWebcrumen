@@ -4,7 +4,7 @@
 2025-12-28
 
 ## Requerimiento
-**"Al presionar el submenú Usuarios del menu ConfiguracionSistema Se deben mostrar los registros de la tabla tblposcrumenwebusuarios DONDE tblposcrumenwebusuarios.idNegocio = idnegocio del usuario que hizo loguin."**
+**"Al presionar el submenú Usuarios del menu Configuración Sistema Se deben mostrar los registros de la tabla tblposcrumenwebusuarios DONDE tblposcrumenwebusuarios.idNegocio = idnegocio del usuario que hizo login."**
 
 ## Estado de Implementación
 ✅ **IMPLEMENTADO Y FUNCIONANDO**

@@ -9,9 +9,9 @@ echo "╚═══════════════════════�
 echo ""
 
 echo "📋 Requerimiento:"
-echo "   'Al presionar el submenú Usuarios del menu ConfiguracionSistema"
+echo "   'Al presionar el submenú Usuarios del menu Configuración Sistema"
 echo "    Se deben mostrar los registros de la tabla tblposcrumenwebusuarios"
-echo "    DONDE tblposcrumenwebusuarios.idNegocio = idnegocio del usuario que hizo loguin.'"
+echo "    DONDE tblposcrumenwebusuarios.idNegocio = idnegocio del usuario que hizo login.'"
 echo ""
 
 echo "═══════════════════════════════════════════════════════════════"

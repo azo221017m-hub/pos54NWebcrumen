@@ -3,6 +3,24 @@
  * 
  * Este script valida que el endpoint de usuarios filtre correctamente
  * los registros basados en el idNegocio del usuario autenticado.
+ * 
+ * REQUISITOS:
+ * - Base de datos MySQL debe estar accesible
+ * - Variables de entorno configuradas correctamente (.env)
+ * - Datos de prueba existentes en las tablas
+ * 
+ * ERROR HANDLING:
+ * - Database connection failures: Script termina con exit code 1
+ * - Query failures: Se registran en console.error y continúan las demás pruebas
+ * - No data available: Se marca el test como fallido con mensaje descriptivo
+ * 
+ * USO:
+ * cd backend
+ * npx ts-node src/scripts/validateUsuariosFiltering.ts
+ * 
+ * EXIT CODES:
+ * 0 - Todas las pruebas pasaron
+ * 1 - Al menos una prueba falló o error fatal
  */
 
 import { pool } from '../config/db';
