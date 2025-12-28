@@ -56,35 +56,6 @@ export const authService = {
   },
 
   /**
-   * Verifica si la tabla tblposcrumenwebusuarios está vacía
-   */
-  checkUsersTableEmpty: async (): Promise<{ isEmpty: boolean; count: number }> => {
-    try {
-      const response = await api.get<{ success: boolean; data: { isEmpty: boolean; count: number } }>('/auth/check-users-empty');
-      return response.data.data;
-    } catch (error) {
-      console.error('Error al verificar tabla de usuarios:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Realiza auto-login cuando la tabla está vacía
-   * Crea una sesión temporal de 2 minutos
-   */
-  autoLogin: async (): Promise<LoginResponse> => {
-    try {
-      const response = await api.post<LoginResponse>('/auth/auto-login');
-      return response.data;
-    } catch (error: any) {
-      if (error.response?.data) {
-        return error.response.data;
-      }
-      throw error;
-    }
-  },
-
-  /**
    * Almacena los datos del usuario y token en localStorage
    */
   saveAuthData: (token: string, usuario: Usuario) => {
