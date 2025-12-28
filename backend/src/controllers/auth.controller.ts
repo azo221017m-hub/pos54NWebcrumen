@@ -94,6 +94,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     // PASO 5: Login exitoso - Generar token JWT
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) {
+      throw new Error('JWT_SECRET no configurado');
+    }
+    
     const token = jwt.sign(
       { 
         id: usuario.idUsuario, 
@@ -102,7 +107,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         idNegocio: usuario.idNegocio,
         idRol: usuario.idRol
       },
-      process.env.JWT_SECRET || 'secret_key_pos54nwebcrumen_2024',
+      JWT_SECRET,
       { expiresIn: '10m' } // Token válido por 10 minutos
     );
 
@@ -357,10 +362,20 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
 
     const currentToken = authHeader.split(' ')[1];
     
+    // Validar que JWT_SECRET esté configurado
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) {
+      res.status(500).json({
+        success: false,
+        message: 'Error de configuración del servidor'
+      });
+      return;
+    }
+    
     // Verificar y decodificar el token actual
     const decoded = jwt.verify(
       currentToken,
-      process.env.JWT_SECRET || 'secret_key_pos54nwebcrumen_2024'
+      JWT_SECRET
     ) as { id: number; alias: string; nombre: string; idNegocio: number; idRol: number };
 
     // Verificar que el usuario todavía esté activo en la base de datos
@@ -388,7 +403,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
         idNegocio: usuario.idNegocio,
         idRol: usuario.idRol
       },
-      process.env.JWT_SECRET || 'secret_key_pos54nwebcrumen_2024',
+      JWT_SECRET,
       { expiresIn: '10m' } // Token válido por 10 minutos
     );
 

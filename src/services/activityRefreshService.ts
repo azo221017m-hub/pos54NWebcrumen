@@ -8,12 +8,14 @@ import { getToken, getTimeUntilExpiration } from './sessionService';
 
 // Constantes de configuración
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const TOKEN_KEY = 'token'; // Debe coincidir con sessionService.ts
 const REFRESH_THRESHOLD_MS = 300000; // Renovar si quedan menos de 5 minutos (300000ms)
 const MIN_REFRESH_INTERVAL_MS = 60000; // No renovar más de una vez por minuto
 
 // Variable para rastrear la última renovación
 let lastRefreshTime = 0;
 let isRefreshing = false;
+let lastActivityCheck = 0;
 
 /**
  * Determina si es necesario renovar el token
@@ -70,8 +72,8 @@ export const refreshToken = async (): Promise<boolean> => {
     const data = await response.json();
     
     if (data.success && data.data?.token) {
-      // Actualizar el token en localStorage
-      localStorage.setItem('token', data.data.token);
+      // Actualizar el token en localStorage usando la constante
+      localStorage.setItem(TOKEN_KEY, data.data.token);
       lastRefreshTime = Date.now();
       console.log('✅ Token renovado exitosamente');
       return true;
@@ -94,6 +96,13 @@ export const refreshToken = async (): Promise<boolean> => {
  * - Acciones importantes del usuario
  */
 export const trackActivity = async (): Promise<void> => {
+  // Throttle: evitar verificaciones excesivas (no más de una verificación cada 10 segundos)
+  const now = Date.now();
+  if (now - lastActivityCheck < 10000) {
+    return; // Ignorar actividad si se verificó hace menos de 10 segundos
+  }
+  lastActivityCheck = now;
+  
   if (shouldRefreshToken()) {
     await refreshToken();
   }

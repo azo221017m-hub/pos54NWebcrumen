@@ -95,10 +95,15 @@ export const clearSession = (): void => {
  */
 export const setupSessionClearOnReload = (): (() => void) => {
   const handleBeforeUnload = () => {
+    // Obtener token y pathname de forma síncrona
     // Solo limpiar si hay una sesión activa (no estamos en login)
-    const token = getToken();
-    if (token && window.location.pathname !== '/login') {
-      clearSession();
+    const currentPath = window.location.pathname;
+    const token = localStorage.getItem(TOKEN_KEY);
+    
+    if (token && currentPath !== '/login') {
+      // Limpieza síncrona de localStorage
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USUARIO_KEY);
     }
   };
 
