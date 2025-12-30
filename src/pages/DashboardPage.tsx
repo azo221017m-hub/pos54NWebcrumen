@@ -34,6 +34,9 @@ const getUsuarioFromStorage = (): Usuario | null => {
 const TIPO_VENTA_FILTER_ALL = 'TODOS' as const;
 type TipoVentaFilterOption = TipoDeVenta | typeof TIPO_VENTA_FILTER_ALL;
 
+// Timing constants
+const MODAL_DISPLAY_DELAY_MS = 500;
+
 // Helper to render icon SVG for sale type as React component
 const TipoVentaIcon: React.FC<{ tipo: TipoDeVenta }> = ({ tipo }) => {
   switch (tipo) {
@@ -289,7 +292,7 @@ export const DashboardPage = () => {
       // Small delay to allow UI to render before showing modal
       const timer = setTimeout(() => {
         setShowModalSeleccionVenta(true);
-      }, 500);
+      }, MODAL_DISPLAY_DELAY_MS);
       return () => clearTimeout(timer);
     } else {
       setShowModalSeleccionVenta(false);

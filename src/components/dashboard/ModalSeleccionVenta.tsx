@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import type { TipoServicio } from '../../types/mesa.types';
 import './ModalSeleccionVenta.css';
 
 interface ModalSeleccionVentaProps {
@@ -12,7 +13,7 @@ const ModalSeleccionVenta: React.FC<ModalSeleccionVentaProps> = ({ isOpen, onClo
 
   if (!isOpen) return null;
 
-  const handleTipoVentaSelect = (tipoVenta: 'Domicilio' | 'Llevar' | 'Mesa') => {
+  const handleTipoVentaSelect = (tipoVenta: TipoServicio) => {
     // Navigate to ventas page with the selected sale type
     navigate('/ventas', { state: { tipoServicioPreseleccionado: tipoVenta } });
     onClose();

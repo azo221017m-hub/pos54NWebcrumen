@@ -29,6 +29,7 @@ interface ItemComanda {
 
 // Constants
 const ESTATUS_ACTIVO = 1;
+const SERVICE_CONFIG_MODAL_DELAY_MS = 300;
 
 const PageVentas: React.FC = () => {
   const navigate = useNavigate();
@@ -175,7 +176,7 @@ const PageVentas: React.FC = () => {
       // Open the modal to configure the service
       setTimeout(() => {
         setModalOpen(true);
-      }, 300);
+      }, SERVICE_CONFIG_MODAL_DELAY_MS);
     }
 
     // If a sale is being loaded from dashboard
