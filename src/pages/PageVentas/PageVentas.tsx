@@ -438,9 +438,9 @@ const PageVentas: React.FC = () => {
         console.error('Error al registrar venta:', errorMsg);
         alert(`Error al registrar la venta:\n${errorMsg}\n\nPor favor, verifique que todos los datos estén correctos e intente nuevamente.`);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error al crear venta:', error);
-      const errorMsg = error?.message || 'Error de conexión con el servidor';
+      const errorMsg = (error instanceof Error) ? error.message : 'Error de conexión con el servidor';
       alert(`Error al registrar la venta:\n${errorMsg}\n\nPor favor, intente nuevamente.`);
     }
   };
