@@ -2,7 +2,9 @@ import apiClient from './api';
 import type { 
   VentaWebCreate, 
   VentaWebUpdate, 
-  VentaWebWithDetails 
+  VentaWebWithDetails,
+  DetalleVentaWeb,
+  EstadoDetalle
 } from '../types/ventasWeb.types';
 
 const API_BASE = '/ventas-web';
@@ -101,5 +103,43 @@ export const cancelarVentaWeb = async (id: number): Promise<boolean> => {
   } catch (error) {
     console.error('🔴 ventasWebService: Error al cancelar venta web:', error);
     return false;
+  }
+};
+
+// Actualizar estado de un detalle de venta
+export const actualizarEstadoDetalle = async (
+  idVenta: number, 
+  idDetalle: number, 
+  estadodetalle: EstadoDetalle
+): Promise<{ success: boolean; message?: string }> => {
+  try {
+    console.log('🔵 ventasWebService: Actualizando estado del detalle:', { idVenta, idDetalle, estadodetalle });
+    await apiClient.patch<{ success: boolean; message: string }>(
+      `${API_BASE}/${idVenta}/detalles/${idDetalle}/estado`,
+      { estadodetalle }
+    );
+    console.log('🔵 ventasWebService: Estado del detalle actualizado exitosamente');
+    return { success: true };
+  } catch (error: any) {
+    console.error('🔴 ventasWebService: Error al actualizar estado del detalle:', error);
+    const errorMessage = error?.response?.data?.message || 
+                        error?.message || 
+                        'Error desconocido al actualizar el estado del detalle';
+    return { success: false, message: errorMessage };
+  }
+};
+
+// Obtener detalles por estado (útil para vistas de cocina/producción)
+export const obtenerDetallesPorEstado = async (estado: EstadoDetalle): Promise<DetalleVentaWeb[]> => {
+  try {
+    console.log('🔵 ventasWebService: Obteniendo detalles con estado:', estado);
+    const response = await apiClient.get<{ success: boolean; data: DetalleVentaWeb[] }>(
+      `${API_BASE}/detalles/estado/${estado}`
+    );
+    console.log('🔵 ventasWebService: Detalles obtenidos:', response.data.data.length);
+    return response.data.data;
+  } catch (error) {
+    console.error('🔴 ventasWebService: Error al obtener detalles por estado:', error);
+    return [];
   }
 };

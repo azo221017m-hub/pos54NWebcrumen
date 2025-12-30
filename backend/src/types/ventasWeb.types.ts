@@ -4,7 +4,7 @@ export type TipoDeVenta = 'DOMICILIO' | 'LLEVAR' | 'MESA' | 'ONLINE';
 export type EstadoDeVenta = 'SOLICITADO' | 'LEIDO' | 'PREPARANDO' | 'EN_CAMINO' | 'ENTREGADO' | 'CANCELADO' | 'DEVUELTO' | 'COBRADO' | 'ESPERAR';
 export type FormaDePago = 'EFECTIVO' | 'TARJETA' | 'TRANSFERENCIA' | 'MIXTO';
 export type EstatusDePago = 'PENDIENTE' | 'PAGADO' | 'PARCIAL';
-export type TipoAfectacion = 'DIRECTO' | 'RECETA' | 'NO_APLICA';
+export type TipoAfectacion = 'DIRECTO' | 'INVENTARIO' | 'RECETA';
 export type EstadoDetalle = 'ORDENADO' | 'CANCELADO' | 'DEVUELTO' | 'PREPARACION' | 'COBRADO' | 'ESPERAR';
 
 export interface VentaWeb {
@@ -93,6 +93,10 @@ export interface VentaWebUpdate {
   fechaenvio?: Date | string | null;
   fechaentrega?: Date | string | null;
   propinadeventa?: number;
+}
+
+export interface DetalleVentaWebUpdate {
+  estadodetalle?: EstadoDetalle;
 }
 
 export interface VentaWebWithDetails extends VentaWeb {
