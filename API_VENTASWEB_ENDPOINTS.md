@@ -113,8 +113,9 @@ Create a new sale with details. Used by both "Producir" and "Esperar" buttons.
 - **Producir button**: Creates sale with `estadodeventa='SOLICITADO'` and `estadodetalle='ORDENADO'`
 - **Esperar button**: Creates sale with `estadodeventa='ESPERAR'` and `estadodetalle='ESPERAR'`
 - `tipoafectacion` is automatically determined:
-  - `RECETA`: If idreceta is provided
-  - `INVENTARIO`: If no recipe (direct product)
+  - `RECETA`: If idreceta is provided (product made from recipe)
+  - `DIRECTO`: If no recipe (finished product sold directly)
+  - `INVENTARIO`: Available but requires product type info (for raw materials)
   - All items set `afectainventario=1` by default
 
 ### 4. Update Venta
@@ -368,12 +369,17 @@ CREATE TABLE tblposcrumenwebdetalleventas (
 ### Key Fields
 - **estadodetalle**: Current status of the line item
 - **tipoafectacion**: How this item affects inventory
-  - `RECETA`: Item is made from a recipe
-  - `INVENTARIO`: Item affects inventory directly
-  - `DIRECTO`: Direct sale item
+  - `RECETA`: Item is made from a recipe (affects ingredients/insumos from recipe)
+  - `DIRECTO`: Finished product without recipe (affects product inventory directly)
+  - `INVENTARIO`: Raw materials/inventory items sold directly (affects raw material inventory)
 - **moderadores**: Comma-separated IDs of selected moderadores
 - **afectainventario**: Whether this item affects inventory (1=yes, 0=no)
 - **inventarioprocesado**: Whether inventory has been processed (1=yes, 0=no)
+
+**Note on tipoafectacion assignment**:
+- Automatically set to `RECETA` when `idreceta` is provided
+- Defaults to `DIRECTO` for products without recipes
+- `INVENTARIO` is available in the enum but requires additional product type information to be used (future enhancement)
 
 ---
 

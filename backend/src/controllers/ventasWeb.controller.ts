@@ -224,15 +224,19 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       const detalleTotal = detalleSubtotal - detalleDescuento + detalleImpuesto;
 
       // Determinar tipo de afectación basado en el producto
+      // RECETA: Productos elaborados con receta (afecta insumos de la receta)
+      // DIRECTO: Productos terminados sin receta (afecta inventario del producto directamente)
+      // INVENTARIO: Insumos/materias primas vendidos directamente (sin elaboración)
       let tipoafectacion: 'DIRECTO' | 'INVENTARIO' | 'RECETA' = 'DIRECTO';
       let afectainventario = 1; // Por defecto sí afecta inventario
 
-      // Priorizar receta sobre producto directo
       if (detalle.idreceta && detalle.idreceta > 0) {
+        // Si tiene receta, el tipo es RECETA
         tipoafectacion = 'RECETA';
       } else {
-        // Si no hay receta, es un producto directo o de inventario
-        tipoafectacion = 'INVENTARIO';
+        // Si no tiene receta, es un producto directo
+        // (INVENTARIO se usaría para materias primas, requiere info adicional del producto)
+        tipoafectacion = 'DIRECTO';
       }
 
       await connection.execute(

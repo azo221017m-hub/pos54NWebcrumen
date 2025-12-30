@@ -8,10 +8,13 @@ NOT NULL DEFAULT 'ORDENADO'
 COMMENT 'Estado actual del detalle de venta';
 
 -- Verify and update the tipoafectacion enum to match database requirements
+-- DIRECTO: Finished products without recipe (default)
+-- INVENTARIO: Raw materials/inventory items
+-- RECETA: Products made from recipes
 ALTER TABLE tblposcrumenwebdetalleventas 
 MODIFY COLUMN tipoafectacion ENUM('DIRECTO','INVENTARIO','RECETA') 
-NOT NULL DEFAULT 'INVENTARIO'
-COMMENT 'Tipo de afectación al inventario';
+NOT NULL DEFAULT 'DIRECTO'
+COMMENT 'Tipo de afectación al inventario: DIRECTO=producto terminado, INVENTARIO=materia prima, RECETA=producto con receta';
 
 -- Ensure moderadores column exists (should have been added by previous migration)
 -- This is idempotent - won't fail if column already exists
