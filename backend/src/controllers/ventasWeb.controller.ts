@@ -250,7 +250,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
           detalle.idproducto,
           detalle.nombreproducto,
           detalle.idreceta || null,
-          detalle.nombrereceta || '',
+          detalle.nombrereceta || null,
           detalle.cantidad,
           detalle.preciounitario,
           detalle.costounitario,
@@ -283,9 +283,15 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
   } catch (error) {
     await connection.rollback();
     console.error('Error al crear venta web:', error);
+    
+    // Provide more detailed error message for debugging
+    const errorMessage = error instanceof Error 
+      ? `Error al registrar venta web: ${error.message}` 
+      : 'Error al registrar venta web';
+    
     res.status(500).json({ 
       success: false, 
-      message: 'Error al registrar venta web' 
+      message: errorMessage
     });
   } finally {
     connection.release();
