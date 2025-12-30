@@ -37,6 +37,7 @@ const PageVentas: React.FC = () => {
   
   // Get sale data from navigation state
   const ventaToLoad = (location.state as { ventaToLoad?: VentaWebWithDetails })?.ventaToLoad;
+  const tipoServicioPreseleccionado = (location.state as { tipoServicioPreseleccionado?: TipoServicio })?.tipoServicioPreseleccionado;
   
   // Utility function to safely format prices
   const formatPrice = (price: number | string | undefined | null): string => {
@@ -166,6 +167,16 @@ const PageVentas: React.FC = () => {
 
     cargarProductos();
     cargarCategorias();
+
+    // Check if a service type was preselected from dashboard modal
+    if (tipoServicioPreseleccionado) {
+      setTipoServicio(tipoServicioPreseleccionado);
+      setIsServiceConfigured(false);
+      // Open the modal to configure the service
+      setTimeout(() => {
+        setModalOpen(true);
+      }, 300);
+    }
 
     // If a sale is being loaded from dashboard
     if (ventaToLoad) {
