@@ -1,6 +1,6 @@
 // Tipos para Productos Web (tblposcrumenwebproductos)
 
-export type TipoProducto = 'Directo' | 'Inventario' | 'Receta';
+export type TipoProducto = 'Directo' | 'Inventario' | 'Receta' | 'Materia Prima';
 
 export interface ProductoWeb {
   idProducto: number;

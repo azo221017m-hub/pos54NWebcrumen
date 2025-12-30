@@ -109,8 +109,8 @@ const PageVentas: React.FC = () => {
   const cargarProductos = async () => {
     try {
       const data = await obtenerProductosWeb();
-      // Filtrar solo productos activos
-      const productosActivos = data.filter(p => p.estatus === ESTATUS_ACTIVO);
+      // Filtrar solo productos activos y que no sean Materia Prima
+      const productosActivos = data.filter(p => p.estatus === ESTATUS_ACTIVO && p.tipoproducto !== 'Materia Prima');
       setProductos(productosActivos);
       setProductosVisibles(productosActivos);
     } catch (error) {
@@ -395,7 +395,7 @@ const PageVentas: React.FC = () => {
       const ventaData: VentaWebCreate = {
         tipodeventa: tipoDeVentaMap[tipoServicio],
         cliente: cliente,
-        formadepago: 'EFECTIVO', // Valor por defecto, se puede agregar selector en UI
+        formadepago: 'sinFP', // Valor por defecto según requerimientos
         direcciondeentrega,
         contactodeentrega,
         telefonodeentrega,
@@ -442,7 +442,7 @@ const PageVentas: React.FC = () => {
   };
 
   const handleProducir = async () => {
-    await crearVenta('SOLICITADO', 'ORDENADO');
+    await crearVenta('ORDENADO', 'ORDENADO');
   };
 
   const handleEsperar = async () => {

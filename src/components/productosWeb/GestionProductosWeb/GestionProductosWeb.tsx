@@ -35,7 +35,9 @@ const GestionProductosWeb: React.FC = () => {
     try {
       setCargando(true);
       const data = await obtenerProductosWeb();
-      setProductos(data);
+      // Filtrar productos que no sean Materia Prima
+      const productosFiltrados = data.filter(p => p.tipoproducto !== 'Materia Prima');
+      setProductos(productosFiltrados);
     } catch (error) {
       console.error('Error al cargar productos:', error);
       mostrarMensaje('error', 'Error al cargar los productos');
