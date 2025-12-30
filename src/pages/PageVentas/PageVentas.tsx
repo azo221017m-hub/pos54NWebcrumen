@@ -208,7 +208,6 @@ const PageVentas: React.FC = () => {
           codigoSKU: '',
           tipoproducto: detalle.idreceta ? 'Receta' : 'Directo',
           idreferencia: detalle.idreceta || null,
-          nombreReceta: undefined,
           unidaddemedida: 'Pieza',
           imagenProducto: null,
           estatus: 1,
