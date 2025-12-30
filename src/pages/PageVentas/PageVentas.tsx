@@ -562,10 +562,8 @@ const PageVentas: React.FC = () => {
     }, SERVICE_CONFIG_MODAL_DELAY_MS);
   };
 
-  const handleSelectionModalClose = () => {
-    // When closing the selection modal, navigate to dashboard
-    navigate('/dashboard');
-  };
+  // Note: Removed handleSelectionModalClose - clicking outside modal 
+  // now navigates to dashboard directly in the modal component
 
   const handleModalSave = (data: MesaFormData | LlevarFormData | DomicilioFormData) => {
     if (tipoServicio === 'Mesa') {
@@ -876,7 +874,6 @@ const PageVentas: React.FC = () => {
       {/* Modal para selección de tipo de venta */}
       <ModalSeleccionVentaPageVentas
         isOpen={showSelectionModal}
-        onClose={handleSelectionModalClose}
         onTipoVentaSelect={handleSelectionModalVentaSelect}
       />
 
