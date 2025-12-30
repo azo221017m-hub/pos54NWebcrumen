@@ -8,6 +8,7 @@ import { crearVentaWeb } from '../../services/ventasWebService';
 import { obtenerModeradores } from '../../services/moderadoresService';
 import { obtenerModeradoresRef } from '../../services/moderadoresRefService';
 import ModalTipoServicio from '../../components/ventas/ModalTipoServicio';
+import ModalSeleccionVentaPageVentas from '../../components/ventas/ModalSeleccionVentaPageVentas';
 import type { MesaFormData, LlevarFormData, DomicilioFormData } from '../../components/ventas/ModalTipoServicio';
 import type { ProductoWeb } from '../../types/productoWeb.types';
 import type { Usuario } from '../../types/usuario.types';
@@ -30,6 +31,7 @@ interface ItemComanda {
 // Constants
 const ESTATUS_ACTIVO = 1;
 const SERVICE_CONFIG_MODAL_DELAY_MS = 300;
+const SELECTION_MODAL_DISPLAY_DELAY_MS = 500;
 
 const PageVentas: React.FC = () => {
   const navigate = useNavigate();
@@ -71,6 +73,7 @@ const PageVentas: React.FC = () => {
   const [domicilioData, setDomicilioData] = useState<DomicilioFormData | null>(null);
   const [isServiceConfigured, setIsServiceConfigured] = useState(false);
   const [isLoadedFromDashboard, setIsLoadedFromDashboard] = useState(false);
+  const [showSelectionModal, setShowSelectionModal] = useState(false);
 
 
   // Close user menu when clicking outside
@@ -250,6 +253,24 @@ const PageVentas: React.FC = () => {
       }
     }
   }, []);
+
+  // Show selection modal when comanda is empty and service not configured
+  useEffect(() => {
+    // Only show if:
+    // - Not loaded from dashboard
+    // - Service is not configured
+    // - Comanda is empty
+    if (!isLoadedFromDashboard && !isServiceConfigured && comanda.length === 0) {
+      const timer = setTimeout(() => {
+        setShowSelectionModal(true);
+      }, SELECTION_MODAL_DISPLAY_DELAY_MS);
+
+      return () => clearTimeout(timer);
+    } else {
+      // Hide modal if comanda has items or service is configured
+      setShowSelectionModal(false);
+    }
+  }, [comanda.length, isServiceConfigured, isLoadedFromDashboard]);
 
   // Filtrar productos por búsqueda y categoría
   useEffect(() => {
@@ -515,6 +536,16 @@ const PageVentas: React.FC = () => {
     setTipoServicio(tipo);
     setIsServiceConfigured(false);
     setModalOpen(true);
+  };
+
+  const handleSelectionModalVentaSelect = (tipo: TipoServicio) => {
+    setTipoServicio(tipo);
+    setIsServiceConfigured(false);
+    setShowSelectionModal(false);
+    // Open configuration modal after a short delay
+    setTimeout(() => {
+      setModalOpen(true);
+    }, SERVICE_CONFIG_MODAL_DELAY_MS);
   };
 
   const handleModalSave = (data: MesaFormData | LlevarFormData | DomicilioFormData) => {
@@ -821,6 +852,13 @@ const PageVentas: React.FC = () => {
         onClose={handleModalClose}
         onSave={handleModalSave}
         initialData={getInitialModalData()}
+      />
+
+      {/* Modal para selección de tipo de venta */}
+      <ModalSeleccionVentaPageVentas
+        isOpen={showSelectionModal}
+        onClose={() => setShowSelectionModal(false)}
+        onTipoVentaSelect={handleSelectionModalVentaSelect}
       />
 
       {/* Modal para selección de moderadores */}
