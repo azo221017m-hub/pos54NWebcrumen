@@ -2,6 +2,25 @@
 
 ## Pre-Despliegue
 
+### Base de Datos (⚠️ CRÍTICO)
+- [ ] **Verificar migraciones pendientes**
+  - [ ] Revisar `backend/src/scripts/README_MIGRATIONS.md`
+  - [ ] Ejecutar migraciones requeridas ANTES del deploy
+  
+- [ ] **Migración: moderadores column** (REQUERIDA)
+  ```bash
+  # Ver: backend/MIGRATION_MODERADORES_COLUMN.md
+  mysql -h <DB_HOST> -u <DB_USER> -p <DB_NAME>
+  source backend/src/scripts/add_moderadores_to_detalleventas.sql
+  ```
+  - [ ] Verificar: `DESCRIBE tblposcrumenwebdetalleventas;`
+  - [ ] Confirmar que columna `moderadores` existe
+  
+- [ ] **Respaldo de base de datos**
+  ```bash
+  mysqldump -h <DB_HOST> -u <DB_USER> -p <DB_NAME> > backup_$(date +%Y%m%d_%H%M%S).sql
+  ```
+
 ### Backend
 - [ ] Actualizar `backend/.env` con valores de producción
   - [ ] `NODE_ENV=production`
@@ -185,6 +204,13 @@
 ---
 
 ## Troubleshooting
+
+### Problema: "Unknown column 'moderadores' in field list"
+**Solución:**
+1. Falta ejecutar migración de base de datos
+2. Ver documentación: `SOLUCION_ERROR_MODERADORES.md`
+3. Ejecutar: `backend/src/scripts/add_moderadores_to_detalleventas.sql`
+4. Reiniciar backend después de aplicar migración
 
 ### Problema: CORS Error
 **Solución:**
