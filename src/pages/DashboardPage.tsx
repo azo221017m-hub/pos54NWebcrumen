@@ -5,7 +5,6 @@ import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/v
 import jsPDF from 'jspdf';
 import { SessionTimer } from '../components/common/SessionTimer';
 import { clearSession } from '../services/sessionService';
-import ModalSeleccionVenta from '../components/dashboard/ModalSeleccionVenta';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -33,9 +32,6 @@ const getUsuarioFromStorage = (): Usuario | null => {
 
 const TIPO_VENTA_FILTER_ALL = 'TODOS' as const;
 type TipoVentaFilterOption = TipoDeVenta | typeof TIPO_VENTA_FILTER_ALL;
-
-// Timing constants
-const MODAL_DISPLAY_DELAY_MS = 500;
 
 // Helper to render icon SVG for sale type as React component
 const TipoVentaIcon: React.FC<{ tipo: TipoDeVenta }> = ({ tipo }) => {
@@ -103,7 +99,6 @@ export const DashboardPage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [ventasSolicitadas, setVentasSolicitadas] = useState<VentaWebWithDetails[]>([]);
   const [tipoVentaFilter, setTipoVentaFilter] = useState<TipoVentaFilterOption>(TIPO_VENTA_FILTER_ALL);
-  const [showModalSeleccionVenta, setShowModalSeleccionVenta] = useState(false);
 
   const handleLogout = useCallback(() => {
     // Limpiar completamente la sesión
@@ -285,19 +280,6 @@ export const DashboardPage = () => {
     cargarVentasSolicitadas();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas omitted to prevent infinite refresh loop
   }, [navigate]);
-
-  // Show modal when there are no sales solicited
-  useEffect(() => {
-    if (ventasSolicitadas.length === 0) {
-      // Small delay to allow UI to render before showing modal
-      const timer = setTimeout(() => {
-        setShowModalSeleccionVenta(true);
-      }, MODAL_DISPLAY_DELAY_MS);
-      return () => clearTimeout(timer);
-    } else {
-      setShowModalSeleccionVenta(false);
-    }
-  }, [ventasSolicitadas]);
 
   // Early return if not authenticated
   const usuarioData = localStorage.getItem('usuario');
@@ -921,12 +903,6 @@ export const DashboardPage = () => {
           </div>
         </div>
       )}
-
-      {/* Modal de Selección de Tipo de Venta */}
-      <ModalSeleccionVenta 
-        isOpen={showModalSeleccionVenta}
-        onClose={() => setShowModalSeleccionVenta(false)}
-      />
     </div>
   );
 };
