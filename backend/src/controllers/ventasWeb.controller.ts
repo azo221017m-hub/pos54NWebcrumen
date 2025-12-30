@@ -241,18 +241,17 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
 
       await connection.execute(
         `INSERT INTO tblposcrumenwebdetalleventas (
-          idventa, idproducto, nombreproducto, idreceta, nombrereceta,
+          idventa, idproducto, nombreproducto, idreceta,
           cantidad, preciounitario, costounitario, subtotal, descuento,
           impuesto, total, afectainventario, tipoafectacion, 
           inventarioprocesado, fechadetalleventa, estadodetalle, 
           observaciones, moderadores, idnegocio, usuarioauditoria, fechamodificacionauditoria
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, NOW())`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, NOW())`,
         [
           ventaId,
           detalle.idproducto,
           detalle.nombreproducto,
           detalle.idreceta || null,
-          detalle.nombrereceta || null,
           detalle.cantidad,
           detalle.preciounitario,
           detalle.costounitario,
