@@ -18,7 +18,8 @@ const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps
 
   const handleTipoVentaSelect = (tipoVenta: TipoServicio) => {
     onTipoVentaSelect(tipoVenta);
-    // Don't call onClose() here - the parent's onTipoVentaSelect already handles modal state
+    // Note: Not calling onClose() here because onTipoVentaSelect handles modal state
+    // and opens the configuration modal. Calling onClose() would navigate to dashboard.
   };
 
   const handleOverlayClick = () => {

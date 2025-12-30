@@ -562,8 +562,8 @@ const PageVentas: React.FC = () => {
     }, SERVICE_CONFIG_MODAL_DELAY_MS);
   };
 
-  // Note: Removed handleSelectionModalClose - clicking outside modal 
-  // now navigates to dashboard directly in the modal component
+  // Note: handleOverlayClick (defined in modal component) handles navigation to dashboard
+  // when clicking outside the modal, replacing the previous handleSelectionModalClose handler
 
   const handleModalSave = (data: MesaFormData | LlevarFormData | DomicilioFormData) => {
     if (tipoServicio === 'Mesa') {
