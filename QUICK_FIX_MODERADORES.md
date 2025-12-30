@@ -12,12 +12,12 @@ Error al registrar venta web: Unknown column 'moderadores' in field list
 
 **1. Haz un respaldo (SIEMPRE primero):**
 ```bash
-mysqldump -h crumenprod01.mysql.database.azure.com -u azavala -p bdcdttx > backup_$(date +%Y%m%d_%H%M%S).sql
+mysqldump -h <DB_HOST> -u <DB_USER> -p <DB_NAME> > backup_$(date +%Y%m%d_%H%M%S).sql
 ```
 
 **2. Conecta a la base de datos:**
 ```bash
-mysql -h crumenprod01.mysql.database.azure.com -u azavala -p bdcdttx
+mysql -h <DB_HOST> -u <DB_USER> -p <DB_NAME>
 ```
 *(Te pedirá la contraseña)*
 
@@ -51,7 +51,7 @@ Si prefieres usar el script SQL incluido en el proyecto:
 
 ```bash
 # Conéctate a la base de datos
-mysql -h crumenprod01.mysql.database.azure.com -u azavala -p bdcdttx
+mysql -h <DB_HOST> -u <DB_USER> -p <DB_NAME>
 
 # Dentro de MySQL, ejecuta:
 source backend/src/scripts/add_moderadores_to_detalleventas.sql

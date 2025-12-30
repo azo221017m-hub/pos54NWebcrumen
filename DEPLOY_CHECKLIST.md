@@ -7,9 +7,9 @@
   - [ ] Revisar `backend/src/scripts/README_MIGRATIONS.md`
   - [ ] Ejecutar migraciones requeridas ANTES del deploy
   
-- [ ] **Migración: moderadores column** (REQUERIDA)
+- [ ] **Migration: moderadores column** (REQUIRED)
   ```bash
-  # Ver: backend/MIGRATION_MODERADORES_COLUMN.md
+  # See: backend/MIGRATION_MODERADORES_COLUMN.md
   mysql -h <DB_HOST> -u <DB_USER> -p <DB_NAME>
   source backend/src/scripts/add_moderadores_to_detalleventas.sql
   ```

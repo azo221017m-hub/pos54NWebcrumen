@@ -197,7 +197,8 @@ After deploying the migration:
 
 - **Issue**: "Error al registrar venta web: Unknown column 'moderadores' in field list"
 - **Controller**: `backend/src/controllers/ventasWeb.controller.ts` (line 246)
-- **Types**: `backend/src/types/ventasWeb.types.ts` and `src/types/ventasWeb.types.ts`
+- **Types (Backend)**: `backend/src/types/ventasWeb.types.ts`
+- **Types (Frontend)**: `src/types/ventasWeb.types.ts` (in project root, not backend)
 - **Migration Script**: `backend/src/scripts/add_moderadores_to_detalleventas.sql`
 - **Related Documentation**: 
   - `MODERADORES_VS_USUARIOS.md` - Explanation of what moderadores are
