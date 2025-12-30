@@ -5,13 +5,11 @@ import './ModalSeleccionVentaPageVentas.css';
 
 interface ModalSeleccionVentaPageVentasProps {
   isOpen: boolean;
-  onClose: () => void;
   onTipoVentaSelect: (tipoVenta: TipoServicio) => void;
 }
 
 const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps> = ({ 
   isOpen, 
-  onClose, 
   onTipoVentaSelect 
 }) => {
   const navigate = useNavigate();
@@ -20,7 +18,8 @@ const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps
 
   const handleTipoVentaSelect = (tipoVenta: TipoServicio) => {
     onTipoVentaSelect(tipoVenta);
-    onClose();
+    // Note: Not calling onClose() here because onTipoVentaSelect handles modal state
+    // and opens the configuration modal. Calling onClose() would navigate to dashboard.
   };
 
   const handleOverlayClick = () => {
