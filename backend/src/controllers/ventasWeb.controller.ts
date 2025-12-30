@@ -224,17 +224,19 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       const detalleTotal = detalleSubtotal - detalleDescuento + detalleImpuesto;
 
       // Determinar tipo de afectación basado en el producto
-      let tipoafectacion: 'DIRECTO' | 'RECETA' | 'NO_APLICA' = 'NO_APLICA';
-      let afectainventario = 0;
+      // RECETA: Productos elaborados con receta (afecta insumos de la receta)
+      // DIRECTO: Productos terminados sin receta (afecta inventario del producto directamente)
+      // INVENTARIO: Insumos/materias primas vendidos directamente (sin elaboración)
+      let tipoafectacion: 'DIRECTO' | 'INVENTARIO' | 'RECETA' = 'DIRECTO';
+      let afectainventario = 1; // Por defecto sí afecta inventario
 
-      // Priorizar receta sobre producto directo
       if (detalle.idreceta && detalle.idreceta > 0) {
+        // Si tiene receta, el tipo es RECETA
         tipoafectacion = 'RECETA';
-        afectainventario = 1;
-      } else if (detalle.idproducto && detalle.idproducto > 0) {
-        // Solo si no hay receta, considerar producto directo
+      } else {
+        // Si no tiene receta, es un producto directo
+        // (INVENTARIO se usaría para materias primas, requiere info adicional del producto)
         tipoafectacion = 'DIRECTO';
-        afectainventario = 1;
       }
 
       await connection.execute(
@@ -460,6 +462,128 @@ export const deleteVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     res.status(500).json({ 
       success: false, 
       message: 'Error al cancelar venta web' 
+    });
+  }
+};
+
+// Actualizar el estado de un detalle de venta
+export const updateDetalleEstado = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id, iddetalle } = req.params;
+    const { estadodetalle } = req.body;
+    const idnegocio = req.user?.idNegocio;
+    const usuarioauditoria = req.user?.alias;
+
+    if (!idnegocio || !usuarioauditoria) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
+    if (!estadodetalle) {
+      res.status(400).json({
+        success: false,
+        message: 'El campo estadodetalle es requerido'
+      });
+      return;
+    }
+
+    // Validar que el estado sea válido
+    const estadosValidos = ['ESPERAR', 'ORDENADO', 'CANCELADO', 'DEVUELTO', 'PREPARACION', 'COBRADO'];
+    if (!estadosValidos.includes(estadodetalle)) {
+      res.status(400).json({
+        success: false,
+        message: 'Estado de detalle inválido'
+      });
+      return;
+    }
+
+    // Verificar que el detalle existe y pertenece a la venta y al negocio
+    const [detalleRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT d.iddetalleventa 
+       FROM tblposcrumenwebdetalleventas d
+       INNER JOIN tblposcrumenwebventas v ON d.idventa = v.idventa
+       WHERE d.iddetalleventa = ? AND d.idventa = ? AND d.idnegocio = ? AND v.idnegocio = ?`,
+      [iddetalle, id, idnegocio, idnegocio]
+    );
+
+    if (detalleRows.length === 0) {
+      res.status(404).json({
+        success: false,
+        message: 'Detalle de venta no encontrado'
+      });
+      return;
+    }
+
+    // Actualizar el estado del detalle
+    await pool.execute(
+      `UPDATE tblposcrumenwebdetalleventas 
+       SET estadodetalle = ?,
+           usuarioauditoria = ?,
+           fechamodificacionauditoria = NOW()
+       WHERE iddetalleventa = ? AND idventa = ? AND idnegocio = ?`,
+      [estadodetalle, usuarioauditoria, iddetalle, id, idnegocio]
+    );
+
+    res.json({
+      success: true,
+      message: 'Estado del detalle actualizado exitosamente'
+    });
+  } catch (error) {
+    console.error('Error al actualizar estado del detalle:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al actualizar estado del detalle'
+    });
+  }
+};
+
+// Obtener detalles de ventas por estado (útil para cocina/producción)
+export const getDetallesByEstado = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { estado } = req.params;
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
+    // Validar que el estado sea válido
+    const estadosValidos = ['ESPERAR', 'ORDENADO', 'CANCELADO', 'DEVUELTO', 'PREPARACION', 'COBRADO'];
+    if (!estadosValidos.includes(estado.toUpperCase())) {
+      res.status(400).json({
+        success: false,
+        message: 'Estado de detalle inválido'
+      });
+      return;
+    }
+
+    // Obtener detalles con información de la venta
+    const [detallesRows] = await pool.execute<(DetalleVentaWeb & RowDataPacket)[]>(
+      `SELECT d.*, v.folioventa, v.cliente, v.tipodeventa, v.fechadeventa
+       FROM tblposcrumenwebdetalleventas d
+       INNER JOIN tblposcrumenwebventas v ON d.idventa = v.idventa
+       WHERE d.estadodetalle = ? AND d.idnegocio = ? AND v.idnegocio = ?
+       ORDER BY d.fechadetalleventa DESC
+       LIMIT 100`,
+      [estado.toUpperCase(), idnegocio, idnegocio]
+    );
+
+    res.json({
+      success: true,
+      data: detallesRows
+    });
+  } catch (error) {
+    console.error('Error al obtener detalles por estado:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener detalles por estado'
     });
   }
 };

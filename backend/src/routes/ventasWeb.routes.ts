@@ -4,7 +4,9 @@ import {
   getVentaWebById, 
   createVentaWeb,
   updateVentaWeb,
-  deleteVentaWeb
+  deleteVentaWeb,
+  updateDetalleEstado,
+  getDetallesByEstado
 } from '../controllers/ventasWeb.controller';
 import { authMiddleware } from '../middlewares/auth';
 
@@ -47,5 +49,19 @@ router.put('/:id', updateVentaWeb);
  * @access  Private
  */
 router.delete('/:id', deleteVentaWeb);
+
+/**
+ * @route   PATCH /api/ventas-web/:id/detalles/:iddetalle/estado
+ * @desc    Actualizar el estado de un detalle de venta específico
+ * @access  Private
+ */
+router.patch('/:id/detalles/:iddetalle/estado', updateDetalleEstado);
+
+/**
+ * @route   GET /api/ventas-web/detalles/estado/:estado
+ * @desc    Obtener todos los detalles de ventas con un estado específico (ESPERAR, ORDENADO, PREPARACION, etc.)
+ * @access  Private
+ */
+router.get('/detalles/estado/:estado', getDetallesByEstado);
 
 export default router;
