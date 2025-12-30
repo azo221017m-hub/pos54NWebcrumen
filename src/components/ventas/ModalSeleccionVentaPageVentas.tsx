@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { TipoServicio } from '../../types/mesa.types';
 import './ModalSeleccionVentaPageVentas.css';
 
@@ -13,6 +14,8 @@ const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps
   onClose, 
   onTipoVentaSelect 
 }) => {
+  const navigate = useNavigate();
+  
   if (!isOpen) return null;
 
   const handleTipoVentaSelect = (tipoVenta: TipoServicio) => {
@@ -20,8 +23,13 @@ const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps
     onClose();
   };
 
+  const handleOverlayClick = () => {
+    // Navigate to Dashboard when clicking outside the modal
+    navigate('/dashboard');
+  };
+
   return (
-    <div className="modal-seleccion-venta-pageventas-overlay" onClick={onClose}>
+    <div className="modal-seleccion-venta-pageventas-overlay" onClick={handleOverlayClick}>
       <div className="modal-seleccion-venta-pageventas-content floating" onClick={(e) => e.stopPropagation()}>
         <div className="modal-seleccion-venta-pageventas-header">
           <h2>SELECCIONE tipo de VENTA</h2>

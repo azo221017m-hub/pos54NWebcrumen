@@ -341,17 +341,27 @@ const PageVentas: React.FC = () => {
       return;
     }
 
+    // Validar que el servicio esté configurado
+    if (!isServiceConfigured) {
+      alert('Por favor configure el tipo de servicio antes de continuar');
+      setModalOpen(true);
+      return;
+    }
+
     // Validar que se hayan configurado los datos del tipo de servicio
     if (tipoServicio === 'Mesa' && !mesaData) {
       alert('Por favor configure los datos de la mesa antes de continuar');
+      setModalOpen(true);
       return;
     }
     if (tipoServicio === 'Llevar' && !llevarData) {
       alert('Por favor configure los datos de entrega antes de continuar');
+      setModalOpen(true);
       return;
     }
     if (tipoServicio === 'Domicilio' && !domicilioData) {
       alert('Por favor configure los datos de domicilio antes de continuar');
+      setModalOpen(true);
       return;
     }
 
@@ -422,12 +432,16 @@ const PageVentas: React.FC = () => {
         setMesaData(null);
         setLlevarData(null);
         setDomicilioData(null);
+        setIsServiceConfigured(false);
       } else {
-        alert(`Error al registrar la venta: ${resultado.message}`);
+        const errorMsg = resultado.message || 'Error desconocido';
+        console.error('Error al registrar venta:', errorMsg);
+        alert(`Error al registrar la venta:\n${errorMsg}\n\nPor favor, verifique que todos los datos estén correctos e intente nuevamente.`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al crear venta:', error);
-      alert('Error al registrar la venta. Por favor, intente nuevamente.');
+      const errorMsg = error?.message || 'Error de conexión con el servidor';
+      alert(`Error al registrar la venta:\n${errorMsg}\n\nPor favor, intente nuevamente.`);
     }
   };
 
@@ -546,6 +560,11 @@ const PageVentas: React.FC = () => {
     setTimeout(() => {
       setModalOpen(true);
     }, SERVICE_CONFIG_MODAL_DELAY_MS);
+  };
+
+  const handleSelectionModalClose = () => {
+    // When closing the selection modal, navigate to dashboard
+    navigate('/dashboard');
   };
 
   const handleModalSave = (data: MesaFormData | LlevarFormData | DomicilioFormData) => {
@@ -784,8 +803,8 @@ const PageVentas: React.FC = () => {
           </div>
 
           <div className="comanda-buttons">
-            <button className="btn-producir" onClick={handleProducir} disabled={!isServiceConfigured}>Producir</button>
-            <button className="btn-esperar" onClick={handleEsperar} disabled={!isServiceConfigured}>Esperar</button>
+            <button className="btn-producir" onClick={handleProducir} disabled={!isServiceConfigured || comanda.length === 0}>Producir</button>
+            <button className="btn-esperar" onClick={handleEsperar} disabled={!isServiceConfigured || comanda.length === 0}>Esperar</button>
             <button className="btn-listado" onClick={handleListadoPagos} disabled={!isServiceConfigured}>listado de pagos</button>
           </div>
 
@@ -857,7 +876,7 @@ const PageVentas: React.FC = () => {
       {/* Modal para selección de tipo de venta */}
       <ModalSeleccionVentaPageVentas
         isOpen={showSelectionModal}
-        onClose={() => setShowSelectionModal(false)}
+        onClose={handleSelectionModalClose}
         onTipoVentaSelect={handleSelectionModalVentaSelect}
       />
 
