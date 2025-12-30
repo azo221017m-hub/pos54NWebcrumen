@@ -40,7 +40,6 @@ export interface DetalleVentaWeb {
   idproducto: number;
   nombreproducto: string;
   idreceta: number | null;
-  nombrereceta: string | null;
   cantidad: number;
   preciounitario: number;
   costounitario: number;
@@ -77,7 +76,6 @@ export interface DetalleVentaWebCreate {
   idproducto: number;
   nombreproducto: string;
   idreceta?: number | null;
-  nombrereceta?: string | null;
   cantidad: number;
   preciounitario: number;
   costounitario: number;

@@ -208,7 +208,6 @@ const PageVentas: React.FC = () => {
           codigoSKU: '',
           tipoproducto: detalle.idreceta ? 'Receta' : 'Directo',
           idreferencia: detalle.idreceta || null,
-          nombreReceta: detalle.nombrereceta || null,
           unidaddemedida: 'Pieza',
           imagenProducto: null,
           estatus: 1,
@@ -409,9 +408,6 @@ const PageVentas: React.FC = () => {
           // Priorizar receta: solo asignar si existe y tipo es Receta
           idreceta: item.producto.tipoproducto === 'Receta' && item.producto.idreferencia 
             ? item.producto.idreferencia 
-            : null,
-          nombrereceta: item.producto.tipoproducto === 'Receta' && item.producto.nombreReceta 
-            ? item.producto.nombreReceta 
             : null,
           cantidad: item.cantidad,
           preciounitario: Number(item.producto.precio),

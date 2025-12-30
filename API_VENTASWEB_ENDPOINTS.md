@@ -86,7 +86,6 @@ Create a new sale with details. Used by both "Producir" and "Esperar" buttons.
       "idproducto": 1,
       "nombreproducto": "Hamburguesa",
       "idreceta": 10,
-      "nombrereceta": "Receta Hamburguesa",
       "cantidad": 2,
       "preciounitario": 15.00,
       "costounitario": 8.50,
