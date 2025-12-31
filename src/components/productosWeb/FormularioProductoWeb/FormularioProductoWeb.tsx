@@ -520,7 +520,7 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
               {errores.precio && <span className="error-message">{errores.precio}</span>}
             </div>
 
-            {/* Campos condicionales para Inventario y Materia Prima */}
+            {/* Campos condicionales para Inventario */}
             {requiereInsumo(formData.tipoproducto) && (
               <div className="form-section conditional-section">
                 <h3 className="section-title">Información de Inventario</h3>
