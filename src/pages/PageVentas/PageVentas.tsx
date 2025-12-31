@@ -543,12 +543,6 @@ const PageVentas: React.FC = () => {
     }
   };
 
-  const handleTipoServicioClick = (tipo: TipoServicio) => {
-    setTipoServicio(tipo);
-    setIsServiceConfigured(false);
-    setModalOpen(true);
-  };
-
   const handleCancelar = () => {
     // Clear comanda and total
     setComanda([]);
