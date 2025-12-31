@@ -68,6 +68,11 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
   const [nombreExiste, setNombreExiste] = useState(false);
   const [previewImagen, setPreviewImagen] = useState<string | null>(null);
 
+  // Helper function para verificar si el tipo de producto requiere insumo
+  const requiereInsumo = (tipo: TipoProducto): boolean => {
+    return tipo === 'Inventario' || tipo === 'Materia Prima';
+  };
+
   // Cargar datos al montar
   useEffect(() => {
     const cargarDatos = async () => {
@@ -130,7 +135,7 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
 
   // Obtener costo según tipo de producto
   const costoCalculado = useMemo(() => {
-    if (formData.tipoproducto === 'Inventario' && formData.idreferencia) {
+    if (requiereInsumo(formData.tipoproducto) && formData.idreferencia) {
       const insumo = insumos.find(i => i.id_insumo === formData.idreferencia);
       return Number(insumo?.costo_promedio_ponderado ?? 0);
     }
@@ -193,7 +198,7 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
       const idRef = value ? Number(value) : null;
       let nuevoCosto = 0;
       
-      if (formData.tipoproducto === 'Inventario' && idRef) {
+      if (requiereInsumo(formData.tipoproducto) && idRef) {
         const insumo = insumos.find(i => i.id_insumo === idRef);
         nuevoCosto = Number(insumo?.costo_promedio_ponderado ?? 0);
       } else if (formData.tipoproducto === 'Receta' && idRef) {
@@ -296,9 +301,9 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
       nuevosErrores.precio = 'El precio no puede ser cero';
     }
 
-    if (formData.tipoproducto === 'Inventario' && !formData.idreferencia) {
+    if (requiereInsumo(formData.tipoproducto) && !formData.idreferencia) {
       nuevosErrores.idreferencia = 'Debe seleccionar un insumo';
-    } else if (formData.tipoproducto === 'Inventario' && formData.idreferencia) {
+    } else if (requiereInsumo(formData.tipoproducto) && formData.idreferencia) {
       const insumoSeleccionado = insumos.find(i => i.id_insumo === formData.idreferencia);
       if (insumoSeleccionado && !insumoSeleccionado.costo_promedio_ponderado) {
         nuevosErrores.idreferencia = 'El insumo seleccionado no tiene un costo válido';
@@ -516,8 +521,8 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
               {errores.precio && <span className="error-message">{errores.precio}</span>}
             </div>
 
-            {/* Campos condicionales para Inventario */}
-            {formData.tipoproducto === 'Inventario' && (
+            {/* Campos condicionales para Inventario y Materia Prima */}
+            {requiereInsumo(formData.tipoproducto) && (
               <div className="form-section conditional-section">
                 <h3 className="section-title">Información de Inventario</h3>
                 
