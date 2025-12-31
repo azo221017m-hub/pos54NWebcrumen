@@ -413,7 +413,6 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
                 <option value="Directo">Directo</option>
                 <option value="Inventario">Inventario</option>
                 <option value="Receta">Receta</option>
-                <option value="Materia Prima">Materia Prima</option>
               </select>
             </div>
 
