@@ -69,6 +69,7 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
   const [previewImagen, setPreviewImagen] = useState<string | null>(null);
 
   // Helper function para verificar si el tipo de producto requiere insumo
+  // Nota: Mantiene 'Materia Prima' para compatibilidad con productos existentes en la base de datos
   const requiereInsumo = (tipo: TipoProducto): boolean => {
     return tipo === 'Inventario' || tipo === 'Materia Prima';
   };
@@ -413,7 +414,6 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
                 <option value="Directo">Directo</option>
                 <option value="Inventario">Inventario</option>
                 <option value="Receta">Receta</option>
-                <option value="Materia Prima">Materia Prima</option>
               </select>
             </div>
 
