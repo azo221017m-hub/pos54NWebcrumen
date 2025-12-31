@@ -9,6 +9,7 @@ import { obtenerModeradores } from '../../services/moderadoresService';
 import { obtenerModeradoresRef } from '../../services/moderadoresRefService';
 import ModalTipoServicio from '../../components/ventas/ModalTipoServicio';
 import ModalSeleccionVentaPageVentas from '../../components/ventas/ModalSeleccionVentaPageVentas';
+import FichaDeComanda from '../../components/ventas/FichaDeComanda';
 import type { MesaFormData, LlevarFormData, DomicilioFormData } from '../../components/ventas/ModalTipoServicio';
 import type { ProductoWeb } from '../../types/productoWeb.types';
 import type { Usuario } from '../../types/usuario.types';
@@ -548,6 +549,19 @@ const PageVentas: React.FC = () => {
     setModalOpen(true);
   };
 
+  const handleCancelar = () => {
+    // Clear comanda and total
+    setComanda([]);
+    // Reset service configuration
+    setMesaData(null);
+    setLlevarData(null);
+    setDomicilioData(null);
+    setIsServiceConfigured(false);
+    setIsLoadedFromDashboard(false);
+    // Navigate back to dashboard
+    navigate('/dashboard');
+  };
+
   const handleSelectionModalVentaSelect = (tipo: TipoServicio) => {
     setTipoServicio(tipo);
     setIsServiceConfigured(false);
@@ -612,10 +626,18 @@ const PageVentas: React.FC = () => {
 
       {/* Header */}
       <header className="ventas-header">
-        <button className="btn-back-dashboard" onClick={() => navigate('/dashboard')}>
+        <button className="btn-back-dashboard" onClick={handleCancelar}>
           <ArrowLeft size={20} />
-          Dashboard
+          Cancelar
         </button>
+
+        <FichaDeComanda
+          tipoServicio={tipoServicio}
+          mesaData={mesaData}
+          llevarData={llevarData}
+          domicilioData={domicilioData}
+          isServiceConfigured={isServiceConfigured}
+        />
 
         <div className="user-info-header">
           <div 
@@ -660,30 +682,6 @@ const PageVentas: React.FC = () => {
         <div className="productos-panel">
           {/* Controles superiores */}
           <div className="controles-superiores">
-            <div className="tipo-servicio-selector">
-              <button 
-                className={`btn-tipo-servicio ${tipoServicio === 'Domicilio' ? 'active' : ''}`}
-                onClick={() => handleTipoServicioClick('Domicilio')}
-                disabled={isLoadedFromDashboard}
-              >
-                Domicilio
-              </button>
-              <button 
-                className={`btn-tipo-servicio ${tipoServicio === 'Llevar' ? 'active' : ''}`}
-                onClick={() => handleTipoServicioClick('Llevar')}
-                disabled={isLoadedFromDashboard}
-              >
-                Llevar
-              </button>
-              <button 
-                className={`btn-tipo-servicio ${tipoServicio === 'Mesa' ? 'active' : ''}`}
-                onClick={() => handleTipoServicioClick('Mesa')}
-                disabled={isLoadedFromDashboard}
-              >
-                Mesa
-              </button>
-            </div>
-
             <div className="search-bar">
               <Search size={20} />
               <input 

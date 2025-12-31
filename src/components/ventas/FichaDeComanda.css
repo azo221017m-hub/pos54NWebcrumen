@@ -1,0 +1,95 @@
+.ficha-de-comanda {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  font-size: 14px;
+  max-width: 600px;
+  overflow: hidden;
+}
+
+.ficha-de-comanda.empty {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  justify-content: center;
+}
+
+.ficha-empty-text {
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.ficha-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+}
+
+.ficha-tipo {
+  font-weight: 600;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ficha-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.ficha-label {
+  font-size: 12px;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.ficha-value {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.ficha-separator {
+  opacity: 0.6;
+  margin: 0 2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .ficha-de-comanda {
+    font-size: 12px;
+    padding: 6px 12px;
+    gap: 8px;
+    max-width: 100%;
+  }
+
+  .ficha-tipo {
+    font-size: 13px;
+  }
+
+  .ficha-label {
+    font-size: 11px;
+  }
+
+  .ficha-value {
+    font-size: 12px;
+    max-width: 150px;
+  }
+
+  .ficha-icon {
+    padding: 4px;
+  }
+}
