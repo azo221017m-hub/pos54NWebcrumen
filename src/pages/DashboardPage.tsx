@@ -112,11 +112,13 @@ export const DashboardPage = () => {
   const cargarVentasSolicitadas = useCallback(async () => {
     try {
       const ventas = await obtenerVentasWeb();
-      // Filter only sales with SOLICITADO status
-      const ventasFiltradas = ventas.filter(venta => venta.estadodeventa === 'SOLICITADO');
+      // Filter sales with ORDENADO and ESPERAR status
+      const ventasFiltradas = ventas.filter(venta => 
+        venta.estadodeventa === 'ORDENADO' || venta.estadodeventa === 'ESPERAR'
+      );
       setVentasSolicitadas(ventasFiltradas);
     } catch (error) {
-      console.error('Error al cargar ventas solicitadas:', error);
+      console.error('Error al cargar comandas del día:', error);
     }
   }, []);
 
@@ -276,7 +278,7 @@ export const DashboardPage = () => {
       return;
     }
 
-    // Load sales with SOLICITADO status
+    // Load sales with ORDENADO and ESPERAR status
     cargarVentasSolicitadas();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas omitted to prevent infinite refresh loop
   }, [navigate]);
@@ -724,7 +726,7 @@ export const DashboardPage = () => {
             </div>
           </div>
 
-          {/* Sección de Ventas Solicitadas */}
+          {/* Sección de Comandas del Día */}
           {ventasSolicitadas.length > 0 && (
             <div className="ventas-solicitadas-section">
               <div className="section-header">
@@ -751,7 +753,7 @@ export const DashboardPage = () => {
                     <circle cx="20" cy="21" r="1"/>
                     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
                   </svg>
-                  Ventas Solicitadas
+                  Comandas del Día
                 </h3>
                 <span className="badge badge-warning">
                   {ventasFiltradas.length}
