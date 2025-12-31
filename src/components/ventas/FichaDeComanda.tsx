@@ -35,6 +35,20 @@ const FichaDeComanda: React.FC<FichaDeComandaProps> = ({
     }
   };
 
+  // Helper function to render delivery date info
+  const renderDeliveryDate = (fechaprogramadaventa?: string) => {
+    if (!fechaprogramadaventa) return null;
+    return (
+      <>
+        <span className="ficha-separator">|</span>
+        <span className="ficha-label">Entrega:</span>
+        <span className="ficha-value">
+          {formatDeliveryDate(fechaprogramadaventa)}
+        </span>
+      </>
+    );
+  };
+
   if (!isServiceConfigured) {
     return (
       <div className="ficha-de-comanda empty">
@@ -69,15 +83,7 @@ const FichaDeComanda: React.FC<FichaDeComandaProps> = ({
         <>
           <span className="ficha-label">Cliente:</span>
           <span className="ficha-value">{llevarData.cliente}</span>
-          {llevarData.fechaprogramadaventa && (
-            <>
-              <span className="ficha-separator">|</span>
-              <span className="ficha-label">Entrega:</span>
-              <span className="ficha-value">
-                {formatDeliveryDate(llevarData.fechaprogramadaventa)}
-              </span>
-            </>
-          )}
+          {renderDeliveryDate(llevarData.fechaprogramadaventa)}
         </>
       );
     } else if (tipoServicio === 'Domicilio' && domicilioData) {
@@ -88,15 +94,7 @@ const FichaDeComanda: React.FC<FichaDeComandaProps> = ({
           <span className="ficha-separator">|</span>
           <span className="ficha-label">Tel:</span>
           <span className="ficha-value">{domicilioData.telefonodeentrega}</span>
-          {domicilioData.fechaprogramadaventa && (
-            <>
-              <span className="ficha-separator">|</span>
-              <span className="ficha-label">Entrega:</span>
-              <span className="ficha-value">
-                {formatDeliveryDate(domicilioData.fechaprogramadaventa)}
-              </span>
-            </>
-          )}
+          {renderDeliveryDate(domicilioData.fechaprogramadaventa)}
         </>
       );
     }

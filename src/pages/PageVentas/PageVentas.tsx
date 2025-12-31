@@ -544,7 +544,7 @@ const PageVentas: React.FC = () => {
   };
 
   const handleCancelar = () => {
-    // Clear comanda and total
+    // Clear comanda (total is calculated dynamically)
     setComanda([]);
     // Reset service configuration
     setMesaData(null);
