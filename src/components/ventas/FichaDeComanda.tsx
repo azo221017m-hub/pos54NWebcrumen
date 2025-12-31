@@ -58,12 +58,20 @@ const FichaDeComanda: React.FC<FichaDeComandaProps> = ({
               <span className="ficha-separator">|</span>
               <span className="ficha-label">Entrega:</span>
               <span className="ficha-value">
-                {new Date(llevarData.fechaprogramadaventa).toLocaleString('es-MX', {
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
+                {(() => {
+                  try {
+                    const date = new Date(llevarData.fechaprogramadaventa);
+                    if (isNaN(date.getTime())) return 'Fecha inválida';
+                    return date.toLocaleString('es-MX', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    });
+                  } catch {
+                    return 'Fecha inválida';
+                  }
+                })()}
               </span>
             </>
           )}
@@ -82,12 +90,20 @@ const FichaDeComanda: React.FC<FichaDeComandaProps> = ({
               <span className="ficha-separator">|</span>
               <span className="ficha-label">Entrega:</span>
               <span className="ficha-value">
-                {new Date(domicilioData.fechaprogramadaventa).toLocaleString('es-MX', {
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
+                {(() => {
+                  try {
+                    const date = new Date(domicilioData.fechaprogramadaventa);
+                    if (isNaN(date.getTime())) return 'Fecha inválida';
+                    return date.toLocaleString('es-MX', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    });
+                  } catch {
+                    return 'Fecha inválida';
+                  }
+                })()}
               </span>
             </>
           )}
