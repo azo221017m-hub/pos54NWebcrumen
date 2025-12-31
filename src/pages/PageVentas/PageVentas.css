@@ -64,6 +64,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
@@ -75,7 +76,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.6rem 1.2rem;
-  background: #3498db;
+  background: #e74c3c;
   color: white;
   border: none;
   border-radius: 8px;
@@ -83,10 +84,11 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  flex-shrink: 0;
 }
 
 .btn-back-dashboard:hover {
-  background: #2980b9;
+  background: #c0392b;
   transform: translateY(-1px);
 }
 
@@ -94,6 +96,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-shrink: 0;
 }
 
 .user-avatar-ventas {
@@ -169,48 +172,6 @@
   gap: 1rem;
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
-}
-
-.tipo-servicio-selector {
-  display: flex;
-  gap: 0.5rem;
-  background: #f8f9fa;
-  padding: 0.3rem;
-  border-radius: 8px;
-}
-
-.btn-tipo-servicio {
-  padding: 0.6rem 1.2rem;
-  border: none;
-  background: transparent;
-  color: #495057;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-tipo-servicio.active {
-  background: #3498db;
-  color: white;
-}
-
-.btn-tipo-servicio:hover:not(.active) {
-  background: #e9ecef;
-}
-
-.btn-tipo-servicio:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.btn-tipo-servicio:disabled:hover {
-  background: transparent;
-}
-
-.btn-tipo-servicio.active:disabled {
-  background: #3498db;
-  opacity: 0.8;
 }
 
 .search-bar {
