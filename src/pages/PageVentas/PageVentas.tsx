@@ -575,6 +575,8 @@ const PageVentas: React.FC = () => {
 
   const handleModalClose = () => {
     setModalOpen(false);
+    // Navigate to Dashboard when canceling service configuration
+    navigate('/dashboard');
   };
 
   const getInitialModalData = (): MesaFormData | LlevarFormData | DomicilioFormData | undefined => {
