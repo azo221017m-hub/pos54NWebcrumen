@@ -118,7 +118,7 @@ export const DashboardPage = () => {
       );
       setVentasSolicitadas(ventasFiltradas);
     } catch (error) {
-      console.error('Error al cargar ventas solicitadas:', error);
+      console.error('Error al cargar comandas del día:', error);
     }
   }, []);
 
@@ -278,7 +278,7 @@ export const DashboardPage = () => {
       return;
     }
 
-    // Load sales with SOLICITADO status
+    // Load sales with ORDENADO and ESPERAR status
     cargarVentasSolicitadas();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas omitted to prevent infinite refresh loop
   }, [navigate]);
@@ -726,7 +726,7 @@ export const DashboardPage = () => {
             </div>
           </div>
 
-          {/* Sección de Ventas Solicitadas */}
+          {/* Sección de Comandas del Día */}
           {ventasSolicitadas.length > 0 && (
             <div className="ventas-solicitadas-section">
               <div className="section-header">
