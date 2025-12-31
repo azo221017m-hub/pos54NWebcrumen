@@ -19,6 +19,22 @@ const FichaDeComanda: React.FC<FichaDeComandaProps> = ({
   domicilioData,
   isServiceConfigured
 }) => {
+  // Helper function to format date safely
+  const formatDeliveryDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Fecha inválida';
+      return date.toLocaleString('es-MX', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return 'Fecha inválida';
+    }
+  };
+
   if (!isServiceConfigured) {
     return (
       <div className="ficha-de-comanda empty">
@@ -58,20 +74,7 @@ const FichaDeComanda: React.FC<FichaDeComandaProps> = ({
               <span className="ficha-separator">|</span>
               <span className="ficha-label">Entrega:</span>
               <span className="ficha-value">
-                {(() => {
-                  try {
-                    const date = new Date(llevarData.fechaprogramadaventa);
-                    if (isNaN(date.getTime())) return 'Fecha inválida';
-                    return date.toLocaleString('es-MX', {
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    });
-                  } catch {
-                    return 'Fecha inválida';
-                  }
-                })()}
+                {formatDeliveryDate(llevarData.fechaprogramadaventa)}
               </span>
             </>
           )}
@@ -90,20 +93,7 @@ const FichaDeComanda: React.FC<FichaDeComandaProps> = ({
               <span className="ficha-separator">|</span>
               <span className="ficha-label">Entrega:</span>
               <span className="ficha-value">
-                {(() => {
-                  try {
-                    const date = new Date(domicilioData.fechaprogramadaventa);
-                    if (isNaN(date.getTime())) return 'Fecha inválida';
-                    return date.toLocaleString('es-MX', {
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    });
-                  } catch {
-                    return 'Fecha inválida';
-                  }
-                })()}
+                {formatDeliveryDate(domicilioData.fechaprogramadaventa)}
               </span>
             </>
           )}
