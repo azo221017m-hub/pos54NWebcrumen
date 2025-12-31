@@ -30,7 +30,8 @@ When the application tries to insert a value that is not in the database ENUM de
 
 **TypeScript Types (Backend & Frontend):**
 ```typescript
-// backend/src/types/ventasWeb.types.ts & src/types/ventasWeb.types.ts
+// backend/src/types/ventasWeb.types.ts
+// src/types/ventasWeb.types.ts
 export type EstadoDeVenta = 'SOLICITADO' | 'LEIDO' | 'PREPARANDO' | 'EN_CAMINO' | 
                             'ENTREGADO' | 'CANCELADO' | 'DEVUELTO' | 'COBRADO' | 
                             'ESPERAR' | 'ORDENADO';
@@ -109,6 +110,7 @@ Payment statuses:
 #### tipodeventa
 ```sql
 ENUM('DOMICILIO', 'LLEVAR', 'MESA', 'ONLINE')
+DEFAULT 'MESA'
 ```
 
 Sale types:

@@ -66,7 +66,7 @@ MODIFY COLUMN tipodeventa ENUM(
     'LLEVAR',     -- Takeout order
     'MESA',       -- Dine-in (table) order
     'ONLINE'      -- Online order
-) NOT NULL
+) NOT NULL DEFAULT 'MESA'
 COMMENT 'Tipo de venta web';
 
 -- ============================================================================
