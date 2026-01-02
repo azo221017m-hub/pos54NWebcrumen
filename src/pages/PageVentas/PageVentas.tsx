@@ -541,11 +541,8 @@ const PageVentas: React.FC = () => {
     // Check if category has a moderadordef defined
     // Treat null, undefined, empty string, '0', and 0 as "no moderadores"
     const moderadorDefValue = categoria.idmoderadordef;
-    if (moderadorDefValue === null || 
-        moderadorDefValue === undefined || 
-        moderadorDefValue === '' || 
-        moderadorDefValue === '0' ||
-        moderadorDefValue === 0) {
+    const invalidValues = [null, undefined, '', '0', 0];
+    if (invalidValues.includes(moderadorDefValue as any)) {
       return [];
     }
 
@@ -554,10 +551,12 @@ const PageVentas: React.FC = () => {
       cm.idmodref === Number(moderadorDefValue)
     );
     
-    if (!catModerador || !catModerador.moderadores || !catModerador.moderadores.trim()) return [];
+    // Check if catModerador exists and has moderadores
+    const moderadoresStr = catModerador?.moderadores?.trim();
+    if (!catModerador || !moderadoresStr) return [];
 
     // Parse moderadores IDs from comma-separated string
-    const moderadorIds = catModerador.moderadores
+    const moderadorIds = moderadoresStr
       .split(',')
       .map(id => Number(id.trim()))
       .filter(id => id > 0); // Filter out any invalid IDs
