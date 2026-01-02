@@ -850,13 +850,14 @@ const PageVentas: React.FC = () => {
                     >
                       <Plus size={16} />
                     </button>
-                    <button 
-                      className="btn-accion btn-mod"
-                      onClick={() => handleModClick(producto.idProducto)}
-                      disabled={getAvailableModeradores(producto.idProducto).length === 0}
-                    >
-                      Mod
-                    </button>
+                    {getAvailableModeradores(producto.idProducto).length > 0 && (
+                      <button 
+                        className="btn-accion btn-mod"
+                        onClick={() => handleModClick(producto.idProducto)}
+                      >
+                        Mod
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
