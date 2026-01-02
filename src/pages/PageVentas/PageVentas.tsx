@@ -536,17 +536,30 @@ const PageVentas: React.FC = () => {
 
     // Find the category
     const categoria = categorias.find(c => c.idCategoria === producto.idCategoria);
-    if (!categoria || !categoria.idmoderadordef) return [];
+    if (!categoria) return [];
+    
+    // Check if category has a moderadordef defined
+    // Treat null, undefined, empty string, '0', and 0 as "no moderadores"
+    const moderadorDefValue = categoria.idmoderadordef;
+    const invalidValues = [null, undefined, '', '0', 0];
+    if (invalidValues.includes(moderadorDefValue as any)) {
+      return [];
+    }
 
     // Get the catModerador
     const catModerador = catModeradores.find(cm => 
-      cm.idmodref === Number(categoria.idmoderadordef)
+      cm.idmodref === Number(moderadorDefValue)
     );
     
-    if (!catModerador || !catModerador.moderadores) return [];
+    // Check if catModerador exists and has moderadores
+    const moderadoresStr = catModerador?.moderadores?.trim();
+    if (!catModerador || !moderadoresStr) return [];
 
     // Parse moderadores IDs from comma-separated string
-    const moderadorIds = catModerador.moderadores.split(',').map(id => Number(id.trim()));
+    const moderadorIds = moderadoresStr
+      .split(',')
+      .map(id => Number(id.trim()))
+      .filter(id => id > 0); // Filter out any invalid IDs
     
     // Filter and return moderadores
     return moderadores.filter(m => moderadorIds.includes(m.idmoderador));
