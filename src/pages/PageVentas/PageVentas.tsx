@@ -66,7 +66,7 @@ const PageVentas: React.FC = () => {
   const [catModeradores, setCatModeradores] = useState<CatModerador[]>([]);
   const [showModModal, setShowModModal] = useState(false);
   const [selectedProductoIdForMod, setSelectedProductoIdForMod] = useState<number | null>(null);
-  const [modSelectionMode, setModSelectionMode] = useState<'options' | 'list'>('options'); // 'options' for LIMPIO/CON TODO/SOLO CON, 'list' for moderadores list
+  const [modSelectionMode, setModSelectionMode] = useState<'options' | 'list'>('options');
   
   // Modal states
   const [modalOpen, setModalOpen] = useState(false);
@@ -480,16 +480,15 @@ const PageVentas: React.FC = () => {
     setSelectedProductoIdForMod(null);
   };
 
-  const handleModLimpio = () => {
-    // LIMPIO means no moderadores
+  const updateComandaWithModerador = (moderadores: string | undefined, moderadoresNames: string[]) => {
     if (selectedProductoIdForMod === null) return;
     
     setComanda(comanda.map(item => 
       item.producto.idProducto === selectedProductoIdForMod
         ? { 
             ...item, 
-            moderadores: undefined,
-            moderadoresNames: ['LIMPIO']
+            moderadores,
+            moderadoresNames
           }
         : item
     ));
@@ -498,26 +497,18 @@ const PageVentas: React.FC = () => {
     setSelectedProductoIdForMod(null);
   };
 
+  const handleModLimpio = () => {
+    updateComandaWithModerador(undefined, ['LIMPIO']);
+  };
+
   const handleModConTodo = () => {
-    // CON TODO means all available moderadores
     if (selectedProductoIdForMod === null) return;
     
     const availableMods = getAvailableModeradores(selectedProductoIdForMod);
-    const allModIds = availableMods.map(m => m.idmoderador);
+    const allModIds = availableMods.map(m => m.idmoderador).join(',');
     const allModNames = availableMods.map(m => m.nombremoderador);
     
-    setComanda(comanda.map(item => 
-      item.producto.idProducto === selectedProductoIdForMod
-        ? { 
-            ...item, 
-            moderadores: allModIds.join(','),
-            moderadoresNames: allModNames
-          }
-        : item
-    ));
-    
-    setShowModModal(false);
-    setSelectedProductoIdForMod(null);
+    updateComandaWithModerador(allModIds, allModNames);
   };
 
   const handleModSoloCon = () => {
