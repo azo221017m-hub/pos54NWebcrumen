@@ -66,6 +66,7 @@ const PageVentas: React.FC = () => {
   const [catModeradores, setCatModeradores] = useState<CatModerador[]>([]);
   const [showModModal, setShowModModal] = useState(false);
   const [selectedProductoIdForMod, setSelectedProductoIdForMod] = useState<number | null>(null);
+  const [modSelectionMode, setModSelectionMode] = useState<'options' | 'list'>('options'); // 'options' for LIMPIO/CON TODO/SOLO CON, 'list' for moderadores list
   
   // Modal states
   const [modalOpen, setModalOpen] = useState(false);
@@ -452,6 +453,7 @@ const PageVentas: React.FC = () => {
 
   const handleModClick = (idProducto: number) => {
     setSelectedProductoIdForMod(idProducto);
+    setModSelectionMode('options'); // Start with options view
     setShowModModal(true);
   };
 
@@ -476,6 +478,51 @@ const PageVentas: React.FC = () => {
 
     setShowModModal(false);
     setSelectedProductoIdForMod(null);
+  };
+
+  const handleModLimpio = () => {
+    // LIMPIO means no moderadores
+    if (selectedProductoIdForMod === null) return;
+    
+    setComanda(comanda.map(item => 
+      item.producto.idProducto === selectedProductoIdForMod
+        ? { 
+            ...item, 
+            moderadores: undefined,
+            moderadoresNames: ['LIMPIO']
+          }
+        : item
+    ));
+    
+    setShowModModal(false);
+    setSelectedProductoIdForMod(null);
+  };
+
+  const handleModConTodo = () => {
+    // CON TODO means all available moderadores
+    if (selectedProductoIdForMod === null) return;
+    
+    const availableMods = getAvailableModeradores(selectedProductoIdForMod);
+    const allModIds = availableMods.map(m => m.idmoderador);
+    const allModNames = availableMods.map(m => m.nombremoderador);
+    
+    setComanda(comanda.map(item => 
+      item.producto.idProducto === selectedProductoIdForMod
+        ? { 
+            ...item, 
+            moderadores: allModIds.join(','),
+            moderadoresNames: allModNames
+          }
+        : item
+    ));
+    
+    setShowModModal(false);
+    setSelectedProductoIdForMod(null);
+  };
+
+  const handleModSoloCon = () => {
+    // Show the moderadores list for selection
+    setModSelectionMode('list');
   };
 
   const handleModeradorToggle = (moderadorId: number, isChecked: boolean) => {
@@ -871,30 +918,81 @@ const PageVentas: React.FC = () => {
       {showModModal && selectedProductoIdForMod && (
         <div className="modal-overlay" onClick={() => setShowModModal(false)}>
           <div className="modal-mod-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Seleccionar Moderadores</h3>
-            <div className="moderadores-list">
-              {getAvailableModeradores(selectedProductoIdForMod).map((mod) => {
-                const currentItem = comanda.find(i => i.producto.idProducto === selectedProductoIdForMod);
-                const currentMods = currentItem?.moderadores?.split(',').map(Number) || [];
-                const isSelected = currentMods.includes(mod.idmoderador);
-                
-                return (
-                  <label key={mod.idmoderador} className="moderador-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={(e) => handleModeradorToggle(mod.idmoderador, e.target.checked)}
-                    />
-                    <span>{mod.nombremoderador}</span>
-                  </label>
-                );
-              })}
-            </div>
-            <div className="modal-actions">
-              <button className="btn-modal-close" onClick={() => setShowModModal(false)}>
-                Cerrar
-              </button>
-            </div>
+            {modSelectionMode === 'options' ? (
+              // Show LIMPIO | CON TODO | SOLO CON options
+              <>
+                <h3>Seleccione una opción</h3>
+                <div className="mod-options-container">
+                  <button 
+                    className="btn-mod-option btn-limpio"
+                    onClick={handleModLimpio}
+                  >
+                    <div className="mod-option-icon">🚫</div>
+                    <span className="mod-option-label">LIMPIO</span>
+                    <p className="mod-option-description">Sin modificaciones</p>
+                  </button>
+                  
+                  <button 
+                    className="btn-mod-option btn-con-todo"
+                    onClick={handleModConTodo}
+                  >
+                    <div className="mod-option-icon">✅</div>
+                    <span className="mod-option-label">CON TODO</span>
+                    <p className="mod-option-description">Todas las modificaciones</p>
+                  </button>
+                  
+                  <button 
+                    className="btn-mod-option btn-solo-con"
+                    onClick={handleModSoloCon}
+                  >
+                    <div className="mod-option-icon">✏️</div>
+                    <span className="mod-option-label">SOLO CON</span>
+                    <p className="mod-option-description">Seleccionar específicas</p>
+                  </button>
+                </div>
+                <div className="modal-actions">
+                  <button className="btn-modal-close" onClick={() => setShowModModal(false)}>
+                    Cancelar
+                  </button>
+                </div>
+              </>
+            ) : (
+              // Show moderadores list for selection
+              <>
+                <div className="modal-header-with-back">
+                  <button 
+                    className="btn-back-to-options"
+                    onClick={() => setModSelectionMode('options')}
+                  >
+                    ← Volver
+                  </button>
+                  <h3>Seleccionar Moderadores</h3>
+                </div>
+                <div className="moderadores-list">
+                  {getAvailableModeradores(selectedProductoIdForMod).map((mod) => {
+                    const currentItem = comanda.find(i => i.producto.idProducto === selectedProductoIdForMod);
+                    const currentMods = currentItem?.moderadores?.split(',').map(Number) || [];
+                    const isSelected = currentMods.includes(mod.idmoderador);
+                    
+                    return (
+                      <label key={mod.idmoderador} className="moderador-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => handleModeradorToggle(mod.idmoderador, e.target.checked)}
+                        />
+                        <span>{mod.nombremoderador}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                <div className="modal-actions">
+                  <button className="btn-modal-close" onClick={() => setShowModModal(false)}>
+                    Cerrar
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
