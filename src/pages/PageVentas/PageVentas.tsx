@@ -135,7 +135,8 @@ const PageVentas: React.FC = () => {
   const cargarModeradores = async (idNegocio: number) => {
     try {
       const mods = await obtenerModeradores(idNegocio);
-      setModeradores(mods.filter(m => m.estatus === ESTATUS_ACTIVO));
+      const modsActivos = mods.filter(m => m.estatus === ESTATUS_ACTIVO);
+      setModeradores(modsActivos);
       
       const catMods = await obtenerModeradoresRef(idNegocio);
       // Map ModeradorRef to CatModerador format
@@ -532,11 +533,15 @@ const PageVentas: React.FC = () => {
   const getAvailableModeradores = (idProducto: number): Moderador[] => {
     // Find the product's category
     const producto = productos.find(p => p.idProducto === idProducto);
-    if (!producto) return [];
+    if (!producto) {
+      return [];
+    }
 
     // Find the category
     const categoria = categorias.find(c => c.idCategoria === producto.idCategoria);
-    if (!categoria) return [];
+    if (!categoria) {
+      return [];
+    }
     
     // Check if category has a moderadordef defined
     // Treat null, undefined, empty string, '0', and 0 as "no moderadores"
@@ -546,23 +551,52 @@ const PageVentas: React.FC = () => {
       return [];
     }
 
-    // Get the catModerador
-    const catModerador = catModeradores.find(cm => 
-      cm.idmodref === Number(moderadorDefValue)
+    // Parse moderadorDefValue - it can be a single ID or comma-separated IDs
+    let moderadorRefIds: number[] = [];
+    if (typeof moderadorDefValue === 'string') {
+      if (moderadorDefValue.includes(',')) {
+        moderadorRefIds = moderadorDefValue.split(',').map(id => Number(id.trim())).filter(id => id > 0);
+      } else {
+        const id = Number(moderadorDefValue);
+        if (id > 0) moderadorRefIds = [id];
+      }
+    } else if (typeof moderadorDefValue === 'number' && moderadorDefValue > 0) {
+      moderadorRefIds = [moderadorDefValue];
+    }
+
+    if (moderadorRefIds.length === 0) {
+      return [];
+    }
+
+    // Get all catModeradores that match any of the moderadorRefIds
+    const matchedCatModeradores = catModeradores.filter(cm => 
+      moderadorRefIds.includes(cm.idmodref)
     );
     
-    // Check if catModerador exists and has moderadores
-    const moderadoresStr = catModerador?.moderadores?.trim();
-    if (!catModerador || !moderadoresStr) return [];
+    if (matchedCatModeradores.length === 0) {
+      return [];
+    }
 
-    // Parse moderadores IDs from comma-separated string
-    const moderadorIds = moderadoresStr
-      .split(',')
-      .map(id => Number(id.trim()))
-      .filter(id => id > 0); // Filter out any invalid IDs
+    // Collect all moderador IDs from all matched catModeradores
+    const allModeradorIds: number[] = [];
+    for (const catModerador of matchedCatModeradores) {
+      const moderadoresStr = catModerador.moderadores?.trim();
+      if (moderadoresStr) {
+        const ids = moderadoresStr
+          .split(',')
+          .map(id => Number(id.trim()))
+          .filter(id => id > 0);
+        allModeradorIds.push(...ids);
+      }
+    }
+
+    if (allModeradorIds.length === 0) {
+      return [];
+    }
     
-    // Filter and return moderadores
-    return moderadores.filter(m => moderadorIds.includes(m.idmoderador));
+    // Filter and return unique moderadores
+    const uniqueModeradorIds = Array.from(new Set(allModeradorIds));
+    return moderadores.filter(m => uniqueModeradorIds.includes(m.idmoderador));
   };
 
   const handleListadoPagos = () => {
