@@ -126,7 +126,6 @@ const PageVentas: React.FC = () => {
       // Note: Server already filters by user's idnegocio
       // Filtrar solo categorías activas
       const categoriasActivas = data.filter(c => c.estatus === ESTATUS_ACTIVO);
-      console.log('🔵 cargarCategorias: Categorías activas cargadas:', categoriasActivas.map(c => ({ id: c.idCategoria, nombre: c.nombre, idmoderadordef: c.idmoderadordef })));
       setCategorias(categoriasActivas);
     } catch (error) {
       console.error('Error al cargar categorías:', error);
@@ -137,7 +136,6 @@ const PageVentas: React.FC = () => {
     try {
       const mods = await obtenerModeradores(idNegocio);
       const modsActivos = mods.filter(m => m.estatus === ESTATUS_ACTIVO);
-      console.log('🔵 cargarModeradores: Moderadores activos cargados:', modsActivos.map(m => ({ id: m.idmoderador, nombre: m.nombremoderador })));
       setModeradores(modsActivos);
       
       const catMods = await obtenerModeradoresRef(idNegocio);
@@ -154,7 +152,6 @@ const PageVentas: React.FC = () => {
           estatus: cm.estatus,
           moderadores: cm.moderadores || ''
         }));
-      console.log('🔵 cargarModeradores: CatModeradores activos cargados:', mappedCatMods.map(cm => ({ idmodref: cm.idmodref, nombre: cm.nombremodref, moderadores: cm.moderadores })));
       setCatModeradores(mappedCatMods);
     } catch (error) {
       console.error('Error al cargar moderadores:', error);
@@ -537,25 +534,20 @@ const PageVentas: React.FC = () => {
     // Find the product's category
     const producto = productos.find(p => p.idProducto === idProducto);
     if (!producto) {
-      console.log('🔴 getAvailableModeradores: Producto no encontrado', idProducto);
       return [];
     }
 
     // Find the category
     const categoria = categorias.find(c => c.idCategoria === producto.idCategoria);
     if (!categoria) {
-      console.log('🔴 getAvailableModeradores: Categoría no encontrada', producto.idCategoria);
       return [];
     }
-    
-    console.log('🔵 getAvailableModeradores: Producto:', producto.nombre, 'Categoría:', categoria.nombre, 'idmoderadordef:', categoria.idmoderadordef, 'tipo:', typeof categoria.idmoderadordef);
     
     // Check if category has a moderadordef defined
     // Treat null, undefined, empty string, '0', and 0 as "no moderadores"
     const moderadorDefValue = categoria.idmoderadordef;
     const invalidValues = [null, undefined, '', '0', 0];
     if (invalidValues.includes(moderadorDefValue as any)) {
-      console.log('🔴 getAvailableModeradores: valor inválido de moderadordef:', moderadorDefValue);
       return [];
     }
 
@@ -573,12 +565,8 @@ const PageVentas: React.FC = () => {
     }
 
     if (moderadorRefIds.length === 0) {
-      console.log('🔴 getAvailableModeradores: No se pudieron parsear IDs válidos de moderadordef:', moderadorDefValue);
       return [];
     }
-
-    console.log('🔵 getAvailableModeradores: Buscando catModeradores con idmodrefs:', moderadorRefIds, 'en', catModeradores.length, 'catModeradores');
-    console.log('🔵 getAvailableModeradores: catModeradores disponibles:', catModeradores.map(cm => ({ idmodref: cm.idmodref, nombre: cm.nombremodref, moderadores: cm.moderadores })));
 
     // Get all catModeradores that match any of the moderadorRefIds
     const matchedCatModeradores = catModeradores.filter(cm => 
@@ -586,11 +574,8 @@ const PageVentas: React.FC = () => {
     );
     
     if (matchedCatModeradores.length === 0) {
-      console.log('🔴 getAvailableModeradores: No se encontraron catModeradores para idmodrefs:', moderadorRefIds);
       return [];
     }
-
-    console.log('🔵 getAvailableModeradores: catModeradores encontrados:', matchedCatModeradores.length);
 
     // Collect all moderador IDs from all matched catModeradores
     const allModeradorIds: number[] = [];
@@ -606,18 +591,12 @@ const PageVentas: React.FC = () => {
     }
 
     if (allModeradorIds.length === 0) {
-      console.log('🔴 getAvailableModeradores: No se encontraron moderadores en los catModeradores');
       return [];
     }
-
-    console.log('🔵 getAvailableModeradores: moderadorIds acumulados:', allModeradorIds);
-    console.log('🔵 getAvailableModeradores: moderadores disponibles:', moderadores.map(m => ({ id: m.idmoderador, nombre: m.nombremoderador })));
     
     // Filter and return unique moderadores
     const uniqueModeradorIds = Array.from(new Set(allModeradorIds));
-    const result = moderadores.filter(m => uniqueModeradorIds.includes(m.idmoderador));
-    console.log('🟢 getAvailableModeradores: resultado final:', result.length, 'moderadores');
-    return result;
+    return moderadores.filter(m => uniqueModeradorIds.includes(m.idmoderador));
   };
 
   const handleListadoPagos = () => {
