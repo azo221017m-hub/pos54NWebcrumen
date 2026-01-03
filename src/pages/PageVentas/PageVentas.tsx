@@ -202,29 +202,45 @@ const PageVentas: React.FC = () => {
       setIsLoadedFromDashboard(true);
 
       // Load products into comanda
-      const itemsComanda: ItemComanda[] = ventaToLoad.detalles.map(detalle => ({
-        producto: {
-          idProducto: detalle.idproducto,
-          nombre: detalle.nombreproducto,
-          precio: detalle.preciounitario,
-          costoproducto: detalle.costounitario,
-          descripcion: '',
-          idCategoria: 0,
-          codigoSKU: '',
-          tipoproducto: detalle.idreceta ? 'Receta' : 'Directo',
-          idreferencia: detalle.idreceta || null,
-          unidaddemedida: 'Pieza',
-          imagenProducto: null,
-          estatus: 1,
-          idnegocio: detalle.idnegocio,
-          usuarioauditoria: detalle.usuarioauditoria,
-          fechamodificacionauditoria: detalle.fechamodificacionauditoria,
-          fechaRegistroauditoria: new Date().toISOString(),
-          fehamodificacionauditoria: new Date().toISOString()
-        } as ProductoWeb,
-        cantidad: detalle.cantidad,
-        notas: detalle.observaciones || undefined
-      }));
+      const itemsComanda: ItemComanda[] = ventaToLoad.detalles.map(detalle => {
+        // Parse moderadores and determine moderadoresNames
+        let moderadoresNames: string[] | undefined = undefined;
+        if (detalle.moderadores) {
+          if (detalle.moderadores === 'LIMPIO') {
+            moderadoresNames = ['LIMPIO'];
+          } else {
+            // It's a comma-separated list of IDs - we'll need to resolve them later
+            // For now, just mark that it has moderadores
+            moderadoresNames = ['Moderadores'];
+          }
+        }
+
+        return {
+          producto: {
+            idProducto: detalle.idproducto,
+            nombre: detalle.nombreproducto,
+            precio: detalle.preciounitario,
+            costoproducto: detalle.costounitario,
+            descripcion: '',
+            idCategoria: 0,
+            codigoSKU: '',
+            tipoproducto: detalle.idreceta ? 'Receta' : 'Directo',
+            idreferencia: detalle.idreceta || null,
+            unidaddemedida: 'Pieza',
+            imagenProducto: null,
+            estatus: 1,
+            idnegocio: detalle.idnegocio,
+            usuarioauditoria: detalle.usuarioauditoria,
+            fechamodificacionauditoria: detalle.fechamodificacionauditoria,
+            fechaRegistroauditoria: new Date().toISOString(),
+            fehamodificacionauditoria: new Date().toISOString()
+          } as ProductoWeb,
+          cantidad: Math.round(detalle.cantidad), // Ensure integer value
+          notas: detalle.observaciones || undefined,
+          moderadores: detalle.moderadores || undefined,
+          moderadoresNames
+        };
+      });
       
       setComanda(itemsComanda);
 
@@ -566,7 +582,7 @@ const PageVentas: React.FC = () => {
   };
 
   const handleModLimpio = () => {
-    updateComandaWithModerador(undefined, ['LIMPIO']);
+    updateComandaWithModerador('LIMPIO', ['LIMPIO']);
   };
 
   const handleModConTodo = () => {
@@ -1017,7 +1033,16 @@ const PageVentas: React.FC = () => {
                   <div className="producto-acciones">
                     <button 
                       className="btn-accion btn-plus"
-                      onClick={() => agregarAComanda(producto)}
+                      onClick={() => {
+                        // Add with "CON TODO" moderador by default if product has moderador definition
+                        if (hasModeradorDef(producto.idProducto)) {
+                          const availableMods = getAvailableModeradores(producto.idProducto);
+                          const allModIds = availableMods.map(m => m.idmoderador).join(',');
+                          agregarAComanda(producto, allModIds, ['CON TODO']);
+                        } else {
+                          agregarAComanda(producto);
+                        }
+                      }}
                     >
                       <Plus size={16} />
                     </button>
