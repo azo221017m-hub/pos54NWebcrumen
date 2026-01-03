@@ -1070,14 +1070,19 @@ const PageVentas: React.FC = () => {
                     min="1"
                     step="1"
                     onChange={(e) => {
-                      const newValue = parseInt(e.target.value, 10);
+                      const inputValue = e.target.value;
+                      // Parse the value
+                      const newValue = parseInt(inputValue, 10);
+                      // Update only if it's a valid positive integer
                       if (!isNaN(newValue) && newValue > 0) {
                         actualizarCantidad(item.producto, item.moderadores, newValue);
                       }
+                      // If empty or invalid, the value prop will keep showing the current cantidad
                     }}
                     onBlur={(e) => {
                       // Ensure at least 1 on blur if empty or invalid
-                      const newValue = parseInt(e.target.value, 10);
+                      const inputValue = e.target.value;
+                      const newValue = parseInt(inputValue, 10);
                       if (isNaN(newValue) || newValue < 1) {
                         actualizarCantidad(item.producto, item.moderadores, 1);
                       }
