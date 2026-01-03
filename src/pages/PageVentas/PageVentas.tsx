@@ -546,8 +546,9 @@ const PageVentas: React.FC = () => {
   const handleModeradorToggle = (moderadorId: number, isChecked: boolean) => {
     if (!isValidItemIndex(selectedItemIndex)) return;
     
-    const currentItem = comanda[selectedItemIndex!];
-    const currentMods = currentItem?.moderadores?.split(',').map(Number) || [];
+    // After validation, we know selectedItemIndex is valid
+    const currentItem = comanda[selectedItemIndex as number];
+    const currentMods = currentItem.moderadores?.split(',').map(Number) || [];
     
     const newMods = isChecked
       ? [...currentMods, moderadorId]
@@ -1001,7 +1002,7 @@ const PageVentas: React.FC = () => {
 
           <div className="comanda-items">
             {comanda.map((item, index) => (
-              <div key={`${item.producto.idProducto}-${index}`} className="comanda-item">
+              <div key={`${item.producto.idProducto}-${item.moderadores || 'none'}-${index}`} className="comanda-item">
                 <div className="comanda-item-header">
                   <span className="comanda-item-cantidad">{item.cantidad}</span>
                   <span className="comanda-item-nombre">{item.producto.nombre}</span>
@@ -1129,8 +1130,9 @@ const PageVentas: React.FC = () => {
                 </div>
                 <div className="moderadores-list">
                   {selectedProductoIdForMod !== null && getAvailableModeradores(selectedProductoIdForMod).map((mod) => {
+                    // After validation, we know selectedItemIndex is valid
                     const currentItem = isValidItemIndex(selectedItemIndex) 
-                      ? comanda[selectedItemIndex!] 
+                      ? comanda[selectedItemIndex as number] 
                       : null;
                     const currentMods = currentItem?.moderadores?.split(',').map(Number) || [];
                     const isSelected = currentMods.includes(mod.idmoderador);
