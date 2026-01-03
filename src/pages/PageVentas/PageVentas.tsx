@@ -555,17 +555,8 @@ const PageVentas: React.FC = () => {
       return false;
     }
 
-    // Find the category
-    const categoria = categorias.find(c => c.idCategoria === producto.idCategoria);
-    if (!categoria) {
-      return false;
-    }
-
-    // Check if category has a valid moderadordef defined
-    // Treat null, undefined, empty string, '0', and 0 as invalid
-    const moderadorDefValue = categoria.idmoderadordef;
-    const invalidValues = [null, undefined, '', '0', 0];
-    return !invalidValues.includes(moderadorDefValue as any);
+    // Reuse getIdModeradorDef logic to check for valid idmoderadordef
+    return getIdModeradorDef(producto.idCategoria) !== '';
   };
 
   const getModeradorCategoryNames = (idProducto: number): string[] => {
