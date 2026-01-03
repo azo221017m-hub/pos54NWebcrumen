@@ -530,6 +530,57 @@ const PageVentas: React.FC = () => {
     handleModeradorSelection(newMods);
   };
 
+  const getCategoryName = (idCategoria: number): string => {
+    const categoria = categorias.find(c => c.idCategoria === idCategoria);
+    return categoria?.nombre || '';
+  };
+
+  const getModeradorCategoryNames = (idProducto: number): string[] => {
+    // Find the product's category
+    const producto = productos.find(p => p.idProducto === idProducto);
+    if (!producto) {
+      return [];
+    }
+
+    // Find the category
+    const categoria = categorias.find(c => c.idCategoria === producto.idCategoria);
+    if (!categoria) {
+      return [];
+    }
+    
+    // Check if category has a moderadordef defined
+    const moderadorDefValue = categoria.idmoderadordef;
+    const invalidValues = [null, undefined, '', '0', 0];
+    if (invalidValues.includes(moderadorDefValue as any)) {
+      return [];
+    }
+
+    // Parse moderadorDefValue - it can be a single ID or comma-separated IDs
+    let moderadorRefIds: number[] = [];
+    if (typeof moderadorDefValue === 'string') {
+      if (moderadorDefValue.includes(',')) {
+        moderadorRefIds = moderadorDefValue.split(',').map(id => Number(id.trim())).filter(id => id > 0);
+      } else {
+        const id = Number(moderadorDefValue);
+        if (id > 0) moderadorRefIds = [id];
+      }
+    } else if (typeof moderadorDefValue === 'number' && moderadorDefValue > 0) {
+      moderadorRefIds = [moderadorDefValue];
+    }
+
+    if (moderadorRefIds.length === 0) {
+      return [];
+    }
+
+    // Get all catModeradores that match any of the moderadorRefIds
+    const matchedCatModeradores = catModeradores.filter(cm => 
+      moderadorRefIds.includes(cm.idmodref)
+    );
+    
+    // Return the names of the matched moderador categories
+    return matchedCatModeradores.map(cm => cm.nombremodref);
+  };
+
   const getAvailableModeradores = (idProducto: number): Moderador[] => {
     // Find the product's category
     const producto = productos.find(p => p.idProducto === idProducto);
@@ -828,7 +879,11 @@ const PageVentas: React.FC = () => {
 
           {/* Grid de productos - Show when service is configured */}
           <div className={`productos-grid ${!isServiceConfigured ? 'hidden' : ''}`}>
-            {productosVisibles.map((producto) => (
+            {productosVisibles.map((producto) => {
+              const categoriaNombre = getCategoryName(producto.idCategoria);
+              const moderadorCategoriasNames = getModeradorCategoryNames(producto.idProducto);
+              
+              return (
                 <div key={producto.idProducto} className="producto-card">
                   <div className="producto-imagen">
                     {producto.imagenProducto ? (
@@ -841,6 +896,14 @@ const PageVentas: React.FC = () => {
                   </div>
                   <div className="producto-info">
                     <h3 className="producto-nombre">{producto.nombre}</h3>
+                    {categoriaNombre && (
+                      <p className="producto-categoria">Categoría: {categoriaNombre}</p>
+                    )}
+                    {moderadorCategoriasNames.length > 0 && (
+                      <p className="producto-moderador-categoria">
+                        Mod: {moderadorCategoriasNames.join(', ')}
+                      </p>
+                    )}
                     <p className="producto-precio">$ {formatPrice(producto.precio)}</p>
                   </div>
                   <div className="producto-acciones">
@@ -860,7 +923,8 @@ const PageVentas: React.FC = () => {
                     )}
                   </div>
                 </div>
-              ))}
+              );
+            })}
           </div>
 
           {productosVisibles.length === 0 && (

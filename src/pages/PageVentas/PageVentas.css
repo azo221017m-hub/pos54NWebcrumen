@@ -422,6 +422,26 @@
   white-space: nowrap;
 }
 
+.producto-categoria {
+  font-size: 0.75rem;
+  color: #7f8c8d;
+  margin: 0.2rem 0 0;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.producto-moderador-categoria {
+  font-size: 0.75rem;
+  color: #16a085;
+  margin: 0.2rem 0 0;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .producto-precio {
   font-size: 0.95rem;
   color: #2c3e50;
