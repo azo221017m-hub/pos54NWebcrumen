@@ -274,6 +274,39 @@ const PageVentas: React.FC = () => {
     }
   }, []);
 
+  // Resolve moderador names after moderadores are loaded (for items loaded from dashboard)
+  useEffect(() => {
+    if (moderadores.length > 0 && isLoadedFromDashboard) {
+      // Update comanda items that have moderadores but no resolved names yet
+      setComanda(prevComanda => {
+        const needsUpdate = prevComanda.some(item => 
+          item.moderadores && 
+          item.moderadores !== 'LIMPIO' && 
+          (!item.moderadoresNames || item.moderadoresNames[0] === 'Moderadores')
+        );
+
+        if (!needsUpdate) return prevComanda;
+
+        return prevComanda.map(item => {
+          if (item.moderadores && item.moderadores !== 'LIMPIO' && 
+              (!item.moderadoresNames || item.moderadoresNames[0] === 'Moderadores')) {
+            // Parse comma-separated IDs and resolve to names
+            const moderadorIds = item.moderadores.split(',').map(id => Number(id.trim()));
+            const modNames = moderadorIds
+              .map(id => moderadores.find(m => m.idmoderador === id)?.nombremoderador)
+              .filter(Boolean) as string[];
+            
+            return {
+              ...item,
+              moderadoresNames: modNames.length > 0 ? modNames : undefined
+            };
+          }
+          return item;
+        });
+      });
+    }
+  }, [moderadores, isLoadedFromDashboard]);
+
   // Show selection modal when comanda is empty and service not configured
   useEffect(() => {
     // Only show if:
