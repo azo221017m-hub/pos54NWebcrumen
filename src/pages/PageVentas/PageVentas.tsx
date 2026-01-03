@@ -33,6 +33,7 @@ interface ItemComanda {
 const ESTATUS_ACTIVO = 1;
 const SERVICE_CONFIG_MODAL_DELAY_MS = 300;
 const SELECTION_MODAL_DISPLAY_DELAY_MS = 500;
+const MODERADORES_PLACEHOLDER = 'Moderadores';
 
 const PageVentas: React.FC = () => {
   const navigate = useNavigate();
@@ -202,29 +203,45 @@ const PageVentas: React.FC = () => {
       setIsLoadedFromDashboard(true);
 
       // Load products into comanda
-      const itemsComanda: ItemComanda[] = ventaToLoad.detalles.map(detalle => ({
-        producto: {
-          idProducto: detalle.idproducto,
-          nombre: detalle.nombreproducto,
-          precio: detalle.preciounitario,
-          costoproducto: detalle.costounitario,
-          descripcion: '',
-          idCategoria: 0,
-          codigoSKU: '',
-          tipoproducto: detalle.idreceta ? 'Receta' : 'Directo',
-          idreferencia: detalle.idreceta || null,
-          unidaddemedida: 'Pieza',
-          imagenProducto: null,
-          estatus: 1,
-          idnegocio: detalle.idnegocio,
-          usuarioauditoria: detalle.usuarioauditoria,
-          fechamodificacionauditoria: detalle.fechamodificacionauditoria,
-          fechaRegistroauditoria: new Date().toISOString(),
-          fehamodificacionauditoria: new Date().toISOString()
-        } as ProductoWeb,
-        cantidad: detalle.cantidad,
-        notas: detalle.observaciones || undefined
-      }));
+      const itemsComanda: ItemComanda[] = ventaToLoad.detalles.map(detalle => {
+        // Parse moderadores and determine moderadoresNames
+        let moderadoresNames: string[] | undefined = undefined;
+        if (detalle.moderadores) {
+          if (detalle.moderadores === 'LIMPIO') {
+            moderadoresNames = ['LIMPIO'];
+          } else {
+            // It's a comma-separated list of IDs - we'll need to resolve them later
+            // For now, just mark that it has moderadores
+            moderadoresNames = [MODERADORES_PLACEHOLDER];
+          }
+        }
+
+        return {
+          producto: {
+            idProducto: detalle.idproducto,
+            nombre: detalle.nombreproducto,
+            precio: detalle.preciounitario,
+            costoproducto: detalle.costounitario,
+            descripcion: '',
+            idCategoria: 0,
+            codigoSKU: '',
+            tipoproducto: detalle.idreceta ? 'Receta' : 'Directo',
+            idreferencia: detalle.idreceta || null,
+            unidaddemedida: 'Pieza',
+            imagenProducto: null,
+            estatus: 1,
+            idnegocio: detalle.idnegocio,
+            usuarioauditoria: detalle.usuarioauditoria,
+            fechamodificacionauditoria: detalle.fechamodificacionauditoria,
+            fechaRegistroauditoria: new Date().toISOString(),
+            fehamodificacionauditoria: new Date().toISOString()
+          } as ProductoWeb,
+          cantidad: Math.round(detalle.cantidad), // Ensure integer value
+          notas: detalle.observaciones || undefined,
+          moderadores: detalle.moderadores || undefined,
+          moderadoresNames
+        };
+      });
       
       setComanda(itemsComanda);
 
@@ -257,6 +274,42 @@ const PageVentas: React.FC = () => {
       }
     }
   }, []);
+
+  // Resolve moderador names after moderadores are loaded (for items loaded from dashboard)
+  useEffect(() => {
+    if (moderadores.length > 0 && isLoadedFromDashboard) {
+      // Update comanda items that have moderadores but no resolved names yet
+      setComanda(prevComanda => {
+        const needsUpdate = prevComanda.some(item => 
+          item.moderadores && 
+          item.moderadores !== 'LIMPIO' && 
+          (!item.moderadoresNames || item.moderadoresNames[0] === MODERADORES_PLACEHOLDER)
+        );
+
+        if (!needsUpdate) return prevComanda;
+
+        return prevComanda.map(item => {
+          if (item.moderadores && item.moderadores !== 'LIMPIO' && 
+              (!item.moderadoresNames || item.moderadoresNames[0] === MODERADORES_PLACEHOLDER)) {
+            // Parse comma-separated IDs and resolve to names
+            const moderadorIds = item.moderadores
+              .split(',')
+              .map(id => Number(id.trim()))
+              .filter(id => !isNaN(id) && id > 0); // Filter out invalid IDs
+            const modNames = moderadorIds
+              .map(id => moderadores.find(m => m.idmoderador === id)?.nombremoderador)
+              .filter(Boolean) as string[];
+            
+            return {
+              ...item,
+              moderadoresNames: modNames.length > 0 ? modNames : undefined
+            };
+          }
+          return item;
+        });
+      });
+    }
+  }, [moderadores, isLoadedFromDashboard]);
 
   // Show selection modal when comanda is empty and service not configured
   useEffect(() => {
@@ -566,7 +619,7 @@ const PageVentas: React.FC = () => {
   };
 
   const handleModLimpio = () => {
-    updateComandaWithModerador(undefined, ['LIMPIO']);
+    updateComandaWithModerador('LIMPIO', ['LIMPIO']);
   };
 
   const handleModConTodo = () => {
@@ -1017,7 +1070,16 @@ const PageVentas: React.FC = () => {
                   <div className="producto-acciones">
                     <button 
                       className="btn-accion btn-plus"
-                      onClick={() => agregarAComanda(producto)}
+                      onClick={() => {
+                        // Add with "CON TODO" moderador by default if product has moderador definition
+                        if (hasModeradorDef(producto.idProducto)) {
+                          const availableMods = getAvailableModeradores(producto.idProducto);
+                          const allModIds = availableMods.map(m => m.idmoderador).join(',');
+                          agregarAComanda(producto, allModIds, ['CON TODO']);
+                        } else {
+                          agregarAComanda(producto);
+                        }
+                      }}
                     >
                       <Plus size={16} />
                     </button>
