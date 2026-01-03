@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Search, Plus, Minus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Search, Plus, Minus, ChevronLeft, ChevronRight, StickyNote } from 'lucide-react';
 import { obtenerProductosWeb } from '../../services/productosWebService';
 import { negociosService } from '../../services/negociosService';
 import { obtenerCategorias } from '../../services/categoriasService';
@@ -16,7 +16,7 @@ import type { Usuario } from '../../types/usuario.types';
 import type { Negocio } from '../../types/negocio.types';
 import type { Categoria } from '../../types/categoria.types';
 import type { TipoServicio } from '../../types/mesa.types';
-import type { VentaWebCreate, VentaWebWithDetails, TipoDeVenta, EstadoDeVenta, EstadoDetalle } from '../../types/ventasWeb.types';
+import type { VentaWebCreate, VentaWebWithDetails, TipoDeVenta, EstadoDeVenta, EstadoDetalle, EstatusDePago } from '../../types/ventasWeb.types';
 import type { Moderador } from '../../types/moderador.types';
 import type { CatModerador } from '../../types/catModerador.types';
 import './PageVentas.css';
@@ -70,6 +70,10 @@ const PageVentas: React.FC = () => {
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
   const [modSelectionMode, setModSelectionMode] = useState<'options' | 'list'>('options');
   const [tempSelectedModeradoresIds, setTempSelectedModeradoresIds] = useState<number[]>([]);
+  
+  // Nota states
+  const [editingNotaIndex, setEditingNotaIndex] = useState<number | null>(null);
+  const [tempNotaText, setTempNotaText] = useState<string>('');
   
   // Modal states
   const [modalOpen, setModalOpen] = useState(false);
@@ -440,7 +444,7 @@ const PageVentas: React.FC = () => {
     }, 0);
   };
 
-  const crearVenta = async (estadodeventa: EstadoDeVenta = 'SOLICITADO', estadodetalle: EstadoDetalle = 'ORDENADO') => {
+  const crearVenta = async (estadodeventa: EstadoDeVenta = 'SOLICITADO', estadodetalle: EstadoDetalle = 'ORDENADO', estatusdepago: EstatusDePago = 'PENDIENTE') => {
     // Lógica común para crear ventas
     if (comanda.length === 0) {
       alert('No hay productos en la comanda');
@@ -513,6 +517,7 @@ const PageVentas: React.FC = () => {
         telefonodeentrega,
         fechaprogramadaventa: fechaprogramadaventa || undefined,
         estadodeventa: estadodeventa,
+        estatusdepago: estatusdepago,
         estadodetalle: estadodetalle,
         detalles: comanda.map(item => ({
           idproducto: item.producto.idProducto,
@@ -554,11 +559,11 @@ const PageVentas: React.FC = () => {
   };
 
   const handleProducir = async () => {
-    await crearVenta('ORDENADO', 'ORDENADO');
+    await crearVenta('ORDENADO', 'ORDENADO', 'PENDIENTE');
   };
 
   const handleEsperar = async () => {
-    await crearVenta('ESPERAR', 'ESPERAR');
+    await crearVenta('ESPERAR', 'ESPERAR', 'ESPERAR');
   };
 
   const handleModeradorSelection = (selectedModeradores: number[]) => {
@@ -659,6 +664,26 @@ const PageVentas: React.FC = () => {
     // Apply the temporary selected moderadores
     // Note: Empty selection is valid (equivalent to "LIMPIO")
     handleModeradorSelection(tempSelectedModeradoresIds);
+  };
+
+  const handleNotaClick = (index: number, currentNota?: string) => {
+    setEditingNotaIndex(index);
+    setTempNotaText(currentNota || '');
+  };
+
+  const handleNotaSave = (index: number) => {
+    setComanda(comanda.map((item, idx) => 
+      idx === index
+        ? { ...item, notas: tempNotaText.trim() || undefined }
+        : item
+    ));
+    setEditingNotaIndex(null);
+    setTempNotaText('');
+  };
+
+  const handleNotaCancel = () => {
+    setEditingNotaIndex(null);
+    setTempNotaText('');
   };
 
   const getCategoryName = (idCategoria: number): string => {
@@ -1161,6 +1186,38 @@ const PageVentas: React.FC = () => {
                     <span className="moderadores-list">{item.moderadoresNames.join(', ')}</span>
                   </div>
                 )}
+                {item.notas && editingNotaIndex !== index && (
+                  <div className="comanda-item-notas">
+                    <span className="notas-label">Nota:</span>
+                    <span className="notas-text">{item.notas}</span>
+                  </div>
+                )}
+                {editingNotaIndex === index && (
+                  <div className="comanda-item-nota-edit">
+                    <textarea
+                      className="nota-textarea"
+                      value={tempNotaText}
+                      onChange={(e) => setTempNotaText(e.target.value)}
+                      placeholder="Agregar nota..."
+                      rows={3}
+                      autoFocus
+                    />
+                    <div className="nota-actions">
+                      <button 
+                        className="btn-nota-save"
+                        onClick={() => handleNotaSave(index)}
+                      >
+                        Guardar
+                      </button>
+                      <button 
+                        className="btn-nota-cancel"
+                        onClick={handleNotaCancel}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <div className="comanda-item-acciones">
                   <button 
                     className="btn-comanda-accion btn-minus"
@@ -1174,6 +1231,13 @@ const PageVentas: React.FC = () => {
                   >
                     <Plus size={14} />
                   </button>
+                  <button 
+                    className="btn-comanda-accion btn-nota"
+                    onClick={() => handleNotaClick(index, item.notas)}
+                    title="Agregar nota"
+                  >
+                    <StickyNote size={14} />
+                  </button>
                 </div>
               </div>
             ))}
@@ -1185,14 +1249,7 @@ const PageVentas: React.FC = () => {
             )}
           </div>
 
-          <div className="comanda-scroll-indicator">
-            {comanda.length > 3 && (
-              <>
-                <div className="scroll-arrow scroll-up">↑</div>
-                <div className="scroll-arrow scroll-down">↓</div>
-              </>
-            )}
-          </div>
+
         </div>
       </div>
 

@@ -721,33 +721,7 @@
   text-align: center;
 }
 
-.comanda-scroll-indicator {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
 
-.scroll-arrow {
-  width: 30px;
-  height: 30px;
-  background: #3498db;
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.scroll-arrow:hover {
-  background: #2980b9;
-}
 
 /* Scrollbar styling */
 .productos-grid::-webkit-scrollbar,
@@ -893,6 +867,99 @@
 .moderadores-list {
   color: #34495e;
   font-style: italic;
+}
+
+/* Notas in comanda items */
+.comanda-item-notas {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(243, 156, 18, 0.1);
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.notas-label {
+  font-weight: 600;
+  color: #2c3e50;
+  flex-shrink: 0;
+}
+
+.notas-text {
+  color: #34495e;
+  font-style: italic;
+  word-break: break-word;
+}
+
+/* Nota editing */
+.comanda-item-nota-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(243, 156, 18, 0.1);
+  border-radius: 4px;
+}
+
+.nota-textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 2px solid #f39c12;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.nota-textarea:focus {
+  outline: none;
+  border-color: #e67e22;
+}
+
+.nota-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.btn-nota-save,
+.btn-nota-cancel {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-nota-save {
+  background: #27ae60;
+  color: white;
+}
+
+.btn-nota-save:hover {
+  background: #229954;
+}
+
+.btn-nota-cancel {
+  background: #95a5a6;
+  color: white;
+}
+
+.btn-nota-cancel:hover {
+  background: #7f8c8d;
+}
+
+.btn-nota {
+  background: #f39c12;
+  color: white;
+}
+
+.btn-nota:hover {
+  background: #e67e22;
 }
 
 /* Modal for moderadores selection */
