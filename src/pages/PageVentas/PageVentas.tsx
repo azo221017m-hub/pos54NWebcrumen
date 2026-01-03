@@ -292,7 +292,10 @@ const PageVentas: React.FC = () => {
           if (item.moderadores && item.moderadores !== 'LIMPIO' && 
               (!item.moderadoresNames || item.moderadoresNames[0] === MODERADORES_PLACEHOLDER)) {
             // Parse comma-separated IDs and resolve to names
-            const moderadorIds = item.moderadores.split(',').map(id => Number(id.trim()));
+            const moderadorIds = item.moderadores
+              .split(',')
+              .map(id => Number(id.trim()))
+              .filter(id => !isNaN(id) && id > 0); // Filter out invalid IDs
             const modNames = moderadorIds
               .map(id => moderadores.find(m => m.idmoderador === id)?.nombremoderador)
               .filter(Boolean) as string[];
