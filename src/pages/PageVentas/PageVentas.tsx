@@ -33,6 +33,7 @@ interface ItemComanda {
 const ESTATUS_ACTIVO = 1;
 const SERVICE_CONFIG_MODAL_DELAY_MS = 300;
 const SELECTION_MODAL_DISPLAY_DELAY_MS = 500;
+const MODERADORES_PLACEHOLDER = 'Moderadores';
 
 const PageVentas: React.FC = () => {
   const navigate = useNavigate();
@@ -211,7 +212,7 @@ const PageVentas: React.FC = () => {
           } else {
             // It's a comma-separated list of IDs - we'll need to resolve them later
             // For now, just mark that it has moderadores
-            moderadoresNames = ['Moderadores'];
+            moderadoresNames = [MODERADORES_PLACEHOLDER];
           }
         }
 
@@ -282,14 +283,14 @@ const PageVentas: React.FC = () => {
         const needsUpdate = prevComanda.some(item => 
           item.moderadores && 
           item.moderadores !== 'LIMPIO' && 
-          (!item.moderadoresNames || item.moderadoresNames[0] === 'Moderadores')
+          (!item.moderadoresNames || item.moderadoresNames[0] === MODERADORES_PLACEHOLDER)
         );
 
         if (!needsUpdate) return prevComanda;
 
         return prevComanda.map(item => {
           if (item.moderadores && item.moderadores !== 'LIMPIO' && 
-              (!item.moderadoresNames || item.moderadoresNames[0] === 'Moderadores')) {
+              (!item.moderadoresNames || item.moderadoresNames[0] === MODERADORES_PLACEHOLDER)) {
             // Parse comma-separated IDs and resolve to names
             const moderadorIds = item.moderadores.split(',').map(id => Number(id.trim()));
             const modNames = moderadorIds
