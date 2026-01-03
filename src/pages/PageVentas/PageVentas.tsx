@@ -295,11 +295,26 @@ const PageVentas: React.FC = () => {
     setProductosVisibles(filtrados);
   }, [searchTerm, productos, categoriaSeleccionada]);
 
+  // Helper functions
+  const hasSameModeradores = (itemModerators: string | undefined, moderadores: string | undefined): boolean => {
+    return (itemModerators || '') === (moderadores || '');
+  };
+
+  const isValidItemIndex = (index: number | null): boolean => {
+    return index !== null && index >= 0 && index < comanda.length;
+  };
+
+  const closeModModal = () => {
+    setShowModModal(false);
+    setSelectedProductoIdForMod(null);
+    setSelectedItemIndex(null);
+  };
+
   const agregarAComanda = (producto: ProductoWeb, moderadores?: string, moderadoresNames?: string[]) => {
     // Find existing item with same product AND same moderadores
     const itemExistente = comanda.find(item => 
       item.producto.idProducto === producto.idProducto && 
-      (item.moderadores || '') === (moderadores || '')
+      hasSameModeradores(item.moderadores, moderadores)
     );
     
     if (itemExistente) {
@@ -316,7 +331,7 @@ const PageVentas: React.FC = () => {
   const disminuirCantidad = (producto: ProductoWeb, moderadores?: string) => {
     const itemExistente = comanda.find(item => 
       item.producto.idProducto === producto.idProducto && 
-      (item.moderadores || '') === (moderadores || '')
+      hasSameModeradores(item.moderadores, moderadores)
     );
     
     if (itemExistente) {
@@ -334,7 +349,7 @@ const PageVentas: React.FC = () => {
 
   const handleModClickForItem = (itemIndex: number) => {
     // Verify index is within bounds
-    if (itemIndex < 0 || itemIndex >= comanda.length) return;
+    if (!isValidItemIndex(itemIndex)) return;
     
     const item = comanda[itemIndex];
     setSelectedProductoIdForMod(item.producto.idProducto);
@@ -472,7 +487,7 @@ const PageVentas: React.FC = () => {
   };
 
   const handleModeradorSelection = (selectedModeradores: number[]) => {
-    if (selectedItemIndex === null) return;
+    if (!isValidItemIndex(selectedItemIndex)) return;
 
     // Get moderadores names
     const modNames = selectedModeradores
@@ -490,13 +505,11 @@ const PageVentas: React.FC = () => {
         : item
     ));
 
-    setShowModModal(false);
-    setSelectedProductoIdForMod(null);
-    setSelectedItemIndex(null);
+    closeModModal();
   };
 
   const updateComandaWithModerador = (moderadores: string | undefined, moderadoresNames: string[]) => {
-    if (selectedItemIndex === null) return;
+    if (!isValidItemIndex(selectedItemIndex)) return;
     
     setComanda(comanda.map((item, idx) => 
       idx === selectedItemIndex
@@ -508,9 +521,7 @@ const PageVentas: React.FC = () => {
         : item
     ));
     
-    setShowModModal(false);
-    setSelectedProductoIdForMod(null);
-    setSelectedItemIndex(null);
+    closeModModal();
   };
 
   const handleModLimpio = () => {
@@ -533,9 +544,9 @@ const PageVentas: React.FC = () => {
   };
 
   const handleModeradorToggle = (moderadorId: number, isChecked: boolean) => {
-    if (selectedItemIndex === null || selectedItemIndex < 0 || selectedItemIndex >= comanda.length) return;
+    if (!isValidItemIndex(selectedItemIndex)) return;
     
-    const currentItem = comanda[selectedItemIndex];
+    const currentItem = comanda[selectedItemIndex!];
     const currentMods = currentItem?.moderadores?.split(',').map(Number) || [];
     
     const newMods = isChecked
@@ -1064,11 +1075,7 @@ const PageVentas: React.FC = () => {
 
       {/* Modal para selección de moderadores */}
       {showModModal && selectedProductoIdForMod && (
-        <div className="modal-overlay" onClick={() => {
-          setShowModModal(false);
-          setSelectedProductoIdForMod(null);
-          setSelectedItemIndex(null);
-        }}>
+        <div className="modal-overlay" onClick={closeModModal}>
           <div className="modal-mod-content" onClick={(e) => e.stopPropagation()}>
             {modSelectionMode === 'options' ? (
               // Show LIMPIO | CON TODO | SOLO CON options
@@ -1103,11 +1110,7 @@ const PageVentas: React.FC = () => {
                   </button>
                 </div>
                 <div className="modal-actions">
-                  <button className="btn-modal-close" onClick={() => {
-                    setShowModModal(false);
-                    setSelectedProductoIdForMod(null);
-                    setSelectedItemIndex(null);
-                  }}>
+                  <button className="btn-modal-close" onClick={closeModModal}>
                     Cancelar
                   </button>
                 </div>
@@ -1126,8 +1129,8 @@ const PageVentas: React.FC = () => {
                 </div>
                 <div className="moderadores-list">
                   {selectedProductoIdForMod !== null && getAvailableModeradores(selectedProductoIdForMod).map((mod) => {
-                    const currentItem = (selectedItemIndex !== null && selectedItemIndex >= 0 && selectedItemIndex < comanda.length) 
-                      ? comanda[selectedItemIndex] 
+                    const currentItem = isValidItemIndex(selectedItemIndex) 
+                      ? comanda[selectedItemIndex!] 
                       : null;
                     const currentMods = currentItem?.moderadores?.split(',').map(Number) || [];
                     const isSelected = currentMods.includes(mod.idmoderador);
@@ -1145,11 +1148,7 @@ const PageVentas: React.FC = () => {
                   })}
                 </div>
                 <div className="modal-actions">
-                  <button className="btn-modal-close" onClick={() => {
-                    setShowModModal(false);
-                    setSelectedProductoIdForMod(null);
-                    setSelectedItemIndex(null);
-                  }}>
+                  <button className="btn-modal-close" onClick={closeModModal}>
                     Cerrar
                   </button>
                 </div>
