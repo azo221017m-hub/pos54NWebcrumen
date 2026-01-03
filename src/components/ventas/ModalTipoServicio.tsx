@@ -66,8 +66,6 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
 }) => {
   const [mesas, setMesas] = useState<Mesa[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [clientesFiltrados, setClientesFiltrados] = useState<Cliente[]>([]);
-  const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
 
   // Form data states
   const [mesaFormData, setMesaFormData] = useState<MesaFormData>(INITIAL_MESA_DATA);
@@ -112,45 +110,6 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     }
   };
 
-  const handleClienteInputChange = (value: string) => {
-    if (tipoServicio === 'Llevar') {
-      setLlevarFormData(prev => ({ ...prev, cliente: value, idcliente: null }));
-    } else if (tipoServicio === 'Domicilio') {
-      setDomicilioFormData(prev => ({ ...prev, cliente: value, idcliente: null }));
-    }
-
-    // Filtrar clientes
-    if (value.trim()) {
-      const filtrados = clientes.filter(c =>
-        c.nombre.toLowerCase().includes(value.toLowerCase())
-      );
-      setClientesFiltrados(filtrados);
-      setMostrarSugerencias(true);
-    } else {
-      setClientesFiltrados([]);
-      setMostrarSugerencias(false);
-    }
-  };
-
-  const seleccionarCliente = (cliente: Cliente) => {
-    if (tipoServicio === 'Llevar') {
-      setLlevarFormData(prev => ({
-        ...prev,
-        cliente: cliente.nombre,
-        idcliente: cliente.idCliente
-      }));
-    } else if (tipoServicio === 'Domicilio') {
-      setDomicilioFormData(prev => ({
-        ...prev,
-        cliente: cliente.nombre,
-        idcliente: cliente.idCliente,
-        direcciondeentrega: cliente.direccion || '',
-        telefonodeentrega: cliente.telefono || ''
-      }));
-    }
-    setMostrarSugerencias(false);
-  };
-
   const handleSave = () => {
     if (tipoServicio === 'Mesa') {
       if (!mesaFormData.idmesa) {
@@ -159,8 +118,8 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
       }
       onSave(mesaFormData);
     } else if (tipoServicio === 'Llevar') {
-      if (!llevarFormData.cliente.trim()) {
-        alert('Por favor ingrese el nombre del cliente');
+      if (!llevarFormData.idcliente) {
+        alert('Por favor seleccione un cliente');
         return;
       }
       if (!llevarFormData.fechaprogramadaventa) {
@@ -169,8 +128,8 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
       }
       onSave(llevarFormData);
     } else if (tipoServicio === 'Domicilio') {
-      if (!domicilioFormData.cliente.trim()) {
-        alert('Por favor ingrese el nombre del cliente');
+      if (!domicilioFormData.idcliente) {
+        alert('Por favor seleccione un cliente');
         return;
       }
       if (!domicilioFormData.fechaprogramadaventa) {
@@ -194,7 +153,6 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     setMesaFormData(INITIAL_MESA_DATA);
     setLlevarFormData(INITIAL_LLEVAR_DATA);
     setDomicilioFormData(INITIAL_DOMICILIO_DATA);
-    setMostrarSugerencias(false);
     onClose();
   };
 
@@ -240,31 +198,27 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
             <>
               <div className="form-group">
                 <label htmlFor="cliente">Nombre del Cliente *</label>
-                <div className="autocomplete-container">
-                  <input
-                    type="text"
-                    id="cliente"
-                    className="form-control"
-                    value={llevarFormData.cliente}
-                    onChange={(e) => handleClienteInputChange(e.target.value)}
-                    onFocus={() => llevarFormData.cliente && setMostrarSugerencias(true)}
-                    placeholder="Escriba o seleccione un cliente"
-                  />
-                  {mostrarSugerencias && clientesFiltrados.length > 0 && (
-                    <div className="sugerencias-dropdown">
-                      {clientesFiltrados.map((cliente) => (
-                        <div
-                          key={cliente.idCliente}
-                          className="sugerencia-item"
-                          onClick={() => seleccionarCliente(cliente)}
-                        >
-                          {cliente.nombre}
-                          {cliente.telefono && <span className="cliente-info"> - {cliente.telefono}</span>}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <select
+                  id="cliente"
+                  className="form-control"
+                  value={llevarFormData.idcliente || ''}
+                  onChange={(e) => {
+                    const selectedCliente = clientes.find(c => c.idCliente === Number(e.target.value));
+                    setLlevarFormData(prev => ({
+                      ...prev,
+                      cliente: selectedCliente?.nombre || '',
+                      idcliente: selectedCliente?.idCliente || null
+                    }));
+                  }}
+                >
+                  <option value="">Seleccione un cliente</option>
+                  {clientes.map((cliente) => (
+                    <option key={cliente.idCliente} value={cliente.idCliente}>
+                      {cliente.nombre}
+                      {cliente.telefono && ` - ${cliente.telefono}`}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-group">
@@ -275,6 +229,8 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                   className="form-control"
                   value={llevarFormData.fechaprogramadaventa}
                   onChange={(e) => setLlevarFormData(prev => ({ ...prev, fechaprogramadaventa: e.target.value }))}
+                  readOnly
+                  onFocus={(e) => e.target.showPicker?.()}
                 />
               </div>
             </>
@@ -284,31 +240,29 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
             <>
               <div className="form-group">
                 <label htmlFor="cliente-domicilio">Nombre del Cliente *</label>
-                <div className="autocomplete-container">
-                  <input
-                    type="text"
-                    id="cliente-domicilio"
-                    className="form-control"
-                    value={domicilioFormData.cliente}
-                    onChange={(e) => handleClienteInputChange(e.target.value)}
-                    onFocus={() => domicilioFormData.cliente && setMostrarSugerencias(true)}
-                    placeholder="Escriba o seleccione un cliente"
-                  />
-                  {mostrarSugerencias && clientesFiltrados.length > 0 && (
-                    <div className="sugerencias-dropdown">
-                      {clientesFiltrados.map((cliente) => (
-                        <div
-                          key={cliente.idCliente}
-                          className="sugerencia-item"
-                          onClick={() => seleccionarCliente(cliente)}
-                        >
-                          {cliente.nombre}
-                          {cliente.telefono && <span className="cliente-info"> - {cliente.telefono}</span>}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <select
+                  id="cliente-domicilio"
+                  className="form-control"
+                  value={domicilioFormData.idcliente || ''}
+                  onChange={(e) => {
+                    const selectedCliente = clientes.find(c => c.idCliente === Number(e.target.value));
+                    setDomicilioFormData(prev => ({
+                      ...prev,
+                      cliente: selectedCliente?.nombre || '',
+                      idcliente: selectedCliente?.idCliente || null,
+                      direcciondeentrega: selectedCliente?.direccion || '',
+                      telefonodeentrega: selectedCliente?.telefono || ''
+                    }));
+                  }}
+                >
+                  <option value="">Seleccione un cliente</option>
+                  {clientes.map((cliente) => (
+                    <option key={cliente.idCliente} value={cliente.idCliente}>
+                      {cliente.nombre}
+                      {cliente.telefono && ` - ${cliente.telefono}`}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-group">
@@ -319,6 +273,8 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                   className="form-control"
                   value={domicilioFormData.fechaprogramadaventa}
                   onChange={(e) => setDomicilioFormData(prev => ({ ...prev, fechaprogramadaventa: e.target.value }))}
+                  readOnly
+                  onFocus={(e) => e.target.showPicker?.()}
                 />
               </div>
 
