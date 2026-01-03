@@ -229,7 +229,6 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                   className="form-control"
                   value={llevarFormData.fechaprogramadaventa}
                   onChange={(e) => setLlevarFormData(prev => ({ ...prev, fechaprogramadaventa: e.target.value }))}
-                  onKeyDown={(e) => e.preventDefault()}
                   readOnly
                   onFocus={(e) => e.target.showPicker?.()}
                 />
@@ -274,7 +273,6 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                   className="form-control"
                   value={domicilioFormData.fechaprogramadaventa}
                   onChange={(e) => setDomicilioFormData(prev => ({ ...prev, fechaprogramadaventa: e.target.value }))}
-                  onKeyDown={(e) => e.preventDefault()}
                   readOnly
                   onFocus={(e) => e.target.showPicker?.()}
                 />
