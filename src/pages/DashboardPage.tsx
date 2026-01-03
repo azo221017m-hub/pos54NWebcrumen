@@ -5,6 +5,8 @@ import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/v
 import jsPDF from 'jspdf';
 import { SessionTimer } from '../components/common/SessionTimer';
 import { clearSession } from '../services/sessionService';
+import { obtenerModeradores } from '../services/moderadoresService';
+import type { Moderador } from '../types/moderador.types';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -99,6 +101,7 @@ export const DashboardPage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [ventasSolicitadas, setVentasSolicitadas] = useState<VentaWebWithDetails[]>([]);
   const [tipoVentaFilter, setTipoVentaFilter] = useState<TipoVentaFilterOption>(TIPO_VENTA_FILTER_ALL);
+  const [moderadores, setModeradores] = useState<Moderador[]>([]);
 
   const handleLogout = useCallback(() => {
     // Limpiar completamente la sesión
@@ -122,6 +125,16 @@ export const DashboardPage = () => {
     }
   }, []);
 
+  const cargarModeradores = useCallback(async () => {
+    if (!usuario?.idNegocio) return;
+    try {
+      const mods = await obtenerModeradores(usuario.idNegocio);
+      setModeradores(mods);
+    } catch (error) {
+      console.error('Error al cargar moderadores:', error);
+    }
+  }, [usuario?.idNegocio]);
+
   const handleStatusChange = async (ventaId: number, newStatus: EstadoDeVenta) => {
     try {
       const result = await actualizarVentaWeb(ventaId, { estadodeventa: newStatus });
@@ -137,6 +150,32 @@ export const DashboardPage = () => {
     }
   };
 
+  // Helper function to resolve moderador names from IDs
+  const resolveModeradoresNames = useCallback((moderadoresStr: string | null): string[] => {
+    if (!moderadoresStr || moderadoresStr === '' || moderadoresStr === '0') {
+      return [];
+    }
+    
+    // Special case for LIMPIO
+    if (moderadoresStr === 'LIMPIO') {
+      return ['LIMPIO'];
+    }
+
+    // Parse comma-separated IDs
+    const ids = moderadoresStr.split(',')
+      .map(id => id.trim())
+      .filter(id => id !== '' && id !== '0')
+      .map(id => parseInt(id, 10))
+      .filter(id => !isNaN(id));
+
+    // Resolve names
+    const names = ids
+      .map(id => moderadores.find(m => m.idmoderador === id)?.nombremoderador)
+      .filter((name): name is string => !!name);
+
+    return names;
+  }, [moderadores]);
+
   const handleGenerateComandaPDF = (venta: VentaWebWithDetails) => {
     try {
       const doc = new jsPDF({
@@ -148,6 +187,7 @@ export const DashboardPage = () => {
       // PDF Constants
       const PRODUCT_NAME_MAX_LENGTH = 20;
       const PRODUCT_NAME_WRAP_WIDTH = 28;
+      const NOTES_WRAP_WIDTH = 55;
 
       let yPos = 10;
       const lineHeight = 5;
@@ -220,12 +260,27 @@ export const DashboardPage = () => {
         doc.text(`$${subtotal.toFixed(2)}`, pageWidth - 5, yPos, { align: 'right' });
         yPos += lineHeight;
 
+        // Moderadores if any
+        const moderadoresNames = resolveModeradoresNames(detalle.moderadores);
+        if (moderadoresNames.length > 0) {
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'bold');
+          const moderadoresText = `  Mod: ${moderadoresNames.join(', ')}`;
+          const moderadoresLines = doc.splitTextToSize(moderadoresText, NOTES_WRAP_WIDTH);
+          doc.text(moderadoresLines, 15, yPos);
+          yPos += lineHeight * moderadoresLines.length;
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'normal');
+        }
+
         // Observations if any
         if (detalle.observaciones) {
           doc.setFontSize(8);
           doc.setFont('helvetica', 'italic');
-          doc.text(`  * ${detalle.observaciones}`, 20, yPos);
-          yPos += lineHeight;
+          const observacionesText = `  * ${detalle.observaciones}`;
+          const observacionesLines = doc.splitTextToSize(observacionesText, NOTES_WRAP_WIDTH);
+          doc.text(observacionesLines, 15, yPos);
+          yPos += lineHeight * observacionesLines.length;
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
         }
@@ -280,7 +335,9 @@ export const DashboardPage = () => {
 
     // Load sales with ORDENADO and ESPERAR status
     cargarVentasSolicitadas();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas omitted to prevent infinite refresh loop
+    // Load moderadores for PDF generation
+    cargarModeradores();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas and cargarModeradores omitted to prevent infinite refresh loop
   }, [navigate]);
 
   // Early return if not authenticated
