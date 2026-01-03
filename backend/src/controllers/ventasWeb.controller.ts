@@ -208,7 +208,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
         ventaData.telefonodeentrega || null,
         0, // propina inicial
         ventaData.formadepago,
-        'PENDIENTE', // Estatus de pago inicial
+        ventaData.estatusdepago || 'PENDIENTE', // Estatus de pago proporcionado o inicial
         idnegocio,
         usuarioauditoria
       ]
@@ -239,6 +239,11 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
         tipoafectacion = 'DIRECTO';
       }
 
+      // Determinar inventarioprocesado basado en afectainventario
+      // Si afectainventario = 1, entonces inventarioprocesado = 0 (no procesado aún)
+      // Si afectainventario = 0, entonces inventarioprocesado = 2 (no aplica)
+      const inventarioprocesado = afectainventario === 1 ? 0 : 2;
+
       await connection.execute(
         `INSERT INTO tblposcrumenwebdetalleventas (
           idventa, idproducto, nombreproducto, idreceta,
@@ -261,7 +266,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
           detalleTotal,
           afectainventario,
           tipoafectacion,
-          0, // inventario no procesado inicialmente
+          inventarioprocesado, // Ahora se establece basado en afectainventario
           ventaData.estadodetalle || 'ORDENADO', // Estado inicial o proporcionado
           detalle.observaciones || null,
           detalle.moderadores || null,
