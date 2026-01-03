@@ -490,12 +490,6 @@ const PageVentas: React.FC = () => {
     await crearVenta('ESPERAR', 'ESPERAR');
   };
 
-  const handleModClick = (idProducto: number) => {
-    setSelectedProductoIdForMod(idProducto);
-    setModSelectionMode('options'); // Start with options view
-    setShowModModal(true);
-  };
-
   const handleModeradorSelection = (selectedModeradores: number[]) => {
     if (selectedItemIndex === null) return;
 
