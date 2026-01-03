@@ -238,7 +238,8 @@ export const obtenerModeradoresRef = async (req: AuthRequest, res: Response): Pr
         usuarioauditoria,
         fehamodificacionauditoria,
         idnegocio,
-        estatus
+        estatus,
+        moderadores
       FROM tblposcrumenwebmodref
       WHERE idnegocio = ? AND estatus = 1
       ORDER BY nombremodref ASC`,
