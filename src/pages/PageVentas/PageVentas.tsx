@@ -573,7 +573,7 @@ const PageVentas: React.FC = () => {
   const handleModeradorToggle = (moderadorId: number, isChecked: boolean) => {
     // Update temporary selected moderadores without closing the modal
     const newMods = isChecked
-      ? [...tempSelectedModeradoresIds, moderadorId]
+      ? [...tempSelectedModeradoresIds.filter(id => id !== moderadorId), moderadorId] // Prevent duplicates
       : tempSelectedModeradoresIds.filter(id => id !== moderadorId);
     
     setTempSelectedModeradoresIds(newMods);
@@ -581,6 +581,7 @@ const PageVentas: React.FC = () => {
 
   const handleConfirmModeradorSelection = () => {
     // Apply the temporary selected moderadores
+    // Note: Empty selection is valid (equivalent to "LIMPIO")
     handleModeradorSelection(tempSelectedModeradoresIds);
   };
 
