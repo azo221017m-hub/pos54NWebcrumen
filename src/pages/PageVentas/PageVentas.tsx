@@ -66,6 +66,7 @@ const PageVentas: React.FC = () => {
   const [catModeradores, setCatModeradores] = useState<CatModerador[]>([]);
   const [showModModal, setShowModModal] = useState(false);
   const [selectedProductoIdForMod, setSelectedProductoIdForMod] = useState<number | null>(null);
+  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
   const [modSelectionMode, setModSelectionMode] = useState<'options' | 'list'>('options');
   
   // Modal states
@@ -294,34 +295,67 @@ const PageVentas: React.FC = () => {
     setProductosVisibles(filtrados);
   }, [searchTerm, productos, categoriaSeleccionada]);
 
-  const agregarAComanda = (producto: ProductoWeb) => {
-    const itemExistente = comanda.find(item => item.producto.idProducto === producto.idProducto);
+  // Helper functions
+  const hasSameModeradores = (itemModerators: string | undefined, moderadores: string | undefined): boolean => {
+    return (itemModerators || '') === (moderadores || '');
+  };
+
+  const isValidItemIndex = (index: number | null): boolean => {
+    return index !== null && index >= 0 && index < comanda.length;
+  };
+
+  const closeModModal = () => {
+    setShowModModal(false);
+    setSelectedProductoIdForMod(null);
+    setSelectedItemIndex(null);
+  };
+
+  const agregarAComanda = (producto: ProductoWeb, moderadores?: string, moderadoresNames?: string[]) => {
+    // Find existing item with same product AND same moderadores
+    const itemExistente = comanda.find(item => 
+      item.producto.idProducto === producto.idProducto && 
+      hasSameModeradores(item.moderadores, moderadores)
+    );
     
     if (itemExistente) {
       setComanda(comanda.map(item => 
-        item.producto.idProducto === producto.idProducto
+        item === itemExistente
           ? { ...item, cantidad: item.cantidad + 1 }
           : item
       ));
     } else {
-      setComanda([...comanda, { producto, cantidad: 1 }]);
+      setComanda([...comanda, { producto, cantidad: 1, moderadores, moderadoresNames }]);
     }
   };
 
-  const disminuirCantidad = (producto: ProductoWeb) => {
-    const itemExistente = comanda.find(item => item.producto.idProducto === producto.idProducto);
+  const disminuirCantidad = (producto: ProductoWeb, moderadores?: string) => {
+    const itemExistente = comanda.find(item => 
+      item.producto.idProducto === producto.idProducto && 
+      hasSameModeradores(item.moderadores, moderadores)
+    );
     
     if (itemExistente) {
       if (itemExistente.cantidad > 1) {
         setComanda(comanda.map(item => 
-          item.producto.idProducto === producto.idProducto
+          item === itemExistente
             ? { ...item, cantidad: item.cantidad - 1 }
             : item
         ));
       } else {
-        setComanda(comanda.filter(item => item.producto.idProducto !== producto.idProducto));
+        setComanda(comanda.filter(item => item !== itemExistente));
       }
     }
+  };
+
+  const handleModClickForItem = (itemIndex: number) => {
+    // Verify index is within bounds
+    if (!isValidItemIndex(itemIndex)) return;
+    
+    const item = comanda[itemIndex];
+    setSelectedProductoIdForMod(item.producto.idProducto);
+    setSelectedItemIndex(itemIndex);
+    setModSelectionMode('options');
+    setShowModModal(true);
   };
 
   const calcularTotal = (): number => {
@@ -452,23 +486,17 @@ const PageVentas: React.FC = () => {
     await crearVenta('ESPERAR', 'ESPERAR');
   };
 
-  const handleModClick = (idProducto: number) => {
-    setSelectedProductoIdForMod(idProducto);
-    setModSelectionMode('options'); // Start with options view
-    setShowModModal(true);
-  };
-
   const handleModeradorSelection = (selectedModeradores: number[]) => {
-    if (selectedProductoIdForMod === null) return;
+    if (!isValidItemIndex(selectedItemIndex)) return;
 
     // Get moderadores names
     const modNames = selectedModeradores
       .map(id => moderadores.find(m => m.idmoderador === id)?.nombremoderador)
       .filter(Boolean) as string[];
 
-    // Update comanda item with moderadores
-    setComanda(comanda.map(item => 
-      item.producto.idProducto === selectedProductoIdForMod
+    // Update specific comanda item with moderadores
+    setComanda(comanda.map((item, idx) => 
+      idx === selectedItemIndex
         ? { 
             ...item, 
             moderadores: selectedModeradores.join(','),
@@ -477,15 +505,14 @@ const PageVentas: React.FC = () => {
         : item
     ));
 
-    setShowModModal(false);
-    setSelectedProductoIdForMod(null);
+    closeModModal();
   };
 
   const updateComandaWithModerador = (moderadores: string | undefined, moderadoresNames: string[]) => {
-    if (selectedProductoIdForMod === null) return;
+    if (!isValidItemIndex(selectedItemIndex)) return;
     
-    setComanda(comanda.map(item => 
-      item.producto.idProducto === selectedProductoIdForMod
+    setComanda(comanda.map((item, idx) => 
+      idx === selectedItemIndex
         ? { 
             ...item, 
             moderadores,
@@ -494,8 +521,7 @@ const PageVentas: React.FC = () => {
         : item
     ));
     
-    setShowModModal(false);
-    setSelectedProductoIdForMod(null);
+    closeModModal();
   };
 
   const handleModLimpio = () => {
@@ -518,10 +544,11 @@ const PageVentas: React.FC = () => {
   };
 
   const handleModeradorToggle = (moderadorId: number, isChecked: boolean) => {
-    if (selectedProductoIdForMod === null) return;
+    if (!isValidItemIndex(selectedItemIndex)) return;
     
-    const currentItem = comanda.find(i => i.producto.idProducto === selectedProductoIdForMod);
-    const currentMods = currentItem?.moderadores?.split(',').map(Number) || [];
+    // After validation, we know selectedItemIndex is valid
+    const currentItem = comanda[selectedItemIndex as number];
+    const currentMods = currentItem.moderadores?.split(',').map(Number) || [];
     
     const newMods = isChecked
       ? [...currentMods, moderadorId]
@@ -943,14 +970,6 @@ const PageVentas: React.FC = () => {
                     >
                       <Plus size={16} />
                     </button>
-                    {hasModeradorDef(producto.idProducto) && (
-                      <button 
-                        className="btn-accion btn-mod"
-                        onClick={() => handleModClick(producto.idProducto)}
-                      >
-                        Mod
-                      </button>
-                    )}
                   </div>
                 </div>
               );
@@ -982,8 +1001,8 @@ const PageVentas: React.FC = () => {
           </div>
 
           <div className="comanda-items">
-            {comanda.map((item) => (
-              <div key={item.producto.idProducto} className="comanda-item">
+            {comanda.map((item, index) => (
+              <div key={`${item.producto.idProducto}-${item.moderadores || 'none'}-${index}`} className="comanda-item">
                 <div className="comanda-item-header">
                   <span className="comanda-item-cantidad">{item.cantidad}</span>
                   <span className="comanda-item-nombre">{item.producto.nombre}</span>
@@ -1000,20 +1019,20 @@ const PageVentas: React.FC = () => {
                 <div className="comanda-item-acciones">
                   <button 
                     className="btn-comanda-accion btn-minus"
-                    onClick={() => disminuirCantidad(item.producto)}
+                    onClick={() => disminuirCantidad(item.producto, item.moderadores)}
                   >
                     <Minus size={14} />
                   </button>
                   <button 
                     className="btn-comanda-accion btn-plus"
-                    onClick={() => agregarAComanda(item.producto)}
+                    onClick={() => agregarAComanda(item.producto, item.moderadores, item.moderadoresNames)}
                   >
                     <Plus size={14} />
                   </button>
                   {hasModeradorDef(item.producto.idProducto) && (
                     <button 
                       className="btn-comanda-accion btn-mod"
-                      onClick={() => handleModClick(item.producto.idProducto)}
+                      onClick={() => handleModClickForItem(index)}
                     >
                       Mod
                     </button>
@@ -1057,7 +1076,7 @@ const PageVentas: React.FC = () => {
 
       {/* Modal para selección de moderadores */}
       {showModModal && selectedProductoIdForMod && (
-        <div className="modal-overlay" onClick={() => setShowModModal(false)}>
+        <div className="modal-overlay" onClick={closeModModal}>
           <div className="modal-mod-content" onClick={(e) => e.stopPropagation()}>
             {modSelectionMode === 'options' ? (
               // Show LIMPIO | CON TODO | SOLO CON options
@@ -1092,7 +1111,7 @@ const PageVentas: React.FC = () => {
                   </button>
                 </div>
                 <div className="modal-actions">
-                  <button className="btn-modal-close" onClick={() => setShowModModal(false)}>
+                  <button className="btn-modal-close" onClick={closeModModal}>
                     Cancelar
                   </button>
                 </div>
@@ -1110,8 +1129,11 @@ const PageVentas: React.FC = () => {
                   <h3>Seleccionar Moderadores</h3>
                 </div>
                 <div className="moderadores-list">
-                  {getAvailableModeradores(selectedProductoIdForMod).map((mod) => {
-                    const currentItem = comanda.find(i => i.producto.idProducto === selectedProductoIdForMod);
+                  {selectedProductoIdForMod !== null && getAvailableModeradores(selectedProductoIdForMod).map((mod) => {
+                    // After validation, we know selectedItemIndex is valid
+                    const currentItem = isValidItemIndex(selectedItemIndex) 
+                      ? comanda[selectedItemIndex as number] 
+                      : null;
                     const currentMods = currentItem?.moderadores?.split(',').map(Number) || [];
                     const isSelected = currentMods.includes(mod.idmoderador);
                     
@@ -1128,7 +1150,7 @@ const PageVentas: React.FC = () => {
                   })}
                 </div>
                 <div className="modal-actions">
-                  <button className="btn-modal-close" onClick={() => setShowModModal(false)}>
+                  <button className="btn-modal-close" onClick={closeModModal}>
                     Cerrar
                   </button>
                 </div>
