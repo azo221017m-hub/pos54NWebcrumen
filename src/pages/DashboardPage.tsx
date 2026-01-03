@@ -127,18 +127,12 @@ export const DashboardPage = () => {
 
   const cargarModeradores = useCallback(async () => {
     if (!usuario?.idNegocio) return;
-    let isMounted = true;
     try {
       const mods = await obtenerModeradores(usuario.idNegocio);
-      if (isMounted) {
-        setModeradores(mods);
-      }
+      setModeradores(mods);
     } catch (error) {
       console.error('Error al cargar moderadores:', error);
     }
-    return () => {
-      isMounted = false;
-    };
   }, [usuario?.idNegocio]);
 
   const handleStatusChange = async (ventaId: number, newStatus: EstadoDeVenta) => {
