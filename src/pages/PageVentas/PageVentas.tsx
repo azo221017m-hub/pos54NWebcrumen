@@ -548,6 +548,17 @@ const PageVentas: React.FC = () => {
     return String(moderadorDefValue);
   };
 
+  const hasModeradorDef = (idProducto: number): boolean => {
+    // Find the product's category
+    const producto = productos.find(p => p.idProducto === idProducto);
+    if (!producto) {
+      return false;
+    }
+
+    // Reuse getIdModeradorDef logic to check for valid idmoderadordef
+    return getIdModeradorDef(producto.idCategoria) !== '';
+  };
+
   const getModeradorCategoryNames = (idProducto: number): string[] => {
     // Find the product's category
     const producto = productos.find(p => p.idProducto === idProducto);
@@ -932,7 +943,7 @@ const PageVentas: React.FC = () => {
                     >
                       <Plus size={16} />
                     </button>
-                    {getAvailableModeradores(producto.idProducto).length > 0 && (
+                    {hasModeradorDef(producto.idProducto) && (
                       <button 
                         className="btn-accion btn-mod"
                         onClick={() => handleModClick(producto.idProducto)}
@@ -999,7 +1010,7 @@ const PageVentas: React.FC = () => {
                   >
                     <Plus size={14} />
                   </button>
-                  {getAvailableModeradores(item.producto.idProducto).length > 0 && (
+                  {hasModeradorDef(item.producto.idProducto) && (
                     <button 
                       className="btn-comanda-accion btn-mod"
                       onClick={() => handleModClick(item.producto.idProducto)}
