@@ -649,6 +649,31 @@
   min-width: 20px;
 }
 
+.comanda-item-cantidad-input {
+  width: 60px;
+  padding: 0.3rem 0.5rem;
+  border: 2px solid #3498db;
+  border-radius: 6px;
+  font-weight: 700;
+  color: #2c3e50;
+  font-size: 1rem;
+  text-align: center;
+  background: white;
+  transition: all 0.2s;
+}
+
+.comanda-item-cantidad-input:focus {
+  outline: none;
+  border-color: #f39c12;
+  box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.1);
+}
+
+.comanda-item-cantidad-input::-webkit-inner-spin-button,
+.comanda-item-cantidad-input::-webkit-outer-spin-button {
+  opacity: 1;
+  height: 30px;
+}
+
 .comanda-item-nombre {
   flex: 1;
   color: #3498db;
