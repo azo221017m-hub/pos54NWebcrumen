@@ -349,12 +349,34 @@ const PageVentas: React.FC = () => {
     }
   };
 
+  const actualizarCantidad = (producto: ProductoWeb, moderadores: string | undefined, nuevaCantidad: number) => {
+    // Validate quantity is a positive integer
+    if (!Number.isInteger(nuevaCantidad) || nuevaCantidad < 1) {
+      return;
+    }
+
+    const itemExistente = comanda.find(item => 
+      item.producto.idProducto === producto.idProducto && 
+      hasSameModeradores(item.moderadores, moderadores)
+    );
+    
+    if (itemExistente) {
+      setComanda(comanda.map(item => 
+        item === itemExistente
+          ? { ...item, cantidad: nuevaCantidad }
+          : item
+      ));
+    }
+  };
+
   const handleModClickForProductCard = (producto: ProductoWeb) => {
     // Set the product for which moderadores are being selected
     setSelectedProductoIdForMod(producto.idProducto);
     // Set selectedItemIndex to null to indicate this is for a new product, not an existing comanda item
     setSelectedItemIndex(null);
     setModSelectionMode('options');
+    // Clear previously selected moderadores when opening the modal
+    setTempSelectedModeradoresIds([]);
     setShowModModal(true);
   };
 
@@ -552,7 +574,8 @@ const PageVentas: React.FC = () => {
     
     const availableMods = getAvailableModeradores(selectedProductoIdForMod);
     const allModIds = availableMods.map(m => m.idmoderador).join(',');
-    const allModNames = availableMods.map(m => m.nombremoderador);
+    // Show "CON TODO" as the label instead of individual moderador names
+    const allModNames = ['CON TODO'];
     
     updateComandaWithModerador(allModIds, allModNames);
   };
@@ -1040,7 +1063,31 @@ const PageVentas: React.FC = () => {
             {comanda.map((item, index) => (
               <div key={`${item.producto.idProducto}-${item.moderadores || 'none'}-${index}`} className="comanda-item">
                 <div className="comanda-item-header">
-                  <span className="comanda-item-cantidad">{item.cantidad}</span>
+                  <input 
+                    type="number" 
+                    className="comanda-item-cantidad-input"
+                    value={item.cantidad}
+                    min="1"
+                    step="1"
+                    onChange={(e) => {
+                      const inputValue = e.target.value;
+                      // Parse the value
+                      const newValue = parseInt(inputValue, 10);
+                      // Update only if it's a valid positive integer
+                      if (!isNaN(newValue) && newValue > 0) {
+                        actualizarCantidad(item.producto, item.moderadores, newValue);
+                      }
+                      // If empty or invalid, the value prop will keep showing the current cantidad
+                    }}
+                    onBlur={(e) => {
+                      // Ensure at least 1 on blur if empty or invalid
+                      const inputValue = e.target.value;
+                      const newValue = parseInt(inputValue, 10);
+                      if (isNaN(newValue) || newValue < 1) {
+                        actualizarCantidad(item.producto, item.moderadores, 1);
+                      }
+                    }}
+                  />
                   <span className="comanda-item-nombre">{item.producto.nombre}</span>
                   <span className="comanda-item-precio">
                     $ {formatPrice((Number(item.producto.precio) || 0) * item.cantidad)}
