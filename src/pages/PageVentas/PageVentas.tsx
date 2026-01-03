@@ -68,6 +68,7 @@ const PageVentas: React.FC = () => {
   const [selectedProductoIdForMod, setSelectedProductoIdForMod] = useState<number | null>(null);
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
   const [modSelectionMode, setModSelectionMode] = useState<'options' | 'list'>('options');
+  const [tempSelectedModeradoresIds, setTempSelectedModeradoresIds] = useState<number[]>([]);
   
   // Modal states
   const [modalOpen, setModalOpen] = useState(false);
@@ -308,6 +309,7 @@ const PageVentas: React.FC = () => {
     setShowModModal(false);
     setSelectedProductoIdForMod(null);
     setSelectedItemIndex(null);
+    setTempSelectedModeradoresIds([]);
   };
 
   const agregarAComanda = (producto: ProductoWeb, moderadores?: string, moderadoresNames?: string[]) => {
@@ -556,28 +558,31 @@ const PageVentas: React.FC = () => {
   };
 
   const handleModSoloCon = () => {
+    // Initialize tempSelectedModeradoresIds with current moderadores if editing an existing item
+    if (selectedItemIndex !== null && isValidItemIndex(selectedItemIndex)) {
+      const currentItem = comanda[selectedItemIndex];
+      const currentMods = currentItem.moderadores?.split(',').map(Number) || [];
+      setTempSelectedModeradoresIds(currentMods);
+    } else {
+      setTempSelectedModeradoresIds([]);
+    }
     // Show the moderadores list for selection
     setModSelectionMode('list');
   };
 
   const handleModeradorToggle = (moderadorId: number, isChecked: boolean) => {
-    let currentMods: number[] = [];
-    
-    if (selectedItemIndex === null) {
-      // For new product, start with empty moderadores
-      currentMods = [];
-    } else {
-      // For existing comanda item
-      if (!isValidItemIndex(selectedItemIndex)) return;
-      const currentItem = comanda[selectedItemIndex as number];
-      currentMods = currentItem.moderadores?.split(',').map(Number) || [];
-    }
-    
+    // Update temporary selected moderadores without closing the modal
     const newMods = isChecked
-      ? [...currentMods, moderadorId]
-      : currentMods.filter(id => id !== moderadorId);
+      ? [...tempSelectedModeradoresIds.filter(id => id !== moderadorId), moderadorId] // Prevent duplicates
+      : tempSelectedModeradoresIds.filter(id => id !== moderadorId);
     
-    handleModeradorSelection(newMods);
+    setTempSelectedModeradoresIds(newMods);
+  };
+
+  const handleConfirmModeradorSelection = () => {
+    // Apply the temporary selected moderadores
+    // Note: Empty selection is valid (equivalent to "LIMPIO")
+    handleModeradorSelection(tempSelectedModeradoresIds);
   };
 
   const getCategoryName = (idCategoria: number): string => {
@@ -1153,12 +1158,7 @@ const PageVentas: React.FC = () => {
                 </div>
                 <div className="moderadores-list">
                   {selectedProductoIdForMod !== null && getAvailableModeradores(selectedProductoIdForMod).map((mod) => {
-                    // After validation, we know selectedItemIndex is valid
-                    const currentItem = isValidItemIndex(selectedItemIndex) 
-                      ? comanda[selectedItemIndex as number] 
-                      : null;
-                    const currentMods = currentItem?.moderadores?.split(',').map(Number) || [];
-                    const isSelected = currentMods.includes(mod.idmoderador);
+                    const isSelected = tempSelectedModeradoresIds.includes(mod.idmoderador);
                     
                     return (
                       <label key={mod.idmoderador} className="moderador-checkbox">
@@ -1174,7 +1174,10 @@ const PageVentas: React.FC = () => {
                 </div>
                 <div className="modal-actions">
                   <button className="btn-modal-close" onClick={closeModModal}>
-                    Cerrar
+                    Cancelar
+                  </button>
+                  <button className="btn-modal-confirm" onClick={handleConfirmModeradorSelection}>
+                    Confirmar
                   </button>
                 </div>
               </>

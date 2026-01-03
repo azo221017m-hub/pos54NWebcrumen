@@ -955,6 +955,21 @@
   background: #7f8c8d;
 }
 
+.btn-modal-confirm {
+  padding: 0.8rem 1.5rem;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-modal-confirm:hover {
+  background: #229954;
+}
+
 /* Disable mod button when no moderadores available */
 .btn-mod:disabled {
   background: #95a5a6;
