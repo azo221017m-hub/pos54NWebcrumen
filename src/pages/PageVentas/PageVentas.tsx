@@ -347,13 +347,11 @@ const PageVentas: React.FC = () => {
     }
   };
 
-  const handleModClickForItem = (itemIndex: number) => {
-    // Verify index is within bounds
-    if (!isValidItemIndex(itemIndex)) return;
-    
-    const item = comanda[itemIndex];
-    setSelectedProductoIdForMod(item.producto.idProducto);
-    setSelectedItemIndex(itemIndex);
+  const handleModClickForProductCard = (producto: ProductoWeb) => {
+    // Set the product for which moderadores are being selected
+    setSelectedProductoIdForMod(producto.idProducto);
+    // Set selectedItemIndex to null to indicate this is for a new product, not an existing comanda item
+    setSelectedItemIndex(null);
     setModSelectionMode('options');
     setShowModModal(true);
   };
@@ -487,39 +485,58 @@ const PageVentas: React.FC = () => {
   };
 
   const handleModeradorSelection = (selectedModeradores: number[]) => {
-    if (!isValidItemIndex(selectedItemIndex)) return;
-
     // Get moderadores names
     const modNames = selectedModeradores
       .map(id => moderadores.find(m => m.idmoderador === id)?.nombremoderador)
       .filter(Boolean) as string[];
 
-    // Update specific comanda item with moderadores
-    setComanda(comanda.map((item, idx) => 
-      idx === selectedItemIndex
-        ? { 
-            ...item, 
-            moderadores: selectedModeradores.join(','),
-            moderadoresNames: modNames
-          }
-        : item
-    ));
+    if (selectedItemIndex === null) {
+      // Adding new product to comanda with moderadores
+      if (selectedProductoIdForMod === null) return;
+      const producto = productos.find(p => p.idProducto === selectedProductoIdForMod);
+      if (!producto) return;
+      
+      agregarAComanda(producto, selectedModeradores.join(','), modNames);
+    } else {
+      // Updating existing comanda item with moderadores
+      if (!isValidItemIndex(selectedItemIndex)) return;
+      
+      setComanda(comanda.map((item, idx) => 
+        idx === selectedItemIndex
+          ? { 
+              ...item, 
+              moderadores: selectedModeradores.join(','),
+              moderadoresNames: modNames
+            }
+          : item
+      ));
+    }
 
     closeModModal();
   };
 
   const updateComandaWithModerador = (moderadores: string | undefined, moderadoresNames: string[]) => {
-    if (!isValidItemIndex(selectedItemIndex)) return;
-    
-    setComanda(comanda.map((item, idx) => 
-      idx === selectedItemIndex
-        ? { 
-            ...item, 
-            moderadores,
-            moderadoresNames
-          }
-        : item
-    ));
+    if (selectedItemIndex === null) {
+      // Adding new product to comanda with moderadores
+      if (selectedProductoIdForMod === null) return;
+      const producto = productos.find(p => p.idProducto === selectedProductoIdForMod);
+      if (!producto) return;
+      
+      agregarAComanda(producto, moderadores, moderadoresNames);
+    } else {
+      // Updating existing comanda item with moderadores
+      if (!isValidItemIndex(selectedItemIndex)) return;
+      
+      setComanda(comanda.map((item, idx) => 
+        idx === selectedItemIndex
+          ? { 
+              ...item, 
+              moderadores,
+              moderadoresNames
+            }
+          : item
+      ));
+    }
     
     closeModModal();
   };
@@ -544,11 +561,17 @@ const PageVentas: React.FC = () => {
   };
 
   const handleModeradorToggle = (moderadorId: number, isChecked: boolean) => {
-    if (!isValidItemIndex(selectedItemIndex)) return;
+    let currentMods: number[] = [];
     
-    // After validation, we know selectedItemIndex is valid
-    const currentItem = comanda[selectedItemIndex as number];
-    const currentMods = currentItem.moderadores?.split(',').map(Number) || [];
+    if (selectedItemIndex === null) {
+      // For new product, start with empty moderadores
+      currentMods = [];
+    } else {
+      // For existing comanda item
+      if (!isValidItemIndex(selectedItemIndex)) return;
+      const currentItem = comanda[selectedItemIndex as number];
+      currentMods = currentItem.moderadores?.split(',').map(Number) || [];
+    }
     
     const newMods = isChecked
       ? [...currentMods, moderadorId]
@@ -970,6 +993,14 @@ const PageVentas: React.FC = () => {
                     >
                       <Plus size={16} />
                     </button>
+                    {hasModeradorDef(producto.idProducto) && (
+                      <button 
+                        className="btn-accion btn-mod"
+                        onClick={() => handleModClickForProductCard(producto)}
+                      >
+                        Mod
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -1029,14 +1060,6 @@ const PageVentas: React.FC = () => {
                   >
                     <Plus size={14} />
                   </button>
-                  {hasModeradorDef(item.producto.idProducto) && (
-                    <button 
-                      className="btn-comanda-accion btn-mod"
-                      onClick={() => handleModClickForItem(index)}
-                    >
-                      Mod
-                    </button>
-                  )}
                 </div>
               </div>
             ))}
