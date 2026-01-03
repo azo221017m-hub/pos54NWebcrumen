@@ -442,6 +442,16 @@
   white-space: nowrap;
 }
 
+.producto-idmoderadordef {
+  font-size: 0.7rem;
+  color: #9b59b6;
+  margin: 0.2rem 0 0;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .producto-precio {
   font-size: 0.95rem;
   color: #2c3e50;

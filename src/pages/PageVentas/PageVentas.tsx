@@ -535,6 +535,19 @@ const PageVentas: React.FC = () => {
     return categoria?.nombre || '';
   };
 
+  const getIdModeradorDef = (idCategoria: number): string => {
+    const categoria = categorias.find(c => c.idCategoria === idCategoria);
+    if (!categoria || !categoria.idmoderadordef) {
+      return '';
+    }
+    const moderadorDefValue = categoria.idmoderadordef;
+    const invalidValues = [null, undefined, '', '0', 0];
+    if (invalidValues.includes(moderadorDefValue as any)) {
+      return '';
+    }
+    return String(moderadorDefValue);
+  };
+
   const getModeradorCategoryNames = (idProducto: number): string[] => {
     // Find the product's category
     const producto = productos.find(p => p.idProducto === idProducto);
@@ -882,6 +895,7 @@ const PageVentas: React.FC = () => {
             {productosVisibles.map((producto) => {
               const categoriaNombre = getCategoryName(producto.idCategoria);
               const moderadorCategoriasNames = getModeradorCategoryNames(producto.idProducto);
+              const idModeradorDef = getIdModeradorDef(producto.idCategoria);
               
               return (
                 <div key={producto.idProducto} className="producto-card">
@@ -902,6 +916,11 @@ const PageVentas: React.FC = () => {
                     {moderadorCategoriasNames.length > 0 && (
                       <p className="producto-moderador-categoria">
                         Mod: {moderadorCategoriasNames.join(', ')}
+                      </p>
+                    )}
+                    {idModeradorDef && (
+                      <p className="producto-idmoderadordef">
+                        idmoderadordef: {idModeradorDef}
                       </p>
                     )}
                     <p className="producto-precio">$ {formatPrice(producto.precio)}</p>
