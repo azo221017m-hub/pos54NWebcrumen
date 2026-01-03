@@ -127,12 +127,18 @@ export const DashboardPage = () => {
 
   const cargarModeradores = useCallback(async () => {
     if (!usuario?.idNegocio) return;
+    let isMounted = true;
     try {
       const mods = await obtenerModeradores(usuario.idNegocio);
-      setModeradores(mods);
+      if (isMounted) {
+        setModeradores(mods);
+      }
     } catch (error) {
       console.error('Error al cargar moderadores:', error);
     }
+    return () => {
+      isMounted = false;
+    };
   }, [usuario?.idNegocio]);
 
   const handleStatusChange = async (ventaId: number, newStatus: EstadoDeVenta) => {
@@ -150,6 +156,32 @@ export const DashboardPage = () => {
     }
   };
 
+  // Helper function to resolve moderador names from IDs
+  const resolveModeradoresNames = useCallback((moderadoresStr: string | null): string[] => {
+    if (!moderadoresStr || moderadoresStr === '' || moderadoresStr === '0') {
+      return [];
+    }
+    
+    // Special case for LIMPIO
+    if (moderadoresStr === 'LIMPIO') {
+      return ['LIMPIO'];
+    }
+
+    // Parse comma-separated IDs
+    const ids = moderadoresStr.split(',')
+      .map(id => id.trim())
+      .filter(id => id !== '' && id !== '0')
+      .map(id => parseInt(id, 10))
+      .filter(id => !isNaN(id));
+
+    // Resolve names
+    const names = ids
+      .map(id => moderadores.find(m => m.idmoderador === id)?.nombremoderador)
+      .filter((name): name is string => !!name);
+
+    return names;
+  }, [moderadores]);
+
   const handleGenerateComandaPDF = (venta: VentaWebWithDetails) => {
     try {
       const doc = new jsPDF({
@@ -166,32 +198,6 @@ export const DashboardPage = () => {
       let yPos = 10;
       const lineHeight = 5;
       const pageWidth = 80;
-
-      // Helper function to resolve moderador names
-      const resolveModeradoresNames = (moderadoresStr: string | null): string[] => {
-        if (!moderadoresStr || moderadoresStr === '' || moderadoresStr === '0') {
-          return [];
-        }
-        
-        // Special case for LIMPIO
-        if (moderadoresStr === 'LIMPIO') {
-          return ['LIMPIO'];
-        }
-
-        // Parse comma-separated IDs
-        const ids = moderadoresStr.split(',')
-          .map(id => id.trim())
-          .filter(id => id !== '' && id !== '0')
-          .map(id => parseInt(id, 10))
-          .filter(id => !isNaN(id));
-
-        // Resolve names
-        const names = ids
-          .map(id => moderadores.find(m => m.idmoderador === id)?.nombremoderador)
-          .filter((name): name is string => !!name);
-
-        return names;
-      };
 
       // Header
       doc.setFontSize(14);
