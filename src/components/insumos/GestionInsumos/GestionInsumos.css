@@ -2,7 +2,7 @@
 .gestion-insumos {
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
-  padding: 1.2rem;
+  padding: 2rem;
 }
 
 /* Mensaje de Notificación */
@@ -28,9 +28,9 @@
 .mensaje-contenido {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.36rem 0.9rem;
-  border-radius: 7.2px;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   font-weight: 600;
 }
@@ -54,10 +54,10 @@
   background: rgba(255, 255, 255, 0.2);
   border: none;
   color: white;
-  font-size: 0.9rem;
+  font-size: 1.5rem;
   cursor: pointer;
-  padding: 0.09rem 0.3rem;
-  border-radius: 3.6px;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
   line-height: 1;
   transition: background 0.2s;
 }
@@ -73,17 +73,17 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.9rem;
-  padding: 1.2rem;
+  gap: 1.5rem;
+  padding: 2rem;
   background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
-  border-radius: 12px;
+  border-radius: 20px;
   box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
 }
 
 .header-info {
   display: flex;
   align-items: center;
-  gap: 0.9rem;
+  gap: 1.5rem;
   color: white;
 }
 
@@ -94,15 +94,15 @@
 
 .header-text h2 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 2rem;
   font-weight: 800;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   color: white;
 }
 
 .header-text p {
-  margin: 0.15rem 0 0 0;
-  font-size: 0.6rem;
+  margin: 0.25rem 0 0 0;
+  font-size: 1rem;
   opacity: 0.95;
   font-weight: 500;
   color: white;
@@ -111,13 +111,13 @@
 .btn-nuevo {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.36rem 1.05rem;
+  gap: 0.75rem;
+  padding: 1rem 1.75rem;
   background: white;
   border: none;
-  border-radius: 7.2px;
+  border-radius: 12px;
   color: #1e3a5f;
-  font-size: 0.6rem;
+  font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
@@ -137,27 +137,27 @@
 /* Content */
 .insumos-scroll-container {
   background: white;
-  border-radius: 12px;
-  padding: 1.2rem;
+  border-radius: 20px;
+  padding: 2rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  min-height: 144px;
+  min-height: 400px;
   max-height: calc(100vh - 280px);
   overflow-y: auto;
 }
 
 /* Scrollbar personalizada para contenido */
 .insumos-scroll-container::-webkit-scrollbar {
-  width: 6px;
+  width: 10px;
 }
 
 .insumos-scroll-container::-webkit-scrollbar-track {
   background: #f1f5f9;
-  border-radius: 6px;
+  border-radius: 10px;
 }
 
 .insumos-scroll-container::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
-  border-radius: 6px;
+  border-radius: 10px;
 }
 
 .insumos-scroll-container::-webkit-scrollbar-thumb:hover {
@@ -170,7 +170,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1.44rem 1.2rem;
+  padding: 4rem 2rem;
   color: #64748b;
 }
 
@@ -187,29 +187,29 @@
 }
 
 .gestion-insumos-cargando p {
-  font-size: 0.66rem;
+  font-size: 1.1rem;
   font-weight: 600;
 }
 
 /* Formulario Wrapper */
 .formulario-wrapper {
   flex: 1;
-  padding: 0.9rem;
+  padding: 1.5rem;
   overflow-y: auto;
 }
 
 .formulario-wrapper::-webkit-scrollbar {
-  width: 6px;
+  width: 10px;
 }
 
 .formulario-wrapper::-webkit-scrollbar-track {
   background: #f1f5f9;
-  border-radius: 3px;
+  border-radius: 5px;
 }
 
 .formulario-wrapper::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
-  border-radius: 3px;
+  border-radius: 5px;
 }
 
 .formulario-wrapper::-webkit-scrollbar-thumb:hover {
@@ -217,24 +217,24 @@
 }
 
 /* Responsive */
-@media (max-width: 276.48px) {
+@media (max-width: 768px) {
   .gestion-insumos {
-    padding: 0.6rem;
+    padding: 1rem;
   }
 
   .gestion-header {
     flex-direction: column;
     text-align: center;
-    padding: 0.9rem;
+    padding: 1.5rem;
   }
 
   .header-info {
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 1rem;
   }
 
   .header-text h2 {
-    font-size: 0.9rem;
+    font-size: 1.5rem;
   }
 
   .btn-nuevo {
@@ -243,8 +243,7 @@
   }
 
   .insumos-scroll-container {
-    padding: 0.6rem;
+    padding: 1rem;
     max-height: calc(100vh - 250px);
   }
 }
-

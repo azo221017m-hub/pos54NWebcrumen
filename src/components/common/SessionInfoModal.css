@@ -23,9 +23,9 @@
 
 .session-modal-content {
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 9.6px;
+  border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-width: 180px;
+  max-width: 500px;
   width: 90%;
   max-height: 90vh;
   overflow: hidden;
@@ -46,7 +46,7 @@
 .session-modal-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 0.9rem;
+  padding: 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -55,12 +55,12 @@
 .session-modal-title {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.75rem;
 }
 
 .session-modal-title h2 {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 1.5rem;
   font-weight: 600;
 }
 
@@ -71,10 +71,10 @@
 .session-modal-close {
   background: rgba(255, 255, 255, 0.2);
   border: none;
-  border-radius: 4.8px;
+  border-radius: 8px;
   color: white;
-  width: 21.6px;
-  height: 21.6px;
+  width: 36px;
+  height: 36px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -88,7 +88,7 @@
 }
 
 .session-modal-body {
-  padding: 1.2rem;
+  padding: 2rem;
   overflow-y: auto;
   max-height: calc(90vh - 180px);
 }
@@ -96,17 +96,17 @@
 .session-info-card {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1.25rem;
   margin-bottom: 1.5rem;
 }
 
 .session-info-item {
   display: flex;
   align-items: flex-start;
-  gap: 0.6rem;
-  padding: 0.6rem;
+  gap: 1rem;
+  padding: 1rem;
   background: white;
-  border-radius: 7.2px;
+  border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
 }
@@ -131,38 +131,38 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.25rem;
 }
 
 .info-label {
-  font-size: 0.525rem;
+  font-size: 0.875rem;
   color: #64748b;
   font-weight: 500;
 }
 
 .info-value {
-  font-size: 0.675rem;
+  font-size: 1.125rem;
   color: #1e293b;
   font-weight: 600;
 }
 
 .time-value {
   color: #667eea;
-  font-size: 0.9rem;
+  font-size: 1.5rem;
   font-weight: 700;
 }
 
 .session-warning {
   background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
   border-left: 4px solid #f59e0b;
-  padding: 0.6rem;
-  border-radius: 4.8px;
+  padding: 1rem;
+  border-radius: 8px;
 }
 
 .session-warning p {
   margin: 0;
   color: #92400e;
-  font-size: 0.525rem;
+  font-size: 0.875rem;
   line-height: 1.5;
 }
 
@@ -171,7 +171,7 @@
 }
 
 .session-modal-footer {
-  padding: 0.9rem;
+  padding: 1.5rem;
   background: #f8f9fa;
   display: flex;
   justify-content: center;
@@ -182,9 +182,9 @@
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  padding: 0.27rem 1.2rem;
-  border-radius: 4.8px;
-  font-size: 0.6rem;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -201,30 +201,29 @@
 }
 
 /* Responsive */
-@media (max-width: 230.4px) {
+@media (max-width: 640px) {
   .session-modal-content {
     width: 95%;
-    margin: 0.6rem;
+    margin: 1rem;
   }
 
   .session-modal-header {
-    padding: 0.6rem;
+    padding: 1rem;
   }
 
   .session-modal-title h2 {
-    font-size: 0.75rem;
+    font-size: 1.25rem;
   }
 
   .session-modal-body {
-    padding: 0.9rem;
+    padding: 1.5rem;
   }
 
   .info-value {
-    font-size: 0.6rem;
+    font-size: 1rem;
   }
 
   .time-value {
-    font-size: 0.75rem;
+    font-size: 1.25rem;
   }
 }
-
