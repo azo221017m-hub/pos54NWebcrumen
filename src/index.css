@@ -41,7 +41,7 @@ html, body {
   --color-accent-dark: #0e7490;
   
   --color-success: #059669;        /* Emerald - positive */
-  --color-success-light: #10b981;
+  --color-success-light: #10b981;  /* Lighter green for success states - intentionally green for universal recognition */
   --color-success-dark: #047857;
   
   --color-warning: #d97706;        /* Amber - alerts */
