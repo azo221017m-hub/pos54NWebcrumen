@@ -10,17 +10,17 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 0.6rem;
+  padding: 1rem;
   backdrop-filter: blur(4px);
 }
 
 /* Modal Content */
 .receta-modal-content {
   background: white;
-  border-radius: 12px;
+  border-radius: 20px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
   width: 100%;
-  max-width: 396px;
+  max-width: 1100px;
   max-height: 90vh;
   overflow: hidden;
   display: flex;
@@ -43,23 +43,23 @@
 .receta-modal-header {
   background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
-  padding: 0.63rem 1.2rem;
+  padding: 1.75rem 2rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-radius: 7.2px 12px 0 0;
+  border-radius: 20px 20px 0 0;
   box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
 }
 
 .receta-header-content {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 1rem;
 }
 
 .receta-header-content h2 {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 1.75rem;
   font-weight: 700;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -73,8 +73,8 @@
   border: none;
   color: white;
   cursor: pointer;
-  padding: 0.45rem;
-  border-radius: 7.2px;
+  padding: 0.75rem;
+  border-radius: 12px;
   transition: all 0.2s;
   display: flex;
   align-items: center;
@@ -92,22 +92,22 @@
   flex-direction: column;
   flex: 1;
   overflow-y: auto;
-  padding: 1.2rem;
-  gap: 1.2rem;
+  padding: 2rem;
+  gap: 2rem;
 }
 
 .receta-form::-webkit-scrollbar {
-  width: 6px;
+  width: 10px;
 }
 
 .receta-form::-webkit-scrollbar-track {
   background: #f1f5f9;
-  border-radius: 6px;
+  border-radius: 10px;
 }
 
 .receta-form::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
-  border-radius: 6px;
+  border-radius: 10px;
 }
 
 .receta-form::-webkit-scrollbar-thumb:hover {
@@ -118,13 +118,13 @@
 .receta-form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.9rem;
+  gap: 1.5rem;
 }
 
 .receta-form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.5rem;
 }
 
 .receta-form-group.full-width {
@@ -134,18 +134,18 @@
 .receta-label {
   font-weight: 600;
   color: #334155;
-  font-size: 0.57rem;
+  font-size: 0.95rem;
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.5rem;
 }
 
 /* Inputs */
 .receta-input {
-  padding: 0.315rem 0.6rem;
+  padding: 0.875rem 1rem;
   border: 2px solid #e2e8f0;
-  border-radius: 7.2px;
-  font-size: 0.6rem;
+  border-radius: 12px;
+  font-size: 1rem;
   transition: all 0.2s;
   background: white;
 }
@@ -161,14 +161,14 @@
 }
 
 .receta-textarea {
-  padding: 0.315rem 0.6rem;
+  padding: 0.875rem 1rem;
   border: 2px solid #e2e8f0;
-  border-radius: 7.2px;
-  font-size: 0.6rem;
+  border-radius: 12px;
+  font-size: 1rem;
   transition: all 0.2s;
   font-family: inherit;
   resize: vertical;
-  min-height: 36px;
+  min-height: 100px;
 }
 
 .receta-textarea:focus {
@@ -178,10 +178,10 @@
 }
 
 .receta-select {
-  padding: 0.315rem 0.6rem;
+  padding: 0.875rem 1rem;
   border: 2px solid #e2e8f0;
-  border-radius: 7.2px;
-  font-size: 0.6rem;
+  border-radius: 12px;
+  font-size: 1rem;
   transition: all 0.2s;
   background: white;
   cursor: pointer;
@@ -194,10 +194,10 @@
 }
 
 .receta-file-input {
-  padding: 0.315rem 0.6rem;
+  padding: 0.875rem 1rem;
   border: 2px dashed #e2e8f0;
-  border-radius: 7.2px;
-  font-size: 0.57rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.2s;
   background: #f8fafc;
@@ -210,48 +210,48 @@
 
 .receta-file-name {
   display: inline-block;
-  padding: 0.18rem 0.6rem;
+  padding: 0.5rem 1rem;
   background: #f0fdf4;
   color: #16a34a;
-  border-radius: 4.8px;
-  font-size: 0.54rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
   font-weight: 500;
   margin-top: 0.5rem;
 }
 
 .receta-help-text {
   color: #64748b;
-  font-size: 0.51rem;
+  font-size: 0.85rem;
   font-style: italic;
 }
 
 .receta-error-message {
   color: #ef4444;
-  font-size: 0.51rem;
+  font-size: 0.85rem;
   font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 0.15rem;
+  gap: 0.25rem;
 }
 
 .receta-error-message-small {
   color: #ef4444;
-  font-size: 0.48rem;
+  font-size: 0.8rem;
   font-weight: 500;
 }
 
 /* Subrecetas Section */
 .receta-subrecetas-section {
   background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  border-radius: 9.6px;
-  padding: 0.9rem;
+  border-radius: 16px;
+  padding: 1.5rem;
   border: 2px solid #fbbf24;
   margin-bottom: 1.5rem;
 }
 
 .receta-subreceta-selector {
   display: flex;
-  gap: 0.6rem;
+  gap: 1rem;
   align-items: flex-end;
   margin-bottom: 1rem;
 }
@@ -259,12 +259,12 @@
 .receta-add-subreceta-btn {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.315rem 0.9rem;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
   background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
   color: white;
   border: none;
-  border-radius: 7.2px;
+  border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -286,10 +286,10 @@
 
 .receta-subreceta-help {
   margin: 0;
-  padding: 0.27rem 0.6rem;
+  padding: 0.75rem 1rem;
   background: rgba(255, 255, 255, 0.6);
-  border-radius: 4.8px;
-  font-size: 0.54rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
   color: #92400e;
   border-left: 4px solid #fbbf24;
 }
@@ -297,8 +297,8 @@
 /* Ingredients Section */
 .receta-ingredients-section {
   background: #f8fafc;
-  border-radius: 9.6px;
-  padding: 0.9rem;
+  border-radius: 16px;
+  padding: 1.5rem;
   border: 2px solid #e2e8f0;
 }
 
@@ -311,7 +311,7 @@
 
 .receta-section-header h3 {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: 1.25rem;
   color: #1e293b;
   font-weight: 700;
 }
@@ -319,14 +319,14 @@
 .receta-add-ingredient-btn {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.27rem 0.75rem;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
   background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   font-weight: 600;
-  font-size: 0.57rem;
+  font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
@@ -345,32 +345,32 @@
 .receta-ingredients-list {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  max-height: 144px;
+  gap: 1rem;
+  max-height: 400px;
   overflow-y: auto;
   padding-right: 0.5rem;
 }
 
 .receta-ingredients-list::-webkit-scrollbar {
-  width: 3.6px;
+  width: 6px;
 }
 
 .receta-ingredients-list::-webkit-scrollbar-track {
   background: #e2e8f0;
-  border-radius: 6px;
+  border-radius: 10px;
 }
 
 .receta-ingredients-list::-webkit-scrollbar-thumb {
   background: #1e3a5f;
-  border-radius: 6px;
+  border-radius: 10px;
 }
 
 /* Ingredient Card */
 .receta-ingredient-card {
   background: white;
   border: 2px solid #e2e8f0;
-  border-radius: 8.4px;
-  padding: 0.75rem;
+  border-radius: 14px;
+  padding: 1.25rem;
   position: relative;
   transition: all 0.2s;
 }
@@ -386,17 +386,17 @@
   left: 15px;
   background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
-  padding: 0.09rem 0.45rem;
-  border-radius: 7.2px;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
   font-weight: 700;
-  font-size: 0.51rem;
+  font-size: 0.85rem;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
 .receta-ingredient-grid {
   display: grid;
   grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
-  gap: 0.6rem;
+  gap: 1rem;
   margin-top: 0.5rem;
 }
 
@@ -405,19 +405,19 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.5rem;
 }
 
 .receta-badge-subreceta {
   display: inline-flex;
   align-items: center;
-  gap: 0.15rem;
-  padding: 0.09rem 0.45rem;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
   background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
   color: white;
-  font-size: 0.45rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  border-radius: 3.6px;
+  border-radius: 6px;
   width: fit-content;
   box-shadow: 0 2px 6px rgba(251, 191, 36, 0.3);
 }
@@ -429,8 +429,8 @@
   background: #fee2e2;
   color: #dc2626;
   border: none;
-  padding: 0.3rem;
-  border-radius: 4.8px;
+  padding: 0.5rem;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
@@ -463,33 +463,33 @@
 .receta-cost-summary {
   background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
   border: 2px solid #86efac;
-  border-radius: 8.4px;
-  padding: 0.9rem;
+  border-radius: 14px;
+  padding: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .receta-cost-label {
-  font-size: 0.675rem;
+  font-size: 1.125rem;
   font-weight: 600;
   color: #166534;
 }
 
 .receta-cost-value {
-  font-size: 1.2rem;
+  font-size: 2rem;
   font-weight: 800;
   color: #16a34a;
   background: white;
-  padding: 0.18rem 0.9rem;
-  border-radius: 7.2px;
+  padding: 0.5rem 1.5rem;
+  border-radius: 12px;
   box-shadow: 0 2px 8px rgba(22, 163, 74, 0.2);
 }
 
 /* Form Actions */
 .receta-form-actions {
   display: flex;
-  gap: 0.6rem;
+  gap: 1rem;
   justify-content: flex-end;
   padding-top: 1.5rem;
   border-top: 2px solid #e2e8f0;
@@ -498,12 +498,12 @@
 .receta-button {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.36rem 1.2rem;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
   border: none;
-  border-radius: 7.2px;
+  border-radius: 12px;
   font-weight: 600;
-  font-size: 0.6rem;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -537,7 +537,7 @@
 }
 
 /* Responsive */
-@media (max-width: 276.48px) {
+@media (max-width: 768px) {
   .receta-modal-content {
     max-width: 95%;
     max-height: 95vh;
@@ -562,8 +562,7 @@
 
   .receta-cost-summary {
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 1rem;
     text-align: center;
   }
 }
-

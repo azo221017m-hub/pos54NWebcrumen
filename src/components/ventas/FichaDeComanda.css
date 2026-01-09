@@ -1,14 +1,14 @@
 .ficha-de-comanda {
   display: flex;
   align-items: center;
-  gap: 7.2px;
-  padding: 2.88px 9.6px;
+  gap: 12px;
+  padding: 8px 16px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 4.8px;
+  border-radius: 8px;
   color: white;
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-  font-size: 8.4px;
-  max-width: 216px;
+  font-size: 14px;
+  max-width: 600px;
   overflow: hidden;
 }
 
@@ -19,21 +19,21 @@
 
 .ficha-empty-text {
   font-weight: 500;
-  font-size: 7.8px;
+  font-size: 13px;
 }
 
 .ficha-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 3.6px;
+  padding: 6px;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 3.6px;
+  border-radius: 6px;
 }
 
 .ficha-tipo {
   font-weight: 600;
-  font-size: 9px;
+  font-size: 15px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -41,25 +41,25 @@
 .ficha-info {
   display: flex;
   align-items: center;
-  gap: 3.6px;
+  gap: 6px;
   flex-wrap: wrap;
   flex: 1;
   min-width: 0;
 }
 
 .ficha-label {
-  font-size: 7.2px;
+  font-size: 12px;
   opacity: 0.9;
   font-weight: 500;
 }
 
 .ficha-value {
   font-weight: 600;
-  font-size: 7.8px;
+  font-size: 13px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 72px;
+  max-width: 200px;
 }
 
 .ficha-separator {
@@ -68,29 +68,28 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 276.48px) {
+@media (max-width: 768px) {
   .ficha-de-comanda {
-    font-size: 7.2px;
-    padding: 2.16px 7.2px;
-    gap: 4.8px;
+    font-size: 12px;
+    padding: 6px 12px;
+    gap: 8px;
     max-width: 100%;
   }
 
   .ficha-tipo {
-    font-size: 7.8px;
+    font-size: 13px;
   }
 
   .ficha-label {
-    font-size: 6.6px;
+    font-size: 11px;
   }
 
   .ficha-value {
-    font-size: 7.2px;
-    max-width: 54px;
+    font-size: 12px;
+    max-width: 150px;
   }
 
   .ficha-icon {
-    padding: 2.4px;
+    padding: 4px;
   }
 }
-
