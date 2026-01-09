@@ -225,7 +225,7 @@ export const LoginPage = () => {
           </form>
 
           <div className="login-footer">
-            <p className="version-text">Ver 25.27.2210</p>
+            <p className="version-text">Ver 26.08.0856</p>
           </div>
         </div>
       </div>
