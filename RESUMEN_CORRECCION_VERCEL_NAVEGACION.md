@@ -34,20 +34,16 @@ Se creó un archivo `vercel.json` con la siguiente configuración:
   "routes": [...],
   "env": {
     "VITE_API_URL": "https://pos54nwebcrumenbackend.onrender.com"
-  },
-  "github": {
-    "enabled": false,
-    "autoAlias": false,
-    "silent": true
   }
 }
 ```
 
 **Características:**
-- `github.enabled: false` - Intenta deshabilitar despliegues automáticos desde GitHub
-- `github.autoAlias: false` - Desactiva alias automáticos
-- `github.silent: true` - Reduce notificaciones del bot en PRs
+- Configura el build estático con `@vercel/static-build`
+- Define rutas para SPA (Single Page Application)
 - Configura variables de entorno apuntando al backend en Render.com
+
+**Nota importante**: Las opciones de configuración de GitHub (`github.enabled`, `github.autoAlias`, `github.silent`) NO están soportadas en `vercel.json` y deben configurarse desde el dashboard de Vercel o la configuración del repositorio en GitHub.
 
 ### 2. Archivo de Exclusión (`.vercelignore`)
 

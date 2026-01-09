@@ -12,10 +12,11 @@ Se han agregado los siguientes archivos de configuración:
 
 Este archivo configura cómo Vercel despliega el proyecto:
 
-- **`github.enabled: false`**: Intenta desactivar los despliegues automáticos desde GitHub
-- **`github.autoAlias: false`**: Desactiva la creación automática de alias
-- **`github.silent: true`**: Reduce las notificaciones de Vercel en los PRs
+- **`builds`**: Define cómo construir el proyecto (usando @vercel/static-build)
+- **`routes`**: Configura el enrutamiento para SPA (Single Page Application)
 - **`env`**: Define variables de entorno para producción (apuntando al backend en Render.com)
+
+**Nota importante**: Las opciones para deshabilitar los despliegues automáticos de GitHub (`github.enabled`, `github.autoAlias`, `github.silent`) NO están soportadas en el archivo `vercel.json`. Estas configuraciones deben hacerse directamente desde el dashboard de Vercel o desde la configuración del repositorio en GitHub.
 
 ### 2. `.vercelignore`
 
