@@ -50,9 +50,10 @@ backend
 cmd.exe
 *.exe
 
-# Images (large files)
+# Large documentation images (keep public assets)
+PageVentas.png
 *.png
-!public/*.png
+!public/**/*.png
 
 # Temporary files
 tmp

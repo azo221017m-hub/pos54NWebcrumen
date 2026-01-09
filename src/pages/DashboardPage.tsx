@@ -769,7 +769,10 @@ export const DashboardPage = () => {
           Ventas
         </button>
 
-        {/* TODO: Add Inventario page and route, then add onClick handler */}
+        {/* TODO: Implementar página de Inventario
+            1. Crear componente PageInventario o ConfigInventario en src/pages/
+            2. Agregar ruta '/inventario' en src/router/AppRouter.tsx
+            3. Remover atributo disabled y agregar onClick handler similar a Ventas */}
         <button className="nav-item" disabled title="Próximamente">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
