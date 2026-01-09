@@ -11,7 +11,7 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 1rem;
+  padding: 0.6rem;
   animation: fadeIn 0.2s ease-out;
 }
 
@@ -27,9 +27,9 @@
 /* Modal Content */
 .cat-moderador-modal-content {
   background: white;
-  border-radius: 20px;
+  border-radius: 12px;
   width: 100%;
-  max-width: 700px;
+  max-width: 252px;
   max-height: 85vh;
   display: flex;
   flex-direction: column;
@@ -53,7 +53,7 @@
 .cat-moderador-header {
   background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
-  padding: 1.5rem 2rem;
+  padding: 0.54rem 1.2rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -62,12 +62,12 @@
 .cat-moderador-header-content {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.6rem;
 }
 
 .cat-moderador-header-content h2 {
   margin: 0;
-  font-size: 1.75rem;
+  font-size: 1.05rem;
   font-weight: 700;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -81,8 +81,8 @@
   border: none;
   color: white;
   cursor: pointer;
-  padding: 0.75rem;
-  border-radius: 12px;
+  padding: 0.45rem;
+  border-radius: 7.2px;
   transition: all 0.2s;
   display: flex;
   align-items: center;
@@ -106,12 +106,12 @@
 .cat-moderador-form-body {
   flex: 1;
   overflow-y: auto;
-  padding: 2rem;
+  padding: 1.2rem;
   min-height: 0;
 }
 
 .cat-moderador-form-body::-webkit-scrollbar {
-  width: 8px;
+  width: 4.8px;
 }
 
 .cat-moderador-form-body::-webkit-scrollbar-track {
@@ -120,7 +120,7 @@
 
 .cat-moderador-form-body::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 10px;
+  border-radius: 6px;
 }
 
 .cat-moderador-form-body::-webkit-scrollbar-thumb:hover {
@@ -130,13 +130,13 @@
 .cat-moderador-form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
+  gap: 0.9rem;
 }
 
 .cat-moderador-form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.3rem;
 }
 
 .cat-moderador-form-group.full-width {
@@ -144,20 +144,20 @@
 }
 
 .cat-moderador-label {
-  font-size: 0.95rem;
+  font-size: 0.57rem;
   font-weight: 600;
   color: #1e293b;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.3rem;
 }
 
 .cat-moderador-input,
 .cat-moderador-select {
-  padding: 0.875rem 1rem;
+  padding: 0.315rem 0.6rem;
   border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 1rem;
+  border-radius: 7.2px;
+  font-size: 0.6rem;
   transition: all 0.2s;
   font-family: inherit;
 }
@@ -175,32 +175,32 @@
 
 .cat-moderador-error-message {
   color: #ef4444;
-  font-size: 0.875rem;
+  font-size: 0.525rem;
   font-weight: 500;
 }
 
 .cat-moderador-help-text {
   color: #64748b;
-  font-size: 0.875rem;
+  font-size: 0.525rem;
 }
 
 /* Checklist de Moderadores */
 .cat-moderador-selected-count {
   margin-left: 0.5rem;
-  font-size: 0.875rem;
+  font-size: 0.525rem;
   color: #1e3a5f;
   font-weight: 600;
 }
 
 .cat-moderador-loading-moderadores,
 .cat-moderador-no-moderadores {
-  padding: 1.5rem;
+  padding: 0.9rem;
   text-align: center;
   color: #64748b;
   background: #f8fafc;
   border: 2px dashed #e2e8f0;
-  border-radius: 12px;
-  font-size: 0.95rem;
+  border-radius: 7.2px;
+  font-size: 0.57rem;
 }
 
 .cat-moderador-checklist-header {
@@ -213,9 +213,9 @@
   background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
   border: 1px solid #cbd5e1;
   color: #475569;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
+  padding: 0.18rem 0.6rem;
+  border-radius: 4.8px;
+  font-size: 0.525rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -228,26 +228,26 @@
 }
 
 .cat-moderador-moderadores-checklist {
-  max-height: 250px;
+  max-height: 90px;
   overflow-y: auto;
   border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 0.75rem;
+  border-radius: 7.2px;
+  padding: 0.45rem;
   background: #ffffff;
 }
 
 .cat-moderador-moderadores-checklist::-webkit-scrollbar {
-  width: 8px;
+  width: 4.8px;
 }
 
 .cat-moderador-moderadores-checklist::-webkit-scrollbar-track {
   background: #f1f5f9;
-  border-radius: 10px;
+  border-radius: 6px;
 }
 
 .cat-moderador-moderadores-checklist::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 10px;
+  border-radius: 6px;
 }
 
 .cat-moderador-moderadores-checklist::-webkit-scrollbar-thumb:hover {
@@ -257,10 +257,10 @@
 .cat-moderador-checklist-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
+  gap: 0.45rem;
+  padding: 0.45rem;
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: 6px;
   transition: all 0.2s;
   border: 2px solid transparent;
   margin-bottom: 0.5rem;
@@ -276,15 +276,15 @@
 }
 
 .cat-moderador-checkbox {
-  width: 20px;
-  height: 20px;
+  width: 12px;
+  height: 12px;
   cursor: pointer;
   accent-color: #1e3a5f;
   flex-shrink: 0;
 }
 
 .cat-moderador-checkbox-label {
-  font-size: 0.95rem;
+  font-size: 0.57rem;
   color: #1e293b;
   font-weight: 500;
   user-select: none;
@@ -303,8 +303,8 @@
 /* Form Actions */
 .cat-moderador-form-actions {
   display: flex;
-  gap: 1rem;
-  padding: 1.5rem 2rem;
+  gap: 0.6rem;
+  padding: 0.54rem 1.2rem;
   background: #f8fafc;
   border-top: 1px solid #e2e8f0;
   flex-shrink: 0;
@@ -316,11 +316,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-  padding: 1rem;
+  gap: 0.45rem;
+  padding: 0.6rem;
   border: none;
-  border-radius: 12px;
-  font-size: 1rem;
+  border-radius: 7.2px;
+  font-size: 0.6rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
@@ -354,7 +354,7 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 276.48px) {
   .cat-moderador-modal-content {
     max-width: 100%;
     max-height: 100vh;
@@ -362,12 +362,12 @@
   }
 
   .cat-moderador-form-body {
-    padding: 1.5rem;
+    padding: 0.9rem;
   }
 
   .cat-moderador-form-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0.6rem;
   }
 
   .cat-moderador-form-actions {
@@ -381,11 +381,12 @@
   }
   
   .cat-moderador-moderadores-checklist {
-    max-height: 200px;
+    max-height: 72px;
   }
   
   .cat-moderador-toggle-all-btn {
-    font-size: 0.8rem;
-    padding: 0.4rem 0.8rem;
+    font-size: 0.48rem;
+    padding: 0.144rem 0.48rem;
   }
 }
+

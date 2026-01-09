@@ -27,10 +27,10 @@
 /* Modal Content */
 .modal-seleccion-venta-pageventas-content {
   background: white;
-  border-radius: 20px;
-  padding: 2.5rem;
+  border-radius: 12px;
+  padding: 1.5rem;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-width: 600px;
+  max-width: 216px;
   width: 90%;
   animation: scaleIn 0.4s ease-out;
 }
@@ -68,7 +68,7 @@
 }
 
 .modal-seleccion-venta-pageventas-header h2 {
-  font-size: 1.75rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #2d3748;
   margin: 0;
@@ -84,18 +84,18 @@
 .modal-seleccion-venta-pageventas-body {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.75rem;
 }
 
 /* Tipo Venta Buttons */
 .btn-tipo-venta-pv {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  padding: 1.5rem 2rem;
+  gap: 0.9rem;
+  padding: 0.54rem 1.2rem;
   background: white;
   border: 3px solid #e2e8f0;
-  border-radius: 16px;
+  border-radius: 9.6px;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
@@ -124,9 +124,9 @@
 
 /* Icon Container */
 .tipo-venta-icon-pv {
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
+  width: 38.4px;
+  height: 38.4px;
+  border-radius: 7.2px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -139,15 +139,15 @@
 }
 
 .tipo-venta-icon-pv svg {
-  width: 36px;
-  height: 36px;
+  width: 21.6px;
+  height: 21.6px;
   color: white;
   stroke-width: 2.5;
 }
 
 /* Label */
 .tipo-venta-label-pv {
-  font-size: 1.5rem;
+  font-size: 0.9rem;
   font-weight: 700;
   letter-spacing: 1px;
   flex: 1;
@@ -213,61 +213,62 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 276.48px) {
   .modal-seleccion-venta-pageventas-content {
-    padding: 2rem;
+    padding: 1.2rem;
     max-width: 90%;
   }
 
   .modal-seleccion-venta-pageventas-header h2 {
-    font-size: 1.5rem;
+    font-size: 0.9rem;
   }
 
   .btn-tipo-venta-pv {
-    padding: 1.25rem 1.5rem;
-    gap: 1rem;
+    padding: 0.45rem 0.9rem;
+    gap: 0.6rem;
   }
 
   .tipo-venta-icon-pv {
-    width: 56px;
-    height: 56px;
+    width: 33.6px;
+    height: 33.6px;
   }
 
   .tipo-venta-icon-pv svg {
-    width: 32px;
-    height: 32px;
+    width: 19.2px;
+    height: 19.2px;
   }
 
   .tipo-venta-label-pv {
-    font-size: 1.25rem;
+    font-size: 0.75rem;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 172.8px) {
   .modal-seleccion-venta-pageventas-content {
-    padding: 1.5rem;
+    padding: 0.9rem;
   }
 
   .modal-seleccion-venta-pageventas-header h2 {
-    font-size: 1.25rem;
+    font-size: 0.75rem;
   }
 
   .btn-tipo-venta-pv {
-    padding: 1rem 1.25rem;
-    gap: 0.875rem;
+    padding: 0.36rem 0.75rem;
+    gap: 0.525rem;
   }
 
   .tipo-venta-icon-pv {
-    width: 48px;
-    height: 48px;
+    width: 28.8px;
+    height: 28.8px;
   }
 
   .tipo-venta-icon-pv svg {
-    width: 28px;
-    height: 28px;
+    width: 16.8px;
+    height: 16.8px;
   }
 
   .tipo-venta-label-pv {
-    font-size: 1.125rem;
+    font-size: 0.675rem;
   }
 }
+

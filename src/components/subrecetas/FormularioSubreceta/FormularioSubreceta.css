@@ -9,15 +9,15 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 1rem;
+  padding: 0.6rem;
 }
 
 .formulario-subreceta-container {
   background: white;
-  border-radius: 16px;
+  border-radius: 9.6px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   width: 100%;
-  max-width: 1000px;
+  max-width: 360px;
   max-height: calc(100vh - 100px);
   overflow-y: auto;
   display: flex;
@@ -26,17 +26,17 @@
 
 /* Scrollbar personalizado para el contenedor */
 .formulario-subreceta-container::-webkit-scrollbar {
-  width: 8px;
+  width: 4.8px;
 }
 
 .formulario-subreceta-container::-webkit-scrollbar-track {
   background: #f1f5f9;
-  border-radius: 10px;
+  border-radius: 6px;
 }
 
 .formulario-subreceta-container::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
-  border-radius: 10px;
+  border-radius: 6px;
 }
 
 .formulario-subreceta-container::-webkit-scrollbar-thumb:hover {
@@ -47,19 +47,19 @@
 .formulario-header {
   background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
-  padding: 1.5rem 2rem;
+  padding: 0.54rem 1.2rem;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.6rem;
   position: sticky;
   top: 0;
   z-index: 10;
-  border-radius: 16px 16px 0 0;
+  border-radius: 5.76px 9.6px 0 0;
 }
 
 .formulario-header h2 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 0.9rem;
   font-weight: 600;
   flex: 1;
 }
@@ -69,8 +69,8 @@
   border: none;
   color: white;
   cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 8px;
+  padding: 0.3rem;
+  border-radius: 4.8px;
   transition: background 0.2s;
 }
 
@@ -86,7 +86,7 @@
 }
 
 .scroll-container {
-  padding: 2rem;
+  padding: 1.2rem;
   overflow-y: auto;
   flex: 1;
 }
@@ -94,8 +94,8 @@
 /* Secciones */
 .form-section {
   background: #f8fafc;
-  border-radius: 12px;
-  padding: 1.5rem;
+  border-radius: 7.2px;
+  padding: 0.9rem;
   margin-bottom: 1.5rem;
   border: 1px solid #e2e8f0;
 }
@@ -103,9 +103,9 @@
 .section-title {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.45rem;
   color: #1e3a5f;
-  font-size: 1.1rem;
+  font-size: 0.66rem;
   font-weight: 600;
   margin: 0 0 1.5rem 0;
 }
@@ -134,7 +134,7 @@
   display: block;
   font-weight: 500;
   color: #374151;
-  font-size: 0.875rem;
+  font-size: 0.525rem;
   margin-bottom: 0.5rem;
 }
 
@@ -147,10 +147,10 @@
 .form-group select,
 .form-group textarea {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.45rem;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 1rem;
+  border-radius: 4.8px;
+  font-size: 0.6rem;
   transition: all 0.3s ease;
   background: white;
 }
@@ -170,23 +170,23 @@
 
 .form-group textarea {
   resize: vertical;
-  min-height: 100px;
+  min-height: 36px;
   font-family: inherit;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 0.6rem;
 }
 
 .error-message {
   color: #ef4444;
-  font-size: 0.875rem;
+  font-size: 0.525rem;
   margin-top: 0.25rem;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.15rem;
 }
 
 .error-message::before {
@@ -195,21 +195,21 @@
 
 .section-error {
   margin-bottom: 1rem;
-  padding: 0.75rem;
+  padding: 0.45rem;
   background: #fef2f2;
   border: 1px solid #fecaca;
-  border-radius: 8px;
+  border-radius: 4.8px;
 }
 
 /* Costo Display */
 .costo-display {
   display: inline-flex;
   align-items: center;
-  padding: 0.75rem 1.25rem;
+  padding: 0.27rem 0.75rem;
   background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
   border: 2px solid #fed7aa;
-  border-radius: 12px;
-  font-size: 1.5rem;
+  border-radius: 7.2px;
+  font-size: 0.9rem;
   font-weight: 700;
   color: #c2410c;
 }
@@ -218,13 +218,13 @@
 .btn-agregar-ingrediente {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
+  gap: 0.3rem;
+  padding: 0.27rem 0.75rem;
   background: #1e3a5f;
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
+  border-radius: 4.8px;
+  font-size: 0.525rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -239,25 +239,25 @@
 /* Lista de Ingredientes */
 .ingredientes-vacio {
   text-align: center;
-  padding: 3rem 2rem;
+  padding: 1.08rem 1.2rem;
   color: #64748b;
   background: white;
-  border-radius: 8px;
+  border-radius: 4.8px;
   border: 2px dashed #cbd5e1;
 }
 
 .ingredientes-lista {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.6rem;
 }
 
 .ingrediente-item {
   display: flex;
-  gap: 1rem;
-  padding: 1.5rem;
+  gap: 0.6rem;
+  padding: 0.9rem;
   background: white;
-  border-radius: 12px;
+  border-radius: 7.2px;
   border: 1px solid #e2e8f0;
   transition: all 0.2s ease;
 }
@@ -268,8 +268,8 @@
 
 .ingrediente-numero {
   flex-shrink: 0;
-  width: 36px;
-  height: 36px;
+  width: 21.6px;
+  height: 21.6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -277,27 +277,27 @@
   color: white;
   font-weight: 700;
   border-radius: 50%;
-  font-size: 0.875rem;
+  font-size: 0.525rem;
 }
 
 .ingrediente-campos {
   flex: 1;
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
-  gap: 1rem;
+  gap: 0.6rem;
 }
 
 .btn-eliminar-ingrediente {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: white;
   border: 1px solid #ef4444;
   color: #ef4444;
-  border-radius: 8px;
+  border-radius: 4.8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -328,8 +328,8 @@
 .formulario-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
-  padding: 1.5rem 2rem;
+  gap: 0.6rem;
+  padding: 0.54rem 1.2rem;
   background: #f8fafc;
   border-top: 1px solid #e2e8f0;
   position: sticky;
@@ -340,11 +340,11 @@
 .btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  gap: 0.3rem;
+  padding: 0.27rem 0.9rem;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
+  border-radius: 4.8px;
+  font-size: 0.6rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -379,7 +379,7 @@
 .file-input-wrapper {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.45rem;
 }
 
 .file-input {
@@ -389,13 +389,13 @@
 .file-input-label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
+  gap: 0.3rem;
+  padding: 0.27rem 0.75rem;
   background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
-  border-radius: 8px;
+  border-radius: 4.8px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.54rem;
   font-weight: 500;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -412,13 +412,13 @@
 .file-name-display {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  gap: 0.3rem;
+  padding: 0.18rem 0.6rem;
   background: #f0fdf4;
   color: #16a34a;
   border: 1px solid #bbf7d0;
-  border-radius: 6px;
-  font-size: 0.85rem;
+  border-radius: 3.6px;
+  font-size: 0.51rem;
   font-weight: 500;
   flex: 1;
   min-width: 0;
@@ -448,11 +448,11 @@
 /* Mensaje de carga */
 .loading-message {
   display: inline-block;
-  padding: 0.5rem 1rem;
+  padding: 0.18rem 0.6rem;
   background: #fef3c7;
   color: #92400e;
-  border-radius: 6px;
-  font-size: 0.85rem;
+  border-radius: 3.6px;
+  font-size: 0.51rem;
   font-style: italic;
   margin-top: 0.25rem;
 }
@@ -460,17 +460,17 @@
 /* Mensaje informativo */
 .info-message {
   display: inline-block;
-  padding: 0.5rem 1rem;
+  padding: 0.18rem 0.6rem;
   background: #dbeafe;
   color: #1e40af;
-  border-radius: 6px;
-  font-size: 0.85rem;
+  border-radius: 3.6px;
+  font-size: 0.51rem;
   font-style: italic;
   margin-top: 0.25rem;
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 276.48px) {
   .ingrediente-campos {
     grid-template-columns: 1fr;
   }
@@ -494,3 +494,4 @@
     justify-content: center;
   }
 }
+

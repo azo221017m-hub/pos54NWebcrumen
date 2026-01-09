@@ -1,30 +1,30 @@
 .lista-umcompra-container {
   width: 100%;
-  padding: 1rem;
+  padding: 0.6rem;
 }
 
 /* Grid de unidades */
 .umcompra-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
+  gap: 0.9rem;
   max-height: calc(100vh - 280px);
   overflow-y: auto;
 }
 
 /* Scrollbar personalizado */
 .umcompra-grid::-webkit-scrollbar {
-  width: 8px;
+  width: 4.8px;
 }
 
 .umcompra-grid::-webkit-scrollbar-track {
   background: #f1f5f9;
-  border-radius: 10px;
+  border-radius: 6px;
 }
 
 .umcompra-grid::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-  border-radius: 10px;
+  border-radius: 6px;
 }
 
 .umcompra-grid::-webkit-scrollbar-thumb:hover {
@@ -34,7 +34,7 @@
 /* Card de unidad */
 .umcompra-card {
   background: white;
-  border-radius: 12px;
+  border-radius: 7.2px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   transition: all 0.3s;
@@ -50,16 +50,16 @@
 /* Header de la card */
 .umcompra-card-header {
   background: linear-gradient(135deg, #f59e0b 0%, #1e3a5f 100%);
-  padding: 1.5rem;
+  padding: 0.9rem;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.6rem;
 }
 
 .umcompra-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
+  width: 33.6px;
+  height: 33.6px;
+  border-radius: 7.2px;
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
   display: flex;
@@ -76,7 +76,7 @@
 
 .umcompra-title h3 {
   margin: 0 0 0.5rem 0;
-  font-size: 1.25rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: white;
   white-space: nowrap;
@@ -86,11 +86,11 @@
 
 .umcompra-badge {
   display: inline-block;
-  padding: 0.25rem 0.75rem;
+  padding: 0.09rem 0.45rem;
   background: rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(10px);
-  border-radius: 20px;
-  font-size: 0.85rem;
+  border-radius: 12px;
+  font-size: 0.51rem;
   font-weight: 600;
   color: white;
   text-transform: uppercase;
@@ -98,10 +98,10 @@
 
 /* Valores */
 .umcompra-valores {
-  padding: 1.5rem;
+  padding: 0.9rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 0.6rem;
   background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
 }
@@ -109,17 +109,17 @@
 .valor-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
+  gap: 0.45rem;
+  padding: 0.6rem;
   background: white;
-  border-radius: 10px;
+  border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .valor-icon {
   flex-shrink: 0;
-  padding: 0.5rem;
-  border-radius: 8px;
+  padding: 0.3rem;
+  border-radius: 4.8px;
 }
 
 .valor-item.principal .valor-icon {
@@ -138,7 +138,7 @@
 }
 
 .valor-label {
-  font-size: 0.75rem;
+  font-size: 0.45rem;
   color: #6b7280;
   text-transform: uppercase;
   font-weight: 500;
@@ -146,28 +146,28 @@
 }
 
 .valor-numero {
-  font-size: 1.25rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #1f2937;
 }
 
 /* Información adicional */
 .umcompra-info {
-  padding: 1rem 1.5rem;
+  padding: 0.36rem 0.9rem;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.45rem;
   background: white;
 }
 
 .info-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  gap: 0.3rem;
+  padding: 0.18rem 0.6rem;
   background: #f3f4f6;
-  border-radius: 6px;
-  font-size: 0.9rem;
+  border-radius: 3.6px;
+  font-size: 0.54rem;
   color: #374151;
 }
 
@@ -178,41 +178,41 @@
 
 /* Meta información */
 .umcompra-meta {
-  padding: 0.75rem 1.5rem;
+  padding: 0.27rem 0.9rem;
   background: #f9fafb;
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.3rem;
   border-top: 1px solid #e5e7eb;
 }
 
 .meta-item {
-  font-size: 0.8rem;
+  font-size: 0.48rem;
   color: #6b7280;
 }
 
 /* Acciones */
 .umcompra-card-actions {
-  padding: 1rem 1.5rem;
+  padding: 0.36rem 0.9rem;
   display: flex;
-  gap: 0.75rem;
+  gap: 0.45rem;
   background: white;
   border-top: 1px solid #e5e7eb;
 }
 
 .btn-action {
   flex: 1;
-  padding: 0.75rem;
+  padding: 0.45rem;
   border: none;
-  border-radius: 8px;
-  font-size: 0.95rem;
+  border-radius: 4.8px;
+  font-size: 0.57rem;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.3rem;
   transition: all 0.2s;
 }
 
@@ -245,14 +245,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4rem 2rem;
+  padding: 1.44rem 1.2rem;
   text-align: center;
   color: #6b7280;
 }
 
 .lista-umcompra-loading .spinner {
-  width: 48px;
-  height: 48px;
+  width: 28.8px;
+  height: 28.8px;
   border: 4px solid #e5e7eb;
   border-top-color: #f59e0b;
   border-radius: 50%;
@@ -274,19 +274,19 @@
 .lista-umcompra-empty h3 {
   margin: 0 0 0.5rem 0;
   color: #374151;
-  font-size: 1.5rem;
+  font-size: 0.9rem;
 }
 
 .lista-umcompra-empty p {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.6rem;
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 276.48px) {
   .umcompra-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0.6rem;
   }
 
   .umcompra-valores {
@@ -302,29 +302,30 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 172.8px) {
   .lista-umcompra-container {
-    padding: 0.5rem;
+    padding: 0.3rem;
   }
 
   .umcompra-grid {
-    gap: 0.75rem;
+    gap: 0.45rem;
   }
 
   .umcompra-card-header {
-    padding: 1rem;
+    padding: 0.6rem;
   }
 
   .umcompra-icon {
-    width: 48px;
-    height: 48px;
+    width: 28.8px;
+    height: 28.8px;
   }
 
   .umcompra-title h3 {
-    font-size: 1.1rem;
+    font-size: 0.66rem;
   }
 
   .valor-numero {
-    font-size: 1.1rem;
+    font-size: 0.66rem;
   }
 }
+
