@@ -318,6 +318,17 @@
   background: #ecfdf5;
 }
 
+.nav-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: #a0aec0;
+}
+
+.nav-item:disabled:hover {
+  background: transparent;
+  color: #a0aec0;
+}
+
 .nav-item svg {
   width: 18px;
   height: 18px;

@@ -20,10 +20,5 @@
   ],
   "env": {
     "VITE_API_URL": "https://pos54nwebcrumenbackend.onrender.com"
-  },
-  "github": {
-    "enabled": false,
-    "autoAlias": false,
-    "silent": true
   }
 }
