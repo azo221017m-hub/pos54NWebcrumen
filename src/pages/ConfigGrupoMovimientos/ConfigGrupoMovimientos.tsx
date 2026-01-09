@@ -1,22 +1,22 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import GestionCuentasContables from '../../components/cuentasContables/GestionCuentasContables/GestionCuentasContables';
+import GestionGrupoMovimientos from '../../components/grupoMovimientos/GestionGrupoMovimientos/GestionGrupoMovimientos';
 import { ArrowLeft } from 'lucide-react';
-import './ConfigCuentaContable.css';
+import './ConfigGrupoMovimientos.css';
 
-const ConfigCuentaContable: React.FC = () => {
+const ConfigGrupoMovimientos: React.FC = () => {
   const navigate = useNavigate();
   const idnegocio = parseInt(localStorage.getItem('idnegocio') || '1');
 
   return (
-    <div className="config-cuenta-contable-page">
+    <div className="config-grupo-movimientos-page">
       <button className="btn-volver" onClick={() => navigate('/dashboard')}>
         <ArrowLeft size={20} />
         Volver al Dashboard
       </button>
-      <GestionCuentasContables idnegocio={idnegocio} />
+      <GestionGrupoMovimientos idnegocio={idnegocio} />
     </div>
   );
 };
 
-export default ConfigCuentaContable;
+export default ConfigGrupoMovimientos;

@@ -1,5 +1,5 @@
 /* Modal Overlay */
-.formulario-cuenta-overlay {
+.formulario-grupo-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -25,7 +25,7 @@
 }
 
 /* Modal Content */
-.formulario-cuenta-container {
+.formulario-grupo-container {
   background: white;
   border-radius: 20px;
   width: 100%;
@@ -85,7 +85,7 @@
 }
 
 /* Form */
-.formulario-cuenta {
+.formulario-grupo {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -227,11 +227,11 @@ select.form-control {
 
 /* Responsive */
 @media (max-width: 640px) {
-  .formulario-cuenta-overlay {
+  .formulario-grupo-overlay {
     padding: 0;
   }
 
-  .formulario-cuenta-container {
+  .formulario-grupo-container {
     max-width: 100%;
     max-height: 100vh;
     border-radius: 0;

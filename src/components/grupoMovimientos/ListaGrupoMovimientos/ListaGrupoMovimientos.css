@@ -1,5 +1,5 @@
 /* Lista de Cuentas Contables */
-.lista-cuentas-contables {
+.lista-grupos-movimientos {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 1.5rem;
@@ -9,26 +9,26 @@
 }
 
 /* Scrollbar personalizada */
-.lista-cuentas-contables::-webkit-scrollbar {
+.lista-grupos-movimientos::-webkit-scrollbar {
   width: 10px;
 }
 
-.lista-cuentas-contables::-webkit-scrollbar-track {
+.lista-grupos-movimientos::-webkit-scrollbar-track {
   background: #f1f5f9;
   border-radius: 10px;
 }
 
-.lista-cuentas-contables::-webkit-scrollbar-thumb {
+.lista-grupos-movimientos::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   border-radius: 10px;
 }
 
-.lista-cuentas-contables::-webkit-scrollbar-thumb:hover {
+.lista-grupos-movimientos::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #059669 0%, #1e3a5f 100%);
 }
 
 /* Card de Cuenta */
-.cuenta-card {
+.grupo-card {
   background: white;
   border-radius: 16px;
   overflow: hidden;
@@ -39,14 +39,14 @@
   flex-direction: column;
 }
 
-.cuenta-card:hover {
+.grupo-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(16, 185, 129, 0.2);
   border-color: #a7f3d0;
 }
 
 /* Header del Card */
-.cuenta-card-header {
+.grupo-card-header {
   padding: 1.5rem;
   display: flex;
   gap: 1rem;
@@ -55,11 +55,11 @@
   border-bottom: 1px solid #a7f3d0;
 }
 
-.cuenta-title-section {
+.grupo-title-section {
   flex: 1;
 }
 
-.cuenta-nombre {
+.grupo-nombre {
   margin: 0 0 0.5rem 0;
   font-size: 1.15rem;
   font-weight: 700;
@@ -92,7 +92,7 @@
 }
 
 /* Acciones */
-.cuenta-acciones {
+.grupo-acciones {
   display: flex;
   gap: 0.5rem;
 }
@@ -134,12 +134,12 @@
 }
 
 /* Body */
-.cuenta-card-body {
+.grupo-card-body {
   padding: 1.5rem;
   flex: 1;
 }
 
-.cuenta-info-row {
+.grupo-info-row {
   display: flex;
   justify-content: space-between;
   padding: 0.75rem;
@@ -149,11 +149,11 @@
   transition: all 0.2s;
 }
 
-.cuenta-info-row:last-child {
+.grupo-info-row:last-child {
   margin-bottom: 0;
 }
 
-.cuenta-info-row:hover {
+.grupo-info-row:hover {
   background: #ecfdf5;
 }
 
@@ -175,7 +175,7 @@
 }
 
 /* Footer */
-.cuenta-card-footer {
+.grupo-card-footer {
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -193,7 +193,7 @@
 }
 
 /* Estado vacío */
-.lista-cuentas-vacia {
+.lista-grupos-vacia {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -208,45 +208,45 @@
   margin-bottom: 1.5rem;
 }
 
-.lista-cuentas-vacia h3 {
+.lista-grupos-vacia h3 {
   margin: 0 0 0.5rem 0;
   font-size: 1.5rem;
   color: #475569;
 }
 
-.lista-cuentas-vacia p {
+.lista-grupos-vacia p {
   margin: 0;
   font-size: 1rem;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .lista-cuentas-contables {
+  .lista-grupos-movimientos {
     grid-template-columns: 1fr;
     gap: 1rem;
     max-height: calc(100vh - 300px);
   }
 
-  .cuenta-card-header {
+  .grupo-card-header {
     flex-wrap: wrap;
     padding: 1rem;
   }
 
-  .cuenta-nombre {
+  .grupo-nombre {
     font-size: 1rem;
   }
 
-  .cuenta-acciones {
+  .grupo-acciones {
     width: 100%;
     justify-content: flex-end;
     margin-top: 0.5rem;
   }
 
-  .cuenta-card-body {
+  .grupo-card-body {
     padding: 1rem;
   }
 
-  .cuenta-card-footer {
+  .grupo-card-footer {
     flex-direction: column;
     gap: 0.25rem;
   }

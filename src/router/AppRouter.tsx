@@ -10,7 +10,7 @@ import ConfigMesas from '../pages/ConfigMesas/ConfigMesas';
 import ConfigDescuentos from '../pages/ConfigDescuentos/ConfigDescuentos';
 import { ConfigInsumos } from '../pages/ConfigInsumos/ConfigInsumos';
 import { ConfigClientes } from '../pages/ConfigClientes/ConfigClientes';
-import ConfigCuentaContable from '../pages/ConfigCuentaContable/ConfigCuentaContable';
+import ConfigGrupoMovimientos from '../pages/ConfigGrupoMovimientos/ConfigGrupoMovimientos';
 import ConfigModeradores from '../pages/ConfigModeradores/ConfigModeradores';
 import ConfigSubreceta from '../pages/ConfigSubreceta/ConfigSubreceta';
 import ConfigCategorias from '../pages/ConfigCategorias/ConfigCategorias';
@@ -67,7 +67,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/config-cuentas-contables',
-    element: <ConfigCuentaContable />,
+    element: <ConfigGrupoMovimientos />,
   },
   {
     path: '/config-moderadores',

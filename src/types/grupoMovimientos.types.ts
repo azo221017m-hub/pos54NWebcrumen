@@ -1,9 +1,9 @@
-// Tipos para Cuenta Contable
-export type NaturalezaCuentaContable = 'COMPRA' | 'GASTO';
+// Tipos para Grupo de Movimientos
+export type NaturalezaGrupoMovimientos = 'COMPRA' | 'GASTO';
 
-export interface CuentaContable {
+export interface GrupoMovimientos {
   id_cuentacontable: number;
-  naturalezacuentacontable: NaturalezaCuentaContable;
+  naturalezacuentacontable: NaturalezaGrupoMovimientos;
   nombrecuentacontable: string;
   tipocuentacontable: string;
   fechaRegistroauditoria: string | null;
@@ -12,15 +12,15 @@ export interface CuentaContable {
   idnegocio: number;
 }
 
-export interface CuentaContableCreate {
-  naturalezacuentacontable: NaturalezaCuentaContable;
+export interface GrupoMovimientosCreate {
+  naturalezacuentacontable: NaturalezaGrupoMovimientos;
   nombrecuentacontable: string;
   tipocuentacontable: string;
   idnegocio: number;
 }
 
-export interface CuentaContableUpdate {
-  naturalezacuentacontable: NaturalezaCuentaContable;
+export interface GrupoMovimientosUpdate {
+  naturalezacuentacontable: NaturalezaGrupoMovimientos;
   nombrecuentacontable: string;
   tipocuentacontable: string;
 }
