@@ -36,9 +36,9 @@
   z-index: 1;
   text-align: center;
   color: white;
-  padding: 2rem;
+  padding: 1.2rem;
   width: 100%;
-  max-width: 800px;
+  max-width: 288px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -62,8 +62,8 @@
 }
 
 .logo-circle {
-  width: 100px;
-  height: 100px;
+  width: 60px;
+  height: 60px;
   margin: 0 auto 1.5rem;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
@@ -88,13 +88,13 @@
 }
 
 .logo-svg {
-  width: 50px;
-  height: 50px;
+  width: 30px;
+  height: 30px;
   color: white;
 }
 
 .logo-text {
-  font-size: 2.5rem;
+  font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
   letter-spacing: -0.025em;
@@ -102,15 +102,15 @@
 }
 
 .phrase-container {
-  min-height: 80px;
+  min-height: 28.8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 1.5rem 0;
+  margin: 0.9rem 0;
 }
 
 .animated-phrase {
-  font-size: 1.3rem;
+  font-size: 0.78rem;
   font-weight: 400;
   line-height: 1.6;
   margin: 0;
@@ -130,14 +130,14 @@
 
 .progress-dots {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.45rem;
   justify-content: center;
   margin-top: 2rem;
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.3);
   transition: all 0.3s ease;
@@ -151,27 +151,27 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 276.48px) {
   .landing-content {
-    padding: 1.5rem;
+    padding: 0.9rem;
   }
 
   .logo-circle {
-    width: 80px;
-    height: 80px;
+    width: 48px;
+    height: 48px;
   }
 
   .logo-svg {
-    width: 40px;
-    height: 40px;
+    width: 24px;
+    height: 24px;
   }
 
   .logo-text {
-    font-size: 1.75rem;
+    font-size: 1.05rem;
   }
 
   .animated-phrase {
-    font-size: 1.1rem;
+    font-size: 0.66rem;
   }
 
   .logo-container {
@@ -179,8 +179,8 @@
   }
 
   .phrase-container {
-    min-height: 60px;
-    margin: 1rem 0;
+    min-height: 21.6px;
+    margin: 0.6rem 0;
   }
 
   .progress-dots {
@@ -188,7 +188,8 @@
   }
 
   .dot {
-    width: 8px;
-    height: 8px;
+    width: 4.8px;
+    height: 4.8px;
   }
 }
+

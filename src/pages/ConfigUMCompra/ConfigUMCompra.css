@@ -2,7 +2,7 @@
   min-height: 100vh;
   height: 100vh;
   background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
-  padding: 2rem;
+  padding: 1.2rem;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -11,19 +11,19 @@
 .config-umcompra-header {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 0.9rem;
   margin-bottom: 1rem;
-  padding: 1.5rem;
+  padding: 0.9rem;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  border-radius: 12px;
+  border-radius: 7.2px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
 }
 
 .config-umcompra-header h1 {
   margin: 0;
-  font-size: 2rem;
+  font-size: 1.2rem;
   font-weight: 700;
   background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
   -webkit-background-clip: text;
@@ -32,17 +32,17 @@
 }
 
 .btn-back {
-  padding: 0.75rem 1.5rem;
+  padding: 0.27rem 0.9rem;
   background: white;
   color: #f59e0b;
   border: 2px solid #f59e0b;
-  border-radius: 8px;
-  font-size: 1rem;
+  border-radius: 4.8px;
+  font-size: 0.6rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.3rem;
   transition: all 0.3s;
 }
 
@@ -54,39 +54,39 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 276.48px) {
   .config-umcompra-page {
-    padding: 1rem;
+    padding: 0.6rem;
   }
 
   .config-umcompra-header {
-    padding: 1rem;
-    gap: 1rem;
+    padding: 0.6rem;
+    gap: 0.6rem;
   }
 
   .config-umcompra-header h1 {
-    font-size: 1.5rem;
+    font-size: 0.9rem;
   }
 
   .btn-back {
-    padding: 0.625rem 1.25rem;
-    font-size: 0.95rem;
+    padding: 0.225rem 0.75rem;
+    font-size: 0.57rem;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 172.8px) {
   .config-umcompra-page {
-    padding: 0.5rem;
+    padding: 0.3rem;
   }
 
   .config-umcompra-header {
     flex-direction: column;
     align-items: stretch;
-    padding: 1rem;
+    padding: 0.6rem;
   }
 
   .config-umcompra-header h1 {
-    font-size: 1.25rem;
+    font-size: 0.75rem;
     text-align: center;
   }
 
@@ -102,3 +102,4 @@
   min-height: 0;
   overflow: hidden;
 }
+
