@@ -1,0 +1,61 @@
+# Vercel ignore file
+# Files and directories to exclude from Vercel deployment
+
+# Dependencies
+node_modules
+backend/node_modules
+
+# Build outputs
+.vite
+dist-ssr
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs
+
+# Editor files
+.vscode
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Documentation (to reduce deployment size)
+*.md
+!README.md
+
+# Scripts
+test_crud_pageventas.sh
+demo_filtrado_usuarios.sh
+deploy.ps1
+
+# Backend (frontend only on Vercel)
+backend
+
+# Binary files
+cmd.exe
+*.exe
+
+# Large documentation images (keep public assets)
+PageVentas.png
+*.png
+!public/**/*.png
+
+# Temporary files
+tmp
+temp
+*.tmp
