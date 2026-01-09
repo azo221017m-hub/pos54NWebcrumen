@@ -18,12 +18,12 @@
 }
 
 .gestion-usuarios-container::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   border-radius: 4px;
 }
 
 .gestion-usuarios-container::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  background: linear-gradient(135deg, #0891b2 0%, #1e3a5f 100%);
 }
 
 /* Header de la gestión */
@@ -50,7 +50,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  color: #10b981;
+  color: #1e3a5f;
 }
 
 .header-title h2 {
@@ -82,12 +82,12 @@
 }
 
 .contador.total {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
 }
 
 .contador.activos {
-  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  background: linear-gradient(135deg, #0891b2 0%, #1e3a5f 100%);
   color: white;
 }
 
@@ -114,7 +114,7 @@
 /* Botón nuevo usuario */
 .btn-nuevo-usuario {
   padding: 1rem 2rem;
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -162,7 +162,7 @@
 .mensaje-alerta.success {
   background: #d1fae5;
   color: #065f46;
-  border-left: 4px solid #34d399;
+  border-left: 4px solid #0891b2;
 }
 
 .mensaje-alerta.error {

@@ -19,7 +19,7 @@
 }
 
 .gestion-roles::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   border-radius: 4px;
 }
 
@@ -112,11 +112,11 @@
 }
 
 .contador-valor.total {
-  color: #10b981;
+  color: #1e3a5f;
 }
 
 .contador-item:has(.contador-valor.total) {
-  border-left-color: #10b981;
+  border-left-color: #1e3a5f;
 }
 
 .contador-valor.activos {
@@ -139,7 +139,7 @@
 .btn-nuevo,
 .btn-volver {
   padding: 0.875rem 1.75rem;
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -161,13 +161,13 @@
 
 .btn-volver {
   background: white;
-  color: #10b981;
-  border: 2px solid #10b981;
+  color: #1e3a5f;
+  border: 2px solid #1e3a5f;
   box-shadow: none;
 }
 
 .btn-volver:hover {
-  background: #10b981;
+  background: #1e3a5f;
   color: white;
 }
 

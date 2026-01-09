@@ -51,7 +51,7 @@
 
 /* Header */
 .formulario-producto-web-header {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
   padding: 1.5rem 2rem;
   display: flex;
@@ -170,7 +170,7 @@
 .form-select:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #10b981;
+  border-color: #1e3a5f;
   box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
 }
 
@@ -271,7 +271,7 @@
 }
 
 .input-status.success {
-  color: #10b981;
+  color: #1e3a5f;
 }
 
 /* Form Section */
@@ -329,9 +329,9 @@
 }
 
 .imagen-placeholder:hover {
-  border-color: #10b981;
+  border-color: #1e3a5f;
   background: #ecfdf5;
-  color: #10b981;
+  color: #1e3a5f;
 }
 
 .imagen-placeholder span {
@@ -388,7 +388,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -448,7 +448,7 @@
 }
 
 .toggle-switch input:checked + .toggle-slider {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
 }
 
 .toggle-switch input:checked + .toggle-slider:before {
@@ -499,7 +499,7 @@
 }
 
 .btn-guardar {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }

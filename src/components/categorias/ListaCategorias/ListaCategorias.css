@@ -55,7 +55,7 @@
   position: relative;
   width: 100%;
   height: 200px;
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   overflow: hidden;
 }
 
@@ -79,7 +79,7 @@
   top: 12px;
   right: 12px;
   background: rgba(255, 255, 255, 0.95);
-  color: #10b981;
+  color: #1e3a5f;
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
   font-weight: 700;
@@ -103,7 +103,7 @@
 }
 
 .categoria-card-header .categoria-icon {
-  color: #10b981;
+  color: #1e3a5f;
   flex-shrink: 0;
 }
 
@@ -150,7 +150,7 @@
 }
 
 .info-icon.activo {
-  color: #34d399;
+  color: #0891b2;
 }
 
 .info-icon.inactivo {
@@ -158,7 +158,7 @@
 }
 
 .info-icon.moderadores {
-  color: #10b981;
+  color: #1e3a5f;
 }
 
 .info-label {

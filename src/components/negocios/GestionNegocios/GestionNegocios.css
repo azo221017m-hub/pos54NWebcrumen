@@ -19,7 +19,7 @@
 }
 
 .gestion-negocios::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   border-radius: 4px;
 }
 
@@ -83,7 +83,7 @@
 }
 
 .header-info strong {
-  color: #10b981;
+  color: #1e3a5f;
   font-weight: 700;
 }
 
@@ -123,11 +123,11 @@
 }
 
 .contador-valor.total {
-  color: #10b981;
+  color: #1e3a5f;
 }
 
 .contador-item:has(.contador-valor.total) {
-  border-left-color: #10b981;
+  border-left-color: #1e3a5f;
 }
 
 .contador-valor.activos {
@@ -148,7 +148,7 @@
 
 .btn-nuevo {
   padding: 0.875rem 1.75rem;
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -170,8 +170,8 @@
 .btn-volver {
   padding: 0.75rem 1.5rem;
   background: white;
-  color: #10b981;
-  border: 2px solid #10b981;
+  color: #1e3a5f;
+  border: 2px solid #1e3a5f;
   border-radius: 8px;
   font-weight: 600;
   font-size: 0.9375rem;
@@ -183,7 +183,7 @@
 }
 
 .btn-volver:hover {
-  background: #10b981;
+  background: #1e3a5f;
   color: white;
   transform: translateX(-4px);
 }
@@ -197,7 +197,7 @@
 }
 
 .detalle-header {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   padding: 1.5rem 2rem;
   display: flex;
   justify-content: space-between;
@@ -214,7 +214,7 @@
 .btn-editar-detalle {
   padding: 0.75rem 1.5rem;
   background: white;
-  color: #10b981;
+  color: #1e3a5f;
   border: none;
   border-radius: 8px;
   font-weight: 600;
@@ -248,7 +248,7 @@
   color: #2d3748;
   margin: 0 0 1.5rem 0;
   padding-bottom: 0.75rem;
-  border-bottom: 2px solid #10b981;
+  border-bottom: 2px solid #1e3a5f;
 }
 
 .detalle-grid {
@@ -281,7 +281,7 @@
   padding: 0.75rem 1rem;
   background: #f7fafc;
   border-radius: 6px;
-  border-left: 3px solid #10b981;
+  border-left: 3px solid #1e3a5f;
 }
 
 /* Responsive */
