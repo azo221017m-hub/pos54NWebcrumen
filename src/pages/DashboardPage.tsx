@@ -622,7 +622,7 @@ export const DashboardPage = () => {
                   <line x1="9" y1="15" x2="15" y2="15"/>
                   <line x1="9" y1="11" x2="15" y2="11"/>
                 </svg>
-                Cuentas Contables
+                Grupo de Movimientos
               </button>
               <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-moderadores'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -749,13 +749,12 @@ export const DashboardPage = () => {
             <div className="dashboard-card">
               <div className="card-icon purple">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="2" y="7" width="20" height="15" rx="2"/>
-                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
                 </svg>
               </div>
-              <h3 className="card-title">Productos</h3>
-              <p className="card-text">Catálogo activo</p>
-              <div className="card-stat">0 productos</div>
+              <h3 className="card-title">Salud de mi Negocio</h3>
+              <p className="card-text">Comparativo del mes</p>
+              <div className="card-stat">Ventas vs Gastos</div>
             </div>
 
             <div className="dashboard-card">
