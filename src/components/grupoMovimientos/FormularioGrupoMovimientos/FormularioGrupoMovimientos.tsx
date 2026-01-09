@@ -1,36 +1,36 @@
 import React, { useState, useMemo } from 'react';
-import type { CuentaContable, CuentaContableCreate, NaturalezaCuentaContable } from '../../../types/cuentaContable.types';
+import type { GrupoMovimientos, GrupoMovimientosCreate, NaturalezaGrupoMovimientos } from '../../../types/grupoMovimientos.types';
 import { X, Save } from 'lucide-react';
-import './FormularioCuentaContable.css';
+import './FormularioGrupoMovimientos.css';
 
 interface Props {
-  cuenta: CuentaContable | null;
+  grupo: GrupoMovimientos | null;
   idnegocio: number;
-  onSave: (cuenta: CuentaContableCreate) => void;
+  onSave: (grupo: GrupoMovimientosCreate) => void;
   onCancel: () => void;
 }
 
 // Opciones dinámicas según la naturaleza
-const opcionesTipoCuenta: Record<NaturalezaCuentaContable, string[]> = {
+const opcionesTipoGrupo: Record<NaturalezaGrupoMovimientos, string[]> = {
   COMPRA: ['Inventario', 'Activo Fijo', 'Servicios', 'Administrativo', 'Extraordinaria'],
   GASTO: ['Operación', 'Financiero', 'Extraordinario', 'Fiscal']
 };
 
-const FormularioCuentaContable: React.FC<Props> = ({ cuenta, idnegocio, onSave, onCancel }) => {
+const FormularioGrupoMovimientos: React.FC<Props> = ({ grupo, idnegocio, onSave, onCancel }) => {
   const initialState = useMemo(() => {
-    if (cuenta) {
+    if (grupo) {
       return {
-        naturalezacuentacontable: cuenta.naturalezacuentacontable,
-        nombrecuentacontable: cuenta.nombrecuentacontable,
-        tipocuentacontable: cuenta.tipocuentacontable
+        naturalezacuentacontable: grupo.naturalezacuentacontable,
+        nombrecuentacontable: grupo.nombrecuentacontable,
+        tipocuentacontable: grupo.tipocuentacontable
       };
     }
     return {
-      naturalezacuentacontable: 'COMPRA' as NaturalezaCuentaContable,
+      naturalezacuentacontable: 'COMPRA' as NaturalezaGrupoMovimientos,
       nombrecuentacontable: '',
       tipocuentacontable: ''
     };
-  }, [cuenta]);
+  }, [grupo]);
 
   const [formData, setFormData] = useState(initialState);
   const [errores, setErrores] = useState<Record<string, string>>({});
@@ -38,11 +38,11 @@ const FormularioCuentaContable: React.FC<Props> = ({ cuenta, idnegocio, onSave, 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
-    // Si cambia la naturaleza, resetear el tipo de cuenta
+    // Si cambia la naturaleza, resetear el tipo de grupo
     if (name === 'naturalezacuentacontable') {
       setFormData(prev => ({ 
         ...prev, 
-        naturalezacuentacontable: value as NaturalezaCuentaContable, 
+        naturalezacuentacontable: value as NaturalezaGrupoMovimientos, 
         tipocuentacontable: '' 
       }));
     } else {
@@ -63,7 +63,7 @@ const FormularioCuentaContable: React.FC<Props> = ({ cuenta, idnegocio, onSave, 
     }
 
     if (!formData.tipocuentacontable.trim()) {
-      nuevosErrores.tipocuentacontable = 'El tipo de cuenta es obligatorio';
+      nuevosErrores.tipocuentacontable = 'El tipo de grupo es obligatorio';
     }
 
     setErrores(nuevosErrores);
@@ -77,30 +77,30 @@ const FormularioCuentaContable: React.FC<Props> = ({ cuenta, idnegocio, onSave, 
       return;
     }
 
-    const cuentaData: CuentaContableCreate = {
+    const grupoData: GrupoMovimientosCreate = {
       ...formData,
       idnegocio
     };
 
-    onSave(cuentaData);
+    onSave(grupoData);
   };
 
   return (
-    <div className="formulario-cuenta-overlay">
-      <div className="formulario-cuenta-container">
+    <div className="formulario-grupo-overlay">
+      <div className="formulario-grupo-container">
         <div className="formulario-header">
-          <h2>{cuenta ? 'Editar Cuenta Contable' : 'Nueva Cuenta Contable'}</h2>
+          <h2>{grupo ? 'Editar Grupo de Movimientos' : 'Nuevo Grupo de Movimientos'}</h2>
           <button className="btn-cerrar" onClick={onCancel}>
             <X size={24} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="formulario-cuenta">
+        <form onSubmit={handleSubmit} className="formulario-grupo">
           <div className="scroll-container">
-            {/* Naturaleza de Cuenta */}
+            {/* Naturaleza de Grupo */}
             <div className="form-group">
               <label htmlFor="naturalezacuentacontable">
-                Naturaleza de Cuenta <span className="required">*</span>
+                Naturaleza del Grupo <span className="required">*</span>
               </label>
               <select
                 id="naturalezacuentacontable"
@@ -115,10 +115,10 @@ const FormularioCuentaContable: React.FC<Props> = ({ cuenta, idnegocio, onSave, 
               </select>
             </div>
 
-            {/* Nombre de Cuenta */}
+            {/* Nombre del Grupo */}
             <div className="form-group">
               <label htmlFor="nombrecuentacontable">
-                Nombre de la Cuenta <span className="required">*</span>
+                Nombre del Grupo <span className="required">*</span>
               </label>
               <input
                 type="text"
@@ -136,10 +136,10 @@ const FormularioCuentaContable: React.FC<Props> = ({ cuenta, idnegocio, onSave, 
               )}
             </div>
 
-            {/* Tipo de Cuenta */}
+            {/* Tipo de Grupo */}
             <div className="form-group">
               <label htmlFor="tipocuentacontable">
-                Tipo de Cuenta <span className="required">*</span>
+                Tipo de Grupo <span className="required">*</span>
               </label>
               <select
                 id="tipocuentacontable"
@@ -150,7 +150,7 @@ const FormularioCuentaContable: React.FC<Props> = ({ cuenta, idnegocio, onSave, 
                 required
               >
                 <option value="">Seleccione un tipo</option>
-                {opcionesTipoCuenta[formData.naturalezacuentacontable].map(tipo => (
+                {opcionesTipoGrupo[formData.naturalezacuentacontable].map(tipo => (
                   <option key={tipo} value={tipo}>{tipo}</option>
                 ))}
               </select>
@@ -166,7 +166,7 @@ const FormularioCuentaContable: React.FC<Props> = ({ cuenta, idnegocio, onSave, 
             </button>
             <button type="submit" className="btn btn-guardar">
               <Save size={18} />
-              {cuenta ? 'Actualizar' : 'Guardar'}
+              {grupo ? 'Actualizar' : 'Guardar'}
             </button>
           </div>
         </form>
@@ -175,4 +175,4 @@ const FormularioCuentaContable: React.FC<Props> = ({ cuenta, idnegocio, onSave, 
   );
 };
 
-export default FormularioCuentaContable;
+export default FormularioGrupoMovimientos;

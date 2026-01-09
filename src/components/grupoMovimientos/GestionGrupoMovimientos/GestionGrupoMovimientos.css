@@ -1,5 +1,5 @@
 /* Contenedor Principal */
-.gestion-cuentas-contables {
+.gestion-grupo-movimientos {
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
   padding: 2rem;
@@ -67,11 +67,11 @@
 }
 
 /* Header */
-.cuentas-header {
+.grupos-header {
   margin-bottom: 2rem;
 }
 
-.cuentas-header-content {
+.grupos-header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -83,25 +83,25 @@
   box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
 }
 
-.cuentas-title {
+.grupos-title {
   display: flex;
   align-items: center;
   gap: 1.5rem;
   color: white;
 }
 
-.cuentas-icon {
+.grupos-icon {
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 
-.cuentas-title h1 {
+.grupos-title h1 {
   margin: 0;
   font-size: 2rem;
   font-weight: 800;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.cuentas-title p {
+.grupos-title p {
   margin: 0.25rem 0 0 0;
   font-size: 1rem;
   opacity: 0.95;
@@ -135,7 +135,7 @@
 }
 
 /* Content */
-.cuentas-content {
+.grupos-content {
   background: white;
   border-radius: 20px;
   padding: 2rem;
@@ -146,26 +146,26 @@
 }
 
 /* Scrollbar personalizada para contenido */
-.cuentas-content::-webkit-scrollbar {
+.grupos-content::-webkit-scrollbar {
   width: 10px;
 }
 
-.cuentas-content::-webkit-scrollbar-track {
+.grupos-content::-webkit-scrollbar-track {
   background: #f1f5f9;
   border-radius: 10px;
 }
 
-.cuentas-content::-webkit-scrollbar-thumb {
+.grupos-content::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   border-radius: 10px;
 }
 
-.cuentas-content::-webkit-scrollbar-thumb:hover {
+.grupos-content::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #059669 0%, #1e3a5f 100%);
 }
 
 /* Loading */
-.cuentas-cargando {
+.grupos-cargando {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -186,29 +186,29 @@
   }
 }
 
-.cuentas-cargando p {
+.grupos-cargando p {
   font-size: 1.1rem;
   font-weight: 600;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .gestion-cuentas-contables {
+  .gestion-grupo-movimientos {
     padding: 1rem;
   }
 
-  .cuentas-header-content {
+  .grupos-header-content {
     flex-direction: column;
     text-align: center;
     padding: 1.5rem;
   }
 
-  .cuentas-title {
+  .grupos-title {
     flex-direction: column;
     gap: 1rem;
   }
 
-  .cuentas-title h1 {
+  .grupos-title h1 {
     font-size: 1.5rem;
   }
 
@@ -217,7 +217,7 @@
     justify-content: center;
   }
 
-  .cuentas-content {
+  .grupos-content {
     padding: 1rem;
     max-height: calc(100vh - 250px);
   }
