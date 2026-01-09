@@ -19,12 +19,12 @@
 }
 
 .lista-moderadores::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   border-radius: 10px;
 }
 
 .lista-moderadores::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  background: linear-gradient(135deg, #059669 0%, #1e3a5f 100%);
 }
 
 /* Card de Moderador */
@@ -66,7 +66,7 @@
   width: 56px;
   height: 56px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -128,7 +128,7 @@
 }
 
 .btn-editar {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
 }
 
@@ -172,7 +172,7 @@
 }
 
 .info-icon {
-  color: #10b981;
+  color: #1e3a5f;
   flex-shrink: 0;
 }
 
@@ -190,7 +190,7 @@
 }
 
 .info-value.usuario {
-  color: #10b981;
+  color: #1e3a5f;
 }
 
 /* Footer */

@@ -48,7 +48,7 @@
 }
 
 .mobile-menu-button:hover {
-  border-color: #10b981;
+  border-color: #1e3a5f;
   background: #f7fafc;
 }
 
@@ -67,7 +67,7 @@
 .logo-icon {
   width: 40px;
   height: 40px;
-  color: #10b981;
+  color: #1e3a5f;
   flex-shrink: 0;
 }
 
@@ -117,14 +117,14 @@
 }
 
 .user-icon-button:hover {
-  border-color: #10b981;
+  border-color: #1e3a5f;
   background: #f7fafc;
 }
 
 .user-icon-button svg:first-child {
   width: 18px;
   height: 18px;
-  color: #10b981;
+  color: #1e3a5f;
   flex-shrink: 0;
 }
 
@@ -171,7 +171,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
 }
 
@@ -308,13 +308,13 @@
 }
 
 .nav-item:hover {
-  color: #10b981;
+  color: #1e3a5f;
   background: #f7fafc;
 }
 
 .nav-item.active {
-  color: #10b981;
-  border-bottom-color: #10b981;
+  color: #1e3a5f;
+  border-bottom-color: #1e3a5f;
   background: #ecfdf5;
 }
 
@@ -360,7 +360,7 @@
 }
 
 .submenu::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   border-radius: 3px;
 }
 
@@ -398,8 +398,8 @@
 
 .submenu-item:hover {
   background: #f7fafc;
-  color: #10b981;
-  border-left-color: #10b981;
+  color: #1e3a5f;
+  border-left-color: #1e3a5f;
 }
 
 .submenu-item:first-child {
@@ -492,7 +492,7 @@
 }
 
 .card-icon.purple {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
 }
 
 .card-icon.blue {
@@ -523,7 +523,7 @@
 .card-stat {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #10b981;
+  color: #1e3a5f;
 }
 
 /* ========== COMANDAS DEL DÍA SECTION ========== */
@@ -739,7 +739,7 @@
 .panel-title svg {
   width: 18px;
   height: 18px;
-  color: #10b981;
+  color: #1e3a5f;
 }
 
 /* Badges */
@@ -841,7 +841,7 @@
 
 .btn-small {
   padding: 0.5rem 1rem;
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   border: none;
   border-radius: 6px;
   color: white;
@@ -1047,12 +1047,12 @@
 
   .nav-item:hover {
     background: #f7fafc;
-    border-left-color: #10b981;
+    border-left-color: #1e3a5f;
   }
 
   .nav-item.active {
     background: #ecfdf5;
-    border-left-color: #10b981;
+    border-left-color: #1e3a5f;
     border-bottom: none;
   }
 
@@ -1081,7 +1081,7 @@
 
   .submenu-item:hover {
     background: #edf2f7;
-    border-left-color: #10b981;
+    border-left-color: #1e3a5f;
   }
 
   .submenu-item:first-child,
@@ -1186,7 +1186,7 @@
   margin: 0 auto 1.5rem;
   width: 120px;
   height: 120px;
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1216,7 +1216,7 @@
 .lock-title {
   font-size: 3rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1429,7 +1429,7 @@
 
 .btn-comanda {
   padding: 0.5rem;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #059669 100%);
   border: none;
   border-radius: 6px;
   color: white;

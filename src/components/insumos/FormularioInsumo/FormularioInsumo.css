@@ -51,7 +51,7 @@
 
 /* Header */
 .formulario-header {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
   padding: 1.5rem 2rem;
   display: flex;
@@ -130,12 +130,12 @@
 }
 
 .form-scroll-container::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   border-radius: 10px;
 }
 
 .form-scroll-container::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  background: linear-gradient(135deg, #059669 0%, #1e3a5f 100%);
 }
 
 /* Form Section */
@@ -160,7 +160,7 @@
   color: #1e293b;
   margin: 0 0 0.5rem 0;
   padding-bottom: 0.75rem;
-  border-bottom: 2px solid #10b981;
+  border-bottom: 2px solid #1e3a5f;
 }
 
 .form-row {
@@ -211,7 +211,7 @@
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #10b981;
+  border-color: #1e3a5f;
   box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
 }
 
@@ -246,7 +246,7 @@
   width: 20px;
   height: 20px;
   cursor: pointer;
-  accent-color: #10b981;
+  accent-color: #1e3a5f;
 }
 
 .form-group-checkbox label {
@@ -295,7 +295,7 @@
 }
 
 .btn-guardar {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }

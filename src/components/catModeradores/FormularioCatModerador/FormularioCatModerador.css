@@ -51,7 +51,7 @@
 
 /* Header */
 .cat-moderador-header {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
   padding: 1.5rem 2rem;
   display: flex;
@@ -165,7 +165,7 @@
 .cat-moderador-input:focus,
 .cat-moderador-select:focus {
   outline: none;
-  border-color: #10b981;
+  border-color: #1e3a5f;
   box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
 }
 
@@ -188,7 +188,7 @@
 .cat-moderador-selected-count {
   margin-left: 0.5rem;
   font-size: 0.875rem;
-  color: #10b981;
+  color: #1e3a5f;
   font-weight: 600;
 }
 
@@ -279,7 +279,7 @@
   width: 20px;
   height: 20px;
   cursor: pointer;
-  accent-color: #10b981;
+  accent-color: #1e3a5f;
   flex-shrink: 0;
 }
 
@@ -339,7 +339,7 @@
 }
 
 .btn-guardar {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }

@@ -20,7 +20,7 @@
 }
 
 .formulario-usuario-container::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   border-radius: 10px;
 }
 
@@ -36,7 +36,7 @@
 }
 
 .formulario-usuario-header {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
   padding: 2rem;
   display: flex;
@@ -69,7 +69,7 @@
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 1.5rem;
-  color: #10b981;
+  color: #1e3a5f;
 }
 
 .section-header h3 {
@@ -149,7 +149,7 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #10b981;
+  border-color: #1e3a5f;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
@@ -202,7 +202,7 @@
 }
 
 .btn-guardar {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
 }
 
