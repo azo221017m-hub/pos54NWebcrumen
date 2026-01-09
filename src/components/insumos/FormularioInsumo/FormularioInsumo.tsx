@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import type { Insumo, InsumoCreate } from '../../../types/insumo.types';
-import type { CuentaContable } from '../../../types/cuentaContable.types';
+import type { GrupoMovimientos } from '../../../types/grupoMovimientos.types';
 import type { Proveedor } from '../../../types/proveedor.types';
-import { obtenerCuentasContables } from '../../../services/cuentasContablesService';
+import { obtenerGrupoMovimientos } from '../../../services/grupoMovimientosService';
 import { obtenerProveedores } from '../../../services/proveedoresService';
 import { Save, X, Package } from 'lucide-react';
 import './FormularioInsumo.css';
@@ -54,27 +54,27 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
 
   const [formData, setFormData] = useState(datosIniciales);
   const [errores, setErrores] = useState<Record<string, string>>({});
-  const [cuentasContables, setCuentasContables] = useState<CuentaContable[]>([]);
-  const [cargandoCuentas, setCargandoCuentas] = useState(false);
+  const [gruposMovimiento, setGruposMovimiento] = useState<GrupoMovimientos[]>([]);
+  const [cargandoGrupos, setCargandoGrupos] = useState(false);
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [cargandoProveedores, setCargandoProveedores] = useState(false);
 
-  // Cargar cuentas contables al montar el componente
+  // Cargar grupos de movimiento al montar el componente
   useEffect(() => {
-    const cargarCuentas = async () => {
-      setCargandoCuentas(true);
+    const cargarGrupos = async () => {
+      setCargandoGrupos(true);
       try {
-        const cuentas = await obtenerCuentasContables();
-        setCuentasContables(cuentas);
+        const grupos = await obtenerGrupoMovimientos();
+        setGruposMovimiento(grupos);
       } catch (error) {
-        console.error('Error al cargar cuentas contables:', error);
-        setCuentasContables([]);
+        console.error('Error al cargar grupos de movimiento:', error);
+        setGruposMovimiento([]);
       } finally {
-        setCargandoCuentas(false);
+        setCargandoGrupos(false);
       }
     };
 
-    cargarCuentas();
+    cargarGrupos();
   }, []);
 
   // Cargar proveedores al montar el componente
@@ -309,22 +309,22 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
               </div>
 
               <div className="form-group">
-                <label htmlFor="id_cuentacontable">Cuenta Contable</label>
+                <label htmlFor="id_cuentacontable">Grupo de Movimiento</label>
                 <select
                   id="id_cuentacontable"
                   name="id_cuentacontable"
                   value={formData.id_cuentacontable}
                   onChange={handleChange}
-                  disabled={cargandoCuentas}
+                  disabled={cargandoGrupos}
                 >
-                  <option value="">Seleccione una cuenta</option>
-                  {cuentasContables.map(cuenta => (
-                    <option key={cuenta.id_cuentacontable} value={cuenta.id_cuentacontable}>
-                      {cuenta.nombrecuentacontable}
+                  <option value="">Seleccione un grupo</option>
+                  {gruposMovimiento.map(grupo => (
+                    <option key={grupo.id_cuentacontable} value={grupo.id_cuentacontable}>
+                      {grupo.nombrecuentacontable}
                     </option>
                   ))}
                 </select>
-                {cargandoCuentas && <span className="loading-message">Cargando cuentas...</span>}
+                {cargandoGrupos && <span className="loading-message">Cargando grupos...</span>}
               </div>
             </div>
 

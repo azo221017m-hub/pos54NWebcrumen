@@ -114,7 +114,7 @@ const ListaInsumos: React.FC<Props> = ({ insumos, onEdit, onDelete }) => {
                   )}
                   {insumo.nombrecuentacontable && (
                     <div className="detalle-item">
-                      <span className="detalle-label">Cuenta Contable:</span>
+                      <span className="detalle-label">Grupo de Movimiento:</span>
                       <span className="detalle-value">{insumo.nombrecuentacontable}</span>
                     </div>
                   )}
