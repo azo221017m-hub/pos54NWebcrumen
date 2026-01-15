@@ -1,41 +1,22 @@
 .config-usuarios-page {
-  min-height: 100vh;
-  max-height: 100vh;
+  height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 1.5rem;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-/* Scrollbar personalizado para la página */
-.config-usuarios-page::-webkit-scrollbar {
-  width: 10px;
-}
-
-.config-usuarios-page::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 5px;
-}
-
-.config-usuarios-page::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 5px;
-}
-
-.config-usuarios-page::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .config-usuarios-header {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1.5rem;
   padding: 1rem;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .config-usuarios-header h1 {
@@ -70,6 +51,80 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
+/* Botón nuevo usuario */
+.btn-nuevo-usuario {
+  padding: 0.625rem 1.25rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s;
+  margin-left: auto;
+}
+
+.btn-nuevo-usuario:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-nuevo-usuario:active {
+  transform: translateY(0);
+}
+
+/* Contenedor de contenido fijo */
+.config-usuarios-content {
+  flex: 1;
+  margin-top: 1.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mensajes de alerta */
+.mensaje-alerta {
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  margin-top: 1rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  animation: slideDown 0.3s ease-out;
+  flex-shrink: 0;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mensaje-alerta.success {
+  background: #d1fae5;
+  color: #065f46;
+  border-left: 4px solid #10b981;
+}
+
+.mensaje-alerta.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border-left: 4px solid #ef4444;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .config-usuarios-page {
@@ -79,15 +134,22 @@
   .config-usuarios-header {
     padding: 1rem;
     gap: 1rem;
+    flex-wrap: wrap;
   }
 
   .config-usuarios-header h1 {
     font-size: 1.5rem;
+    flex: 1 1 100%;
+    order: -1;
   }
 
   .btn-back {
     padding: 0.625rem 1.25rem;
     font-size: 0.95rem;
+  }
+
+  .btn-nuevo-usuario {
+    margin-left: auto;
   }
 }
 
@@ -110,5 +172,15 @@
   .btn-back {
     width: 100%;
     justify-content: center;
+  }
+
+  .btn-nuevo-usuario {
+    width: 100%;
+    justify-content: center;
+    margin-left: 0;
+  }
+
+  .config-usuarios-content {
+    margin-top: 1rem;
   }
 }
