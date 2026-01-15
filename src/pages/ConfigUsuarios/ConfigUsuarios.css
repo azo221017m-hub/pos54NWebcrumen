@@ -171,6 +171,7 @@
   flex: 1;
   background: white;
   border-radius: 20px;
+  padding: 2rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   min-height: 0;
@@ -232,6 +233,6 @@
   }
 
   .config-container {
-    padding: 0;
+    padding: 1rem;
   }
 }
