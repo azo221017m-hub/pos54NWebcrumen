@@ -154,10 +154,12 @@ export const ConfigUMCompra: React.FC = () => {
               <p>Administra las unidades de medida de compra</p>
             </div>
           </div>
-          <button className="btn-nuevo" onClick={handleNuevaUnidad}>
-            <Plus size={20} />
-            Nueva Unidad
-          </button>
+          {vista === 'lista' && (
+            <button className="btn-nuevo" onClick={handleNuevaUnidad}>
+              <Plus size={20} />
+              Nueva Unidad
+            </button>
+          )}
         </div>
       </div>
 
