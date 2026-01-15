@@ -2,22 +2,22 @@
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
-  padding: 0;
+  padding: 1rem;
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .formulario-umcompra {
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  overflow: visible; /* Cambiado de hidden a visible */
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   height: 100%;
-  max-height: calc(100vh - 180px); /* Ajustado para dar espacio a los botones */
-  min-height: 500px;
+  flex: 1;
 }
 
 .formulario-umcompra-content {
@@ -25,7 +25,6 @@
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
-  padding-bottom: 1rem; /* Espacio para separar del borde inferior */
 }
 
 /* Scrollbar personalizado para el contenido del formulario */
@@ -174,14 +173,9 @@
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
-  position: sticky;
-  bottom: 0;
-  z-index: 100; /* Aumentado para asegurar visibilidad */
-  border-top: 2px solid #f59e0b;
-  margin-top: 0; /* Cambiado de auto a 0 */
   flex-shrink: 0;
+  border-top: 2px solid #f59e0b;
   box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
-  border-radius: 0 0 12px 12px; /* Mantener el border-radius del formulario */
 }
 
 .btn-cancelar,
