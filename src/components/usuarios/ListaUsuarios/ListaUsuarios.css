@@ -1,9 +1,12 @@
 .lista-usuarios-container {
   width: 100%;
   height: 100%;
+  flex: 1;
   padding: 1rem;
   overflow-y: auto;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Scrollbar personalizado para el contenedor */
@@ -30,6 +33,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
+  flex: 1;
 }
 
 /* Card de usuario */

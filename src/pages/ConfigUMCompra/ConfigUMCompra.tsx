@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, Scale } from 'lucide-react';
 import { ListaUMCompra } from '../../components/umcompra/ListaUMCompra/ListaUMCompra';
 import { FormularioUMCompra } from '../../components/umcompra/FormularioUMCompra/FormularioUMCompra';
 import type { UMCompra, UMCompraFormData } from '../../types/umcompra.types';
@@ -119,32 +119,52 @@ export const ConfigUMCompra: React.FC = () => {
 
   return (
     <div className="config-umcompra-page">
-      {/* Header with back button and new unit button */}
-      <div className="config-umcompra-header">
+      {/* Mensajes */}
+      {mensaje && (
+        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
+          <div className="mensaje-contenido">
+            <span className="mensaje-texto">{mensaje.texto}</span>
+            <button
+              className="mensaje-cerrar"
+              onClick={() => setMensaje(null)}
+              aria-label="Cerrar mensaje"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Header con botones */}
+      <div className="config-header">
         <button 
-          className="btn-back" 
+          className="btn-volver" 
           onClick={() => navigate('/dashboard')}
           title="Volver al Dashboard"
         >
           <ArrowLeft size={20} />
-          Volver
+          Volver al Dashboard
         </button>
-        <h1>Configuración de Unidades de Medida</h1>
-        <button className="btn-nueva-unidad" onClick={handleNuevaUnidad}>
-          <Plus size={20} />
-          Nueva Unidad
-        </button>
+        
+        <div className="config-header-content">
+          <div className="config-title">
+            <Scale size={32} className="config-icon" />
+            <div>
+              <h1>Configuración de Unidades de Medida</h1>
+              <p>Administra las unidades de medida de compra</p>
+            </div>
+          </div>
+          {vista === 'lista' && (
+            <button className="btn-nuevo" onClick={handleNuevaUnidad}>
+              <Plus size={20} />
+              Nueva Unidad
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Messages */}
-      {mensaje && (
-        <div className={`mensaje-alerta ${mensaje.tipo}`}>
-          {mensaje.texto}
-        </div>
-      )}
-
-      {/* Fixed container for content */}
-      <div className="config-umcompra-container">
+      {/* Contenedor fijo sin scroll */}
+      <div className="config-container">
         {vista === 'lista' ? (
           <ListaUMCompra
             unidades={unidades}

@@ -166,34 +166,17 @@
   transform: translateY(0);
 }
 
-/* Contenedor Fijo (sin scroll) */
+/* Contenedor Fijo (sin scroll en el contenedor, scroll en el hijo) */
 .config-container {
   flex: 1;
   background: white;
   border-radius: 20px;
   padding: 2rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  overflow-y: auto;
+  overflow: hidden;
   min-height: 0;
-}
-
-/* Scrollbar personalizada */
-.config-container::-webkit-scrollbar {
-  width: 10px;
-}
-
-.config-container::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 10px;
-}
-
-.config-container::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
-  border-radius: 10px;
-}
-
-.config-container::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #059669 0%, #1e3a5f 100%);
+  display: flex;
+  flex-direction: column;
 }
 
 /* Loading State */

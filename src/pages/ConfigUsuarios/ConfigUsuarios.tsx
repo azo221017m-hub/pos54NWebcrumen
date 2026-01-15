@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, User } from 'lucide-react';
 import { ListaUsuarios } from '../../components/usuarios/ListaUsuarios/ListaUsuarios';
 import { FormularioUsuario } from '../../components/usuarios/FormularioUsuario/FormularioUsuario';
 import type { Usuario, UsuarioFormData } from '../../types/usuario.types';
@@ -121,34 +121,52 @@ export const ConfigUsuarios: React.FC = () => {
 
   return (
     <div className="config-usuarios-page">
-      {/* Header fijo */}
-      <div className="config-usuarios-header">
+      {/* Mensajes */}
+      {mensaje && (
+        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
+          <div className="mensaje-contenido">
+            <span className="mensaje-texto">{mensaje.texto}</span>
+            <button
+              className="mensaje-cerrar"
+              onClick={() => setMensaje(null)}
+              aria-label="Cerrar mensaje"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Header con botones */}
+      <div className="config-header">
         <button 
-          className="btn-back" 
+          className="btn-volver" 
           onClick={() => navigate('/dashboard')}
           title="Volver al Dashboard"
         >
           <ArrowLeft size={20} />
-          Volver
+          Volver al Dashboard
         </button>
-        <h1>Configuración de Usuarios</h1>
-        {vista === 'lista' && (
-          <button className="btn-nuevo-usuario" onClick={handleNuevoUsuario}>
-            <Plus size={20} />
-            Nuevo Usuario
-          </button>
-        )}
+        
+        <div className="config-header-content">
+          <div className="config-title">
+            <User size={32} className="config-icon" />
+            <div>
+              <h1>Configuración de Usuarios</h1>
+              <p>Administra los usuarios del sistema</p>
+            </div>
+          </div>
+          {vista === 'lista' && (
+            <button className="btn-nuevo" onClick={handleNuevoUsuario}>
+              <Plus size={20} />
+              Nuevo Usuario
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Mensajes */}
-      {mensaje && (
-        <div className={`mensaje-alerta ${mensaje.tipo}`}>
-          {mensaje.texto}
-        </div>
-      )}
-
       {/* Contenedor fijo sin scroll */}
-      <div className="config-usuarios-content">
+      <div className="config-container">
         {vista === 'lista' ? (
           <ListaUsuarios
             usuarios={usuarios}
