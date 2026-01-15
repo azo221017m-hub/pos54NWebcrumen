@@ -40,9 +40,15 @@ export const ConfigUMCompra: React.FC = () => {
     cargarUnidades();
   }, [cargarUnidades]);
 
+  useEffect(() => {
+    if (mensaje) {
+      const timer = setTimeout(() => setMensaje(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [mensaje]);
+
   const mostrarMensaje = (tipo: 'success' | 'error', texto: string) => {
     setMensaje({ tipo, texto });
-    setTimeout(() => setMensaje(null), 5000);
   };
 
   const handleNuevaUnidad = () => {
