@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, ChefHat, Loader, ArrowLeft } from 'lucide-react';
-import ListaRecetas from '../ListaRecetas/ListaRecetas';
-import FormularioReceta from '../FormularioReceta/FormularioReceta';
-import type { Receta, RecetaCreate, RecetaUpdate } from '../../../types/receta.types';
-import { obtenerRecetas, crearReceta, actualizarReceta, eliminarReceta } from '../../../services/recetasService';
-import './GestionRecetas.css';
+import ListaRecetas from '../../components/recetas/ListaRecetas/ListaRecetas';
+import FormularioReceta from '../../components/recetas/FormularioReceta/FormularioReceta';
+import type { Receta, RecetaCreate, RecetaUpdate } from '../../types/receta.types';
+import { obtenerRecetas, crearReceta, actualizarReceta, eliminarReceta } from '../../services/recetasService';
+import './ConfigRecetas.css';
 
-const GestionRecetas: React.FC = () => {
+const ConfigRecetas: React.FC = () => {
   const navigate = useNavigate();
   const [recetas, setRecetas] = useState<Receta[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -32,14 +32,14 @@ const GestionRecetas: React.FC = () => {
   }, []);
 
   const cargarRecetas = useCallback(async () => {
-    console.log('🔷 GestionRecetas: Cargando recetas...');
+    console.log('🔷 ConfigRecetas: Cargando recetas...');
     setCargando(true);
     try {
       const data = await obtenerRecetas(idnegocio);
       setRecetas(Array.isArray(data) ? data : []);
-      console.log('🔷 GestionRecetas: Recetas cargadas:', data.length);
+      console.log('🔷 ConfigRecetas: Recetas cargadas:', data.length);
     } catch (error) {
-      console.error('🔴 GestionRecetas: Error al cargar recetas:', error);
+      console.error('🔴 ConfigRecetas: Error al cargar recetas:', error);
       mostrarMensaje('error', 'Error al cargar las recetas');
       setRecetas([]);
     } finally {
@@ -117,12 +117,8 @@ const GestionRecetas: React.FC = () => {
     setRecetaEditar(null);
   };
 
-  const handleRegresar = () => {
-    navigate('/dashboard');
-  };
-
   return (
-    <div className="gestion-recetas">
+    <div className="config-recetas-page">
       {/* Mensaje de Notificación */}
       {mensaje && (
         <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
@@ -139,17 +135,16 @@ const GestionRecetas: React.FC = () => {
         </div>
       )}
 
-      <div className="recetas-header">
-        <div className="recetas-header-top">
-          <button onClick={handleRegresar} className="btn-regresar" title="Regresar al Dashboard">
-            <ArrowLeft size={20} />
-            Regresar
-          </button>
-        </div>
+      {/* Header con botones */}
+      <div className="config-header">
+        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
+          <ArrowLeft size={20} />
+          Volver al Dashboard
+        </button>
         
-        <div className="recetas-header-content">
-          <div className="recetas-title">
-            <ChefHat size={32} className="recetas-icon" />
+        <div className="config-header-content">
+          <div className="config-title">
+            <ChefHat size={32} className="config-icon" />
             <div>
               <h1>Gestión de Recetas</h1>
               <p>{recetas.length} receta{recetas.length !== 1 ? 's' : ''} registrada{recetas.length !== 1 ? 's' : ''}</p>
@@ -162,9 +157,10 @@ const GestionRecetas: React.FC = () => {
         </div>
       </div>
 
-      <div className="recetas-content">
+      {/* Contenedor fijo con Lista */}
+      <div className="config-container">
         {cargando ? (
-          <div className="recetas-cargando">
+          <div className="config-cargando">
             <Loader className="spinner" size={48} />
             <p>Cargando recetas...</p>
           </div>
@@ -177,6 +173,7 @@ const GestionRecetas: React.FC = () => {
         )}
       </div>
 
+      {/* Formulario Modal */}
       {mostrarFormulario && (
         <FormularioReceta
           receta={recetaEditar}
@@ -189,4 +186,4 @@ const GestionRecetas: React.FC = () => {
   );
 };
 
-export default GestionRecetas;
+export default ConfigRecetas;

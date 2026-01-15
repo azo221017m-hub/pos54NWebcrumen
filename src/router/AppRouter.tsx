@@ -2,22 +2,22 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import LandingPage from '../pages/LandingPage';
 import LoginPage from '../pages/LoginPage';
 import DashboardPage from '../pages/DashboardPage';
-import { ConfigNegocios } from '../pages/ConfigNegocios/ConfigNegocios';
-import { ConfigRolUsuarios } from '../pages/ConfigRolUsuarios/ConfigRolUsuarios';
+import ConfigNegocios from '../pages/ConfigNegocios/ConfigNegocios';
+import ConfigRolUsuarios from '../pages/ConfigRolUsuarios/ConfigRolUsuarios';
 import { ConfigUsuarios } from '../pages/ConfigUsuarios/ConfigUsuarios';
 import { ConfigUMCompra } from '../pages/ConfigUMCompra/ConfigUMCompra';
 import ConfigMesas from '../pages/ConfigMesas/ConfigMesas';
 import ConfigDescuentos from '../pages/ConfigDescuentos/ConfigDescuentos';
-import { ConfigInsumos } from '../pages/ConfigInsumos/ConfigInsumos';
-import { ConfigClientes } from '../pages/ConfigClientes/ConfigClientes';
+import ConfigInsumos from '../pages/ConfigInsumos/ConfigInsumos';
+import ConfigClientes from '../pages/ConfigClientes/ConfigClientes';
 import ConfigGrupoMovimientos from '../pages/ConfigGrupoMovimientos/ConfigGrupoMovimientos';
 import ConfigModeradores from '../pages/ConfigModeradores/ConfigModeradores';
 import ConfigSubreceta from '../pages/ConfigSubreceta/ConfigSubreceta';
 import ConfigCategorias from '../pages/ConfigCategorias/ConfigCategorias';
-import GestionRecetas from '../components/recetas/GestionRecetas/GestionRecetas';
-import GestionCatModeradores from '../components/catModeradores/GestionCatModeradores/GestionCatModeradores';
-import GestionProductosWeb from '../components/productosWeb/GestionProductosWeb/GestionProductosWeb';
-import { ConfigProveedores } from '../pages/ConfigProveedores/ConfigProveedores';
+import ConfigRecetas from '../pages/ConfigRecetas/ConfigRecetas';
+import ConfigCatModeradores from '../pages/ConfigCatModeradores/ConfigCatModeradores';
+import ConfigProductosWeb from '../pages/ConfigProductosWeb/ConfigProductosWeb';
+import ConfigProveedores from '../pages/ConfigProveedores/ConfigProveedores';
 import PageVentas from '../pages/PageVentas/PageVentas';
 
 const router = createBrowserRouter([
@@ -79,7 +79,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/config-recetas',
-    element: <GestionRecetas />,
+    element: <ConfigRecetas />,
   },
   {
     path: '/config-categorias',
@@ -87,11 +87,11 @@ const router = createBrowserRouter([
   },
   {
     path: '/config-cat-moderadores',
-    element: <GestionCatModeradores />,
+    element: <ConfigCatModeradores />,
   },
   {
     path: '/config-productos',
-    element: <GestionProductosWeb />,
+    element: <ConfigProductosWeb />,
   },
   {
     path: '/config-proveedores',

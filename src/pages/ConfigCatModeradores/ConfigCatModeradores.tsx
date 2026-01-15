@@ -1,36 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Users } from 'lucide-react';
-import type { CatModerador, CatModeradorCreate, CatModeradorUpdate } from '../../../types/catModerador.types';
-import { obtenerCatModeradores, crearCatModerador, actualizarCatModerador, eliminarCatModerador } from '../../../services/catModeradoresService';
-import ListaCatModeradores from '../ListaCatModeradores/ListaCatModeradores';
-import FormularioCatModerador from '../FormularioCatModerador/FormularioCatModerador';
-import './GestionCatModeradores.css';
+import { ArrowLeft, Plus, Users, Loader } from 'lucide-react';
+import type { CatModerador, CatModeradorCreate, CatModeradorUpdate } from '../../types/catModerador.types';
+import { obtenerCatModeradores, crearCatModerador, actualizarCatModerador, eliminarCatModerador } from '../../services/catModeradoresService';
+import ListaCatModeradores from '../../components/catModeradores/ListaCatModeradores/ListaCatModeradores';
+import FormularioCatModerador from '../../components/catModeradores/FormularioCatModerador/FormularioCatModerador';
+import './ConfigCatModeradores.css';
 
-const GestionCatModeradores: React.FC = () => {
+const ConfigCatModeradores: React.FC = () => {
   const navigate = useNavigate();
   const [catModeradores, setCatModeradores] = useState<CatModerador[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [catModeradorSeleccionada, setCatModeradorSeleccionada] = useState<CatModerador | null>(null);
+  const [mensaje, setMensaje] = useState<{
+    tipo: 'success' | 'error' | 'info';
+    texto: string;
+  } | null>(null);
+
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
 
-  const cargarCatModeradores = async () => {
+  const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
+    setMensaje({ tipo, texto });
+    setTimeout(() => setMensaje(null), 4000);
+  }, []);
+
+  const cargarCatModeradores = useCallback(async () => {
     try {
       setCargando(true);
       const data = await obtenerCatModeradores();
       setCatModeradores(data);
     } catch (error) {
       console.error('Error al cargar categorías moderador:', error);
-      alert('Error al cargar las categorías moderador');
+      mostrarMensaje('error', 'Error al cargar las categorías moderador');
     } finally {
       setCargando(false);
     }
-  };
+  }, [mostrarMensaje]);
 
   useEffect(() => {
     cargarCatModeradores();
-  }, []);
+  }, [cargarCatModeradores]);
 
   const handleNuevo = () => {
     setCatModeradorSeleccionada(null);
@@ -49,11 +59,11 @@ const GestionCatModeradores: React.FC = () => {
 
     try {
       await eliminarCatModerador(id);
-      alert('Categoría moderador eliminada exitosamente');
+      mostrarMensaje('success', 'Categoría moderador eliminada exitosamente');
       cargarCatModeradores();
     } catch (error) {
       console.error('Error al eliminar categoría moderador:', error);
-      alert('Error al eliminar la categoría moderador');
+      mostrarMensaje('error', 'Error al eliminar la categoría moderador');
     }
   };
 
@@ -61,17 +71,17 @@ const GestionCatModeradores: React.FC = () => {
     try {
       if ('idmodref' in data) {
         await actualizarCatModerador(data);
-        alert('Categoría moderador actualizada exitosamente');
+        mostrarMensaje('success', 'Categoría moderador actualizada exitosamente');
       } else {
         await crearCatModerador(data);
-        alert('Categoría moderador creada exitosamente');
+        mostrarMensaje('success', 'Categoría moderador creada exitosamente');
       }
       setMostrarFormulario(false);
       setCatModeradorSeleccionada(null);
       cargarCatModeradores();
     } catch (error) {
       console.error('Error al guardar categoría moderador:', error);
-      alert('Error al guardar la categoría moderador');
+      mostrarMensaje('error', 'Error al guardar la categoría moderador');
     }
   };
 
@@ -80,23 +90,34 @@ const GestionCatModeradores: React.FC = () => {
     setCatModeradorSeleccionada(null);
   };
 
-  const handleRegresar = () => {
-    navigate('/dashboard');
-  };
-
   return (
-    <div className="gestion-cat-moderadores">
-      <div className="cat-moderadores-header">
-        <div className="cat-moderadores-header-top">
-          <button onClick={handleRegresar} className="btn-regresar" title="Regresar al Dashboard">
-            <ArrowLeft size={20} />
-            Regresar
-          </button>
+    <div className="config-cat-moderadores-page">
+      {/* Mensaje de Notificación */}
+      {mensaje && (
+        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
+          <div className="mensaje-contenido">
+            <span className="mensaje-texto">{mensaje.texto}</span>
+            <button
+              className="mensaje-cerrar"
+              onClick={() => setMensaje(null)}
+              aria-label="Cerrar mensaje"
+            >
+              ×
+            </button>
+          </div>
         </div>
+      )}
+
+      {/* Header con botones */}
+      <div className="config-header">
+        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
+          <ArrowLeft size={20} />
+          Volver al Dashboard
+        </button>
         
-        <div className="cat-moderadores-header-content">
-          <div className="cat-moderadores-title">
-            <Users size={32} className="cat-moderadores-icon" />
+        <div className="config-header-content">
+          <div className="config-title">
+            <Users size={32} className="config-icon" />
             <div>
               <h1>Categoría Moderadores</h1>
               <p>Gestión de categorías de moderadores</p>
@@ -109,10 +130,11 @@ const GestionCatModeradores: React.FC = () => {
         </div>
       </div>
 
-      <div className="cat-moderadores-content">
+      {/* Contenedor fijo con Lista */}
+      <div className="config-container">
         {cargando ? (
-          <div className="cat-moderadores-cargando">
-            <div className="spinner"></div>
+          <div className="config-cargando">
+            <Loader className="spinner" size={48} />
             <p>Cargando categorías moderador...</p>
           </div>
         ) : (
@@ -124,6 +146,7 @@ const GestionCatModeradores: React.FC = () => {
         )}
       </div>
 
+      {/* Formulario Modal */}
       {mostrarFormulario && (
         <FormularioCatModerador
           catModerador={catModeradorSeleccionada}
@@ -136,4 +159,4 @@ const GestionCatModeradores: React.FC = () => {
   );
 };
 
-export default GestionCatModeradores;
+export default ConfigCatModeradores;

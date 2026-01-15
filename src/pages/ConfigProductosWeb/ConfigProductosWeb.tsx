@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Package, Loader } from 'lucide-react';
-import type { ProductoWeb, ProductoWebCreate, ProductoWebUpdate } from '../../../types/productoWeb.types';
+import type { ProductoWeb, ProductoWebCreate, ProductoWebUpdate } from '../../types/productoWeb.types';
 import {
   obtenerProductosWeb,
   crearProductoWeb,
   actualizarProductoWeb,
   eliminarProductoWeb
-} from '../../../services/productosWebService';
-import ListaProductosWeb from '../ListaProductosWeb/ListaProductosWeb';
-import FormularioProductoWeb from '../FormularioProductoWeb/FormularioProductoWeb';
-import './GestionProductosWeb.css';
+} from '../../services/productosWebService';
+import ListaProductosWeb from '../../components/productosWeb/ListaProductosWeb/ListaProductosWeb';
+import FormularioProductoWeb from '../../components/productosWeb/FormularioProductoWeb/FormularioProductoWeb';
+import './ConfigProductosWeb.css';
 
-const GestionProductosWeb: React.FC = () => {
+const ConfigProductosWeb: React.FC = () => {
   const navigate = useNavigate();
   const [productos, setProductos] = useState<ProductoWeb[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -121,12 +121,8 @@ const GestionProductosWeb: React.FC = () => {
     setProductoSeleccionado(null);
   };
 
-  const handleRegresar = () => {
-    navigate('/dashboard');
-  };
-
   return (
-    <div className="gestion-productos-web">
+    <div className="config-productos-web-page">
       {/* Mensaje de Notificación */}
       {mensaje && (
         <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
@@ -143,17 +139,16 @@ const GestionProductosWeb: React.FC = () => {
         </div>
       )}
 
-      <div className="productos-header">
-        <div className="productos-header-top">
-          <button onClick={handleRegresar} className="btn-regresar" title="Regresar al Dashboard">
-            <ArrowLeft size={20} />
-            Regresar
-          </button>
-        </div>
+      {/* Header con botones */}
+      <div className="config-header">
+        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
+          <ArrowLeft size={20} />
+          Volver al Dashboard
+        </button>
         
-        <div className="productos-header-content">
-          <div className="productos-title">
-            <Package size={32} className="productos-icon" />
+        <div className="config-header-content">
+          <div className="config-title">
+            <Package size={32} className="config-icon" />
             <div>
               <h1>Gestión de Productos</h1>
               <p>Administra los productos del sistema</p>
@@ -166,9 +161,10 @@ const GestionProductosWeb: React.FC = () => {
         </div>
       </div>
 
-      <div className="productos-content">
+      {/* Contenedor fijo con Lista */}
+      <div className="config-container">
         {cargando ? (
-          <div className="productos-cargando">
+          <div className="config-cargando">
             <Loader className="spinner" size={48} />
             <p>Cargando productos...</p>
           </div>
@@ -181,6 +177,7 @@ const GestionProductosWeb: React.FC = () => {
         )}
       </div>
 
+      {/* Formulario Modal */}
       {mostrarFormulario && (
         <FormularioProductoWeb
           productoEditar={productoSeleccionado}
@@ -194,4 +191,4 @@ const GestionProductosWeb: React.FC = () => {
   );
 };
 
-export default GestionProductosWeb;
+export default ConfigProductosWeb;
