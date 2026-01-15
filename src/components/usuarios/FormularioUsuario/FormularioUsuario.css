@@ -1,10 +1,7 @@
 .formulario-usuario-container {
   width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
+  height: 100%;
   padding: 1rem;
-  padding-bottom: 2rem;
-  max-height: calc(100vh - 40px);
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -33,6 +30,8 @@
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow: visible;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .formulario-usuario-header {
