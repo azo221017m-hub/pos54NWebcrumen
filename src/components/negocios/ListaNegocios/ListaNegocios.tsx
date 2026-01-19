@@ -11,12 +11,12 @@ interface ListaNegociosProps {
 
 export const ListaNegocios = ({ negocios, onEditar, onEliminar, loading }: ListaNegociosProps) => {
   // Helper function to validate if logotipo is a valid image data URI
-  const isValidImageDataUri = (logotipo: string | null | undefined): boolean => {
+  const isValidImageDataUri = (logotipo: string | null | undefined): logotipo is string => {
     if (!logotipo || typeof logotipo !== 'string') {
       return false;
     }
-    // Check if it's a valid data URI starting with data:image/
-    return logotipo.trim().startsWith('data:image/');
+    // Check if it's a valid Base64 data URI with proper format
+    return /^data:image\/[a-zA-Z]+;base64,/.test(logotipo.trim());
   };
 
   if (loading) {
@@ -45,7 +45,7 @@ export const ListaNegocios = ({ negocios, onEditar, onEliminar, loading }: Lista
           <div className="card-header">
             <div className="card-logo">
               {isValidImageDataUri(negocio.logotipo) ? (
-                <img src={negocio.logotipo!} alt={negocio.nombreNegocio} />
+                <img src={negocio.logotipo} alt={negocio.nombreNegocio} />
               ) : (
                 <Building2 size={40} />
               )}
