@@ -16,7 +16,8 @@ export const ListaNegocios = ({ negocios, onEditar, onEliminar, loading }: Lista
       return false;
     }
     // Check if it's a valid Base64 data URI with proper format
-    return /^data:image\/[a-zA-Z]+;base64,/.test(logotipo.trim());
+    // Supports common image types: jpeg, jpg, png, gif, webp, bmp, svg+xml
+    return /^data:image\/(jpeg|jpg|png|gif|webp|bmp|svg\+xml);base64,/.test(logotipo.trim());
   };
 
   if (loading) {
