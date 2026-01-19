@@ -39,7 +39,7 @@ export const LandingPage = () => {
     <div className="landing-page">
       <div className="landing-content">
         <div className="logo-container">
-          <div className="logo-circle">
+          <div >
             <img src="/logoposcrumen.svg" alt="" className="logo-svg" />
           </div>
           <h1 className="logo-text">POS Crumen</h1>
