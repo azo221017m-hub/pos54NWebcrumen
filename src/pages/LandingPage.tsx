@@ -42,7 +42,6 @@ export const LandingPage = () => {
           <div >
             <img src="/logoposcrumen.svg" alt="" className="logo-svg" />
           </div>
-          <h1 className="logo-text">POS Crumen</h1>
         </div>
 
         <div className={`phrase-container ${fadeIn ? 'fade-in' : 'fade-out'}`}>
