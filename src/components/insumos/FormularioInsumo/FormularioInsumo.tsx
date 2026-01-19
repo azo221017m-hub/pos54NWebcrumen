@@ -166,18 +166,19 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
   };
 
   return (
-    <div className="formulario-insumo-container">
-      <div className="formulario-header">
-        <div className="header-icon">
-          <Package size={28} />
+    <div className="formulario-insumo-overlay" onClick={onCancel}>
+      <div className="formulario-insumo-container" onClick={(e) => e.stopPropagation()}>
+        <div className="formulario-header">
+          <div className="header-icon">
+            <Package size={28} />
+          </div>
+          <div>
+            <h2>{insumoEditar ? 'Editar Insumo' : 'Nuevo Insumo'}</h2>
+            <p>Complete los datos del insumo</p>
+          </div>
         </div>
-        <div>
-          <h2>{insumoEditar ? 'Editar Insumo' : 'Nuevo Insumo'}</h2>
-          <p>Complete los datos del insumo</p>
-        </div>
-      </div>
 
-      <form onSubmit={handleSubmit} className="formulario-insumo">
+        <form onSubmit={handleSubmit} className="formulario-insumo">
         <div className="form-scroll-container">
           {/* Información Básica */}
           <div className="form-section">
@@ -401,6 +402,7 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
           </button>
         </div>
       </form>
+      </div>
     </div>
   );
 };
