@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import AppRouter from './router/AppRouter';
+import UpdateNotification from './components/UpdateNotification';
 import { initSessionMonitoring, setupSessionClearOnReload } from './services/sessionService';
 import { setupActivityTracking } from './services/activityRefreshService';
 import './App.css';
@@ -35,6 +36,7 @@ function App() {
   return (
     <>
       <AppRouter />
+      <UpdateNotification />
     </>
   );
 }
