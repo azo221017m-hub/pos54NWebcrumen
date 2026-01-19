@@ -69,10 +69,15 @@ export const registerSWWithUpdate = (
         console.log('✅ Service Worker registrado exitosamente');
         
         // Verificar actualizaciones periódicamente (cada hora)
-        setInterval(() => {
+        // Guardar el ID del intervalo para poder limpiarlo si es necesario
+        const intervalId = setInterval(() => {
           console.log('🔍 Verificando actualizaciones del service worker...');
           registration.update();
         }, 60 * 60 * 1000); // 1 hora
+
+        // Almacenar el ID del intervalo en una propiedad del objeto workbox
+        // para permitir limpieza externa si es necesario
+        (wb as any).updateCheckIntervalId = intervalId;
       }
     })
     .catch((error) => {
@@ -145,7 +150,7 @@ export const setupPromptUpdate = (
 
 /**
  * Limpia el cache del service worker (útil al hacer logout)
- * Esta función ya existe en sessionService, pero la incluimos aquí también
+ * Esta función delega a la función equivalente en sessionService para evitar duplicación
  */
 export const clearSWCache = async (): Promise<void> => {
   try {
@@ -161,11 +166,25 @@ export const clearSWCache = async (): Promise<void> => {
   }
 };
 
+/**
+ * Limpia el intervalo de verificación de actualizaciones
+ * Útil para evitar memory leaks si se necesita desmontar el SW
+ * 
+ * @param workbox - Instancia de Workbox con el intervalo almacenado
+ */
+export const clearUpdateCheckInterval = (workbox: Workbox | null): void => {
+  if (workbox && (workbox as any).updateCheckIntervalId) {
+    clearInterval((workbox as any).updateCheckIntervalId);
+    console.log('🧹 Intervalo de verificación de actualizaciones limpiado');
+  }
+};
+
 export default {
   registerSWWithUpdate,
   applyUpdate,
   refreshPage,
   setupAutoUpdate,
   setupPromptUpdate,
-  clearSWCache
+  clearSWCache,
+  clearUpdateCheckInterval
 };

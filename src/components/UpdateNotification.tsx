@@ -15,10 +15,9 @@ const UpdateNotification = () => {
   useEffect(() => {
     // Escuchar el evento personalizado de actualización disponible
     const handleUpdateAvailable = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      const workbox = customEvent.detail?.workbox;
-      
-      if (workbox) {
+      // Verificar que el evento es un CustomEvent con el detalle esperado
+      if (event instanceof CustomEvent && event.detail?.workbox) {
+        const workbox = event.detail.workbox;
         console.log('🔔 Mostrando notificación de actualización');
         setPendingWorkbox(workbox);
         setShowNotification(true);
