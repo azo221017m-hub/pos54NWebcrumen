@@ -10,6 +10,15 @@ interface ListaNegociosProps {
 }
 
 export const ListaNegocios = ({ negocios, onEditar, onEliminar, loading }: ListaNegociosProps) => {
+  // Helper function to validate if logotipo is a valid image data URI
+  const isValidImageDataUri = (logotipo: string | null | undefined): boolean => {
+    if (!logotipo || typeof logotipo !== 'string') {
+      return false;
+    }
+    // Check if it's a valid data URI starting with data:image/
+    return logotipo.trim().startsWith('data:image/');
+  };
+
   if (loading) {
     return (
       <div className="lista-loading">
@@ -35,8 +44,8 @@ export const ListaNegocios = ({ negocios, onEditar, onEliminar, loading }: Lista
         <div key={negocio.idNegocio} className="negocio-card">
           <div className="card-header">
             <div className="card-logo">
-              {negocio.logotipo ? (
-                <img src={negocio.logotipo} alt={negocio.nombreNegocio} />
+              {isValidImageDataUri(negocio.logotipo) ? (
+                <img src={negocio.logotipo!} alt={negocio.nombreNegocio} />
               ) : (
                 <Building2 size={40} />
               )}
