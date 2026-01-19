@@ -40,11 +40,7 @@ export const LandingPage = () => {
       <div className="landing-content">
         <div className="logo-container">
           <div className="logo-circle">
-            <svg viewBox="0 0 100 100" className="logo-svg">
-              <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="2"/>
-              <path d="M 30 50 L 45 35 L 70 60 L 45 65 Z" fill="currentColor"/>
-              <circle cx="50" cy="50" r="8" fill="currentColor"/>
-            </svg>
+            <img src="/logoposcrumen.svg" alt="" className="logo-svg" />
           </div>
           <h1 className="logo-text">POS Crumen</h1>
         </div>
