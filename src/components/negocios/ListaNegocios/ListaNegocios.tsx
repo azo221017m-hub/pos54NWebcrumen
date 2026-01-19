@@ -15,8 +15,8 @@ const isValidImageDataUri = (logotipo: string | null | undefined): logotipo is s
     return false;
   }
   // Check if it's a valid Base64 data URI with proper format
-  // Supports common image types: jpeg, jpg, png, gif, webp, bmp, svg+xml
-  return /^data:image\/(jpeg|jpg|png|gif|webp|bmp|svg[+]xml);base64,/.test(logotipo.trim());
+  // Supports common image types: jpeg, png, gif, webp, bmp, svg+xml
+  return /^data:image\/(jpeg|png|gif|webp|bmp|svg\+xml);base64,/.test(logotipo.trim());
 };
 
 export const ListaNegocios = ({ negocios, onEditar, onEliminar, loading }: ListaNegociosProps) => {
