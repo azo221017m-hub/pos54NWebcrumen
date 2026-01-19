@@ -73,8 +73,8 @@
 }
 
 .logo-svg {
-  width: 350px;
-  height: 350px;
+  width: 420px;
+  height: 420px;
   color: white;
 }
 
@@ -84,6 +84,7 @@
   margin: 0;
   letter-spacing: -0.025em;
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  display: none; /* Hidden - not used anymore */
 }
 
 .phrase-container {
