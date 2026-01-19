@@ -10,3 +10,8 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+
+// Declaración del evento personalizado de actualización de Service Worker
+interface WindowEventMap {
+  swUpdateAvailable: CustomEvent<{ workbox: import('workbox-window').Workbox }>;
+}

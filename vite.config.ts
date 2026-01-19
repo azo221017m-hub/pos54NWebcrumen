@@ -7,7 +7,8 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
+      injectRegister: null, // No inyectar automáticamente, lo haremos manualmente
       includeAssets: ['vite.svg', 'logocrumenpos.svg', 'logowebposcrumen.svg'],
       manifest: {
         name: 'POS54N Web Crumen - Sistema POS y Comanda Digital',
@@ -40,6 +41,11 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         // Exclude API endpoints from caching to always fetch fresh data
         navigateFallbackDenylist: [/^\/api/],
+        // Configuración de auto-actualización
+        skipWaiting: false, // No activar inmediatamente, esperar la señal del frontend
+        clientsClaim: true, // Tomar control de las páginas abiertas después de activarse
+        // Limpiar caches antiguos automáticamente
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
             // Network-first strategy for API calls - always try to fetch from network first
