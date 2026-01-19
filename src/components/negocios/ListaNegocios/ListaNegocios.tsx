@@ -20,7 +20,6 @@ const isValidImageDataUri = (logotipo: string | null | undefined): logotipo is s
 };
 
 export const ListaNegocios = ({ negocios, onEditar, onEliminar, loading }: ListaNegociosProps) => {
-
   if (loading) {
     return (
       <div className="lista-loading">
