@@ -4,6 +4,11 @@ import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
 // Helper function to detect image MIME type from buffer
 const detectImageMimeType = (buffer: Buffer): string => {
+  // Validate buffer has sufficient length
+  if (!buffer || buffer.length < 4) {
+    return 'image/png';
+  }
+  
   // Check the magic bytes (file signature) to detect image type
   const magicBytes = buffer.slice(0, 4);
   
@@ -24,6 +29,10 @@ const detectImageMimeType = (buffer: Buffer): string => {
   
   // WebP: 52 49 46 46 (RIFF) - need to check further bytes
   if (magicBytes[0] === 0x52 && magicBytes[1] === 0x49 && magicBytes[2] === 0x46 && magicBytes[3] === 0x46) {
+    // Validate buffer has sufficient length for WebP detection
+    if (buffer.length < 12) {
+      return 'image/png';
+    }
     const webpCheck = buffer.slice(8, 12);
     if (webpCheck[0] === 0x57 && webpCheck[1] === 0x45 && webpCheck[2] === 0x42 && webpCheck[3] === 0x50) {
       return 'image/webp';
@@ -39,6 +48,16 @@ const detectImageMimeType = (buffer: Buffer): string => {
   return 'image/png';
 };
 
+// Helper function to convert logotipo Buffer to Base64 data URI
+const convertLogotipoToDataUri = (logotipo: Buffer | null | undefined): string | null => {
+  if (!logotipo) {
+    return null;
+  }
+  const buffer = logotipo as Buffer;
+  const mimeType = detectImageMimeType(buffer);
+  return `data:${mimeType};base64,${buffer.toString('base64')}`;
+};
+
 // Obtener todos los negocios
 export const obtenerNegocios = async (_req: Request, res: Response): Promise<void> => {
   try {
@@ -49,11 +68,7 @@ export const obtenerNegocios = async (_req: Request, res: Response): Promise<voi
     // Convert logotipo Buffer to Base64 string for frontend consumption
     const negociosConLogotipo = (negocios as any[]).map(negocio => ({
       ...negocio,
-      logotipo: negocio.logotipo ? (() => {
-        const buffer = negocio.logotipo as Buffer;
-        const mimeType = detectImageMimeType(buffer);
-        return `data:${mimeType};base64,${buffer.toString('base64')}`;
-      })() : null
+      logotipo: convertLogotipoToDataUri(negocio.logotipo)
     }));
 
     res.json({
@@ -100,11 +115,7 @@ export const obtenerNegocioPorId = async (req: Request, res: Response): Promise<
     const negocio = negocios[0];
     const negocioConLogotipo = {
       ...negocio,
-      logotipo: negocio.logotipo ? (() => {
-        const buffer = negocio.logotipo as Buffer;
-        const mimeType = detectImageMimeType(buffer);
-        return `data:${mimeType};base64,${buffer.toString('base64')}`;
-      })() : null
+      logotipo: convertLogotipoToDataUri(negocio.logotipo)
     };
 
     res.json({
