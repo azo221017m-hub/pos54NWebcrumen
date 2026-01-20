@@ -59,6 +59,24 @@ const convertLogotipoToDataUri = (logotipo: Buffer | null | undefined): string |
   return `data:${mimeType};base64,${logotipo.toString('base64')}`;
 };
 
+// Helper function to convert Base64 data URI to Buffer for database storage
+const convertDataUriToBuffer = (dataUri: string | null | undefined): Buffer | null => {
+  if (!dataUri || typeof dataUri !== 'string') {
+    return null;
+  }
+  
+  // Check if it's a valid Base64 data URI
+  const matches = dataUri.match(/^data:image\/[a-zA-Z+\-]+;base64,(.+)$/);
+  if (!matches || !matches[1]) {
+    // Not a data URI, might already be a Buffer or invalid data
+    return null;
+  }
+  
+  // Extract the base64 part and convert to Buffer
+  const base64Data = matches[1];
+  return Buffer.from(base64Data, 'base64');
+};
+
 // Obtener todos los negocios
 export const obtenerNegocios = async (_req: Request, res: Response): Promise<void> => {
   try {
@@ -175,7 +193,7 @@ export const crearNegocio = async (req: Request, res: Response): Promise<void> =
           negocio.rfcnegocio,
           negocio.direccionfiscalnegocio,
           negocio.contactonegocio,
-          negocio.logotipo || null,
+          convertDataUriToBuffer(negocio.logotipo),
           negocio.telefonocontacto,
           negocio.estatusnegocio,
           negocio.usuarioauditoria || 'sistema',
@@ -284,7 +302,7 @@ export const actualizarNegocio = async (req: Request, res: Response): Promise<vo
           negocio.rfcnegocio,
           negocio.direccionfiscalnegocio,
           negocio.contactonegocio,
-          negocio.logotipo || null,
+          convertDataUriToBuffer(negocio.logotipo),
           negocio.telefonocontacto,
           negocio.estatusnegocio,
           negocio.usuarioauditoria || 'sistema',
@@ -429,7 +447,7 @@ export const subirLogotipo = async (req: Request, res: Response): Promise<void> 
 
     await pool.execute(
       'UPDATE tblposcrumenwebnegocio SET logotipo = ?, fehamodificacionauditoria = NOW() WHERE idNegocio = ?',
-      [logotipo, id]
+      [convertDataUriToBuffer(logotipo), id]
     );
 
     res.json({
