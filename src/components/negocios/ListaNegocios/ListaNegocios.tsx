@@ -9,6 +9,16 @@ interface ListaNegociosProps {
   loading?: boolean;
 }
 
+// Helper function to validate if logotipo is a valid image data URI
+const isValidImageDataUri = (logotipo: string | null | undefined): logotipo is string => {
+  if (!logotipo || typeof logotipo !== 'string') {
+    return false;
+  }
+  // Check if it's a valid Base64 data URI with proper format
+  // Supports common image types: jpeg, png, gif, webp, bmp, svg+xml
+  return /^data:image\/(jpeg|png|gif|webp|bmp|svg\+xml);base64,/.test(logotipo.trim());
+};
+
 export const ListaNegocios = ({ negocios, onEditar, onEliminar, loading }: ListaNegociosProps) => {
   if (loading) {
     return (
@@ -35,7 +45,7 @@ export const ListaNegocios = ({ negocios, onEditar, onEliminar, loading }: Lista
         <div key={negocio.idNegocio} className="negocio-card">
           <div className="card-header">
             <div className="card-logo">
-              {negocio.logotipo ? (
+              {isValidImageDataUri(negocio.logotipo) ? (
                 <img src={negocio.logotipo} alt={negocio.nombreNegocio} />
               ) : (
                 <Building2 size={40} />
