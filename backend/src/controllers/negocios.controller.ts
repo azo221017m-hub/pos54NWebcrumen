@@ -2,6 +2,63 @@ import { Request, Response } from 'express';
 import { pool } from '../config/db';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
+// Helper function to detect image MIME type from buffer
+const detectImageMimeType = (buffer: Buffer): string => {
+  // Validate buffer has sufficient length
+  if (!buffer || buffer.length < 4) {
+    return 'image/png';
+  }
+  
+  // Check the magic bytes (file signature) to detect image type
+  const magicBytes = buffer.slice(0, 4);
+  
+  // PNG: 89 50 4E 47
+  if (magicBytes[0] === 0x89 && magicBytes[1] === 0x50 && magicBytes[2] === 0x4E && magicBytes[3] === 0x47) {
+    return 'image/png';
+  }
+  
+  // JPEG: FF D8 FF
+  if (magicBytes[0] === 0xFF && magicBytes[1] === 0xD8 && magicBytes[2] === 0xFF) {
+    return 'image/jpeg';
+  }
+  
+  // GIF: 47 49 46 38 (GIF8)
+  if (magicBytes[0] === 0x47 && magicBytes[1] === 0x49 && magicBytes[2] === 0x46 && magicBytes[3] === 0x38) {
+    return 'image/gif';
+  }
+  
+  // WebP: 52 49 46 46 (RIFF) - need to check further bytes for WEBP signature
+  if (magicBytes[0] === 0x52 && magicBytes[1] === 0x49 && magicBytes[2] === 0x46 && magicBytes[3] === 0x46) {
+    // Validate buffer has sufficient length for WebP detection
+    if (buffer.length >= 12) {
+      const webpCheck = buffer.slice(8, 12);
+      if (webpCheck[0] === 0x57 && webpCheck[1] === 0x45 && webpCheck[2] === 0x42 && webpCheck[3] === 0x50) {
+        return 'image/webp';
+      }
+    }
+    // RIFF container detected but not WebP - could be AVI, WAV, etc.
+    // Default to PNG for safety as this is not an image format we support
+    return 'image/png';
+  }
+  
+  // BMP: 42 4D
+  if (magicBytes[0] === 0x42 && magicBytes[1] === 0x4D) {
+    return 'image/bmp';
+  }
+  
+  // Default to PNG if unable to detect
+  return 'image/png';
+};
+
+// Helper function to convert logotipo Buffer to Base64 data URI
+const convertLogotipoToDataUri = (logotipo: Buffer | null | undefined): string | null => {
+  if (!logotipo) {
+    return null;
+  }
+  const mimeType = detectImageMimeType(logotipo);
+  return `data:${mimeType};base64,${logotipo.toString('base64')}`;
+};
+
 // Obtener todos los negocios
 export const obtenerNegocios = async (_req: Request, res: Response): Promise<void> => {
   try {
@@ -9,10 +66,16 @@ export const obtenerNegocios = async (_req: Request, res: Response): Promise<voi
       'SELECT * FROM tblposcrumenwebnegocio ORDER BY nombreNegocio ASC'
     );
 
+    // Convert logotipo Buffer to Base64 string for frontend consumption
+    const negociosConLogotipo = negocios.map((negocio: RowDataPacket) => ({
+      ...negocio,
+      logotipo: convertLogotipoToDataUri(negocio.logotipo as Buffer | null)
+    }));
+
     res.json({
       success: true,
       message: 'Negocios obtenidos exitosamente',
-      data: negocios,
+      data: negociosConLogotipo,
     });
   } catch (error) {
     console.error('Error al obtener negocios:', error);
@@ -49,11 +112,18 @@ export const obtenerNegocioPorId = async (req: Request, res: Response): Promise<
       [id]
     );
 
+    // Convert logotipo Buffer to Base64 string for frontend consumption
+    const negocio = negocios[0];
+    const negocioConLogotipo = {
+      ...negocio,
+      logotipo: convertLogotipoToDataUri(negocio.logotipo as Buffer | null)
+    };
+
     res.json({
       success: true,
       message: 'Negocio obtenido exitosamente',
       data: {
-        negocio: negocios[0],
+        negocio: negocioConLogotipo,
         parametros: parametros[0] || null,
       },
     });
