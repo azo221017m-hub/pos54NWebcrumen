@@ -27,16 +27,18 @@ const detectImageMimeType = (buffer: Buffer): string => {
     return 'image/gif';
   }
   
-  // WebP: 52 49 46 46 (RIFF) - need to check further bytes
+  // WebP: 52 49 46 46 (RIFF) - need to check further bytes for WEBP signature
   if (magicBytes[0] === 0x52 && magicBytes[1] === 0x49 && magicBytes[2] === 0x46 && magicBytes[3] === 0x46) {
     // Validate buffer has sufficient length for WebP detection
-    if (buffer.length < 12) {
-      return 'image/png';
+    if (buffer.length >= 12) {
+      const webpCheck = buffer.slice(8, 12);
+      if (webpCheck[0] === 0x57 && webpCheck[1] === 0x45 && webpCheck[2] === 0x42 && webpCheck[3] === 0x50) {
+        return 'image/webp';
+      }
     }
-    const webpCheck = buffer.slice(8, 12);
-    if (webpCheck[0] === 0x57 && webpCheck[1] === 0x45 && webpCheck[2] === 0x42 && webpCheck[3] === 0x50) {
-      return 'image/webp';
-    }
+    // RIFF container detected but not WebP - could be AVI, WAV, etc.
+    // Default to PNG for safety as this is not an image format we support
+    return 'image/png';
   }
   
   // BMP: 42 4D
