@@ -9,10 +9,16 @@ export const obtenerNegocios = async (_req: Request, res: Response): Promise<voi
       'SELECT * FROM tblposcrumenwebnegocio ORDER BY nombreNegocio ASC'
     );
 
+    // Convert logotipo Buffer to Base64 string for frontend consumption
+    const negociosConLogotipo = (negocios as any[]).map(negocio => ({
+      ...negocio,
+      logotipo: negocio.logotipo ? `data:image/png;base64,${(negocio.logotipo as Buffer).toString('base64')}` : null
+    }));
+
     res.json({
       success: true,
       message: 'Negocios obtenidos exitosamente',
-      data: negocios,
+      data: negociosConLogotipo,
     });
   } catch (error) {
     console.error('Error al obtener negocios:', error);
@@ -49,11 +55,18 @@ export const obtenerNegocioPorId = async (req: Request, res: Response): Promise<
       [id]
     );
 
+    // Convert logotipo Buffer to Base64 string for frontend consumption
+    const negocio = negocios[0];
+    const negocioConLogotipo = {
+      ...negocio,
+      logotipo: negocio.logotipo ? `data:image/png;base64,${(negocio.logotipo as Buffer).toString('base64')}` : null
+    };
+
     res.json({
       success: true,
       message: 'Negocio obtenido exitosamente',
       data: {
-        negocio: negocios[0],
+        negocio: negocioConLogotipo,
         parametros: parametros[0] || null,
       },
     });
