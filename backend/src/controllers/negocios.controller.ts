@@ -53,9 +53,8 @@ const convertLogotipoToDataUri = (logotipo: Buffer | null | undefined): string |
   if (!logotipo) {
     return null;
   }
-  const buffer = logotipo as Buffer;
-  const mimeType = detectImageMimeType(buffer);
-  return `data:${mimeType};base64,${buffer.toString('base64')}`;
+  const mimeType = detectImageMimeType(logotipo);
+  return `data:${mimeType};base64,${logotipo.toString('base64')}`;
 };
 
 // Obtener todos los negocios
@@ -66,9 +65,9 @@ export const obtenerNegocios = async (_req: Request, res: Response): Promise<voi
     );
 
     // Convert logotipo Buffer to Base64 string for frontend consumption
-    const negociosConLogotipo = (negocios as any[]).map(negocio => ({
+    const negociosConLogotipo = negocios.map((negocio: RowDataPacket) => ({
       ...negocio,
-      logotipo: convertLogotipoToDataUri(negocio.logotipo)
+      logotipo: convertLogotipoToDataUri(negocio.logotipo as Buffer | null)
     }));
 
     res.json({
@@ -115,7 +114,7 @@ export const obtenerNegocioPorId = async (req: Request, res: Response): Promise<
     const negocio = negocios[0];
     const negocioConLogotipo = {
       ...negocio,
-      logotipo: convertLogotipoToDataUri(negocio.logotipo)
+      logotipo: convertLogotipoToDataUri(negocio.logotipo as Buffer | null)
     };
 
     res.json({
