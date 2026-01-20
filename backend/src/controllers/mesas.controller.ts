@@ -17,6 +17,9 @@ interface Mesa extends RowDataPacket {
   fechacreo?: Date;
   usuariomodifico?: string | null;
   fechamodifico?: Date | null;
+  fechaRegistroauditoria?: Date;
+  usuarioauditoria?: string;
+  fechamodificacionauditoria?: Date | null;
   idnegocio: number;
 }
 
@@ -115,16 +118,17 @@ export const crearMesa = async (req: AuthRequest, res: Response): Promise<void> 
       estatustiempo
     } = req.body;
 
-    // Obtener idnegocio del usuario autenticado
+    // Obtener idnegocio y alias del usuario autenticado
     const idnegocio = req.user?.idNegocio;
+    const usuarioauditoria = req.user?.alias;
 
     console.log('Creando nueva mesa:', nombremesa);
 
     // Validar campos requeridos
-    if (!nombremesa || !numeromesa || !cantcomensales || !estatusmesa || !estatustiempo || !idnegocio) {
+    if (!nombremesa || !numeromesa || !cantcomensales || !estatusmesa || !estatustiempo || !idnegocio || !usuarioauditoria) {
       res.status(400).json({ 
         message: 'Faltan campos requeridos o el usuario no está autenticado',
-        campos: { nombremesa, numeromesa, cantcomensales, estatusmesa, estatustiempo, idnegocio }
+        campos: { nombremesa, numeromesa, cantcomensales, estatusmesa, estatustiempo, idnegocio, usuarioauditoria }
       });
       return;
     }
@@ -171,8 +175,10 @@ export const crearMesa = async (req: AuthRequest, res: Response): Promise<void> 
         tiempodeinicio,
         tiempoactual,
         estatustiempo,
+        fechaRegistroauditoria,
+        usuarioauditoria,
         idnegocio
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)`,
       [
         nombremesa,
         numeromesa,
@@ -181,6 +187,7 @@ export const crearMesa = async (req: AuthRequest, res: Response): Promise<void> 
         tiempodeinicio || null,
         tiempoactual || null,
         estatustiempo,
+        usuarioauditoria,
         idnegocio
       ]
     );
@@ -213,10 +220,11 @@ export const actualizarMesa = async (req: AuthRequest, res: Response): Promise<v
       estatustiempo
     } = req.body;
 
-    // Obtener idnegocio del usuario autenticado
+    // Obtener idnegocio y alias del usuario autenticado
     const idnegocio = req.user?.idNegocio;
+    const usuarioauditoria = req.user?.alias;
 
-    if (!idnegocio) {
+    if (!idnegocio || !usuarioauditoria) {
       res.status(401).json({ message: 'Usuario no autenticado o sin negocio asignado' });
       return;
     }
@@ -287,7 +295,9 @@ export const actualizarMesa = async (req: AuthRequest, res: Response): Promise<v
            estatusmesa = ?,
            tiempodeinicio = ?,
            tiempoactual = ?,
-           estatustiempo = ?
+           estatustiempo = ?,
+           usuarioauditoria = ?,
+           fechamodificacionauditoria = NOW()
        WHERE idmesa = ?`,
       [
         nombremesa,
@@ -297,6 +307,7 @@ export const actualizarMesa = async (req: AuthRequest, res: Response): Promise<v
         tiempodeinicio || null,
         tiempoactual || null,
         estatustiempo,
+        usuarioauditoria,
         idmesa
       ]
     );
