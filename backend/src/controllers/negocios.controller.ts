@@ -51,10 +51,24 @@ const detectImageMimeType = (buffer: Buffer): string => {
 };
 
 // Helper function to convert logotipo Buffer to Base64 data URI
-const convertLogotipoToDataUri = (logotipo: Buffer | null | undefined): string | null => {
+const convertLogotipoToDataUri = (logotipo: Buffer | string | null | undefined): string | null => {
   if (!logotipo) {
     return null;
   }
+  
+  // If logotipo is already a string (data URI), return it as-is
+  // This handles legacy data that was stored as string before the fix
+  if (typeof logotipo === 'string') {
+    // Validate it's a proper data URI
+    if (logotipo.startsWith('data:image/')) {
+      return logotipo;
+    }
+    // If it's not a valid data URI, try to parse it as base64
+    // This shouldn't happen but provides a fallback
+    return null;
+  }
+  
+  // If logotipo is a Buffer, convert it to data URI
   const mimeType = detectImageMimeType(logotipo);
   return `data:${mimeType};base64,${logotipo.toString('base64')}`;
 };
@@ -87,7 +101,7 @@ export const obtenerNegocios = async (_req: Request, res: Response): Promise<voi
     // Convert logotipo Buffer to Base64 string for frontend consumption
     const negociosConLogotipo = negocios.map((negocio: RowDataPacket) => ({
       ...negocio,
-      logotipo: convertLogotipoToDataUri(negocio.logotipo as Buffer | null)
+      logotipo: convertLogotipoToDataUri(negocio.logotipo as Buffer | string | null)
     }));
 
     res.json({
@@ -134,7 +148,7 @@ export const obtenerNegocioPorId = async (req: Request, res: Response): Promise<
     const negocio = negocios[0];
     const negocioConLogotipo = {
       ...negocio,
-      logotipo: convertLogotipoToDataUri(negocio.logotipo as Buffer | null)
+      logotipo: convertLogotipoToDataUri(negocio.logotipo as Buffer | string | null)
     };
 
     res.json({
