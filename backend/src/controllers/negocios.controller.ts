@@ -63,12 +63,12 @@ const convertLogotipoToDataUri = (logotipo: Buffer | string | null | undefined):
     if (logotipo.startsWith('data:image/')) {
       return logotipo;
     }
-    // If it's not a valid data URI, try to parse it as base64
-    // This shouldn't happen but provides a fallback
+    // If it's not a valid data URI, return null
     return null;
   }
   
   // If logotipo is a Buffer, convert it to data URI
+  // At this point, TypeScript knows logotipo is a Buffer
   const mimeType = detectImageMimeType(logotipo);
   return `data:${mimeType};base64,${logotipo.toString('base64')}`;
 };
@@ -80,14 +80,15 @@ const convertDataUriToBuffer = (dataUri: string | null | undefined): Buffer | nu
   }
   
   // Check if it's a valid Base64 data URI
-  const matches = dataUri.match(/^data:image\/[a-zA-Z+\-]+;base64,(.+)$/);
-  if (!matches || !matches[1]) {
+  // Updated regex to handle more MIME type formats
+  const matches = dataUri.match(/^data:image\/([^;]+);base64,(.+)$/);
+  if (!matches || !matches[2]) {
     // Not a data URI, might already be a Buffer or invalid data
     return null;
   }
   
   // Extract the base64 part and convert to Buffer
-  const base64Data = matches[1];
+  const base64Data = matches[2];
   return Buffer.from(base64Data, 'base64');
 };
 
