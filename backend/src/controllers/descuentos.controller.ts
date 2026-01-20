@@ -107,16 +107,17 @@ export const crearDescuento = async (req: AuthRequest, res: Response): Promise<v
       requiereautorizacion
     } = req.body;
 
-    // Obtener idnegocio del usuario autenticado
+    // Obtener idnegocio y alias del usuario autenticado
     const idnegocio = req.user?.idNegocio;
+    const usuarioauditoria = req.user?.alias;
 
     console.log('Creando nuevo descuento:', nombre);
 
     // Validar campos requeridos
-    if (!nombre || !tipodescuento || valor === undefined || !estatusdescuento || !requiereautorizacion || !idnegocio) {
+    if (!nombre || !tipodescuento || valor === undefined || !estatusdescuento || !requiereautorizacion || !idnegocio || !usuarioauditoria) {
       res.status(400).json({ 
         message: 'Faltan campos requeridos o el usuario no está autenticado',
-        campos: { nombre, tipodescuento, valor, estatusdescuento, requiereautorizacion, idnegocio }
+        campos: { nombre, tipodescuento, valor, estatusdescuento, requiereautorizacion, idnegocio, usuarioauditoria }
       });
       return;
     }
@@ -146,15 +147,18 @@ export const crearDescuento = async (req: AuthRequest, res: Response): Promise<v
         valor,
         estatusdescuento,
         requiereautorizacion,
-        idnegocio
-      ) VALUES (?, ?, ?, ?, ?, ?)`,
+        idnegocio,
+        fechaRegistroauditoria,
+        usuarioauditoria
+      ) VALUES (?, ?, ?, ?, ?, ?, NOW(), ?)`,
       [
         nombre,
         tipodescuento,
         valor,
         estatusdescuento,
         requiereautorizacion,
-        idnegocio
+        idnegocio,
+        usuarioauditoria
       ]
     );
 
@@ -173,7 +177,7 @@ export const crearDescuento = async (req: AuthRequest, res: Response): Promise<v
 };
 
 // Actualizar descuento
-export const actualizarDescuento = async (req: Request, res: Response): Promise<void> => {
+export const actualizarDescuento = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id_descuento } = req.params;
     const {
@@ -184,7 +188,17 @@ export const actualizarDescuento = async (req: Request, res: Response): Promise<
       requiereautorizacion
     } = req.body;
 
+    // Obtener alias del usuario autenticado
+    const usuarioauditoria = req.user?.alias;
+
     console.log('Actualizando descuento ID:', id_descuento);
+
+    if (!usuarioauditoria) {
+      res.status(400).json({ 
+        message: 'Usuario no está autenticado'
+      });
+      return;
+    }
 
     // Validar que el descuento existe
     const [descuentoExistente] = await pool.query<Descuento[]>(
@@ -223,7 +237,9 @@ export const actualizarDescuento = async (req: Request, res: Response): Promise<
            tipodescuento = ?,
            valor = ?,
            estatusdescuento = ?,
-           requiereautorizacion = ?
+           requiereautorizacion = ?,
+           usuarioauditoria = ?,
+           fechamodificacionauditoria = NOW()
        WHERE id_descuento = ?`,
       [
         nombre,
@@ -231,6 +247,7 @@ export const actualizarDescuento = async (req: Request, res: Response): Promise<
         valor,
         estatusdescuento,
         requiereautorizacion,
+        usuarioauditoria,
         id_descuento
       ]
     );
