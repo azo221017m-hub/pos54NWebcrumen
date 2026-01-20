@@ -51,12 +51,45 @@ const detectImageMimeType = (buffer: Buffer): string => {
 };
 
 // Helper function to convert logotipo Buffer to Base64 data URI
-const convertLogotipoToDataUri = (logotipo: Buffer | null | undefined): string | null => {
+const convertLogotipoToDataUri = (logotipo: Buffer | string | null | undefined): string | null => {
   if (!logotipo) {
     return null;
   }
+  
+  // If logotipo is already a string (data URI), return it as-is
+  // This handles legacy data that was stored as string before the fix
+  if (typeof logotipo === 'string') {
+    // Validate it's a proper data URI
+    if (logotipo.startsWith('data:image/')) {
+      return logotipo;
+    }
+    // If it's not a valid data URI, return null
+    return null;
+  }
+  
+  // If logotipo is a Buffer, convert it to data URI
+  // At this point, TypeScript knows logotipo is a Buffer
   const mimeType = detectImageMimeType(logotipo);
   return `data:${mimeType};base64,${logotipo.toString('base64')}`;
+};
+
+// Helper function to convert Base64 data URI to Buffer for database storage
+const convertDataUriToBuffer = (dataUri: string | null | undefined): Buffer | null => {
+  if (!dataUri || typeof dataUri !== 'string') {
+    return null;
+  }
+  
+  // Check if it's a valid Base64 data URI
+  // Updated regex to handle more MIME type formats
+  const matches = dataUri.match(/^data:image\/([^;]+);base64,(.+)$/);
+  if (!matches || !matches[2]) {
+    // Not a data URI, might already be a Buffer or invalid data
+    return null;
+  }
+  
+  // Extract the base64 part and convert to Buffer
+  const base64Data = matches[2];
+  return Buffer.from(base64Data, 'base64');
 };
 
 // Obtener todos los negocios
@@ -69,7 +102,7 @@ export const obtenerNegocios = async (_req: Request, res: Response): Promise<voi
     // Convert logotipo Buffer to Base64 string for frontend consumption
     const negociosConLogotipo = negocios.map((negocio: RowDataPacket) => ({
       ...negocio,
-      logotipo: convertLogotipoToDataUri(negocio.logotipo as Buffer | null)
+      logotipo: convertLogotipoToDataUri(negocio.logotipo as Buffer | string | null)
     }));
 
     res.json({
@@ -116,7 +149,7 @@ export const obtenerNegocioPorId = async (req: Request, res: Response): Promise<
     const negocio = negocios[0];
     const negocioConLogotipo = {
       ...negocio,
-      logotipo: convertLogotipoToDataUri(negocio.logotipo as Buffer | null)
+      logotipo: convertLogotipoToDataUri(negocio.logotipo as Buffer | string | null)
     };
 
     res.json({
@@ -175,7 +208,7 @@ export const crearNegocio = async (req: Request, res: Response): Promise<void> =
           negocio.rfcnegocio,
           negocio.direccionfiscalnegocio,
           negocio.contactonegocio,
-          negocio.logotipo || null,
+          convertDataUriToBuffer(negocio.logotipo),
           negocio.telefonocontacto,
           negocio.estatusnegocio,
           negocio.usuarioauditoria || 'sistema',
@@ -284,7 +317,7 @@ export const actualizarNegocio = async (req: Request, res: Response): Promise<vo
           negocio.rfcnegocio,
           negocio.direccionfiscalnegocio,
           negocio.contactonegocio,
-          negocio.logotipo || null,
+          convertDataUriToBuffer(negocio.logotipo),
           negocio.telefonocontacto,
           negocio.estatusnegocio,
           negocio.usuarioauditoria || 'sistema',
@@ -429,7 +462,7 @@ export const subirLogotipo = async (req: Request, res: Response): Promise<void> 
 
     await pool.execute(
       'UPDATE tblposcrumenwebnegocio SET logotipo = ?, fehamodificacionauditoria = NOW() WHERE idNegocio = ?',
-      [logotipo, id]
+      [convertDataUriToBuffer(logotipo), id]
     );
 
     res.json({
