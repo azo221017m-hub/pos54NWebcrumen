@@ -112,8 +112,8 @@ export const obtenerTurnoPorId = async (req: Request, res: Response): Promise<vo
 export const crearTurno = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idnegocio = req.user?.idNegocio;
-    const idusuario = req.user?.idUsuario;
-    const usuarioturno = req.user?.alias || req.user?.nombreUsuario;
+    const idusuario = req.user?.id;
+    const usuarioturno = req.user?.alias;
 
     if (!idnegocio || !idusuario || !usuarioturno) {
       res.status(401).json({ 
