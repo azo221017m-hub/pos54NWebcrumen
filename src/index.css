@@ -8,12 +8,12 @@
 }
 
 /* 
-  Base font-size adjustment: 67% of 16px = 10.72px
-  This makes the design at 100% zoom equivalent to previous 67% zoom
+  Base font-size adjustment: 5.36px (50% reduction from previous 10.72px)
+  This reduces all rem-based sizing by 50% throughout the application
   while maintaining accessibility (browser zoom still works correctly)
 */
 html {
-  font-size: 10.72px;
+  font-size: 5.36px;
 }
 
 html, body {
@@ -35,7 +35,7 @@ html, body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   line-height: 1.6;
   font-weight: 400;
-  font-size: 1.493rem; /* 16px equivalent */
+  font-size: 1.493rem; /* 8px equivalent (50% of original 16px) */
 
   /* Executive Color Palette for POS */
   --color-primary: #1e3a5f;        /* Deep Navy Blue - executive */
@@ -100,13 +100,13 @@ body {
   margin: 0;
   display: flex;
   place-items: center;
-  min-width: 29.851rem; /* 320px */
+  min-width: 29.851rem; /* 160px (50% of original 320px) */
   min-height: 100vh;
-  font-size: 1.493rem; /* 16px - base stable size */
+  font-size: 1.493rem; /* 8px - base stable size (50% of original 16px) */
 }
 
 h1 {
-  font-size: 2.612rem; /* 28px (1.75rem original × 1.493) */
+  font-size: 2.612rem; /* 2.612rem × 5.36px ≈ 14px (50% of original 28px) */
   line-height: 1.2;
   font-weight: 700;
   color: var(--color-text-primary);
@@ -114,7 +114,7 @@ h1 {
 }
 
 h2 {
-  font-size: 2.239rem; /* 24px (1.5rem original × 1.493) */
+  font-size: 2.239rem; /* 2.239rem × 5.36px ≈ 12px (50% of original 24px) */
   line-height: 1.3;
   font-weight: 600;
   color: var(--color-text-primary);
@@ -122,38 +122,38 @@ h2 {
 }
 
 h3 {
-  font-size: 1.866rem; /* 20px (1.25rem original × 1.493) */
+  font-size: 1.866rem; /* 1.866rem × 5.36px ≈ 10px (50% of original 20px) */
   line-height: 1.4;
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 h4 {
-  font-size: 1.679rem; /* 18px (1.125rem original × 1.493) */
+  font-size: 1.679rem; /* 1.679rem × 5.36px ≈ 9px (50% of original 18px) */
   line-height: 1.4;
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 h5 {
-  font-size: 1.493rem; /* 16px (1rem original × 1.493) */
+  font-size: 1.493rem; /* 1.493rem × 5.36px ≈ 8px (50% of original 16px) */
   line-height: 1.5;
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 h6 {
-  font-size: 1.400rem; /* 15px (0.9375rem original × 1.493) */
+  font-size: 1.400rem; /* 1.400rem × 5.36px ≈ 7.5px (50% of original 15px) */
   line-height: 1.5;
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 button {
-  border-radius: 0.560rem; /* 6px */
+  border-radius: 0.560rem; /* 0.560rem × 5.36px ≈ 3px (50% of original 6px) */
   border: 1px solid transparent;
-  padding: 0.746rem 1.493rem; /* 8px 16px (0.5rem × 1.493, 1rem × 1.493) */
-  font-size: 1.306rem; /* 14px (0.875rem × 1.493) */
+  padding: 0.746rem 1.493rem; /* 0.746rem × 5.36px ≈ 4px, 1.493rem × 5.36px ≈ 8px (50% of original 8px 16px) */
+  font-size: 1.306rem; /* 1.306rem × 5.36px ≈ 7px (50% of original 14px) */
   font-weight: 500;
   font-family: inherit;
   background-color: var(--color-primary);
