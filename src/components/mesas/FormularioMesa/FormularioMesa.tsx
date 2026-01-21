@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { Mesa, MesaCreate, MesaUpdate } from '../../../types/mesa.types';
 import { EstatusMesa, EstatusTiempo } from '../../../types/mesa.types';
-import { validarNumeroMesaUnico, obtenerNumerosDisponibles } from '../../../services/mesasService';
+import { obtenerNumerosDisponibles } from '../../../services/mesasService';
 import { Table2, X, Save } from 'lucide-react';
 import './FormularioMesa.css';
 
@@ -16,7 +16,7 @@ const FormularioMesa: React.FC<FormularioMesaProps> = ({
   mesaInicial, 
   onSubmit, 
   onCancel,
-  idnegocio
+  idnegocio: _idnegocio
 }) => {
   const initialFormData = useMemo(() => ({
     nombremesa: mesaInicial?.nombremesa || '',
@@ -31,7 +31,6 @@ const FormularioMesa: React.FC<FormularioMesaProps> = ({
   const [formData, setFormData] = useState(initialFormData);
 
   const [errores, setErrores] = useState<{ [key: string]: string }>({});
-  const [validandoNumero, setValidandoNumero] = useState(false);
   const [numerosDisponibles, setNumerosDisponibles] = useState<number[]>([]);
   const [cargandoNumeros, setCargandoNumeros] = useState(true);
 
@@ -87,23 +86,7 @@ const FormularioMesa: React.FC<FormularioMesaProps> = ({
 
     // Validar número de mesa
     if (formData.numeromesa <= 0) {
-      nuevosErrores.numeromesa = 'El número de mesa debe ser mayor a 0';
-    } else {
-      // Validar que el número de mesa sea único
-      setValidandoNumero(true);
-      try {
-        const esUnico = await validarNumeroMesaUnico(
-          formData.numeromesa,
-          idnegocio,
-          mesaInicial?.idmesa
-        );
-        if (!esUnico) {
-          nuevosErrores.numeromesa = 'Este número de mesa ya existe en el negocio';
-        }
-      } catch (error) {
-        console.error('Error al validar número de mesa:', error);
-      }
-      setValidandoNumero(false);
+      nuevosErrores.numeromesa = 'Debe seleccionar un número de mesa';
     }
 
     // Validar cantidad de comensales
@@ -218,9 +201,6 @@ const FormularioMesa: React.FC<FormularioMesaProps> = ({
                   ))}
                 </select>
               )}
-              {validandoNumero && (
-                <span className="validating-message">Validando...</span>
-              )}
               {errores.numeromesa && (
                 <span className="error-message">{errores.numeromesa}</span>
               )}
@@ -292,7 +272,6 @@ const FormularioMesa: React.FC<FormularioMesaProps> = ({
           <button 
             type="submit" 
             className="btn-guardar"
-            disabled={validandoNumero}
           >
             <Save size={20} />
             {mesaInicial ? 'Actualizar' : 'Guardar'}
