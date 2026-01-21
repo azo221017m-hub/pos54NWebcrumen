@@ -11,8 +11,6 @@ interface ListaTurnosProps {
 }
 
 const ListaTurnos: React.FC<ListaTurnosProps> = ({ turnos, onEdit, onDelete }) => {
-  console.log('ListaTurnos - Total turnos:', turnos.length, turnos);
-
   const getEstatusClass = (estatus: EstatusTurno): string => {
     switch (estatus) {
       case EstatusTurno.ABIERTO:
