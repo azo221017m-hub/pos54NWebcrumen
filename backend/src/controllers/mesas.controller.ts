@@ -426,3 +426,50 @@ export const cambiarEstatusMesa = async (req: Request, res: Response): Promise<v
     });
   }
 };
+
+// Obtener números de mesa disponibles (1-100 menos los ya usados)
+export const obtenerNumerosDisponibles = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    // Usar idnegocio del usuario autenticado para seguridad
+    const idnegocio = req.user?.idNegocio;
+    const idmesa = req.query.idmesa; // Para edición, excluir la mesa actual
+    
+    if (!idnegocio) {
+      res.status(401).json({ 
+        message: 'Usuario no autenticado o sin negocio asignado'
+      });
+      return;
+    }
+    
+    console.log('Obteniendo números disponibles para negocio:', idnegocio);
+    
+    // Obtener números de mesa ya usados
+    let query = 'SELECT numeromesa FROM tblposcrumenwebmesas WHERE idnegocio = ?';
+    const params: Array<string | number> = [idnegocio];
+    
+    if (idmesa) {
+      query += ' AND idmesa != ?';
+      params.push(idmesa as string);
+    }
+    
+    const [rows] = await pool.query<Mesa[]>(query, params);
+    const numerosUsados = rows.map(row => row.numeromesa);
+    
+    // Generar números disponibles (1-100 menos los usados)
+    const numerosDisponibles: number[] = [];
+    for (let i = 1; i <= 100; i++) {
+      if (!numerosUsados.includes(i)) {
+        numerosDisponibles.push(i);
+      }
+    }
+    
+    console.log(`Números disponibles: ${numerosDisponibles.length}`);
+    res.json({ numerosDisponibles });
+  } catch (error) {
+    console.error('Error al obtener números disponibles:', error);
+    res.status(500).json({ 
+      message: 'Error al obtener los números disponibles',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+};

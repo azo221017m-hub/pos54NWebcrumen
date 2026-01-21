@@ -6,7 +6,8 @@ import {
   actualizarMesa,
   eliminarMesa,
   validarNumeroMesaUnico,
-  cambiarEstatusMesa
+  cambiarEstatusMesa,
+  obtenerNumerosDisponibles
 } from '../controllers/mesas.controller';
 import { authMiddleware } from '../middlewares/auth';
 
@@ -18,6 +19,7 @@ router.use(authMiddleware);
 // Rutas CRUD
 router.get('/', obtenerMesas);
 router.get('/validar/numero-mesa', validarNumeroMesaUnico);
+router.get('/numeros-disponibles', obtenerNumerosDisponibles);
 router.get('/:idmesa', obtenerMesaPorId);
 router.post('/', crearMesa);
 router.put('/:idmesa', actualizarMesa);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { Mesa, MesaCreate, MesaUpdate } from '../../../types/mesa.types';
 import { EstatusMesa, EstatusTiempo } from '../../../types/mesa.types';
-import { validarNumeroMesaUnico } from '../../../services/mesasService';
+import { validarNumeroMesaUnico, obtenerNumerosDisponibles } from '../../../services/mesasService';
 import { Table2, X, Save } from 'lucide-react';
 import './FormularioMesa.css';
 
@@ -32,10 +32,38 @@ const FormularioMesa: React.FC<FormularioMesaProps> = ({
 
   const [errores, setErrores] = useState<{ [key: string]: string }>({});
   const [validandoNumero, setValidandoNumero] = useState(false);
+  const [numerosDisponibles, setNumerosDisponibles] = useState<number[]>([]);
+  const [cargandoNumeros, setCargandoNumeros] = useState(true);
 
   useEffect(() => {
     setFormData(initialFormData);
   }, [initialFormData]);
+
+  // Cargar números disponibles al montar el componente
+  useEffect(() => {
+    const cargarNumerosDisponibles = async () => {
+      try {
+        setCargandoNumeros(true);
+        const numeros = await obtenerNumerosDisponibles(mesaInicial?.idmesa);
+        
+        // Si estamos editando, incluir el número actual de la mesa
+        if (mesaInicial?.numeromesa && !numeros.includes(mesaInicial.numeromesa)) {
+          setNumerosDisponibles([...numeros, mesaInicial.numeromesa].sort((a, b) => a - b));
+        } else {
+          setNumerosDisponibles(numeros);
+        }
+      } catch (error) {
+        console.error('Error al cargar números disponibles:', error);
+        // En caso de error, mostrar todos los números del 1 al 100
+        const todosNumeros = Array.from({ length: 100 }, (_, i) => i + 1);
+        setNumerosDisponibles(todosNumeros);
+      } finally {
+        setCargandoNumeros(false);
+      }
+    };
+
+    cargarNumerosDisponibles();
+  }, [mesaInicial]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -165,15 +193,31 @@ const FormularioMesa: React.FC<FormularioMesaProps> = ({
               <label htmlFor="numeromesa">
                 Número de Mesa <span className="required">*</span>
               </label>
-              <input
-                type="number"
-                id="numeromesa"
-                name="numeromesa"
-                value={formData.numeromesa}
-                onChange={handleInputChange}
-                min="1"
-                className={errores.numeromesa ? 'error' : ''}
-              />
+              {cargandoNumeros ? (
+                <select 
+                  id="numeromesa" 
+                  name="numeromesa" 
+                  disabled
+                  className="loading"
+                >
+                  <option>Cargando números disponibles...</option>
+                </select>
+              ) : (
+                <select
+                  id="numeromesa"
+                  name="numeromesa"
+                  value={formData.numeromesa}
+                  onChange={handleInputChange}
+                  className={errores.numeromesa ? 'error' : ''}
+                >
+                  <option value="0">Seleccione un número</option>
+                  {numerosDisponibles.map((numero) => (
+                    <option key={numero} value={numero}>
+                      {numero}
+                    </option>
+                  ))}
+                </select>
+              )}
               {validandoNumero && (
                 <span className="validating-message">Validando...</span>
               )}
