@@ -1,0 +1,245 @@
+/* Contenedor Principal */
+.config-turnos-page {
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Mensaje de Notificación */
+.mensaje-notificacion {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1100;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.mensaje-contenido {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  font-weight: 600;
+}
+
+.mensaje-success .mensaje-contenido {
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
+  color: white;
+}
+
+.mensaje-error .mensaje-contenido {
+  background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+  color: white;
+}
+
+.mensaje-info .mensaje-contenido {
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  color: white;
+}
+
+.mensaje-cerrar {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  line-height: 1;
+  transition: background 0.2s;
+}
+
+.mensaje-cerrar:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Header Section */
+.config-header {
+  flex-shrink: 0;
+  margin-bottom: 1rem;
+}
+
+.btn-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+}
+
+.btn-volver:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateX(-4px);
+}
+
+.config-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.config-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.config-icon {
+  color: #0891b2;
+}
+
+.config-title h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.config-title p {
+  margin: 0.25rem 0 0 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.btn-nuevo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
+}
+
+.btn-nuevo:hover {
+  background: linear-gradient(135deg, #0e7490 0%, #06b6d4 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(8, 145, 178, 0.4);
+}
+
+/* Container Principal */
+.config-container {
+  flex: 1;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+/* Loading State */
+.config-cargando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #0891b2;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.config-cargando p {
+  margin-top: 1rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .config-turnos-page {
+    padding: 1rem;
+  }
+
+  .config-header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .config-title {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btn-nuevo {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .config-title h1 {
+    font-size: 1.5rem;
+  }
+
+  .config-title p {
+    font-size: 0.875rem;
+  }
+}
+
+/* Scrollbar personalizado */
+.config-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.config-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.config-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.config-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
