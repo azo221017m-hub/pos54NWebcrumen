@@ -31,6 +31,7 @@ rem = px / 10.72
 
 | px Original | rem Equivalente | Uso Común |
 |------------|----------------|-----------|
+| 1-2px      | -             | **Mantener en px** (borders, outlines) |
 | 8px        | 0.746rem      | Padding pequeño |
 | 10px       | 0.933rem      | Iconos pequeños |
 | 12px       | 1.119rem      | Texto pequeño |
@@ -216,9 +217,12 @@ npm run preview
 ### 9. Archivos Modificados
 
 #### Archivos Principales:
-- `/src/index.css` - Estilos globales y base
-- `/src/App.css` - Estilos de la aplicación principal
-- Componentes individuales (progresivamente)
+- `/src/index.css` - ✅ Estilos globales y base (100% completado)
+- `/src/App.css` - ✅ Estilos de la aplicación principal (100% completado)
+- `/src/pages/LoginPage.css` - ✅ Componente de login (100% completado)
+- `/src/pages/PageVentas/PageVentas.css` - ⚠️ Secciones críticas migradas (migración progresiva)
+
+**Nota**: PageVentas.css fue migrado parcialmente (secciones críticas del header, lock screen, y avatares). Los componentes restantes se deben migrar siguiendo la estrategia de migración progresiva descrita en la sección 6.
 
 ### 10. Conversión Rápida con Herramientas
 

@@ -222,7 +222,7 @@ npm run preview
 
 | px    | rem       | Uso Común                    |
 |-------|-----------|------------------------------|
-| 2px   | 0.186rem  | Separadores finos            |
+| 2px   | -         | **Mantener en px** (borders) |
 | 4px   | 0.373rem  | Padding mínimo               |
 | 6px   | 0.560rem  | Border radius pequeño        |
 | 8px   | 0.746rem  | Padding/margin pequeño       |
