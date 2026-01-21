@@ -86,7 +86,7 @@
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   border-radius: 1rem; /* 16px */
-  padding: 2.239rem 2.612rem;  /* 24px 28px */
+  padding: 1.500rem 1.750rem; /* 24px 28px */
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.6s ease-out;
   width: 100%;
@@ -195,7 +195,7 @@
 
 .form-input {
   width: 100%;
-  padding: 0.933rem 1.306rem;  /* 10px 14px */
+  padding: 0.625rem 0.875rem; /* 10px 14px */
   border: 2px solid #e2e8f0;
   border-radius: 0.500rem; /* 8px */
   font-size: 0.900rem; /* 14.4px */
@@ -462,7 +462,7 @@
 }
 
 .status-badge {
-  padding: 0.373rem 0.933rem;  /* 4px 10px */
+  padding: 0.250rem 0.625rem; /* 4px 10px */
   border-radius: 0.250rem; /* 4px */
   font-size: 0.750rem; /* 12px */
   font-weight: 600;
