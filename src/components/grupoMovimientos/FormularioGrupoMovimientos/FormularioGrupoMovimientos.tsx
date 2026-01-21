@@ -115,27 +115,6 @@ const FormularioGrupoMovimientos: React.FC<Props> = ({ grupo, idnegocio, onSave,
               </select>
             </div>
 
-            {/* Nombre del Grupo */}
-            <div className="form-group">
-              <label htmlFor="nombrecuentacontable">
-                Nombre del Grupo <span className="required">*</span>
-              </label>
-              <input
-                type="text"
-                id="nombrecuentacontable"
-                name="nombrecuentacontable"
-                value={formData.nombrecuentacontable}
-                onChange={handleChange}
-                className={`form-control ${errores.nombrecuentacontable ? 'error' : ''}`}
-                placeholder="Ej: Compra de Materia Prima"
-                maxLength={150}
-                required
-              />
-              {errores.nombrecuentacontable && (
-                <span className="error-message">{errores.nombrecuentacontable}</span>
-              )}
-            </div>
-
             {/* Tipo de Grupo */}
             <div className="form-group">
               <label htmlFor="tipocuentacontable">
@@ -156,6 +135,27 @@ const FormularioGrupoMovimientos: React.FC<Props> = ({ grupo, idnegocio, onSave,
               </select>
               {errores.tipocuentacontable && (
                 <span className="error-message">{errores.tipocuentacontable}</span>
+              )}
+            </div>
+
+            {/* Nombre del Grupo */}
+            <div className="form-group">
+              <label htmlFor="nombrecuentacontable">
+                Nombre del Grupo <span className="required">*</span>
+              </label>
+              <input
+                type="text"
+                id="nombrecuentacontable"
+                name="nombrecuentacontable"
+                value={formData.nombrecuentacontable}
+                onChange={handleChange}
+                className={`form-control ${errores.nombrecuentacontable ? 'error' : ''}`}
+                placeholder="Ej: Compra de Materia Prima"
+                maxLength={150}
+                required
+              />
+              {errores.nombrecuentacontable && (
+                <span className="error-message">{errores.nombrecuentacontable}</span>
               )}
             </div>
           </div>

@@ -240,6 +240,7 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
                   className={errores.stock_actual ? 'error' : ''}
                   step="0.01"
                   min="0"
+                  readOnly
                 />
                 {errores.stock_actual && <span className="error-message">{errores.stock_actual}</span>}
               </div>
@@ -282,6 +283,7 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
                   step="0.0001"
                   min="0"
                   placeholder="0.00"
+                  readOnly
                 />
                 {errores.costo_promedio_ponderado && (
                   <span className="error-message">{errores.costo_promedio_ponderado}</span>
