@@ -85,7 +85,7 @@ const FormularioMesa: React.FC<FormularioMesaProps> = ({
     }
 
     // Validar número de mesa
-    if (formData.numeromesa <= 0) {
+    if (!formData.numeromesa || formData.numeromesa <= 0) {
       nuevosErrores.numeromesa = 'Debe seleccionar un número de mesa';
     }
 
@@ -189,11 +189,11 @@ const FormularioMesa: React.FC<FormularioMesaProps> = ({
                 <select
                   id="numeromesa"
                   name="numeromesa"
-                  value={formData.numeromesa}
+                  value={formData.numeromesa || ''}
                   onChange={handleInputChange}
                   className={errores.numeromesa ? 'error' : ''}
                 >
-                  <option value="0">Seleccione un número</option>
+                  <option value="">Seleccione un número</option>
                   {numerosDisponibles.map((numero) => (
                     <option key={numero} value={numero}>
                       {numero}

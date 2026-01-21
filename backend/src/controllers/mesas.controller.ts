@@ -432,7 +432,7 @@ export const obtenerNumerosDisponibles = async (req: AuthRequest, res: Response)
   try {
     // Usar idnegocio del usuario autenticado para seguridad
     const idnegocio = req.user?.idNegocio;
-    const idmesa = req.query.idmesa; // Para edición, excluir la mesa actual
+    const idmesa = req.query.idmesa ? Number(req.query.idmesa) : undefined; // Para edición, excluir la mesa actual
     
     if (!idnegocio) {
       res.status(401).json({ 
@@ -445,11 +445,11 @@ export const obtenerNumerosDisponibles = async (req: AuthRequest, res: Response)
     
     // Obtener números de mesa ya usados
     let query = 'SELECT numeromesa FROM tblposcrumenwebmesas WHERE idnegocio = ?';
-    const params: Array<string | number> = [idnegocio];
+    const params: Array<number> = [idnegocio];
     
     if (idmesa) {
       query += ' AND idmesa != ?';
-      params.push(idmesa as string);
+      params.push(idmesa);
     }
     
     const [rows] = await pool.query<Mesa[]>(query, params);
