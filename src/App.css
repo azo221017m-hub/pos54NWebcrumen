@@ -7,8 +7,8 @@
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
+  height: 8.955rem; /* 96px (6em with base 16px) */
+  padding: 2.239rem; /* 24px (1.5em with base 16px) */
   will-change: filter;
   transition: filter 300ms;
 }
@@ -35,7 +35,7 @@
 }
 
 .card {
-  padding: 2em;
+  padding: 2.985rem; /* 32px (2em with base 16px) */
 }
 
 .read-the-docs {

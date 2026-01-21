@@ -7,6 +7,15 @@
   box-sizing: border-box;
 }
 
+/* 
+  Base font-size adjustment: 67% of 16px = 10.72px
+  This makes the design at 100% zoom equivalent to previous 67% zoom
+  while maintaining accessibility (browser zoom still works correctly)
+*/
+html {
+  font-size: 10.72px;
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -26,6 +35,7 @@ html, body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   line-height: 1.6;
   font-weight: 400;
+  font-size: 1.493rem; /* 16px equivalent */
 
   /* Executive Color Palette for POS */
   --color-primary: #1e3a5f;        /* Deep Navy Blue - executive */
@@ -90,12 +100,13 @@ body {
   margin: 0;
   display: flex;
   place-items: center;
-  min-width: 320px;
+  min-width: 29.851rem; /* 320px */
   min-height: 100vh;
+  font-size: 1.493rem; /* 16px - base stable size */
 }
 
 h1 {
-  font-size: 1.75rem;
+  font-size: 2.612rem; /* 28px (1.75rem original × 1.493) */
   line-height: 1.2;
   font-weight: 700;
   color: var(--color-text-primary);
@@ -103,7 +114,7 @@ h1 {
 }
 
 h2 {
-  font-size: 1.5rem;
+  font-size: 2.239rem; /* 24px (1.5rem original × 1.493) */
   line-height: 1.3;
   font-weight: 600;
   color: var(--color-text-primary);
@@ -111,38 +122,38 @@ h2 {
 }
 
 h3 {
-  font-size: 1.25rem;
+  font-size: 1.866rem; /* 20px (1.25rem original × 1.493) */
   line-height: 1.4;
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 h4 {
-  font-size: 1.125rem;
+  font-size: 1.679rem; /* 18px (1.125rem original × 1.493) */
   line-height: 1.4;
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 h5 {
-  font-size: 1rem;
+  font-size: 1.493rem; /* 16px (1rem original × 1.493) */
   line-height: 1.5;
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 h6 {
-  font-size: 0.9375rem;
+  font-size: 1.400rem; /* 15px (0.9375rem original × 1.493) */
   line-height: 1.5;
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 button {
-  border-radius: 6px;
+  border-radius: 0.560rem; /* 6px */
   border: 1px solid transparent;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
+  padding: 0.746rem 1.493rem; /* 8px 16px (0.5rem × 1.493, 1rem × 1.493) */
+  font-size: 1.306rem; /* 14px (0.875rem × 1.493) */
   font-weight: 500;
   font-family: inherit;
   background-color: var(--color-primary);
@@ -154,7 +165,7 @@ button {
 button:hover {
   background-color: var(--color-primary-light);
   box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+  transform: translateY(-0.093rem); /* 1px */
 }
 button:active {
   transform: translateY(0);
@@ -163,7 +174,7 @@ button:active {
 button:focus,
 button:focus-visible {
   outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+  outline-offset: 0.186rem; /* 2px */
 }
 button:disabled {
   opacity: 0.5;
