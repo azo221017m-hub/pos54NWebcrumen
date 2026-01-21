@@ -110,3 +110,25 @@ export const cambiarEstatusMesa = async (
     throw error;
   }
 };
+
+// Obtener números de mesa disponibles (1-100 menos los ya usados)
+export const obtenerNumerosDisponibles = async (idmesa?: number): Promise<number[]> => {
+  try {
+    console.log('Servicio: Obteniendo números de mesa disponibles');
+    const params: Record<string, number> = {};
+    if (idmesa) {
+      params.idmesa = idmesa;
+    }
+    
+    const response = await apiClient.get<{ numerosDisponibles: number[] }>(
+      `${API_BASE}/numeros-disponibles`,
+      { params }
+    );
+    
+    console.log('Servicio: Números disponibles obtenidos:', response.data.numerosDisponibles.length);
+    return response.data.numerosDisponibles;
+  } catch (error) {
+    console.error('Error en servicio obtenerNumerosDisponibles:', error);
+    throw error;
+  }
+};
