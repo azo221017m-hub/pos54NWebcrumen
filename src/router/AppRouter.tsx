@@ -18,6 +18,7 @@ import ConfigRecetas from '../pages/ConfigRecetas/ConfigRecetas';
 import ConfigCatModeradores from '../pages/ConfigCatModeradores/ConfigCatModeradores';
 import ConfigProductosWeb from '../pages/ConfigProductosWeb/ConfigProductosWeb';
 import ConfigProveedores from '../pages/ConfigProveedores/ConfigProveedores';
+import ConfigTurnos from '../pages/ConfigTurnos/ConfigTurnos';
 import PageVentas from '../pages/PageVentas/PageVentas';
 
 const router = createBrowserRouter([
@@ -96,6 +97,10 @@ const router = createBrowserRouter([
   {
     path: '/config-proveedores',
     element: <ConfigProveedores />,
+  },
+  {
+    path: '/config-turnos',
+    element: <ConfigTurnos />,
   },
   {
     path: '/ventas',
