@@ -94,14 +94,6 @@ a:hover {
   color: var(--color-accent-dark);
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
 h1 {
   font-size: 1.75rem; /* 28px */
   line-height: 1.2;
