@@ -93,7 +93,7 @@ export const verificarTurnoAbierto = async (): Promise<Turno | null> => {
     } else {
       console.log('Servicio: No se encontró turno abierto');
     }
-    return turnoAbierto || null;
+    return turnoAbierto ?? null;
   } catch (error) {
     console.error('Error en servicio verificarTurnoAbierto:', error);
     throw error;

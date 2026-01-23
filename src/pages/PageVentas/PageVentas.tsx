@@ -294,10 +294,11 @@ const PageVentas: React.FC = () => {
         try {
           setIsCheckingTurno(true);
           const turnoAbierto = await verificarTurnoAbierto();
-          setHasTurnoAbierto(turnoAbierto !== null);
+          const hasTurno = turnoAbierto !== null;
+          setHasTurnoAbierto(hasTurno);
           
           // If no open turno, show IniciaTurno modal
-          if (turnoAbierto === null) {
+          if (!hasTurno) {
             console.log('No hay turno abierto, mostrando modal Inicia Turno');
             setTimeout(() => {
               setShowIniciaTurnoModal(true);

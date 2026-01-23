@@ -50,8 +50,10 @@ const ModalIniciaTurno: React.FC<ModalIniciaTurnoProps> = ({
       const response = await crearTurno();
       console.log('Turno iniciado:', response);
       
-      // Here you could add additional data like fondoCaja and objetivoVenta
-      // to a separate endpoint if needed in the future
+      // TODO: In future enhancement, send fondoCaja and objetivoVenta to backend
+      // The current backend API (POST /api/turnos) doesn't accept these fields yet
+      // They would need to be added to the tblposcrumenwebturnos table and API endpoint
+      // For now, we only validate that user fills the form before proceeding
       
       // Notify parent component
       onTurnoIniciado(response.idturno, response.claveturno);
