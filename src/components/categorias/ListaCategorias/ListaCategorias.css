@@ -1,8 +1,8 @@
 .lista-categorias {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
-  padding: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(106px, 1fr));
+  gap: 0.49rem;
+  padding: 0.17rem;
 }
 
 /* Empty State */
@@ -12,31 +12,31 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4rem 2rem;
+  padding: 1.32rem 0.66rem;
   text-align: center;
   color: #64748b;
 }
 
 .lista-categorias-vacia .icono-vacio {
   color: #cbd5e1;
-  margin-bottom: 1rem;
+  margin-bottom: 0.33rem;
 }
 
 .lista-categorias-vacia h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.5rem;
+  margin: 0 0 0.17rem 0;
+  font-size: 0.49rem;
   color: #475569;
 }
 
 .lista-categorias-vacia p {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.33rem;
 }
 
 /* Categoria Card */
 .categoria-card {
   background: white;
-  border-radius: 16px;
+  border-radius: 5px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s;
@@ -54,7 +54,7 @@
 .categoria-card-imagen {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: 66px;
   background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   overflow: hidden;
 }
@@ -76,30 +76,30 @@
 
 .categoria-orden-badge {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 4px;
+  right: 4px;
   background: rgba(255, 255, 255, 0.95);
   color: #1e3a5f;
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
+  padding: 0.17rem 0.25rem;
+  border-radius: 3px;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.30rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Card Body */
 .categoria-card-body {
-  padding: 1.5rem;
+  padding: 0.49rem;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.33rem;
 }
 
 .categoria-card-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.25rem;
 }
 
 .categoria-card-header .categoria-icon {
@@ -109,7 +109,7 @@
 
 .categoria-card-header h3 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 0.41rem;
   font-weight: 700;
   color: #1e293b;
   line-height: 1.3;
@@ -118,7 +118,7 @@
 .categoria-descripcion {
   margin: 0;
   color: #64748b;
-  font-size: 0.95rem;
+  font-size: 0.31rem;
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -130,7 +130,7 @@
 /* Info Grid */
 .categoria-info-grid {
   display: flex;
-  gap: 1rem;
+  gap: 0.33rem;
   flex-wrap: wrap;
   align-items: center;
 }
@@ -138,7 +138,7 @@
 .categoria-info-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.17rem;
 }
 
 .categoria-info-item.full-width {
@@ -162,21 +162,21 @@
 }
 
 .info-label {
-  font-size: 0.875rem;
+  font-size: 0.29rem;
   color: #64748b;
   font-weight: 500;
 }
 
 .info-value {
-  font-size: 0.875rem;
+  font-size: 0.29rem;
   color: #1e293b;
   font-weight: 600;
 }
 
 .badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.875rem;
+  padding: 0.08rem 0.25rem;
+  border-radius: 2px;
+  font-size: 0.29rem;
   font-weight: 600;
 }
 
@@ -199,8 +199,8 @@
 /* Card Footer */
 .categoria-card-footer {
   display: flex;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem;
+  gap: 0.25rem;
+  padding: 0.33rem 0.49rem;
   background: #f8fafc;
   border-top: 1px solid #e2e8f0;
 }
@@ -211,12 +211,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  gap: 0.17rem;
+  padding: 0.25rem 0.33rem;
   border: none;
-  border-radius: 10px;
+  border-radius: 3px;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.31rem;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -245,11 +245,11 @@
 @media (max-width: 768px) {
   .lista-categorias {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0.33rem;
   }
 
   .categoria-card-footer {
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.17rem;
   }
 }
