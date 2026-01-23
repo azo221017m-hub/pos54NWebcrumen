@@ -1,25 +1,25 @@
 .lista-recetas {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
-  gap: 0.49rem;
-  padding: 0.33rem;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 0.75rem;
+  padding: 0.5rem;
   max-height: calc(100vh - 280px);
   overflow-y: auto;
 }
 
 /* Scrollbar personalizado */
 .lista-recetas::-webkit-scrollbar {
-  width: 3px;
+  width: 5px;
 }
 
 .lista-recetas::-webkit-scrollbar-track {
   background: #f1f5f9;
-  border-radius: 3px;
+  border-radius: 6px;
 }
 
 .lista-recetas::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
-  border-radius: 3px;
+  border-radius: 6px;
 }
 
 .lista-recetas::-webkit-scrollbar-thumb:hover {
@@ -31,20 +31,20 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1.32rem 0.66rem;
+  padding: 2rem 1rem;
   text-align: center;
   color: #64748b;
 }
 
 .lista-recetas-vacia .icono-vacio {
-  margin-bottom: 0.49rem;
+  margin-bottom: 0.75rem;
   opacity: 0.3;
   color: #1e3a5f;
 }
 
 .lista-recetas-vacia h3 {
-  margin: 0 0 0.17rem 0;
-  font-size: 0.41rem;
+  margin: 0 0 0.25rem 0;
+  font-size: 0.75rem;
   color: #334155;
 }
 
@@ -56,7 +56,7 @@
 /* Card de receta */
 .receta-card {
   background: white;
-  border-radius: 4px;
+  border-radius: 7px;
   border: 1px solid #e2e8f0;
   overflow: hidden;
   transition: all 0.3s ease;
@@ -72,37 +72,37 @@
 .receta-card-header {
   background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
   color: white;
-  padding: 0.41rem;
+  padding: 0.62rem;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.38rem;
 }
 
 .receta-card-header h3 {
   margin: 0;
-  font-size: 0.36rem;
+  font-size: 0.66rem;
   font-weight: 600;
   flex: 1;
 }
 
 /* Body del Card */
 .receta-card-body {
-  padding: 0.41rem;
+  padding: 0.62rem;
   display: flex;
   flex-direction: column;
-  gap: 0.33rem;
+  gap: 0.5rem;
 }
 
 .receta-info-item {
   display: flex;
   align-items: flex-start;
-  gap: 0.25rem;
+  gap: 0.38rem;
 }
 
 .info-icon {
   flex-shrink: 0;
   color: #1e3a5f;
-  margin-top: 0.04rem;
+  margin-top: 0.06rem;
 }
 
 .info-icon.activo {
@@ -117,31 +117,31 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.08rem;
+  gap: 0.12rem;
 }
 
 .info-label {
-  font-size: 0.25rem;
+  font-size: 0.45rem;
   font-weight: 500;
   color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.3px;
 }
 
 .info-value {
-  font-size: 0.31rem;
+  font-size: 0.57rem;
   color: #1e293b;
   font-weight: 500;
 }
 
 .info-value.costo {
-  font-size: 0.41rem;
+  font-size: 0.75rem;
   color: #1e3a5f;
   font-weight: 700;
 }
 
 .info-text {
-  font-size: 0.29rem;
+  font-size: 0.53rem;
   color: #475569;
   line-height: 1.5;
   margin: 0;
@@ -150,12 +150,12 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.08rem 0.25rem;
-  border-radius: 4px;
-  font-size: 0.25rem;
+  padding: 0.12rem 0.38rem;
+  border-radius: 7px;
+  font-size: 0.45rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.3px;
   width: fit-content;
 }
 
@@ -170,19 +170,19 @@
 }
 
 .receta-ingredientes {
-  margin-top: 0.17rem;
-  padding-top: 0.33rem;
+  margin-top: 0.25rem;
+  padding-top: 0.5rem;
   border-top: 1px solid #e2e8f0;
 }
 
 .ingredientes-count {
   display: inline-flex;
   align-items: center;
-  padding: 0.17rem 0.33rem;
+  padding: 0.25rem 0.5rem;
   background: #fff7ed;
   border: 1px solid #fed7aa;
-  border-radius: 3px;
-  font-size: 0.29rem;
+  border-radius: 5px;
+  font-size: 0.53rem;
   font-weight: 600;
   color: #c2410c;
 }
@@ -190,8 +190,8 @@
 /* Footer del Card */
 .receta-card-footer {
   display: flex;
-  gap: 0.17rem;
-  padding: 0.33rem 0.41rem;
+  gap: 0.25rem;
+  padding: 0.5rem 0.62rem;
   background: #f8fafc;
   border-top: 1px solid #e2e8f0;
 }
@@ -202,11 +202,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.17rem;
-  padding: 0.21rem 0.33rem;
+  gap: 0.25rem;
+  padding: 0.31rem 0.5rem;
   border: none;
-  border-radius: 3px;
-  font-size: 0.29rem;
+  border-radius: 5px;
+  font-size: 0.53rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -243,21 +243,21 @@
 
 /* Sección de Ingredientes Expandible */
 .receta-ingredientes-section {
-  margin-top: 0.17rem;
-  padding-top: 0.33rem;
+  margin-top: 0.25rem;
+  padding-top: 0.5rem;
   border-top: 1px solid #e2e8f0;
 }
 
 .ingredientes-toggle {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.38rem;
   width: 100%;
-  padding: 0.25rem 0.33rem;
+  padding: 0.38rem 0.5rem;
   background: #fff7ed;
   border: 1px solid #fed7aa;
-  border-radius: 3px;
-  font-size: 0.29rem;
+  border-radius: 5px;
+  font-size: 0.53rem;
   font-weight: 600;
   color: #c2410c;
   cursor: pointer;
@@ -276,7 +276,7 @@
 }
 
 .ingredientes-lista-detalle {
-  margin-top: 0.33rem;
+  margin-top: 0.5rem;
   animation: slideDown 0.3s ease;
 }
 
@@ -295,9 +295,9 @@
 .ingredientes-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.29rem;
+  font-size: 0.53rem;
   background: white;
-  border-radius: 3px;
+  border-radius: 5px;
   overflow: hidden;
   border: 1px solid #e2e8f0;
 }
@@ -308,12 +308,12 @@
 }
 
 .ingredientes-table th {
-  padding: 0.25rem 0.17rem;
+  padding: 0.38rem 0.25rem;
   text-align: left;
   font-weight: 600;
-  font-size: 0.25rem;
+  font-size: 0.45rem;
   text-transform: uppercase;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.3px;
 }
 
 .ingredientes-table tbody tr {
@@ -330,7 +330,7 @@
 }
 
 .ingredientes-table td {
-  padding: 0.25rem 0.17rem;
+  padding: 0.38rem 0.25rem;
   color: #334155;
 }
 
@@ -338,7 +338,7 @@
   text-align: center;
   font-weight: 600;
   color: #1e3a5f;
-  width: 13px;
+  width: 28px;
 }
 
 .td-ingrediente {
@@ -356,7 +356,7 @@
 .td-um {
   text-align: center;
   color: #64748b;
-  font-size: 0.26rem;
+  font-size: 0.48rem;
   text-transform: uppercase;
 }
 
@@ -372,16 +372,16 @@
   }
 
   .ingredientes-table {
-    font-size: 0.25rem;
+    font-size: 0.45rem;
   }
 
   .ingredientes-table th,
   .ingredientes-table td {
-    padding: 0.17rem 0.08rem;
+    padding: 0.25rem 0.12rem;
   }
 
   .td-ingrediente {
-    max-width: 50px;
+    max-width: 150px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
