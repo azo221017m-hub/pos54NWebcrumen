@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import './CierreTurno.css';
 
 // Tipos para las denominaciones
@@ -16,6 +16,20 @@ interface Denominaciones {
 }
 
 type EstatusCierre = 'sin_novedades' | 'cuentas_pendientes';
+
+// Valores de las denominaciones (constante fuera del componente)
+const valoresDenominaciones = {
+  billete1000: 1000,
+  billete500: 500,
+  billete200: 200,
+  billete100: 100,
+  billete50: 50,
+  billete20: 20,
+  moneda10: 10,
+  moneda5: 5,
+  moneda1: 1,
+  moneda050: 0.50
+} as const;
 
 const CierreTurno: React.FC = () => {
   // ID de turno (en producción, esto debería generarse dinámicamente o recibirse como prop)
@@ -38,33 +52,23 @@ const CierreTurno: React.FC = () => {
     moneda050: 0
   });
 
-  // Estado para el total del arqueo
-  const [totalArqueo, setTotalArqueo] = useState<number>(0);
-
-  // Estado para el estatus del cierre
-  const [estatusCierre, setEstatusCierre] = useState<EstatusCierre>('sin_novedades');
-
-  // Valores de las denominaciones
-  const valoresDenominaciones = {
-    billete1000: 1000,
-    billete500: 500,
-    billete200: 200,
-    billete100: 100,
-    billete50: 50,
-    billete20: 20,
-    moneda10: 10,
-    moneda5: 5,
-    moneda1: 1,
-    moneda050: 0.50
-  };
-
-  // Calcular el total del arqueo cada vez que cambian las denominaciones
-  useEffect(() => {
-    const total = (Object.keys(denominaciones) as Array<keyof Denominaciones>).reduce((acc, key) => {
+  // Calcular el total del arqueo cada vez que cambian las denominaciones (usando useMemo)
+  const totalArqueo = useMemo(() => {
+    return (Object.keys(denominaciones) as Array<keyof Denominaciones>).reduce((acc, key) => {
       return acc + (denominaciones[key] * valoresDenominaciones[key]);
     }, 0);
-    setTotalArqueo(total);
   }, [denominaciones]);
+
+  // Calcular el estatus del cierre basado en el total (usando useMemo)
+  const estatusCierre = useMemo<EstatusCierre>(() => {
+    // Ejemplo: si el total del arqueo es menor a 100, hay cuentas pendientes
+    if (totalArqueo > 0 && totalArqueo < 100) {
+      return 'cuentas_pendientes';
+    } else if (totalArqueo >= 100) {
+      return 'sin_novedades';
+    }
+    return 'sin_novedades';
+  }, [totalArqueo]);
 
   // Manejador para sumar/restar denominaciones
   const handleDenominacionChange = (tipo: keyof Denominaciones, operacion: 'sumar' | 'restar') => {
@@ -106,18 +110,7 @@ const CierreTurno: React.FC = () => {
       moneda1: 0,
       moneda050: 0
     });
-    setEstatusCierre('sin_novedades');
   };
-
-  // Simular validación de cuentas pendientes (en producción, esto vendría de una API)
-  useEffect(() => {
-    // Ejemplo: si el total del arqueo es menor a 100, hay cuentas pendientes
-    if (totalArqueo > 0 && totalArqueo < 100) {
-      setEstatusCierre('cuentas_pendientes');
-    } else if (totalArqueo >= 100) {
-      setEstatusCierre('sin_novedades');
-    }
-  }, [totalArqueo]);
 
   // Renderizar una fila de denominación
   const renderDenominacionRow = (tipo: keyof Denominaciones, etiqueta: string) => (
