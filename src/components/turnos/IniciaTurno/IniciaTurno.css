@@ -1,0 +1,275 @@
+/* Contenedor principal */
+.inicia-turno-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  padding: 2rem;
+}
+
+/* Tarjeta del formulario */
+.inicia-turno-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  max-width: 700px;
+  width: 100%;
+  padding: 2.5rem;
+}
+
+/* Encabezado */
+.turno-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #e8ecf1;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.header-text h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.3;
+}
+
+.header-id {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.id-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.id-value {
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  color: #1e293b;
+  font-weight: 600;
+  word-break: break-all;
+  text-align: right;
+}
+
+/* Grupos de formulario */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.5rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  font-size: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  color: #1e293b;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-input:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.form-input::placeholder {
+  color: #cbd5e1;
+}
+
+/* Objetivo de venta */
+.objetivo-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.objetivo-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 250px;
+}
+
+.form-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+.checkbox-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  user-select: none;
+}
+
+.objetivo-input-wrapper {
+  flex: 0 0 200px;
+}
+
+.objetivo-input {
+  width: 100%;
+}
+
+/* Frase personalizada */
+.frase-personalizada {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 12px;
+  border-left: 4px solid #f59e0b;
+  text-align: center;
+}
+
+.frase-personalizada p {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #78350f;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+
+/* Botones de acción */
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.btn {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .inicia-turno-container {
+    padding: 1rem;
+  }
+
+  .inicia-turno-card {
+    padding: 1.5rem;
+  }
+
+  .turno-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-id {
+    align-items: flex-start;
+  }
+
+  .id-value {
+    text-align: left;
+  }
+
+  .objetivo-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .objetivo-checkbox-wrapper {
+    min-width: 100%;
+  }
+
+  .objetivo-input-wrapper {
+    flex: 1;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-text h2 {
+    font-size: 1.25rem;
+  }
+
+  .inicia-turno-card {
+    padding: 1rem;
+  }
+
+  .frase-personalizada p {
+    font-size: 0.95rem;
+  }
+}
