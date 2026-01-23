@@ -7,8 +7,10 @@ import { obtenerCategorias } from '../../services/categoriasService';
 import { crearVentaWeb } from '../../services/ventasWebService';
 import { obtenerModeradores } from '../../services/moderadoresService';
 import { obtenerModeradoresRef } from '../../services/moderadoresRefService';
+import { verificarTurnoAbierto } from '../../services/turnosService';
 import ModalTipoServicio from '../../components/ventas/ModalTipoServicio';
 import ModalSeleccionVentaPageVentas from '../../components/ventas/ModalSeleccionVentaPageVentas';
+import ModalIniciaTurno from '../../components/turnos/ModalIniciaTurno';
 import FichaDeComanda from '../../components/ventas/FichaDeComanda';
 import type { MesaFormData, LlevarFormData, DomicilioFormData } from '../../components/ventas/ModalTipoServicio';
 import type { ProductoWeb } from '../../types/productoWeb.types';
@@ -83,6 +85,11 @@ const PageVentas: React.FC = () => {
   const [isServiceConfigured, setIsServiceConfigured] = useState(false);
   const [isLoadedFromDashboard, setIsLoadedFromDashboard] = useState(false);
   const [showSelectionModal, setShowSelectionModal] = useState(false);
+
+  // Turno states
+  const [showIniciaTurnoModal, setShowIniciaTurnoModal] = useState(false);
+  const [hasTurnoAbierto, setHasTurnoAbierto] = useState<boolean | null>(null);
+  const [isCheckingTurno, setIsCheckingTurno] = useState(true);
 
 
   // Close user menu when clicking outside
@@ -279,6 +286,40 @@ const PageVentas: React.FC = () => {
     }
   }, []);
 
+  // Check for open turno (shift) when component mounts
+  useEffect(() => {
+    const checkTurno = async () => {
+      // Only check if not loaded from dashboard
+      if (!isLoadedFromDashboard) {
+        try {
+          setIsCheckingTurno(true);
+          const turnoAbierto = await verificarTurnoAbierto();
+          setHasTurnoAbierto(turnoAbierto !== null);
+          
+          // If no open turno, show IniciaTurno modal
+          if (turnoAbierto === null) {
+            console.log('No hay turno abierto, mostrando modal Inicia Turno');
+            setTimeout(() => {
+              setShowIniciaTurnoModal(true);
+            }, SELECTION_MODAL_DISPLAY_DELAY_MS);
+          }
+        } catch (error) {
+          console.error('Error al verificar turno:', error);
+          // On error, allow user to proceed
+          setHasTurnoAbierto(true);
+        } finally {
+          setIsCheckingTurno(false);
+        }
+      } else {
+        // If loaded from dashboard, skip turno check
+        setHasTurnoAbierto(true);
+        setIsCheckingTurno(false);
+      }
+    };
+
+    checkTurno();
+  }, [isLoadedFromDashboard]);
+
   // Resolve moderador names after moderadores are loaded (for items loaded from dashboard)
   useEffect(() => {
     if (moderadores.length > 0 && isLoadedFromDashboard) {
@@ -321,7 +362,9 @@ const PageVentas: React.FC = () => {
     // - Not loaded from dashboard
     // - Service is not configured
     // - Comanda is empty
-    if (!isLoadedFromDashboard && !isServiceConfigured && comanda.length === 0) {
+    // - Has open turno (shift)
+    // - Not checking turno
+    if (!isLoadedFromDashboard && !isServiceConfigured && comanda.length === 0 && hasTurnoAbierto && !isCheckingTurno) {
       const timer = setTimeout(() => {
         setShowSelectionModal(true);
       }, SELECTION_MODAL_DISPLAY_DELAY_MS);
@@ -331,7 +374,7 @@ const PageVentas: React.FC = () => {
       // Hide modal if comanda has items or service is configured
       setShowSelectionModal(false);
     }
-  }, [comanda.length, isServiceConfigured, isLoadedFromDashboard]);
+  }, [comanda.length, isServiceConfigured, isLoadedFromDashboard, hasTurnoAbierto, isCheckingTurno]);
 
   // Filtrar productos por búsqueda y categoría
   useEffect(() => {
@@ -556,6 +599,16 @@ const PageVentas: React.FC = () => {
       const errorMsg = (error instanceof Error) ? error.message : 'Error de conexión con el servidor';
       alert(`Error al registrar la venta:\n${errorMsg}\n\nPor favor, intente nuevamente.`);
     }
+  };
+
+  const handleTurnoIniciado = (turnoId: number, claveturno: string) => {
+    console.log('Turno iniciado exitosamente:', turnoId, claveturno);
+    setShowIniciaTurnoModal(false);
+    setHasTurnoAbierto(true);
+    // After turno is opened, show selection modal
+    setTimeout(() => {
+      setShowSelectionModal(true);
+    }, SELECTION_MODAL_DISPLAY_DELAY_MS);
   };
 
   const handleProducir = async () => {
@@ -1266,6 +1319,13 @@ const PageVentas: React.FC = () => {
       <ModalSeleccionVentaPageVentas
         isOpen={showSelectionModal}
         onTipoVentaSelect={handleSelectionModalVentaSelect}
+      />
+
+      {/* Modal para iniciar turno */}
+      <ModalIniciaTurno
+        isOpen={showIniciaTurnoModal}
+        onTurnoIniciado={handleTurnoIniciado}
+        usuarioAlias={usuario?.alias}
       />
 
       {/* Modal para selección de moderadores */}

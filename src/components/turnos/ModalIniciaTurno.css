@@ -1,0 +1,315 @@
+/* Modal overlay */
+.modal-inicia-turno-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/* Modal content wrapper */
+.modal-inicia-turno-content {
+  width: 100%;
+  max-width: 700px;
+  margin: auto;
+}
+
+/* Tarjeta del formulario */
+.inicia-turno-card-modal {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  padding: 2.5rem;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Encabezado */
+.inicia-turno-card-modal .turno-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #e8ecf1;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.inicia-turno-card-modal .header-text h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.3;
+}
+
+.inicia-turno-card-modal .header-id {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.inicia-turno-card-modal .id-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.inicia-turno-card-modal .id-value {
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  color: #1e293b;
+  font-weight: 600;
+  word-break: break-all;
+  text-align: right;
+}
+
+/* Grupos de formulario */
+.inicia-turno-card-modal .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.inicia-turno-card-modal .form-label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.5rem;
+}
+
+.inicia-turno-card-modal .form-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  font-size: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  color: #1e293b;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.inicia-turno-card-modal .form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.inicia-turno-card-modal .form-input:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.inicia-turno-card-modal .form-input::placeholder {
+  color: #cbd5e1;
+}
+
+/* Objetivo de venta */
+.inicia-turno-card-modal .objetivo-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.inicia-turno-card-modal .objetivo-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 250px;
+}
+
+.inicia-turno-card-modal .form-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+.inicia-turno-card-modal .checkbox-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  user-select: none;
+}
+
+.inicia-turno-card-modal .objetivo-input-wrapper {
+  flex: 0 0 200px;
+}
+
+.inicia-turno-card-modal .objetivo-input {
+  width: 100%;
+}
+
+/* Frase personalizada */
+.inicia-turno-card-modal .frase-personalizada {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 12px;
+  border-left: 4px solid #f59e0b;
+  text-align: center;
+}
+
+.inicia-turno-card-modal .frase-personalizada p {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #78350f;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+
+/* Error message */
+.inicia-turno-card-modal .error-message {
+  background: #fee2e2;
+  border: 1px solid #ef4444;
+  color: #991b1b;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+/* Botones de acción */
+.inicia-turno-card-modal .form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.inicia-turno-card-modal .btn {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+
+.inicia-turno-card-modal .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.inicia-turno-card-modal .btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.inicia-turno-card-modal .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.inicia-turno-card-modal .btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.inicia-turno-card-modal .btn-secondary {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.inicia-turno-card-modal .btn-secondary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+.inicia-turno-card-modal .btn-secondary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modal-inicia-turno-overlay {
+    padding: 1rem;
+  }
+
+  .inicia-turno-card-modal {
+    padding: 1.5rem;
+  }
+
+  .inicia-turno-card-modal .turno-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .inicia-turno-card-modal .header-id {
+    align-items: flex-start;
+  }
+
+  .inicia-turno-card-modal .id-value {
+    text-align: left;
+  }
+
+  .inicia-turno-card-modal .objetivo-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .inicia-turno-card-modal .objetivo-checkbox-wrapper {
+    min-width: 100%;
+  }
+
+  .inicia-turno-card-modal .objetivo-input-wrapper {
+    flex: 1;
+  }
+
+  .inicia-turno-card-modal .form-actions {
+    flex-direction: column;
+  }
+
+  .inicia-turno-card-modal .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .inicia-turno-card-modal .header-text h2 {
+    font-size: 1.25rem;
+  }
+
+  .inicia-turno-card-modal {
+    padding: 1rem;
+  }
+
+  .inicia-turno-card-modal .frase-personalizada p {
+    font-size: 0.95rem;
+  }
+}
