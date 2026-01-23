@@ -209,6 +209,20 @@ This creates a **Goldilocks solution**: compact enough to show more data, readab
 8. ✓ Check hover states and interactive elements
 9. ✓ Validate color contrast ratios for smaller text
 
+## Accessibility Notes
+
+**WCAG Compliance:** While the 60% font scaling (9-12px range) is significantly more readable than the initial 33% scaling (5-6px), it's worth noting:
+- **Primary text**: Scaled to ~9.6-12px (readable for most users)
+- **WCAG AAA standards**: Recommend 12px+ for body text
+- **Secondary text**: Some elements at ~8-9px (acceptable for labels, captions)
+
+**Recommendations for production:**
+- Monitor user feedback on text readability
+- Consider user preferences/settings for font size
+- Ensure sufficient color contrast (especially with smaller text)
+- Test with actual users to validate readability
+- May adjust primary text to 0.75rem (12px) if needed for better WCAG compliance
+
 ## Implementation Details
 
 **Files Modified:** 17 Lista component CSS files  
