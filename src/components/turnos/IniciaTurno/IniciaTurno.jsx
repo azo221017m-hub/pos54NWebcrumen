@@ -7,10 +7,10 @@ function IniciaTurno() {
   const [usaObjetivo, setUsaObjetivo] = useState(false);
   const [objetivoVenta, setObjetivoVenta] = useState('');
   
-  // ID de turno (se puede generar o recibir como prop)
+  // ID de turno (en producción, esto debería generarse dinámicamente o recibirse como prop)
   const idTurno = '202601230737451234567890';
   
-  // Frase personalizada (normalmente vendría del usuario logueado)
+  // Frase personalizada (en producción, esto debería venir del usuario logueado/contexto)
   const frasePersonalizada = 'FRASE PERSONALIZADA del Usuario que hizo login';
 
   // Manejador para iniciar turno
@@ -18,10 +18,10 @@ function IniciaTurno() {
     e.preventDefault();
     
     const datosFormulario = {
-      fondoCaja: fondoCaja,
-      usaObjetivo: usaObjetivo,
+      fondoCaja,
+      usaObjetivo,
       objetivoVenta: usaObjetivo ? objetivoVenta : null,
-      idTurno: idTurno
+      idTurno
     };
     
     console.log('Datos del formulario:', datosFormulario);
