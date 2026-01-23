@@ -80,3 +80,22 @@ export const cerrarTurnoActual = async (): Promise<{ message: string; idturno: n
     throw error;
   }
 };
+
+// Verificar si existe un turno abierto para el negocio autenticado
+export const verificarTurnoAbierto = async (): Promise<Turno | null> => {
+  try {
+    console.log('Servicio: Verificando si existe turno abierto');
+    const turnos = await obtenerTurnos();
+    // Filter for open shifts (estatusturno = 'abierto')
+    const turnoAbierto = turnos.find(turno => turno.estatusturno === 'abierto');
+    if (turnoAbierto) {
+      console.log('Servicio: Turno abierto encontrado:', turnoAbierto.claveturno);
+    } else {
+      console.log('Servicio: No se encontró turno abierto');
+    }
+    return turnoAbierto ?? null;
+  } catch (error) {
+    console.error('Error en servicio verificarTurnoAbierto:', error);
+    throw error;
+  }
+};
