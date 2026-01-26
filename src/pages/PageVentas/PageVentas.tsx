@@ -37,6 +37,7 @@ const ESTATUS_ACTIVO = 1;
 const SERVICE_CONFIG_MODAL_DELAY_MS = 300;
 const SELECTION_MODAL_DISPLAY_DELAY_MS = 500;
 const MODERADORES_PLACEHOLDER = 'Moderadores';
+const ESTADO_ORDENADO: EstadoDetalle = 'ORDENADO';
 
 const PageVentas: React.FC = () => {
   const navigate = useNavigate();
@@ -537,7 +538,7 @@ const PageVentas: React.FC = () => {
     }
 
     // Filter out items that are already ORDENADO to prevent re-insertion
-    const itemsToInsert = comanda.filter(item => item.estadodetalle !== 'ORDENADO');
+    const itemsToInsert = comanda.filter(item => item.estadodetalle !== ESTADO_ORDENADO);
     
     if (itemsToInsert.length === 0) {
       alert('Todos los productos en la comanda ya han sido ordenados');
@@ -545,7 +546,7 @@ const PageVentas: React.FC = () => {
     }
 
     // Check if there are ORDENADO items in the comanda
-    const hasOrdenadoItems = comanda.some(item => item.estadodetalle === 'ORDENADO');
+    const hasOrdenadoItems = comanda.some(item => item.estadodetalle === ESTADO_ORDENADO);
 
     try {
       // Mapear TipoServicio a TipoDeVenta
@@ -627,7 +628,7 @@ const PageVentas: React.FC = () => {
         
         // Mark newly inserted items as ORDENADO
         setComanda(comanda.map(item => 
-          item.estadodetalle !== 'ORDENADO' 
+          item.estadodetalle !== ESTADO_ORDENADO 
             ? { ...item, estadodetalle: estadodetalle }
             : item
         ));
@@ -654,7 +655,7 @@ const PageVentas: React.FC = () => {
   };
 
   const handleProducir = async () => {
-    await crearVenta('ORDENADO', 'ORDENADO', 'PENDIENTE');
+    await crearVenta(ESTADO_ORDENADO, ESTADO_ORDENADO, 'PENDIENTE');
   };
 
   const handleEsperar = async () => {
@@ -1235,7 +1236,7 @@ const PageVentas: React.FC = () => {
             <button 
               className="btn-esperar" 
               onClick={handleEsperar} 
-              disabled={!isServiceConfigured || comanda.length === 0 || comanda.some(item => item.estadodetalle === 'ORDENADO')}
+              disabled={!isServiceConfigured || comanda.length === 0 || comanda.some(item => item.estadodetalle === ESTADO_ORDENADO)}
             >
               Esperar
             </button>
@@ -1249,7 +1250,7 @@ const PageVentas: React.FC = () => {
 
           <div className="comanda-items">
             {comanda.map((item, index) => {
-              const isOrdenado = item.estadodetalle === 'ORDENADO';
+              const isOrdenado = item.estadodetalle === ESTADO_ORDENADO;
               return (
               <div 
                 key={`${item.producto.idProducto}-${item.moderadores || 'none'}-${index}`} 

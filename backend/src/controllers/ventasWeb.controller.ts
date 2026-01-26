@@ -14,6 +14,8 @@ import type {
 // Constantes para validación
 const FORMAS_DE_PAGO_VALIDAS: FormaDePago[] = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'MIXTO', 'sinFP'];
 const ESTADO_ESPERAR = 'ESPERAR';
+const ESTADO_ORDENADO = 'ORDENADO';
+const TIPO_PRODUCTO_DEFAULT = 'Directo';
 
 // Obtener todas las ventas web del negocio con sus detalles
 export const getVentasWeb = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -279,7 +281,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       let afectainventario = 0;
       let inventarioprocesado = 0;
 
-      const tipoproducto = detalle.tipoproducto || 'Directo';
+      const tipoproducto = detalle.tipoproducto || TIPO_PRODUCTO_DEFAULT;
       const esEsperar = ventaData.estadodetalle === ESTADO_ESPERAR;
       
       if (tipoproducto === 'Receta') {
@@ -320,7 +322,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
           afectainventario,
           tipoafectacion,
           inventarioprocesado,
-          ventaData.estadodetalle || 'ORDENADO', // Estado inicial o proporcionado
+          ventaData.estadodetalle || ESTADO_ORDENADO, // Estado inicial o proporcionado
           detalle.observaciones || null,
           detalle.moderadores || null,
           idnegocio,
@@ -723,7 +725,7 @@ export const addDetallesToVenta = async (req: AuthRequest, res: Response): Promi
       let afectainventario = 0;
       let inventarioprocesado = 0;
 
-      const tipoproducto = detalle.tipoproducto || 'Directo';
+      const tipoproducto = detalle.tipoproducto || TIPO_PRODUCTO_DEFAULT;
       const esEsperar = estadodetalle === ESTADO_ESPERAR;
       
       if (tipoproducto === 'Receta') {
@@ -764,7 +766,7 @@ export const addDetallesToVenta = async (req: AuthRequest, res: Response): Promi
           afectainventario,
           tipoafectacion,
           inventarioprocesado,
-          estadodetalle || 'ORDENADO', // Estado inicial o proporcionado
+          estadodetalle || ESTADO_ORDENADO, // Estado inicial o proporcionado
           detalle.observaciones || null,
           detalle.moderadores || null,
           idnegocio,
