@@ -143,3 +143,47 @@ export const obtenerDetallesPorEstado = async (estado: EstadoDetalle): Promise<D
     return [];
   }
 };
+
+// Agregar detalles a una venta existente
+export const agregarDetallesAVenta = async (
+  idVenta: number,
+  detalles: {
+    idproducto: number;
+    nombreproducto: string;
+    idreceta?: number | null;
+    tipoproducto?: string;
+    cantidad: number;
+    preciounitario: number;
+    costounitario: number;
+    observaciones?: string | null;
+    moderadores?: string | null;
+  }[],
+  estadodetalle: EstadoDetalle
+): Promise<{ 
+  success: boolean; 
+  idventa?: number; 
+  folioventa?: string; 
+  message?: string 
+}> => {
+  try {
+    console.log('🔵 ventasWebService: Agregando detalles a venta ID:', idVenta);
+    const response = await apiClient.post<{ 
+      success: boolean; 
+      message: string; 
+      data: { idventa: number; folioventa: string } 
+    }>(`${API_BASE}/${idVenta}/detalles`, { detalles, estadodetalle });
+    console.log('🔵 ventasWebService: Detalles agregados exitosamente:', response.data.data);
+    return { 
+      success: true, 
+      idventa: response.data.data.idventa,
+      folioventa: response.data.data.folioventa
+    };
+  } catch (error: any) {
+    console.error('🔴 ventasWebService: Error al agregar detalles a venta:', error);
+    // Extract meaningful error message from API response
+    const errorMessage = error?.response?.data?.message || 
+                        error?.message || 
+                        'Error desconocido al agregar detalles a la venta';
+    return { success: false, message: errorMessage };
+  }
+};

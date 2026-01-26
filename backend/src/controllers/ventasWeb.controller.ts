@@ -14,6 +14,8 @@ import type {
 // Constantes para validación
 const FORMAS_DE_PAGO_VALIDAS: FormaDePago[] = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'MIXTO', 'sinFP'];
 const ESTADO_ESPERAR = 'ESPERAR';
+const ESTADO_ORDENADO = 'ORDENADO';
+const TIPO_PRODUCTO_DEFAULT = 'Directo';
 
 // Obtener todas las ventas web del negocio con sus detalles
 export const getVentasWeb = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -279,7 +281,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       let afectainventario = 0;
       let inventarioprocesado = 0;
 
-      const tipoproducto = detalle.tipoproducto || 'Directo';
+      const tipoproducto = detalle.tipoproducto || TIPO_PRODUCTO_DEFAULT;
       const esEsperar = ventaData.estadodetalle === ESTADO_ESPERAR;
       
       if (tipoproducto === 'Receta') {
@@ -320,7 +322,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
           afectainventario,
           tipoafectacion,
           inventarioprocesado,
-          ventaData.estadodetalle || 'ORDENADO', // Estado inicial o proporcionado
+          ventaData.estadodetalle || ESTADO_ORDENADO, // Estado inicial o proporcionado
           detalle.observaciones || null,
           detalle.moderadores || null,
           idnegocio,
@@ -657,5 +659,160 @@ export const getDetallesByEstado = async (req: AuthRequest, res: Response): Prom
       success: false,
       message: 'Error al obtener detalles por estado'
     });
+  }
+};
+
+// Add detalles to an existing venta
+export const addDetallesToVenta = async (req: AuthRequest, res: Response): Promise<void> => {
+  const connection = await pool.getConnection();
+  
+  try {
+    const { id } = req.params;
+    const idnegocio = req.user?.idNegocio;
+    const usuarioauditoria = req.user?.alias;
+
+    if (!idnegocio || !usuarioauditoria) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
+    const { detalles, estadodetalle } = req.body;
+
+    // Validar campos requeridos
+    if (!detalles || detalles.length === 0) {
+      res.status(400).json({ 
+        success: false, 
+        message: 'No hay detalles para agregar' 
+      });
+      return;
+    }
+
+    await connection.beginTransaction();
+
+    // Verificar que la venta existe y pertenece al negocio
+    const [ventaRows] = await connection.execute<RowDataPacket[]>(
+      'SELECT idventa, folioventa, subtotal, descuentos, impuestos, totaldeventa FROM tblposcrumenwebventas WHERE idventa = ? AND idnegocio = ?',
+      [id, idnegocio]
+    );
+
+    if (ventaRows.length === 0) {
+      res.status(404).json({ 
+        success: false, 
+        message: 'Venta no encontrada' 
+      });
+      return;
+    }
+
+    const ventaActual = ventaRows[0];
+    let subtotalNuevo = Number(ventaActual.subtotal) || 0;
+    let descuentosNuevo = Number(ventaActual.descuentos) || 0;
+    let impuestosNuevo = Number(ventaActual.impuestos) || 0;
+
+    // Insertar nuevos detalles de la venta
+    for (const detalle of detalles) {
+      const detalleSubtotal = detalle.cantidad * detalle.preciounitario;
+      const detalleDescuento = 0; // 0 al hacer insert desde botón ESPERAR o PRODUCIR
+      const detalleImpuesto = 0; // 0 al hacer insert desde botón ESPERAR o PRODUCIR
+      const detalleTotal = detalleSubtotal - detalleDescuento + detalleImpuesto;
+
+      subtotalNuevo += detalleSubtotal;
+
+      // Determinar tipo de afectación y afectainventario basado en tipoproducto
+      let tipoafectacion: 'DIRECTO' | 'INVENTARIO' | 'RECETA' = 'DIRECTO';
+      let afectainventario = 0;
+      let inventarioprocesado = 0;
+
+      const tipoproducto = detalle.tipoproducto || TIPO_PRODUCTO_DEFAULT;
+      const esEsperar = estadodetalle === ESTADO_ESPERAR;
+      
+      if (tipoproducto === 'Receta') {
+        tipoafectacion = 'RECETA';
+        afectainventario = esEsperar ? -1 : 1;
+        inventarioprocesado = esEsperar ? -1 : 0;
+      } else if (tipoproducto === 'Inventario' || tipoproducto === 'Materia Prima') {
+        tipoafectacion = 'INVENTARIO';
+        afectainventario = esEsperar ? -1 : 1;
+        inventarioprocesado = esEsperar ? -1 : 0;
+      } else {
+        // Directo
+        tipoafectacion = 'DIRECTO';
+        afectainventario = -1; // Siempre -1 para DIRECTO
+        inventarioprocesado = -1; // Siempre -1 para DIRECTO
+      }
+
+      await connection.execute(
+        `INSERT INTO tblposcrumenwebdetalleventas (
+          idventa, idproducto, nombreproducto, idreceta,
+          cantidad, preciounitario, costounitario, subtotal, descuento,
+          impuesto, total, afectainventario, tipoafectacion, 
+          inventarioprocesado, fechadetalleventa, estadodetalle, 
+          observaciones, moderadores, idnegocio, usuarioauditoria, fechamodificacionauditoria, comensal
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, NOW(), ?)`,
+        [
+          id,
+          detalle.idproducto,
+          detalle.nombreproducto,
+          detalle.idreceta || null,
+          detalle.cantidad,
+          detalle.preciounitario,
+          detalle.costounitario,
+          detalleSubtotal,
+          detalleDescuento,
+          detalleImpuesto,
+          detalleTotal,
+          afectainventario,
+          tipoafectacion,
+          inventarioprocesado,
+          estadodetalle || ESTADO_ORDENADO, // Estado inicial o proporcionado
+          detalle.observaciones || null,
+          detalle.moderadores || null,
+          idnegocio,
+          usuarioauditoria,
+          null // comensal = null
+        ]
+      );
+    }
+
+    // Actualizar totales de la venta
+    const totaldeventaNuevo = subtotalNuevo - descuentosNuevo + impuestosNuevo;
+    await connection.execute(
+      `UPDATE tblposcrumenwebventas 
+       SET subtotal = ?, 
+           totaldeventa = ?,
+           usuarioauditoria = ?,
+           fechamodificacionauditoria = NOW()
+       WHERE idventa = ? AND idnegocio = ?`,
+      [subtotalNuevo, totaldeventaNuevo, usuarioauditoria, id, idnegocio]
+    );
+
+    await connection.commit();
+
+    res.status(200).json({
+      success: true,
+      message: 'Detalles agregados exitosamente a la venta',
+      data: { 
+        idventa: Number(id),
+        folioventa: ventaActual.folioventa 
+      }
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error al agregar detalles a venta web:', error);
+    
+    let errorMessage = 'Error al agregar detalles a la venta';
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
+    res.status(500).json({ 
+      success: false, 
+      message: errorMessage
+    });
+  } finally {
+    connection.release();
   }
 };
