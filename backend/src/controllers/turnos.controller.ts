@@ -224,7 +224,7 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
         0,
         0,
         ?,
-        NULL,
+        'SISTEMA',
         NULL,
         NULL,
         NULL,
