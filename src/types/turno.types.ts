@@ -16,6 +16,7 @@ export interface Turno {
   claveturno: string;
   usuarioturno: string;
   idnegocio: number;
+  metaturno?: number | null;
 }
 
 // Interface para crear un nuevo turno (iniciar turno)

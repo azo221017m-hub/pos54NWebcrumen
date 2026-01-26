@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { crearTurno } from '../../services/turnosService';
+import { getUsuarioData } from '../../services/sessionService';
 import './ModalIniciaTurno.css';
 
 interface ModalIniciaTurnoProps {
@@ -20,23 +21,30 @@ const ModalIniciaTurno: React.FC<ModalIniciaTurnoProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [claveturno, setClaveturno] = useState<string>('');
+  const [frasePersonalizada, setFrasePersonalizada] = useState<string>('');
   
-  // Generate temporary ID while actual one is being created
+  // Generate temporary ID preview and get user phrase
   useEffect(() => {
     if (isOpen) {
+      // Generate temporary claveturno preview
       const now = new Date();
-      const dd = String(now.getDate()).padStart(2, '0');
+      const aa = String(now.getFullYear()).slice(-2);
       const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const yyyy = now.getFullYear();
+      const dd = String(now.getDate()).padStart(2, '0');
       const HH = String(now.getHours()).padStart(2, '0');
       const MM = String(now.getMinutes()).padStart(2, '0');
       const SS = String(now.getSeconds()).padStart(2, '0');
-      setClaveturno(`${dd}${mm}${yyyy}${HH}${MM}${SS}...`);
-    }
-  }, [isOpen]);
+      setClaveturno(`${aa}${mm}${dd}...`);
 
-  // Frase personalizada
-  const frasePersonalizada = `¡${usuarioAlias}, prepárate para un turno exitoso!`;
+      // Get user data and frasepersonal
+      const usuario = getUsuarioData();
+      if (usuario && usuario.frasepersonal && typeof usuario.frasepersonal === 'string' && usuario.frasepersonal.trim() !== '') {
+        setFrasePersonalizada(usuario.frasepersonal);
+      } else {
+        setFrasePersonalizada(`¡${usuarioAlias}, prepárate para un turno exitoso!`);
+      }
+    }
+  }, [isOpen, usuarioAlias]);
 
   // Manejador para iniciar turno
   const handleIniciarTurno = async (e: React.FormEvent) => {
@@ -46,13 +54,19 @@ const ModalIniciaTurno: React.FC<ModalIniciaTurnoProps> = ({
     setError(null);
     
     try {
-      // Call API to create turno
-      const response = await crearTurno();
+      // Prepare metaturno value: only send if checkbox is checked and value is provided
+      const metaturno = usaObjetivo && objetivoVenta ? parseFloat(objetivoVenta) : null;
+      
+      // Call API to create turno with metaturno
+      const response = await crearTurno(metaturno);
       console.log('Turno iniciado:', response);
       
-      // TODO: In future enhancement, send fondoCaja and objetivoVenta to backend
-      // The current backend API (POST /api/turnos) doesn't accept these fields yet
-      // They would need to be added to the tblposcrumenwebturnos table and API endpoint
+      // Update claveturno display with actual value from server
+      setClaveturno(response.claveturno);
+      
+      // TODO: In future enhancement, send fondoCaja to backend
+      // The current backend API (POST /api/turnos) doesn't accept fondoCaja field yet
+      // It would need to be added to the tblposcrumenwebturnos table and API endpoint
       // For now, we only validate that user fills the form before proceeding
       
       // Notify parent component

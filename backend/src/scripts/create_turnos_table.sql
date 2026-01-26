@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS tblposcrumenwebturnos (
   claveturno VARCHAR(50) NOT NULL DEFAULT '',
   usuarioturno VARCHAR(100) NOT NULL DEFAULT '',
   idnegocio INT(10) UNSIGNED NOT NULL,
+  metaturno DECIMAL(12,2) NULL DEFAULT NULL,
   PRIMARY KEY (idturno),
   INDEX idx_idnegocio (idnegocio),
   INDEX idx_estatusturno (estatusturno),
@@ -22,6 +23,7 @@ CREATE TABLE IF NOT EXISTS tblposcrumenwebturnos (
 -- fechainicioturno: Fecha y hora de inicio del turno (autogenerada con NOW())
 -- fechafinturno: Fecha y hora de cierre del turno (NULL hasta que se cierra)
 -- estatusturno: Estado del turno: 'abierto' o 'cerrado'
--- claveturno: Clave compuesta: [ddmmyyyyHHMMSS]+[numeroturno]+[idusuario]+[idnegocio]
+-- claveturno: Clave compuesta: [AAMMDD]+[idnegocio]+[idusuario]+[HHMMSS]
 -- usuarioturno: Alias del usuario que inició el turno
 -- idnegocio: ID del negocio asociado al turno
+-- metaturno: Objetivo de venta del turno (NULL si no se establece objetivo)
