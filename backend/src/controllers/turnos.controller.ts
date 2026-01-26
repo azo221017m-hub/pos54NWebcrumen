@@ -190,7 +190,6 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
         folioventa,
         estadodeventa,
         fechadeventa,
-        fechaprogramadaventa,
         fechapreparacion,
         fechaenvio,
         fechaentrega,
@@ -215,7 +214,6 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
         '',
         'COBRADO',
         NOW(),
-        NULL, -- fechaprogramadaventa: NULL porque MOVIMIENTO no tiene fecha programada de entrega
         NULL,
         NULL,
         NULL,
