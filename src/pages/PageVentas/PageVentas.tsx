@@ -433,15 +433,16 @@ const PageVentas: React.FC = () => {
       hasSameModeradores(item.moderadores, moderadores)
     );
     
-    // If item exists but is already ORDENADO, create a new entry instead of incrementing
-    if (itemExistente && itemExistente.estadodetalle !== ESTADO_ORDENADO) {
+    // If groupable record exists (same product and moderadores), increment quantity
+    if (itemExistente) {
+      // Agrupar con registro existente incrementando cantidad
       setComanda(comanda.map(item => 
         item === itemExistente
           ? { ...item, cantidad: item.cantidad + 1 }
           : item
       ));
     } else {
-      // Create new entry: either no existing item found, or existing item is ORDENADO
+      // Si no existe registro agrupable, crear nuevo registro
       setComanda([...comanda, { producto, cantidad: 1, moderadores, moderadoresNames }]);
     }
   };
