@@ -13,6 +13,7 @@ import type {
 
 // Constantes para validación
 const FORMAS_DE_PAGO_VALIDAS: FormaDePago[] = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'MIXTO', 'sinFP'];
+const ESTADO_ESPERAR = 'ESPERAR';
 
 // Obtener todas las ventas web del negocio con sus detalles
 export const getVentasWeb = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -204,8 +205,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
 
     const totaldeventa = subtotal - descuentos + impuestos;
 
-    // Generar folio único de venta temporal (se actualizará después con el idventa)
-    // Formato temporal: V{timestamp}{idnegocio}{random} para mayor unicidad
+    // Insertar venta con folioventa vacío (se actualizará después con el formato completo)
     const folioventa = '';
 
     // Insertar venta con todos los campos requeridos
@@ -249,10 +249,11 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     const SS = String(now.getSeconds()).padStart(2, '0');
     const HHMMSS = `${HH}${MM}${SS}`;
 
-    // Obtener la primera letra del tipo de venta
-    const tipoVentaLetra = ventaData.tipodeventa.charAt(0); // D, L, M, O, etc.
+    // Obtener la primera letra del tipo de venta (default 'V' si no hay tipo)
+    const tipoVentaLetra = ventaData.tipodeventa?.charAt(0) || 'V';
 
     // Actualizar folioventa con formato: claveturno+HHMMSS+[primera letra del tipo de venta]+idventa
+    // Si no hay claveturno (no hay turno abierto), usar solo HHMMSS+letra+idventa
     const folioFinal = claveturno ? `${claveturno}${HHMMSS}${tipoVentaLetra}${ventaId}` : `${HHMMSS}${tipoVentaLetra}${ventaId}`;
     await connection.execute(
       `UPDATE tblposcrumenwebventas 
@@ -279,7 +280,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       let inventarioprocesado = 0;
 
       const tipoproducto = detalle.tipoproducto || 'Directo';
-      const esEsperar = ventaData.estadodetalle === 'ESPERAR';
+      const esEsperar = ventaData.estadodetalle === ESTADO_ESPERAR;
       
       if (tipoproducto === 'Receta') {
         tipoafectacion = 'RECETA';
