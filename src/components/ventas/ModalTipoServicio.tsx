@@ -72,24 +72,6 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
   const [llevarFormData, setLlevarFormData] = useState<LlevarFormData>(INITIAL_LLEVAR_DATA);
   const [domicilioFormData, setDomicilioFormData] = useState<DomicilioFormData>(INITIAL_DOMICILIO_DATA);
 
-  useEffect(() => {
-    if (isOpen) {
-      if (tipoServicio === 'Mesa') {
-        cargarMesas();
-        if (initialData && 'idmesa' in initialData) {
-          setMesaFormData(initialData as MesaFormData);
-        }
-      } else {
-        cargarClientes();
-        if (tipoServicio === 'Llevar' && initialData && 'fechaprogramadaventa' in initialData && !('direcciondeentrega' in initialData)) {
-          setLlevarFormData(initialData as LlevarFormData);
-        } else if (tipoServicio === 'Domicilio' && initialData && 'direcciondeentrega' in initialData) {
-          setDomicilioFormData(initialData as DomicilioFormData);
-        }
-      }
-    }
-  }, [isOpen, tipoServicio, initialData]);
-
   const cargarMesas = async () => {
     try {
       const data = await obtenerMesas();
@@ -110,6 +92,52 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     }
   };
 
+  // Helper function to get current datetime in local timezone for datetime-local input
+  const getCurrentDateTime = (): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      if (tipoServicio === 'Mesa') {
+        cargarMesas();
+        if (initialData && 'idmesa' in initialData) {
+          setMesaFormData(initialData as MesaFormData);
+        }
+      } else {
+        cargarClientes();
+        
+        if (tipoServicio === 'Llevar') {
+          if (initialData && 'fechaprogramadaventa' in initialData && !('direcciondeentrega' in initialData)) {
+            setLlevarFormData(initialData as LlevarFormData);
+          } else {
+            // Set default date/time when opening modal
+            setLlevarFormData(prev => ({
+              ...prev,
+              fechaprogramadaventa: getCurrentDateTime()
+            }));
+          }
+        } else if (tipoServicio === 'Domicilio') {
+          if (initialData && 'direcciondeentrega' in initialData) {
+            setDomicilioFormData(initialData as DomicilioFormData);
+          } else {
+            // Set default date/time when opening modal
+            setDomicilioFormData(prev => ({
+              ...prev,
+              fechaprogramadaventa: getCurrentDateTime()
+            }));
+          }
+        }
+      }
+    }
+  }, [isOpen, tipoServicio, initialData]);
+
   const handleSave = () => {
     if (tipoServicio === 'Mesa') {
       if (!mesaFormData.idmesa) {
@@ -118,8 +146,8 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
       }
       onSave(mesaFormData);
     } else if (tipoServicio === 'Llevar') {
-      if (!llevarFormData.idcliente) {
-        alert('Por favor seleccione un cliente');
+      if (!llevarFormData.cliente.trim()) {
+        alert('Por favor ingrese el nombre del cliente');
         return;
       }
       if (!llevarFormData.fechaprogramadaventa) {
@@ -128,8 +156,8 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
       }
       onSave(llevarFormData);
     } else if (tipoServicio === 'Domicilio') {
-      if (!domicilioFormData.idcliente) {
-        alert('Por favor seleccione un cliente');
+      if (!domicilioFormData.cliente.trim()) {
+        alert('Por favor ingrese el nombre del cliente');
         return;
       }
       if (!domicilioFormData.fechaprogramadaventa) {
@@ -198,27 +226,30 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
             <>
               <div className="form-group">
                 <label htmlFor="cliente">Nombre del Cliente *</label>
-                <select
+                <input
+                  type="text"
                   id="cliente"
                   className="form-control"
-                  value={llevarFormData.idcliente || ''}
+                  list="clientes-list-llevar"
+                  value={llevarFormData.cliente}
                   onChange={(e) => {
-                    const selectedCliente = clientes.find(c => c.idCliente === Number(e.target.value));
+                    const inputValue = e.target.value;
+                    const selectedCliente = clientes.find(c => c.nombre === inputValue);
                     setLlevarFormData(prev => ({
                       ...prev,
-                      cliente: selectedCliente?.nombre || '',
+                      cliente: inputValue,
                       idcliente: selectedCliente?.idCliente || null
                     }));
                   }}
-                >
-                  <option value="">Seleccione un cliente</option>
+                  placeholder="Escriba o seleccione un cliente"
+                />
+                <datalist id="clientes-list-llevar">
                   {clientes.map((cliente) => (
-                    <option key={cliente.idCliente} value={cliente.idCliente}>
-                      {cliente.nombre}
-                      {cliente.telefono && ` - ${cliente.telefono}`}
+                    <option key={cliente.idCliente} value={cliente.nombre}>
+                      {cliente.telefono || ''}
                     </option>
                   ))}
-                </select>
+                </datalist>
               </div>
 
               <div className="form-group">
@@ -229,8 +260,6 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                   className="form-control"
                   value={llevarFormData.fechaprogramadaventa}
                   onChange={(e) => setLlevarFormData(prev => ({ ...prev, fechaprogramadaventa: e.target.value }))}
-                  readOnly
-                  onFocus={(e) => e.target.showPicker?.()}
                 />
               </div>
             </>
@@ -240,29 +269,48 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
             <>
               <div className="form-group">
                 <label htmlFor="cliente-domicilio">Nombre del Cliente *</label>
-                <select
+                <input
+                  type="text"
                   id="cliente-domicilio"
                   className="form-control"
-                  value={domicilioFormData.idcliente || ''}
+                  list="clientes-list-domicilio"
+                  value={domicilioFormData.cliente}
                   onChange={(e) => {
-                    const selectedCliente = clientes.find(c => c.idCliente === Number(e.target.value));
-                    setDomicilioFormData(prev => ({
-                      ...prev,
-                      cliente: selectedCliente?.nombre || '',
-                      idcliente: selectedCliente?.idCliente || null,
-                      direcciondeentrega: selectedCliente?.direccion || '',
-                      telefonodeentrega: selectedCliente?.telefono || ''
-                    }));
+                    const inputValue = e.target.value;
+                    const selectedCliente = clientes.find(c => c.nombre === inputValue);
+                    
+                    if (selectedCliente) {
+                      // Auto-fill fields when a client is selected
+                      setDomicilioFormData(prev => ({
+                        ...prev,
+                        cliente: inputValue,
+                        idcliente: selectedCliente.idCliente,
+                        direcciondeentrega: selectedCliente.direccion || '',
+                        telefonodeentrega: selectedCliente.telefono || '',
+                        contactodeentrega: selectedCliente.referencia || ''
+                      }));
+                    } else {
+                      // Clear auto-filled fields when switching to a new client
+                      setDomicilioFormData(prev => ({
+                        ...prev,
+                        cliente: inputValue,
+                        idcliente: null,
+                        // Only clear fields if they were previously auto-filled (idcliente was set)
+                        direcciondeentrega: prev.idcliente ? '' : prev.direcciondeentrega,
+                        telefonodeentrega: prev.idcliente ? '' : prev.telefonodeentrega,
+                        contactodeentrega: prev.idcliente ? '' : prev.contactodeentrega
+                      }));
+                    }
                   }}
-                >
-                  <option value="">Seleccione un cliente</option>
+                  placeholder="Escriba o seleccione un cliente"
+                />
+                <datalist id="clientes-list-domicilio">
                   {clientes.map((cliente) => (
-                    <option key={cliente.idCliente} value={cliente.idCliente}>
-                      {cliente.nombre}
-                      {cliente.telefono && ` - ${cliente.telefono}`}
+                    <option key={cliente.idCliente} value={cliente.nombre}>
+                      {cliente.telefono || ''}
                     </option>
                   ))}
-                </select>
+                </datalist>
               </div>
 
               <div className="form-group">
@@ -273,8 +321,6 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                   className="form-control"
                   value={domicilioFormData.fechaprogramadaventa}
                   onChange={(e) => setDomicilioFormData(prev => ({ ...prev, fechaprogramadaventa: e.target.value }))}
-                  readOnly
-                  onFocus={(e) => e.target.showPicker?.()}
                 />
               </div>
 
