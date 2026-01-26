@@ -54,17 +54,15 @@ const ModalIniciaTurno: React.FC<ModalIniciaTurnoProps> = ({
       // Prepare metaturno value: only send if checkbox is checked and value is provided
       const metaturno = usaObjetivo && objetivoVenta ? parseFloat(objetivoVenta) : null;
       
-      // Call API to create turno with metaturno
-      const response = await crearTurno(metaturno);
+      // Prepare fondoCaja value: parse the input value
+      const fondoCajaValue = fondoCaja ? parseFloat(fondoCaja) : 0;
+      
+      // Call API to create turno with metaturno and fondoCaja
+      const response = await crearTurno(metaturno, fondoCajaValue);
       console.log('Turno iniciado:', response);
       
       // Update claveturno display with actual value from server
       setClaveturno(response.claveturno);
-      
-      // TODO: In future enhancement, send fondoCaja to backend
-      // The current backend API (POST /api/turnos) doesn't accept fondoCaja field yet
-      // It would need to be added to the tblposcrumenwebturnos table and API endpoint
-      // For now, we only validate that user fills the form before proceeding
       
       // Notify parent component
       onTurnoIniciado(response.idturno, response.claveturno);

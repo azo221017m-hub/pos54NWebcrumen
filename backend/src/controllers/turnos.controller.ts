@@ -120,7 +120,7 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
     const idnegocio = req.user?.idNegocio;
     const idusuario = req.user?.id;
     const usuarioturno = req.user?.alias;
-    const { metaturno } = req.body; // Optional: objetivo de venta
+    const { metaturno, fondoCaja } = req.body; // Optional: objetivo de venta y fondo de caja
 
     if (!idnegocio || !idusuario || !usuarioturno) {
       res.status(401).json({ 
@@ -184,6 +184,8 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
 
     // Crear registro en tblposcrumenwebventas como MOVIMIENTO inicial del turno
     // Nota: folioventa se actualiza después porque depende de idventa (auto-increment)
+    // fondoCaja se almacena en subtotal y totaldeventa según los requerimientos
+    const fondoCajaValue = fondoCaja ? parseFloat(fondoCaja) : 0.00;
     const [ventaResult] = await connection.query<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebventas (
         tipodeventa,
@@ -217,15 +219,15 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
         NULL,
         NULL,
         NULL,
+        ?,
+        0,
+        0,
+        ?,
         NULL,
         NULL,
         NULL,
-        0.00,
         NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
+        0,
         'EFECTIVO',
         'PAGADO',
         NULL,
@@ -234,7 +236,7 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
         ?,
         NOW()
       )`,
-      [claveturno, idnegocio, usuarioturno]
+      [fondoCajaValue, fondoCajaValue, claveturno, idnegocio, usuarioturno]
     );
 
     const idventa = ventaResult.insertId;

@@ -30,10 +30,16 @@ export const obtenerTurnoPorId = async (idturno: number): Promise<Turno> => {
 };
 
 // Crear un nuevo turno (iniciar turno)
-export const crearTurno = async (metaturno?: number | null): Promise<{ message: string; idturno: number; numeroturno: number; claveturno: string }> => {
+export const crearTurno = async (metaturno?: number | null, fondoCaja?: number | null): Promise<{ message: string; idturno: number; numeroturno: number; claveturno: string }> => {
   try {
     console.log('Servicio: Iniciando nuevo turno');
-    const body = metaturno !== undefined && metaturno !== null ? { metaturno } : {};
+    const body: Record<string, number> = {};
+    if (metaturno !== undefined && metaturno !== null) {
+      body.metaturno = metaturno;
+    }
+    if (fondoCaja !== undefined && fondoCaja !== null) {
+      body.fondoCaja = fondoCaja;
+    }
     const response = await apiClient.post<{ message: string; idturno: number; numeroturno: number; claveturno: string }>(API_BASE, body);
     console.log('Servicio: Turno iniciado con ID:', response.data.idturno);
     return response.data;
