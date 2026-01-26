@@ -204,9 +204,9 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
 
     const totaldeventa = subtotal - descuentos + impuestos;
 
-    // Generar folio único de venta (timestamp + idnegocio + random)
-    // Formato: V{timestamp}{idnegocio}{random} para mayor unicidad
-    const folioventa = `V${Date.now()}${idnegocio}${Math.floor(Math.random() * 1000)}`;
+    // Generar folio único de venta temporal (se actualizará después con el idventa)
+    // Formato temporal: V{timestamp}{idnegocio}{random} para mayor unicidad
+    const folioventa = '';
 
     // Insertar venta con todos los campos requeridos
     const [ventaResult] = await connection.execute<ResultSetHeader>(
@@ -242,6 +242,25 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
 
     const ventaId = ventaResult.insertId;
 
+    // Generar HHMMSS para el folio
+    const now = new Date();
+    const HH = String(now.getHours()).padStart(2, '0');
+    const MM = String(now.getMinutes()).padStart(2, '0');
+    const SS = String(now.getSeconds()).padStart(2, '0');
+    const HHMMSS = `${HH}${MM}${SS}`;
+
+    // Obtener la primera letra del tipo de venta
+    const tipoVentaLetra = ventaData.tipodeventa.charAt(0); // D, L, M, O, etc.
+
+    // Actualizar folioventa con formato: claveturno+HHMMSS+[primera letra del tipo de venta]+idventa
+    const folioFinal = claveturno ? `${claveturno}${HHMMSS}${tipoVentaLetra}${ventaId}` : `${HHMMSS}${tipoVentaLetra}${ventaId}`;
+    await connection.execute(
+      `UPDATE tblposcrumenwebventas 
+       SET folioventa = ?
+       WHERE idventa = ?`,
+      [folioFinal, ventaId]
+    );
+
     // Insertar detalles de la venta
     for (const detalle of ventaData.detalles) {
       const detalleSubtotal = detalle.cantidad * detalle.preciounitario;
@@ -251,28 +270,31 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
 
       // Determinar tipo de afectación y afectainventario basado en tipoproducto
       // Según los requerimientos:
-      // - afectainventario = 0 SI tipoproducto = 'DIRECTO'
-      // - afectainventario = 1 SI tipoproducto = 'INVENTARIO' o 'RECETA'
+      // - afectainventario = -1 SI tipoproducto = 'DIRECTO' O estadodetalle = 'ESPERAR'
+      // - afectainventario = 1 SI tipoproducto = 'INVENTARIO' o 'RECETA' Y estadodetalle != 'ESPERAR'
       // - tipoafectacion = tipoproducto del producto de la comanda
+      // - inventarioprocesado = -1 SI tipoafectacion='DIRECTO' O estadodetalle='ESPERAR'
       let tipoafectacion: 'DIRECTO' | 'INVENTARIO' | 'RECETA' = 'DIRECTO';
       let afectainventario = 0;
+      let inventarioprocesado = 0;
 
       const tipoproducto = detalle.tipoproducto || 'Directo';
+      const esEsperar = ventaData.estadodetalle === 'ESPERAR';
       
       if (tipoproducto === 'Receta') {
         tipoafectacion = 'RECETA';
-        afectainventario = 1;
+        afectainventario = esEsperar ? -1 : 1;
+        inventarioprocesado = esEsperar ? -1 : 0;
       } else if (tipoproducto === 'Inventario' || tipoproducto === 'Materia Prima') {
         tipoafectacion = 'INVENTARIO';
-        afectainventario = 1;
+        afectainventario = esEsperar ? -1 : 1;
+        inventarioprocesado = esEsperar ? -1 : 0;
       } else {
         // Directo
         tipoafectacion = 'DIRECTO';
-        afectainventario = 0;
+        afectainventario = -1; // Siempre -1 para DIRECTO
+        inventarioprocesado = -1; // Siempre -1 para DIRECTO
       }
-
-      // inventarioprocesado = 0 al hacer insert desde botón ESPERAR o PRODUCIR
-      const inventarioprocesado = 0;
 
       await connection.execute(
         `INSERT INTO tblposcrumenwebdetalleventas (
@@ -296,7 +318,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
           detalleTotal,
           afectainventario,
           tipoafectacion,
-          inventarioprocesado, // 0 al hacer insert desde botón ESPERAR o PRODUCIR
+          inventarioprocesado,
           ventaData.estadodetalle || 'ORDENADO', // Estado inicial o proporcionado
           detalle.observaciones || null,
           detalle.moderadores || null,
@@ -314,7 +336,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       message: 'Venta registrada exitosamente',
       data: { 
         idventa: ventaId,
-        folioventa: folioventa 
+        folioventa: folioFinal 
       }
     });
   } catch (error) {
