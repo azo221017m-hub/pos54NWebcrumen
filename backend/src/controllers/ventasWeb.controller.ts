@@ -192,7 +192,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
         totaldeventa, cliente, direcciondeentrega, contactodeentrega, 
         telefonodeentrega, propinadeventa, formadepago, estatusdepago, 
         idnegocio, usuarioauditoria, fechamodificacionauditoria
-      ) VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      ) VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         ventaData.tipodeventa,
         folioventa,
