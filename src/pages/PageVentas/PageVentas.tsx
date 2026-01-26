@@ -433,13 +433,15 @@ const PageVentas: React.FC = () => {
       hasSameModeradores(item.moderadores, moderadores)
     );
     
-    if (itemExistente) {
+    // If item exists but is already ORDENADO, create a new entry instead of incrementing
+    if (itemExistente && itemExistente.estadodetalle !== ESTADO_ORDENADO) {
       setComanda(comanda.map(item => 
         item === itemExistente
           ? { ...item, cantidad: item.cantidad + 1 }
           : item
       ));
     } else {
+      // Create new entry: either no existing item found, or existing item is ORDENADO
       setComanda([...comanda, { producto, cantidad: 1, moderadores, moderadoresNames }]);
     }
   };
@@ -450,7 +452,8 @@ const PageVentas: React.FC = () => {
       hasSameModeradores(item.moderadores, moderadores)
     );
     
-    if (itemExistente) {
+    // Don't modify items with ORDENADO status
+    if (itemExistente && itemExistente.estadodetalle !== ESTADO_ORDENADO) {
       if (itemExistente.cantidad > 1) {
         setComanda(comanda.map(item => 
           item === itemExistente
@@ -474,7 +477,8 @@ const PageVentas: React.FC = () => {
       hasSameModeradores(item.moderadores, moderadores)
     );
     
-    if (itemExistente) {
+    // Don't modify items with ORDENADO status
+    if (itemExistente && itemExistente.estadodetalle !== ESTADO_ORDENADO) {
       setComanda(comanda.map(item => 
         item === itemExistente
           ? { ...item, cantidad: nuevaCantidad }
