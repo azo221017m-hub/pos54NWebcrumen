@@ -246,7 +246,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                 <datalist id="clientes-list-llevar">
                   {clientes.map((cliente) => (
                     <option key={cliente.idCliente} value={cliente.nombre}>
-                      {cliente.telefono && `${cliente.telefono}`}
+                      {cliente.telefono || ''}
                     </option>
                   ))}
                 </datalist>
@@ -307,7 +307,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                 <datalist id="clientes-list-domicilio">
                   {clientes.map((cliente) => (
                     <option key={cliente.idCliente} value={cliente.nombre}>
-                      {cliente.telefono && `${cliente.telefono}`}
+                      {cliente.telefono || ''}
                     </option>
                   ))}
                 </datalist>
