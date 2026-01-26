@@ -188,16 +188,15 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     const [ventaResult] = await connection.execute<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebventas (
         tipodeventa, folioventa, estadodeventa, fechadeventa, 
-        fechaprogramadaventa, subtotal, descuentos, impuestos, 
+        subtotal, descuentos, impuestos, 
         totaldeventa, cliente, direcciondeentrega, contactodeentrega, 
         telefonodeentrega, propinadeventa, formadepago, estatusdepago, 
         idnegocio, usuarioauditoria, fechamodificacionauditoria
-      ) VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      ) VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         ventaData.tipodeventa,
         folioventa,
         ventaData.estadodeventa || 'SOLICITADO', // Estado inicial o proporcionado
-        ventaData.fechaprogramadaventa || null,
         subtotal,
         descuentos,
         impuestos,
@@ -349,10 +348,12 @@ export const updateVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       values.push(updateData.estatusdepago);
     }
 
-    if (updateData.fechaprogramadaventa !== undefined) {
-      updates.push('fechaprogramadaventa = ?');
-      values.push(updateData.fechaprogramadaventa);
-    }
+    // NOTE: fechaprogramadaventa column doesn't exist in the database table
+    // If this column is added to the database in the future, uncomment the following:
+    // if (updateData.fechaprogramadaventa !== undefined) {
+    //   updates.push('fechaprogramadaventa = ?');
+    //   values.push(updateData.fechaprogramadaventa);
+    // }
 
     if (updateData.fechapreparacion !== undefined) {
       updates.push('fechapreparacion = ?');
