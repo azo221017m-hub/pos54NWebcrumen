@@ -379,11 +379,8 @@ const PageVentas: React.FC = () => {
     // - Has open turno (shift)
     // - Not checking turno
     if (!isLoadedFromDashboard && !isServiceConfigured && comanda.length === 0 && hasTurnoAbierto && !isCheckingTurno) {
-      const timer = setTimeout(() => {
-        setShowSelectionModal(true);
-      }, SELECTION_MODAL_DISPLAY_DELAY_MS);
-
-      return () => clearTimeout(timer);
+      // Show immediately without delay to display modal first
+      setShowSelectionModal(true);
     } else {
       // Hide modal if comanda has items or service is configured
       setShowSelectionModal(false);
@@ -508,40 +505,40 @@ const PageVentas: React.FC = () => {
     }, 0);
   };
 
-  const crearVenta = async (estadodeventa: EstadoDeVenta = 'SOLICITADO', estadodetalle: EstadoDetalle = 'ORDENADO', estatusdepago: EstatusDePago = 'PENDIENTE') => {
+  const crearVenta = async (estadodeventa: EstadoDeVenta = 'SOLICITADO', estadodetalle: EstadoDetalle = 'ORDENADO', estatusdepago: EstatusDePago = 'PENDIENTE'): Promise<boolean> => {
     // Lógica común para crear ventas
     if (comanda.length === 0) {
       alert('No hay productos en la comanda');
-      return;
+      return false;
     }
 
     if (!usuario) {
       alert('Usuario no autenticado');
-      return;
+      return false;
     }
 
     // Validar que el servicio esté configurado
     if (!isServiceConfigured) {
       alert('Por favor configure el tipo de servicio antes de continuar');
       setModalOpen(true);
-      return;
+      return false;
     }
 
     // Validar que se hayan configurado los datos del tipo de servicio
     if (tipoServicio === 'Mesa' && !mesaData) {
       alert('Por favor configure los datos de la mesa antes de continuar');
       setModalOpen(true);
-      return;
+      return false;
     }
     if (tipoServicio === 'Llevar' && !llevarData) {
       alert('Por favor configure los datos de entrega antes de continuar');
       setModalOpen(true);
-      return;
+      return false;
     }
     if (tipoServicio === 'Domicilio' && !domicilioData) {
       alert('Por favor configure los datos de domicilio antes de continuar');
       setModalOpen(true);
-      return;
+      return false;
     }
 
     // Filter out items that are already ORDENADO to prevent re-insertion
@@ -549,7 +546,7 @@ const PageVentas: React.FC = () => {
     
     if (itemsToInsert.length === 0) {
       alert('Todos los productos en la comanda ya han sido ordenados');
-      return;
+      return false;
     }
 
     // Check if there are ORDENADO items in the comanda
@@ -639,15 +636,18 @@ const PageVentas: React.FC = () => {
             ? { ...item, estadodetalle: estadodetalle }
             : item
         ));
+        return true;
       } else {
         const errorMsg = resultado.message || 'Error desconocido';
         console.error('Error al registrar venta:', errorMsg);
         alert(`Error al registrar la venta:\n${errorMsg}\n\nPor favor, verifique que todos los datos estén correctos e intente nuevamente.`);
+        return false;
       }
     } catch (error) {
       console.error('Error al crear venta:', error);
       const errorMsg = (error instanceof Error) ? error.message : 'Error de conexión con el servidor';
       alert(`Error al registrar la venta:\n${errorMsg}\n\nPor favor, intente nuevamente.`);
+      return false;
     }
   };
 
@@ -662,7 +662,10 @@ const PageVentas: React.FC = () => {
   };
 
   const handleProducir = async () => {
-    await crearVenta(ESTADO_ORDENADO, ESTADO_ORDENADO, 'PENDIENTE');
+    const success = await crearVenta(ESTADO_ORDENADO, ESTADO_ORDENADO, 'PENDIENTE');
+    if (success) {
+      navigate('/dashboard');
+    }
   };
 
   const handleEsperar = async () => {
@@ -1102,6 +1105,11 @@ const PageVentas: React.FC = () => {
                 placeholder="input para buscar productos por nombre"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    setSearchTerm('');
+                  }
+                }}
               />
             </div>
           </div>
@@ -1227,7 +1235,7 @@ const PageVentas: React.FC = () => {
 
           {productosVisibles.length === 0 && (
             <div className="empty-productos">
-              <p>No se encontraron productos</p>
+              <p>Buscando Productos</p>
             </div>
           )}
         </div>
