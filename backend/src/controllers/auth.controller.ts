@@ -19,6 +19,7 @@ interface Usuario extends RowDataPacket {
   password: string;
   telefono: string;
   estatus: number;
+  frasepersonal?: string;
 }
 
 export const login = async (req: Request, res: Response): Promise<void> => {
@@ -126,7 +127,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
           telefono: usuario.telefono,
           idNegocio: usuario.idNegocio,
           idRol: usuario.idRol,
-          estatus: usuario.estatus
+          estatus: usuario.estatus,
+          frasepersonal: usuario.frasepersonal
         }
       }
     });

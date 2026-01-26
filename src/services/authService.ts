@@ -9,6 +9,7 @@ export interface Usuario {
   idNegocio: number;
   idRol: number;
   estatus: number;
+  frasepersonal?: string;
 }
 
 export interface LoginRequest {
