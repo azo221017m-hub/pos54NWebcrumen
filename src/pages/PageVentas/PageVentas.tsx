@@ -94,7 +94,8 @@ const PageVentas: React.FC = () => {
 
   // Current venta state (when loading from dashboard or after creating with ORDENADO status)
   const [currentVentaId, setCurrentVentaId] = useState<number | null>(null);
-  const [currentFolioVenta, setCurrentFolioVenta] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_currentFolioVenta, setCurrentFolioVenta] = useState<string | null>(null);
 
 
   // Close user menu when clicking outside
