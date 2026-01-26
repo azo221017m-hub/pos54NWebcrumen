@@ -13,19 +13,21 @@ interface Turno extends RowDataPacket {
   claveturno: string;
   usuarioturno: string;
   idnegocio: number;
+  metaturno?: number | null;
 }
 
 // Función auxiliar para generar claveturno
-const generarClaveTurno = (numeroturno: number, idusuario: number, idnegocio: number): string => {
+// Formato: [AAMMDD]+[idnegocio]+[idusuario]+[HHMMSS]
+const generarClaveTurno = (idusuario: number, idnegocio: number): string => {
   const now = new Date();
-  const dd = String(now.getDate()).padStart(2, '0');
+  const aa = String(now.getFullYear()).slice(-2); // Últimos 2 dígitos del año
   const mm = String(now.getMonth() + 1).padStart(2, '0');
-  const yyyy = now.getFullYear();
+  const dd = String(now.getDate()).padStart(2, '0');
   const HH = String(now.getHours()).padStart(2, '0');
   const MM = String(now.getMinutes()).padStart(2, '0');
   const SS = String(now.getSeconds()).padStart(2, '0');
   
-  return `${dd}${mm}${yyyy}${HH}${MM}${SS}${numeroturno}${idusuario}${idnegocio}`;
+  return `${aa}${mm}${dd}${idnegocio}${idusuario}${HH}${MM}${SS}`;
 };
 
 // Obtener todos los turnos de un negocio
@@ -52,7 +54,8 @@ export const obtenerTurnos = async (req: AuthRequest, res: Response): Promise<vo
         estatusturno,
         claveturno,
         usuarioturno,
-        idnegocio
+        idnegocio,
+        metaturno
       FROM tblposcrumenwebturnos
       WHERE idnegocio = ?
       ORDER BY idturno DESC`,
@@ -86,7 +89,8 @@ export const obtenerTurnoPorId = async (req: Request, res: Response): Promise<vo
         estatusturno,
         claveturno,
         usuarioturno,
-        idnegocio
+        idnegocio,
+        metaturno
       FROM tblposcrumenwebturnos
       WHERE idturno = ?`,
       [idturno]
@@ -110,10 +114,13 @@ export const obtenerTurnoPorId = async (req: Request, res: Response): Promise<vo
 
 // Crear un nuevo turno (iniciar turno)
 export const crearTurno = async (req: AuthRequest, res: Response): Promise<void> => {
+  const connection = await pool.getConnection();
+  
   try {
     const idnegocio = req.user?.idNegocio;
     const idusuario = req.user?.id;
     const usuarioturno = req.user?.alias;
+    const { metaturno } = req.body; // Optional: objetivo de venta
 
     if (!idnegocio || !idusuario || !usuarioturno) {
       res.status(401).json({ 
@@ -125,53 +132,140 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
     console.log('Creando nuevo turno para usuario:', usuarioturno);
 
     // Verificar si ya hay un turno abierto para este usuario/negocio
-    const [turnosAbiertos] = await pool.query<Turno[]>(
+    // Según los requerimientos: validar que NO EXISTA registro con usuarioturno = alias del usuario
+    // que hizo login y idnegocio = idnegocio del usuario con estatusturno='ABIERTO'
+    const [turnosAbiertos] = await connection.query<Turno[]>(
       `SELECT idturno FROM tblposcrumenwebturnos 
-       WHERE idnegocio = ? AND estatusturno = 'abierto'
+       WHERE usuarioturno = ? AND idnegocio = ? AND estatusturno = 'abierto'
        LIMIT 1`,
-      [idnegocio]
+      [usuarioturno, idnegocio]
     );
 
     if (turnosAbiertos.length > 0) {
+      connection.release();
       res.status(400).json({ 
-        message: 'Ya existe un turno abierto para este negocio. Cierra el turno actual antes de iniciar uno nuevo.'
+        message: 'Ya existe un turno abierto para este usuario en este negocio. Cierra el turno actual antes de iniciar uno nuevo.'
       });
       return;
     }
 
-    // Insertar el nuevo turno
-    const [result] = await pool.query<ResultSetHeader>(
+    // Iniciar transacción
+    await connection.beginTransaction();
+
+    // Generar claveturno antes de insertar
+    const claveturno = generarClaveTurno(idusuario, idnegocio);
+
+    // Insertar el nuevo turno en tblposcrumenwebturnos
+    const [result] = await connection.query<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebturnos (
+        numeroturno,
         fechainicioturno,
         fechafinturno,
         estatusturno,
+        claveturno,
         usuarioturno,
-        idnegocio
-      ) VALUES (NOW(), NULL, 'abierto', ?, ?)`,
-      [usuarioturno, idnegocio]
+        idnegocio,
+        metaturno
+      ) VALUES (0, NOW(), NULL, 'abierto', ?, ?, ?, ?)`,
+      [claveturno, usuarioturno, idnegocio, metaturno || null]
     );
 
     const idturno = result.insertId;
 
-    // Actualizar numeroturno y claveturno
+    // Actualizar numeroturno = idturno (consecutivo)
     const numeroturno = idturno;
-    const claveturno = generarClaveTurno(numeroturno, idusuario, idnegocio);
-
-    await pool.query(
+    await connection.query(
       `UPDATE tblposcrumenwebturnos 
-       SET numeroturno = ?, claveturno = ?
+       SET numeroturno = ?
        WHERE idturno = ?`,
-      [numeroturno, claveturno, idturno]
+      [numeroturno, idturno]
     );
 
-    console.log('Turno creado con ID:', idturno);
+    // Crear registro en tblposcrumenwebventas como MOVIMIENTO inicial del turno
+    const [ventaResult] = await connection.query<ResultSetHeader>(
+      `INSERT INTO tblposcrumenwebventas (
+        tipodeventa,
+        folioventa,
+        estadodeventa,
+        fechadeventa,
+        fechaprogramadaentrega,
+        fechapreparacion,
+        fechaenvio,
+        fechaentrega,
+        subtotal,
+        descuentos,
+        impuestos,
+        totaldeventa,
+        cliente,
+        direcciondeentrega,
+        contactodeentrega,
+        telefonodeentrega,
+        propinadeventa,
+        formadepago,
+        estatusdepago,
+        tiempototaldeventa,
+        claveturno,
+        idnegocio,
+        usuarioauditoria,
+        fechamodificacionauditoria
+      ) VALUES (
+        'MOVIMIENTO',
+        '',
+        'COBRADO',
+        NOW(),
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        0.00,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        'EFECTIVO',
+        'PAGADO',
+        NULL,
+        ?,
+        ?,
+        ?,
+        NOW()
+      )`,
+      [claveturno, idnegocio, usuarioturno]
+    );
+
+    const idventa = ventaResult.insertId;
+
+    // Actualizar folioventa con formato: claveturno + idventa
+    const folioventa = `${claveturno}${idventa}`;
+    await connection.query(
+      `UPDATE tblposcrumenwebventas 
+       SET folioventa = ?
+       WHERE idventa = ?`,
+      [folioventa, idventa]
+    );
+
+    // Commit de la transacción
+    await connection.commit();
+    connection.release();
+
+    console.log('Turno creado con ID:', idturno, 'y venta inicial con ID:', idventa);
     res.status(201).json({ 
       message: 'Turno iniciado exitosamente',
       idturno,
       numeroturno,
-      claveturno
+      claveturno,
+      idventa,
+      folioventa
     });
   } catch (error) {
+    // Rollback en caso de error
+    await connection.rollback();
+    connection.release();
+    
     console.error('Error al crear turno:', error);
     res.status(500).json({ 
       message: 'Error al crear el turno',
