@@ -54,8 +54,13 @@ const ModalIniciaTurno: React.FC<ModalIniciaTurnoProps> = ({
       // Prepare metaturno value: only send if checkbox is checked and value is provided
       const metaturno = usaObjetivo && objetivoVenta ? parseFloat(objetivoVenta) : null;
       
-      // Prepare fondoCaja value: parse the input value
+      // Prepare fondoCaja value: parse the input value and validate it's a valid number
       const fondoCajaValue = fondoCaja ? parseFloat(fondoCaja) : 0;
+      if (isNaN(fondoCajaValue) || fondoCajaValue < 0) {
+        setError('El importe de fondo de caja debe ser un valor numérico válido.');
+        setIsLoading(false);
+        return;
+      }
       
       // Call API to create turno with metaturno and fondoCaja
       const response = await crearTurno(metaturno, fondoCajaValue);

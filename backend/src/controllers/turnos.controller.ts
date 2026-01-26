@@ -185,7 +185,8 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
     // Crear registro en tblposcrumenwebventas como MOVIMIENTO inicial del turno
     // Nota: folioventa se actualiza después porque depende de idventa (auto-increment)
     // fondoCaja se almacena en subtotal y totaldeventa según los requerimientos
-    const fondoCajaValue = fondoCaja ? parseFloat(fondoCaja) : 0.00;
+    // Validar que fondoCaja sea un número válido, si no, usar 0.00
+    const fondoCajaValue = fondoCaja && !isNaN(parseFloat(fondoCaja)) ? parseFloat(fondoCaja) : 0.00;
     const [ventaResult] = await connection.query<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebventas (
         tipodeventa,
