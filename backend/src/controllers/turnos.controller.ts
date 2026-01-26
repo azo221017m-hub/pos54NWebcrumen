@@ -188,7 +188,7 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
         folioventa,
         estadodeventa,
         fechadeventa,
-        fechaprogramadaentrega,
+        fechaprogramadaventa,
         fechapreparacion,
         fechaenvio,
         fechaentrega,

@@ -1,6 +1,6 @@
 // Tipos para tblposcrumenwebventas y tblposcrumenwebdetalleventas - Frontend
 
-export type TipoDeVenta = 'DOMICILIO' | 'LLEVAR' | 'MESA' | 'ONLINE';
+export type TipoDeVenta = 'DOMICILIO' | 'LLEVAR' | 'MESA' | 'ONLINE' | 'MOVIMIENTO';
 export type EstadoDeVenta = 'SOLICITADO' | 'LEIDO' | 'PREPARANDO' | 'EN_CAMINO' | 'ENTREGADO' | 'CANCELADO' | 'DEVUELTO' | 'COBRADO' | 'ESPERAR' | 'ORDENADO';
 export type FormaDePago = 'EFECTIVO' | 'TARJETA' | 'TRANSFERENCIA' | 'MIXTO' | 'sinFP';
 export type EstatusDePago = 'PENDIENTE' | 'PAGADO' | 'PARCIAL' | 'ESPERAR';
@@ -29,6 +29,7 @@ export interface VentaWeb {
   formadepago: FormaDePago;
   estatusdepago: EstatusDePago;
   tiempototaldeventa: number | null;
+  claveturno?: string | null;
   idnegocio: number;
   usuarioauditoria: string;
   fechamodificacionauditoria: Date | string;
