@@ -348,10 +348,11 @@ export const updateVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       values.push(updateData.estatusdepago);
     }
 
-    if (updateData.fechaprogramadaventa !== undefined) {
-      updates.push('fechaprogramadaventa = ?');
-      values.push(updateData.fechaprogramadaventa);
-    }
+    // Note: fechaprogramadaventa column doesn't exist in database, so we skip it
+    // if (updateData.fechaprogramadaventa !== undefined) {
+    //   updates.push('fechaprogramadaventa = ?');
+    //   values.push(updateData.fechaprogramadaventa);
+    // }
 
     if (updateData.fechapreparacion !== undefined) {
       updates.push('fechapreparacion = ?');
