@@ -348,7 +348,8 @@ export const updateVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       values.push(updateData.estatusdepago);
     }
 
-    // Note: fechaprogramadaventa column doesn't exist in database, so we skip it
+    // NOTE: fechaprogramadaventa column doesn't exist in the database table
+    // If this column is added to the database in the future, uncomment the following:
     // if (updateData.fechaprogramadaventa !== undefined) {
     //   updates.push('fechaprogramadaventa = ?');
     //   values.push(updateData.fechaprogramadaventa);
