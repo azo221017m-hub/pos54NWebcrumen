@@ -86,7 +86,8 @@ const getTipoVentaColorClass = (tipo: TipoDeVenta): string => {
     'DOMICILIO': 'tipo-domicilio',
     'LLEVAR': 'tipo-llevar',
     'MESA': 'tipo-mesa',
-    'ONLINE': 'tipo-online'
+    'ONLINE': 'tipo-online',
+    'MOVIMIENTO': 'tipo-movimiento'
   };
   return colors[tipo] || 'tipo-mesa';
 };

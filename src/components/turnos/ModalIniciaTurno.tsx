@@ -31,9 +31,6 @@ const ModalIniciaTurno: React.FC<ModalIniciaTurnoProps> = ({
       const aa = String(now.getFullYear()).slice(-2);
       const mm = String(now.getMonth() + 1).padStart(2, '0');
       const dd = String(now.getDate()).padStart(2, '0');
-      const HH = String(now.getHours()).padStart(2, '0');
-      const MM = String(now.getMinutes()).padStart(2, '0');
-      const SS = String(now.getSeconds()).padStart(2, '0');
       setClaveturno(`${aa}${mm}${dd}...`);
 
       // Get user data and frasepersonal
