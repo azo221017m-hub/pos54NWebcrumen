@@ -163,6 +163,16 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
+    // Validar que formadepago sea un valor válido
+    const formasDePagoValidas = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'MIXTO', 'sinFP'];
+    if (!formasDePagoValidas.includes(ventaData.formadepago)) {
+      res.status(400).json({ 
+        success: false, 
+        message: `Forma de pago inválida: "${ventaData.formadepago}". Debe ser uno de: ${formasDePagoValidas.join(', ')}` 
+      });
+      return;
+    }
+
     await connection.beginTransaction();
 
     // Obtener claveturno del turno abierto actual
@@ -309,9 +319,23 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     console.error('Error al crear venta web:', error);
     
     // Provide more detailed error message for debugging
-    const errorMessage = error instanceof Error 
-      ? `Error al registrar venta web: ${error.message}` 
-      : 'Error al registrar venta web';
+    let errorMessage = 'Error al registrar venta web';
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      
+      // Provide helpful message for specific database errors
+      if (errorMessage.includes('Data truncated for column')) {
+        const match = errorMessage.match(/column '(\w+)'/);
+        const columnName = match ? match[1] : 'desconocida';
+        
+        if (columnName === 'formadepago') {
+          errorMessage = `Forma de pago inválida. Por favor, contacte al administrador del sistema para verificar que el valor 'sinFP' esté habilitado en la base de datos.`;
+        } else {
+          errorMessage = `El valor proporcionado para el campo '${columnName}' es demasiado largo o inválido. Por favor, verifique los datos e intente nuevamente.`;
+        }
+      }
+    }
     
     res.status(500).json({ 
       success: false, 
