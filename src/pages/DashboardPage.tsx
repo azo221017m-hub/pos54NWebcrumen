@@ -69,6 +69,15 @@ const TipoVentaIcon: React.FC<{ tipo: TipoDeVenta }> = ({ tipo }) => {
           <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
         </svg>
       );
+    case 'MOVIMIENTO':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="1" y="3" width="15" height="13"/>
+          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+          <circle cx="5.5" cy="18.5" r="2.5"/>
+          <circle cx="18.5" cy="18.5" r="2.5"/>
+        </svg>
+      );
     default:
       return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
