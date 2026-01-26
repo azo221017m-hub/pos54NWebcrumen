@@ -267,16 +267,16 @@ const PageVentas: React.FC = () => {
         setLlevarData({
           cliente: ventaToLoad.cliente,
           idcliente: null,
-          fechaprogramadaventa: ventaToLoad.fechaprogramadaventa 
-            ? new Date(ventaToLoad.fechaprogramadaventa).toISOString().slice(0, 16)
+          fechaprogramadaventa: ventaToLoad.fechaprogramadaentrega 
+            ? new Date(ventaToLoad.fechaprogramadaentrega).toISOString().slice(0, 16)
             : ''
         });
       } else if (ventaToLoad.tipodeventa === 'DOMICILIO') {
         setDomicilioData({
           cliente: ventaToLoad.cliente,
           idcliente: null,
-          fechaprogramadaventa: ventaToLoad.fechaprogramadaventa 
-            ? new Date(ventaToLoad.fechaprogramadaventa).toISOString().slice(0, 16)
+          fechaprogramadaventa: ventaToLoad.fechaprogramadaentrega 
+            ? new Date(ventaToLoad.fechaprogramadaentrega).toISOString().slice(0, 16)
             : '',
           direcciondeentrega: ventaToLoad.direcciondeentrega || '',
           telefonodeentrega: ventaToLoad.telefonodeentrega || '',
@@ -538,16 +538,16 @@ const PageVentas: React.FC = () => {
       let direcciondeentrega: string | null = null;
       let contactodeentrega: string | null = null;
       let telefonodeentrega: string | null = null;
-      let fechaprogramadaventa: string | null = null;
+      let fechaprogramadaentrega: string | null = null;
       
       if (tipoServicio === 'Mesa' && mesaData) {
         cliente = `Mesa: ${mesaData.nombremesa}`;
       } else if (tipoServicio === 'Llevar' && llevarData) {
         cliente = llevarData.cliente;
-        fechaprogramadaventa = llevarData.fechaprogramadaventa;
+        fechaprogramadaentrega = llevarData.fechaprogramadaventa;
       } else if (tipoServicio === 'Domicilio' && domicilioData) {
         cliente = domicilioData.cliente;
-        fechaprogramadaventa = domicilioData.fechaprogramadaventa;
+        fechaprogramadaentrega = domicilioData.fechaprogramadaventa;
         direcciondeentrega = domicilioData.direcciondeentrega;
         telefonodeentrega = domicilioData.telefonodeentrega;
         contactodeentrega = domicilioData.contactodeentrega || null;
@@ -560,7 +560,7 @@ const PageVentas: React.FC = () => {
         direcciondeentrega,
         contactodeentrega,
         telefonodeentrega,
-        fechaprogramadaventa: fechaprogramadaventa || undefined,
+        fechaprogramadaentrega: fechaprogramadaentrega || undefined,
         estadodeventa: estadodeventa,
         estatusdepago: estatusdepago,
         estadodetalle: estadodetalle,
@@ -571,6 +571,7 @@ const PageVentas: React.FC = () => {
           idreceta: item.producto.tipoproducto === 'Receta' && item.producto.idreferencia 
             ? item.producto.idreferencia 
             : null,
+          tipoproducto: item.producto.tipoproducto,
           cantidad: item.cantidad,
           preciounitario: Number(item.producto.precio),
           costounitario: Number(item.producto.costoproducto),
