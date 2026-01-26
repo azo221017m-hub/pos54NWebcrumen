@@ -242,8 +242,16 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
 
     const idventa = ventaResult.insertId;
 
-    // Actualizar folioventa con formato: claveturno + idventa (según requerimientos)
-    const folioventa = `${claveturno}${idventa}`;
+    // Generar HHMMSS para el folio
+    const now = new Date();
+    const HH = String(now.getHours()).padStart(2, '0');
+    const MM = String(now.getMinutes()).padStart(2, '0');
+    const SS = String(now.getSeconds()).padStart(2, '0');
+    const HHMMSS = `${HH}${MM}${SS}`;
+
+    // Actualizar folioventa con formato: claveturno+HHMMSS+[primer letra del tipo de venta]+idventa
+    // Para MOVIMIENTO, usamos 'M'
+    const folioventa = `${claveturno}${HHMMSS}M${idventa}`;
     await connection.query(
       `UPDATE tblposcrumenwebventas 
        SET folioventa = ?
