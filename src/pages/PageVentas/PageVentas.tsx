@@ -433,10 +433,9 @@ const PageVentas: React.FC = () => {
       hasSameModeradores(item.moderadores, moderadores)
     );
     
-    // If item exists, increment quantity (whether ORDENADO or not)
+    // If groupable record exists (same product and moderadores), increment quantity
     if (itemExistente) {
-      // Buscar registro agrupable con mismo producto, moderadores y estado
-      // Si existe (itemExistente), agrupar incrementando cantidad
+      // Agrupar con registro existente incrementando cantidad
       setComanda(comanda.map(item => 
         item === itemExistente
           ? { ...item, cantidad: item.cantidad + 1 }
