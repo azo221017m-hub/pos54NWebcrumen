@@ -427,13 +427,15 @@ const PageVentas: React.FC = () => {
   };
 
   const agregarAComanda = (producto: ProductoWeb, moderadores?: string, moderadoresNames?: string[]) => {
-    // Find existing item with same product AND same moderadores
+    // Find existing item with same product AND same moderadores that is NOT ORDENADO
+    // Skip items with ORDENADO status as they cannot be modified
     const itemExistente = comanda.find(item => 
       item.producto.idProducto === producto.idProducto && 
-      hasSameModeradores(item.moderadores, moderadores)
+      hasSameModeradores(item.moderadores, moderadores) &&
+      item.estadodetalle !== ESTADO_ORDENADO
     );
     
-    // If groupable record exists (same product and moderadores), increment quantity
+    // If groupable record exists (same product and moderadores, not ORDENADO), increment quantity
     if (itemExistente) {
       // Agrupar con registro existente incrementando cantidad
       setComanda(comanda.map(item => 
