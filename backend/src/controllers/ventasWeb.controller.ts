@@ -188,16 +188,15 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     const [ventaResult] = await connection.execute<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebventas (
         tipodeventa, folioventa, estadodeventa, fechadeventa, 
-        fechaprogramadaventa, subtotal, descuentos, impuestos, 
+        subtotal, descuentos, impuestos, 
         totaldeventa, cliente, direcciondeentrega, contactodeentrega, 
         telefonodeentrega, propinadeventa, formadepago, estatusdepago, 
         idnegocio, usuarioauditoria, fechamodificacionauditoria
-      ) VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      ) VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         ventaData.tipodeventa,
         folioventa,
         ventaData.estadodeventa || 'SOLICITADO', // Estado inicial o proporcionado
-        ventaData.fechaprogramadaventa || null,
         subtotal,
         descuentos,
         impuestos,
