@@ -6,7 +6,8 @@ import {
   updateVentaWeb,
   deleteVentaWeb,
   updateDetalleEstado,
-  getDetallesByEstado
+  getDetallesByEstado,
+  addDetallesToVenta
 } from '../controllers/ventasWeb.controller';
 import { authMiddleware } from '../middlewares/auth';
 
@@ -49,6 +50,13 @@ router.put('/:id', updateVentaWeb);
  * @access  Private
  */
 router.delete('/:id', deleteVentaWeb);
+
+/**
+ * @route   POST /api/ventas-web/:id/detalles
+ * @desc    Add detalles to an existing venta web
+ * @access  Private
+ */
+router.post('/:id/detalles', addDetallesToVenta);
 
 /**
  * @route   PATCH /api/ventas-web/:id/detalles/:iddetalle/estado

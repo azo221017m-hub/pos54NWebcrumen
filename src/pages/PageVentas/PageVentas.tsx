@@ -4,7 +4,7 @@ import { ArrowLeft, Search, Plus, Minus, ChevronLeft, ChevronRight, StickyNote }
 import { obtenerProductosWeb } from '../../services/productosWebService';
 import { negociosService } from '../../services/negociosService';
 import { obtenerCategorias } from '../../services/categoriasService';
-import { crearVentaWeb } from '../../services/ventasWebService';
+import { crearVentaWeb, agregarDetallesAVenta } from '../../services/ventasWebService';
 import { obtenerModeradores } from '../../services/moderadoresService';
 import { obtenerModeradoresRef } from '../../services/moderadoresRefService';
 import { verificarTurnoAbierto } from '../../services/turnosService';
@@ -91,6 +91,10 @@ const PageVentas: React.FC = () => {
   const [showIniciaTurnoModal, setShowIniciaTurnoModal] = useState(false);
   const [hasTurnoAbierto, setHasTurnoAbierto] = useState<boolean | null>(null);
   const [isCheckingTurno, setIsCheckingTurno] = useState(true);
+
+  // Current venta state (when loading from dashboard or after creating with ORDENADO status)
+  const [currentVentaId, setCurrentVentaId] = useState<number | null>(null);
+  const [currentFolioVenta, setCurrentFolioVenta] = useState<string | null>(null);
 
 
   // Close user menu when clicking outside
@@ -214,6 +218,10 @@ const PageVentas: React.FC = () => {
       setTipoServicio(tipoServicioMap[ventaToLoad.tipodeventa] || 'Mesa');
       setIsServiceConfigured(true);
       setIsLoadedFromDashboard(true);
+      
+      // Store the current venta ID and folio for adding more items
+      setCurrentVentaId(ventaToLoad.idventa);
+      setCurrentFolioVenta(ventaToLoad.folioventa);
 
       // Load products into comanda
       const itemsComanda: ItemComanda[] = ventaToLoad.detalles.map(detalle => {
@@ -535,6 +543,9 @@ const PageVentas: React.FC = () => {
       return;
     }
 
+    // Check if there are ORDENADO items in the comanda
+    const hasOrdenadoItems = comanda.some(item => item.estadodetalle === 'ORDENADO');
+
     try {
       // Mapear TipoServicio a TipoDeVenta
       const tipoDeVentaMap: Record<TipoServicio, TipoDeVenta> = {
@@ -563,45 +574,62 @@ const PageVentas: React.FC = () => {
         contactodeentrega = domicilioData.contactodeentrega || null;
       }
 
-      const ventaData: VentaWebCreate = {
-        tipodeventa: tipoDeVentaMap[tipoServicio],
-        cliente: cliente,
-        formadepago: 'sinFP', // Valor por defecto según requerimientos
-        direcciondeentrega,
-        contactodeentrega,
-        telefonodeentrega,
-        fechaprogramadaentrega: fechaprogramadaentrega || undefined,
-        estadodeventa: estadodeventa,
-        estatusdepago: estatusdepago,
-        estadodetalle: estadodetalle,
-        detalles: itemsToInsert.map(item => ({
-          idproducto: item.producto.idProducto,
-          nombreproducto: item.producto.nombre,
-          // Priorizar receta: solo asignar si existe y tipo es Receta
-          idreceta: item.producto.tipoproducto === 'Receta' && item.producto.idreferencia 
-            ? item.producto.idreferencia 
-            : null,
-          tipoproducto: item.producto.tipoproducto,
-          cantidad: item.cantidad,
-          preciounitario: Number(item.producto.precio),
-          costounitario: Number(item.producto.costoproducto),
-          observaciones: item.notas || (tipoServicio === 'Domicilio' && domicilioData?.observaciones) || null,
-          moderadores: item.moderadores || null
-        }))
-      };
+      const detallesData = itemsToInsert.map(item => ({
+        idproducto: item.producto.idProducto,
+        nombreproducto: item.producto.nombre,
+        // Priorizar receta: solo asignar si existe y tipo es Receta
+        idreceta: item.producto.tipoproducto === 'Receta' && item.producto.idreferencia 
+          ? item.producto.idreferencia 
+          : null,
+        tipoproducto: item.producto.tipoproducto,
+        cantidad: item.cantidad,
+        preciounitario: Number(item.producto.precio),
+        costounitario: Number(item.producto.costoproducto),
+        observaciones: item.notas || (tipoServicio === 'Domicilio' && domicilioData?.observaciones) || null,
+        moderadores: item.moderadores || null
+      }));
 
-      console.log('Creando venta:', ventaData);
-      
-      const resultado = await crearVentaWeb(ventaData);
+      let resultado: { success: boolean; idventa?: number; folioventa?: string; message?: string };
+
+      // If there are ORDENADO items and we have a current venta ID, add detalles to existing venta
+      if (hasOrdenadoItems && currentVentaId) {
+        console.log('Agregando detalles a venta existente:', currentVentaId);
+        resultado = await agregarDetallesAVenta(currentVentaId, detallesData, estadodetalle);
+      } else {
+        // Create a new venta
+        const ventaData: VentaWebCreate = {
+          tipodeventa: tipoDeVentaMap[tipoServicio],
+          cliente: cliente,
+          formadepago: 'sinFP', // Valor por defecto según requerimientos
+          direcciondeentrega,
+          contactodeentrega,
+          telefonodeentrega,
+          fechaprogramadaentrega: fechaprogramadaentrega || undefined,
+          estadodeventa: estadodeventa,
+          estatusdepago: estatusdepago,
+          estadodetalle: estadodetalle,
+          detalles: detallesData
+        };
+
+        console.log('Creando nueva venta:', ventaData);
+        resultado = await crearVentaWeb(ventaData);
+        
+        // Store the venta ID and folio for future additions
+        if (resultado.success && resultado.idventa && resultado.folioventa) {
+          setCurrentVentaId(resultado.idventa);
+          setCurrentFolioVenta(resultado.folioventa);
+        }
+      }
 
       if (resultado.success) {
         alert(`¡Venta registrada exitosamente!\nFolio: ${resultado.folioventa}`);
-        // Limpiar la comanda y datos del servicio
-        setComanda([]);
-        setMesaData(null);
-        setLlevarData(null);
-        setDomicilioData(null);
-        setIsServiceConfigured(false);
+        
+        // Mark newly inserted items as ORDENADO
+        setComanda(comanda.map(item => 
+          item.estadodetalle !== 'ORDENADO' 
+            ? { ...item, estadodetalle: estadodetalle }
+            : item
+        ));
       } else {
         const errorMsg = resultado.message || 'Error desconocido';
         console.error('Error al registrar venta:', errorMsg);
@@ -1203,7 +1231,13 @@ const PageVentas: React.FC = () => {
 
           <div className="comanda-buttons">
             <button className="btn-producir" onClick={handleProducir} disabled={!isServiceConfigured || comanda.length === 0}>Producir</button>
-            <button className="btn-esperar" onClick={handleEsperar} disabled={!isServiceConfigured || comanda.length === 0}>Esperar</button>
+            <button 
+              className="btn-esperar" 
+              onClick={handleEsperar} 
+              disabled={!isServiceConfigured || comanda.length === 0 || comanda.some(item => item.estadodetalle === 'ORDENADO')}
+            >
+              Esperar
+            </button>
             <button className="btn-listado" onClick={handleListadoPagos} disabled={!isServiceConfigured}>listado de pagos</button>
           </div>
 
