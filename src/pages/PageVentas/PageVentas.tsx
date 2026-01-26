@@ -206,7 +206,8 @@ const PageVentas: React.FC = () => {
         'DOMICILIO': 'Domicilio',
         'LLEVAR': 'Llevar',
         'MESA': 'Mesa',
-        'ONLINE': 'Llevar' // Map ONLINE to Llevar as closest match
+        'ONLINE': 'Llevar', // Map ONLINE to Llevar as closest match
+        'MOVIMIENTO': 'Llevar' // Map MOVIMIENTO to Llevar as closest match
       };
       
       setTipoServicio(tipoServicioMap[ventaToLoad.tipodeventa] || 'Mesa');

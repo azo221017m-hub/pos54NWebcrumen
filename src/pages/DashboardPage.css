@@ -1390,6 +1390,20 @@
   color: #3730a3;
 }
 
+.tipo-movimiento {
+  background: #fae8ff;
+  color: #86198f;
+}
+
+.tipo-movimiento svg {
+  stroke: #86198f;
+}
+
+.venta-tipo-badge:has(.tipo-movimiento) {
+  background: #fae8ff;
+  color: #86198f;
+}
+
 /* ========== STATUS SELECTOR ========== */
 .venta-status-selector {
   display: flex;
