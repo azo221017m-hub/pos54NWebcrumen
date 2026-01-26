@@ -121,7 +121,7 @@ echo ""
 
 echo -e "${BLUE}=== PRUEBA DEL ENDPOINT (Opcional) ===${NC}"
 echo ""
-echo "Para probar el endpoint de creación de venta con el nuevo validation:"
+echo "Para probar el endpoint de creación de venta con la nueva validación:"
 echo ""
 echo "curl -X POST http://localhost:3000/api/ventas-web \\"
 echo "  -H \"Content-Type: application/json\" \\"

@@ -7,8 +7,12 @@ import type {
   DetalleVentaWeb, 
   VentaWebCreate, 
   VentaWebUpdate,
-  VentaWebWithDetails
+  VentaWebWithDetails,
+  FormaDePago
 } from '../types/ventasWeb.types';
+
+// Constantes para validación
+const FORMAS_DE_PAGO_VALIDAS: FormaDePago[] = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'MIXTO', 'sinFP'];
 
 // Obtener todas las ventas web del negocio con sus detalles
 export const getVentasWeb = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -164,11 +168,10 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     }
 
     // Validar que formadepago sea un valor válido
-    const formasDePagoValidas = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'MIXTO', 'sinFP'];
-    if (!formasDePagoValidas.includes(ventaData.formadepago)) {
+    if (!FORMAS_DE_PAGO_VALIDAS.includes(ventaData.formadepago)) {
       res.status(400).json({ 
         success: false, 
-        message: `Forma de pago inválida: "${ventaData.formadepago}". Debe ser uno de: ${formasDePagoValidas.join(', ')}` 
+        message: `Forma de pago inválida: "${ventaData.formadepago}". Debe ser uno de: ${FORMAS_DE_PAGO_VALIDAS.join(', ')}` 
       });
       return;
     }
