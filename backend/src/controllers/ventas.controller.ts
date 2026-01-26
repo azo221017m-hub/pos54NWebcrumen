@@ -165,7 +165,11 @@ export const createVenta = async (req: AuthRequest, res: Response): Promise<void
         [ventaId, item.producto_id, item.cantidad, item.precio_unitario, item.subtotal]
       );
 
-      // Actualizar inventario (el trigger se encarga de esto)
+      // Actualizar inventario explícitamente (sin usar triggers de base de datos)
+      await connection.execute(
+        'UPDATE inventario SET cantidad = cantidad - ? WHERE producto_id = ? AND idnegocio = ?',
+        [item.cantidad, item.producto_id, idnegocio]
+      );
     }
 
     await connection.commit();
