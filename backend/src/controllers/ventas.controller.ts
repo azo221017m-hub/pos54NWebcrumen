@@ -166,10 +166,16 @@ export const createVenta = async (req: AuthRequest, res: Response): Promise<void
       );
 
       // Actualizar inventario explícitamente (sin usar triggers de base de datos)
-      await connection.execute(
-        'UPDATE inventario SET cantidad = cantidad - ? WHERE producto_id = ? AND idnegocio = ?',
-        [item.cantidad, item.producto_id, idnegocio]
+      // Validar que hay suficiente stock antes de decrementar
+      const [updateResult] = await connection.execute<ResultSetHeader>(
+        'UPDATE inventario SET cantidad = cantidad - ? WHERE producto_id = ? AND idnegocio = ? AND cantidad >= ?',
+        [item.cantidad, item.producto_id, idnegocio, item.cantidad]
       );
+
+      // Si no se actualizó ninguna fila, no hay suficiente stock
+      if (updateResult.affectedRows === 0) {
+        throw new Error(`Stock insuficiente para el producto ${item.producto_id}`);
+      }
     }
 
     await connection.commit();
