@@ -13,7 +13,7 @@ export interface VentaWeb {
   folioventa: string;
   estadodeventa: EstadoDeVenta;
   fechadeventa: Date | string;
-  fechaprogramadaventa: Date | string | null;
+  fechaprogramadaentrega: Date | string | null;
   fechapreparacion: Date | string | null;
   fechaenvio: Date | string | null;
   fechaentrega: Date | string | null;
@@ -29,6 +29,7 @@ export interface VentaWeb {
   formadepago: FormaDePago;
   estatusdepago: EstatusDePago;
   tiempototaldeventa: number | null;
+  claveturno: string | null;
   idnegocio: number;
   usuarioauditoria: string;
   fechamodificacionauditoria: Date | string;
@@ -57,6 +58,7 @@ export interface DetalleVentaWeb {
   idnegocio: number;
   usuarioauditoria: string;
   fechamodificacionauditoria: Date | string;
+  comensal: string | null;
 }
 
 export interface VentaWebCreate {
@@ -66,7 +68,7 @@ export interface VentaWebCreate {
   contactodeentrega?: string | null;
   telefonodeentrega?: string | null;
   formadepago: FormaDePago;
-  fechaprogramadaventa?: Date | string | null;
+  fechaprogramadaentrega?: Date | string | null;
   estadodeventa?: EstadoDeVenta;
   estatusdepago?: EstatusDePago;
   estadodetalle?: EstadoDetalle;
@@ -77,6 +79,7 @@ export interface DetalleVentaWebCreate {
   idproducto: number;
   nombreproducto: string;
   idreceta?: number | null;
+  tipoproducto?: string;
   cantidad: number;
   preciounitario: number;
   costounitario: number;
@@ -87,7 +90,7 @@ export interface DetalleVentaWebCreate {
 export interface VentaWebUpdate {
   estadodeventa?: EstadoDeVenta;
   estatusdepago?: EstatusDePago;
-  fechaprogramadaventa?: Date | string | null;
+  fechaprogramadaentrega?: Date | string | null;
   fechapreparacion?: Date | string | null;
   fechaenvio?: Date | string | null;
   fechaentrega?: Date | string | null;

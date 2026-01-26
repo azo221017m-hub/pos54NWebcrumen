@@ -165,6 +165,19 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
 
     await connection.beginTransaction();
 
+    // Obtener claveturno del turno abierto actual
+    let claveturno: string | null = null;
+    const [turnoRows] = await connection.execute<RowDataPacket[]>(
+      `SELECT claveturno FROM tblposcrumenwebturnos 
+       WHERE idnegocio = ? AND estatusturno = 'abierto'
+       LIMIT 1`,
+      [idnegocio]
+    );
+    
+    if (turnoRows.length > 0) {
+      claveturno = turnoRows[0].claveturno;
+    }
+
     // Calcular totales
     let subtotal = 0;
     let descuentos = 0;
@@ -173,9 +186,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     ventaData.detalles.forEach(detalle => {
       const detalleSubtotal = detalle.cantidad * detalle.preciounitario;
       subtotal += detalleSubtotal;
-      // TODO: Implementar lógica de descuentos e impuestos según reglas de negocio
-      // Los cálculos de descuentos e impuestos deberán ser implementados según
-      // las reglas específicas del negocio (porcentajes, montos fijos, etc.)
+      // Los descuentos e impuestos son 0 al hacer insert desde botón ESPERAR o PRODUCIR
     });
 
     const totaldeventa = subtotal - descuentos + impuestos;
@@ -184,19 +195,21 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     // Formato: V{timestamp}{idnegocio}{random} para mayor unicidad
     const folioventa = `V${Date.now()}${idnegocio}${Math.floor(Math.random() * 1000)}`;
 
-    // Insertar venta
+    // Insertar venta con todos los campos requeridos
     const [ventaResult] = await connection.execute<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebventas (
         tipodeventa, folioventa, estadodeventa, fechadeventa, 
+        fechaprogramadaentrega, fechapreparacion, fechaenvio, fechaentrega,
         subtotal, descuentos, impuestos, 
         totaldeventa, cliente, direcciondeentrega, contactodeentrega, 
         telefonodeentrega, propinadeventa, formadepago, estatusdepago, 
-        idnegocio, usuarioauditoria, fechamodificacionauditoria
-      ) VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+        claveturno, idnegocio, usuarioauditoria, fechamodificacionauditoria
+      ) VALUES (?, ?, ?, NOW(), ?, NOW(), NOW(), NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         ventaData.tipodeventa,
         folioventa,
         ventaData.estadodeventa || 'SOLICITADO', // Estado inicial o proporcionado
+        ventaData.fechaprogramadaentrega || null, // Fecha de entrega para DOMICILIO o LLEVAR
         subtotal,
         descuentos,
         impuestos,
@@ -208,6 +221,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
         0, // propina inicial
         ventaData.formadepago,
         ventaData.estatusdepago || 'PENDIENTE', // Estatus de pago proporcionado o inicial
+        claveturno, // Clave de turno actual del usuario que hizo login
         idnegocio,
         usuarioauditoria
       ]
@@ -218,30 +232,34 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     // Insertar detalles de la venta
     for (const detalle of ventaData.detalles) {
       const detalleSubtotal = detalle.cantidad * detalle.preciounitario;
-      const detalleDescuento = 0; // Por defecto
-      const detalleImpuesto = 0; // Por defecto
+      const detalleDescuento = 0; // 0 al hacer insert desde botón ESPERAR o PRODUCIR
+      const detalleImpuesto = 0; // 0 al hacer insert desde botón ESPERAR o PRODUCIR
       const detalleTotal = detalleSubtotal - detalleDescuento + detalleImpuesto;
 
-      // Determinar tipo de afectación basado en el producto
-      // RECETA: Productos elaborados con receta (afecta insumos de la receta)
-      // DIRECTO: Productos terminados sin receta (afecta inventario del producto directamente)
-      // INVENTARIO: Insumos/materias primas vendidos directamente (sin elaboración)
+      // Determinar tipo de afectación y afectainventario basado en tipoproducto
+      // Según los requerimientos:
+      // - afectainventario = 0 SI tipoproducto = 'DIRECTO'
+      // - afectainventario = 1 SI tipoproducto = 'INVENTARIO' o 'RECETA'
+      // - tipoafectacion = tipoproducto del producto de la comanda
       let tipoafectacion: 'DIRECTO' | 'INVENTARIO' | 'RECETA' = 'DIRECTO';
-      let afectainventario = 1; // Por defecto sí afecta inventario
+      let afectainventario = 0;
 
-      if (detalle.idreceta && detalle.idreceta > 0) {
-        // Si tiene receta, el tipo es RECETA
+      const tipoproducto = detalle.tipoproducto || 'Directo';
+      
+      if (tipoproducto === 'Receta') {
         tipoafectacion = 'RECETA';
+        afectainventario = 1;
+      } else if (tipoproducto === 'Inventario' || tipoproducto === 'Materia Prima') {
+        tipoafectacion = 'INVENTARIO';
+        afectainventario = 1;
       } else {
-        // Si no tiene receta, es un producto directo
-        // (INVENTARIO se usaría para materias primas, requiere info adicional del producto)
+        // Directo
         tipoafectacion = 'DIRECTO';
+        afectainventario = 0;
       }
 
-      // Determinar inventarioprocesado basado en afectainventario
-      // Si afectainventario = 1, entonces inventarioprocesado = 0 (no procesado aún)
-      // Si afectainventario = 0, entonces inventarioprocesado = 2 (no aplica)
-      const inventarioprocesado = afectainventario === 1 ? 0 : 2;
+      // inventarioprocesado = 0 al hacer insert desde botón ESPERAR o PRODUCIR
+      const inventarioprocesado = 0;
 
       await connection.execute(
         `INSERT INTO tblposcrumenwebdetalleventas (
@@ -249,8 +267,8 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
           cantidad, preciounitario, costounitario, subtotal, descuento,
           impuesto, total, afectainventario, tipoafectacion, 
           inventarioprocesado, fechadetalleventa, estadodetalle, 
-          observaciones, moderadores, idnegocio, usuarioauditoria, fechamodificacionauditoria
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, NOW())`,
+          observaciones, moderadores, idnegocio, usuarioauditoria, fechamodificacionauditoria, comensal
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, NOW(), ?)`,
         [
           ventaId,
           detalle.idproducto,
@@ -265,12 +283,13 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
           detalleTotal,
           afectainventario,
           tipoafectacion,
-          inventarioprocesado, // Ahora se establece basado en afectainventario
+          inventarioprocesado, // 0 al hacer insert desde botón ESPERAR o PRODUCIR
           ventaData.estadodetalle || 'ORDENADO', // Estado inicial o proporcionado
           detalle.observaciones || null,
           detalle.moderadores || null,
           idnegocio,
-          usuarioauditoria
+          usuarioauditoria,
+          null // comensal = null
         ]
       );
     }
@@ -348,12 +367,10 @@ export const updateVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       values.push(updateData.estatusdepago);
     }
 
-    // NOTE: fechaprogramadaventa column doesn't exist in the database table
-    // If this column is added to the database in the future, uncomment the following:
-    // if (updateData.fechaprogramadaventa !== undefined) {
-    //   updates.push('fechaprogramadaventa = ?');
-    //   values.push(updateData.fechaprogramadaventa);
-    // }
+    if (updateData.fechaprogramadaentrega !== undefined) {
+      updates.push('fechaprogramadaentrega = ?');
+      values.push(updateData.fechaprogramadaentrega);
+    }
 
     if (updateData.fechapreparacion !== undefined) {
       updates.push('fechapreparacion = ?');

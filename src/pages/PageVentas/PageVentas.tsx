@@ -560,7 +560,7 @@ const PageVentas: React.FC = () => {
         direcciondeentrega,
         contactodeentrega,
         telefonodeentrega,
-        fechaprogramadaventa: fechaprogramadaventa || undefined,
+        fechaprogramadaentrega: fechaprogramadaventa || undefined,
         estadodeventa: estadodeventa,
         estatusdepago: estatusdepago,
         estadodetalle: estadodetalle,
@@ -571,6 +571,7 @@ const PageVentas: React.FC = () => {
           idreceta: item.producto.tipoproducto === 'Receta' && item.producto.idreferencia 
             ? item.producto.idreferencia 
             : null,
+          tipoproducto: item.producto.tipoproducto,
           cantidad: item.cantidad,
           preciounitario: Number(item.producto.precio),
           costounitario: Number(item.producto.costoproducto),
