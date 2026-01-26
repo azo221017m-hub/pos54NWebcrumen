@@ -637,6 +637,30 @@
   gap: 0.250rem; /* 4px */
 }
 
+/* Disabled comanda item styles for ORDENADO items */
+.comanda-item-disabled {
+  opacity: 0.6;
+  background: #e0e0e0;
+  border-color: #95a5a6;
+}
+
+.comanda-item-disabled .comanda-item-nombre,
+.comanda-item-disabled .comanda-item-precio,
+.comanda-item-disabled .comanda-item-cantidad-input {
+  color: #7f8c8d;
+}
+
+.comanda-item-status {
+  background: #95a5a6;
+  color: white;
+  padding: 0.125rem 0.375rem; /* 2px 6px */
+  border-radius: 0.250rem; /* 4px */
+  font-size: 0.469rem; /* 7.5px */
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-left: 0.250rem; /* 4px */
+}
+
 .comanda-item-header {
   display: flex;
   align-items: center;

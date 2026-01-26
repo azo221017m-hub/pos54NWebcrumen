@@ -29,6 +29,7 @@ interface ItemComanda {
   notas?: string;
   moderadores?: string; // Comma-separated IDs
   moderadoresNames?: string[]; // Array of names for display
+  estadodetalle?: EstadoDetalle; // Track the detail status to prevent re-insertion of ORDENADO items
 }
 
 // Constants
@@ -251,7 +252,8 @@ const PageVentas: React.FC = () => {
           cantidad: Math.round(detalle.cantidad), // Ensure integer value
           notas: detalle.observaciones || undefined,
           moderadores: detalle.moderadores || undefined,
-          moderadoresNames
+          moderadoresNames,
+          estadodetalle: detalle.estadodetalle // Track the detail status
         };
       });
       
@@ -525,6 +527,14 @@ const PageVentas: React.FC = () => {
       return;
     }
 
+    // Filter out items that are already ORDENADO to prevent re-insertion
+    const itemsToInsert = comanda.filter(item => item.estadodetalle !== 'ORDENADO');
+    
+    if (itemsToInsert.length === 0) {
+      alert('Todos los productos en la comanda ya han sido ordenados');
+      return;
+    }
+
     try {
       // Mapear TipoServicio a TipoDeVenta
       const tipoDeVentaMap: Record<TipoServicio, TipoDeVenta> = {
@@ -564,7 +574,7 @@ const PageVentas: React.FC = () => {
         estadodeventa: estadodeventa,
         estatusdepago: estatusdepago,
         estadodetalle: estadodetalle,
-        detalles: comanda.map(item => ({
+        detalles: itemsToInsert.map(item => ({
           idproducto: item.producto.idProducto,
           nombreproducto: item.producto.nombre,
           // Priorizar receta: solo asignar si existe y tipo es Receta
@@ -1203,8 +1213,13 @@ const PageVentas: React.FC = () => {
           </div>
 
           <div className="comanda-items">
-            {comanda.map((item, index) => (
-              <div key={`${item.producto.idProducto}-${item.moderadores || 'none'}-${index}`} className="comanda-item">
+            {comanda.map((item, index) => {
+              const isOrdenado = item.estadodetalle === 'ORDENADO';
+              return (
+              <div 
+                key={`${item.producto.idProducto}-${item.moderadores || 'none'}-${index}`} 
+                className={`comanda-item ${isOrdenado ? 'comanda-item-disabled' : ''}`}
+              >
                 <div className="comanda-item-header">
                   <input 
                     type="number" 
@@ -1212,6 +1227,7 @@ const PageVentas: React.FC = () => {
                     value={item.cantidad}
                     min="1"
                     step="1"
+                    disabled={isOrdenado}
                     onChange={(e) => {
                       const inputValue = e.target.value;
                       // Parse the value
@@ -1235,6 +1251,9 @@ const PageVentas: React.FC = () => {
                   <span className="comanda-item-precio">
                     $ {formatPrice((Number(item.producto.precio) || 0) * item.cantidad)}
                   </span>
+                  {isOrdenado && (
+                    <span className="comanda-item-status">ORDENADO</span>
+                  )}
                 </div>
                 {item.moderadoresNames && item.moderadoresNames.length > 0 && (
                   <div className="comanda-item-moderadores">
@@ -1278,12 +1297,14 @@ const PageVentas: React.FC = () => {
                   <button 
                     className="btn-comanda-accion btn-minus"
                     onClick={() => disminuirCantidad(item.producto, item.moderadores)}
+                    disabled={isOrdenado}
                   >
                     <Minus size={14} />
                   </button>
                   <button 
                     className="btn-comanda-accion btn-plus"
                     onClick={() => agregarAComanda(item.producto, item.moderadores, item.moderadoresNames)}
+                    disabled={isOrdenado}
                   >
                     <Plus size={14} />
                   </button>
@@ -1291,12 +1312,14 @@ const PageVentas: React.FC = () => {
                     className="btn-comanda-accion btn-nota"
                     onClick={() => handleNotaClick(index, item.notas)}
                     title="Agregar nota"
+                    disabled={isOrdenado}
                   >
                     <StickyNote size={14} />
                   </button>
                 </div>
               </div>
-            ))}
+            );
+            })}
 
             {comanda.length === 0 && (
               <div className="comanda-empty">
