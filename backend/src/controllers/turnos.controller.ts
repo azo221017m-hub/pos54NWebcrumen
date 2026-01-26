@@ -156,6 +156,7 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
     const claveturno = generarClaveTurno(idusuario, idnegocio);
 
     // Insertar el nuevo turno en tblposcrumenwebturnos
+    // Nota: numeroturno se actualiza después porque debe ser igual a idturno (auto-increment)
     const [result] = await connection.query<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebturnos (
         numeroturno,
@@ -172,7 +173,7 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
 
     const idturno = result.insertId;
 
-    // Actualizar numeroturno = idturno (consecutivo)
+    // Actualizar numeroturno = idturno (consecutivo según requerimientos)
     const numeroturno = idturno;
     await connection.query(
       `UPDATE tblposcrumenwebturnos 
@@ -182,6 +183,7 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
     );
 
     // Crear registro en tblposcrumenwebventas como MOVIMIENTO inicial del turno
+    // Nota: folioventa se actualiza después porque depende de idventa (auto-increment)
     const [ventaResult] = await connection.query<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebventas (
         tipodeventa,
@@ -239,7 +241,7 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
 
     const idventa = ventaResult.insertId;
 
-    // Actualizar folioventa con formato: claveturno + idventa
+    // Actualizar folioventa con formato: claveturno + idventa (según requerimientos)
     const folioventa = `${claveturno}${idventa}`;
     await connection.query(
       `UPDATE tblposcrumenwebventas 
@@ -263,12 +265,31 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
     });
   } catch (error) {
     // Rollback en caso de error
-    await connection.rollback();
+    try {
+      await connection.rollback();
+    } catch (rollbackError) {
+      console.error('Error al hacer rollback:', rollbackError);
+    }
     connection.release();
     
-    console.error('Error al crear turno:', error);
+    console.error('Error al crear turno y venta inicial:', error);
+    
+    // Determinar mensaje de error más específico
+    let errorMessage = 'Error al iniciar el turno. ';
+    if (error instanceof Error) {
+      if (error.message.includes('Duplicate entry')) {
+        errorMessage += 'Ya existe un turno con estos datos.';
+      } else if (error.message.includes('claveturno')) {
+        errorMessage += 'Error al generar la clave del turno.';
+      } else if (error.message.includes('ventas')) {
+        errorMessage += 'Error al crear el registro de venta inicial.';
+      } else {
+        errorMessage += error.message;
+      }
+    }
+    
     res.status(500).json({ 
-      message: 'Error al crear el turno',
+      message: errorMessage,
       error: error instanceof Error ? error.message : 'Error desconocido'
     });
   }
