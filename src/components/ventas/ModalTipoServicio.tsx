@@ -92,6 +92,17 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     }
   };
 
+  // Helper function to get current datetime in local timezone for datetime-local input
+  const getCurrentDateTime = (): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   useEffect(() => {
     if (isOpen) {
       if (tipoServicio === 'Mesa') {
@@ -102,15 +113,6 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
       } else {
         cargarClientes();
         
-        // Get current date and time in local timezone for datetime-local input
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const currentDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
-        
         if (tipoServicio === 'Llevar') {
           if (initialData && 'fechaprogramadaventa' in initialData && !('direcciondeentrega' in initialData)) {
             setLlevarFormData(initialData as LlevarFormData);
@@ -118,7 +120,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
             // Set default date/time when opening modal
             setLlevarFormData(prev => ({
               ...prev,
-              fechaprogramadaventa: currentDateTime
+              fechaprogramadaventa: getCurrentDateTime()
             }));
           }
         } else if (tipoServicio === 'Domicilio') {
@@ -128,7 +130,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
             // Set default date/time when opening modal
             setDomicilioFormData(prev => ({
               ...prev,
-              fechaprogramadaventa: currentDateTime
+              fechaprogramadaventa: getCurrentDateTime()
             }));
           }
         }
@@ -288,11 +290,15 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                         contactodeentrega: selectedCliente.referencia || ''
                       }));
                     } else {
-                      // Only update the client name for new clients
+                      // Clear auto-filled fields when switching to a new client
                       setDomicilioFormData(prev => ({
                         ...prev,
                         cliente: inputValue,
-                        idcliente: null
+                        idcliente: null,
+                        // Only clear fields if they were previously auto-filled (idcliente was set)
+                        direcciondeentrega: prev.idcliente ? '' : prev.direcciondeentrega,
+                        telefonodeentrega: prev.idcliente ? '' : prev.telefonodeentrega,
+                        contactodeentrega: prev.idcliente ? '' : prev.contactodeentrega
                       }));
                     }
                   }}
