@@ -388,7 +388,7 @@ export const validarNumeroMesaUnico = async (req: Request, res: Response): Promi
 export const cambiarEstatusMesa = async (req: Request, res: Response): Promise<void> => {
   try {
     const { idmesa } = req.params;
-    const { estatusmesa, UsuarioModifico } = req.body;
+    const { estatusmesa, usuarioauditoria } = req.body;
 
     console.log('Cambiando estatus de mesa ID:', idmesa, 'a:', estatusmesa);
 
@@ -405,10 +405,10 @@ export const cambiarEstatusMesa = async (req: Request, res: Response): Promise<v
     const [result] = await pool.query<ResultSetHeader>(
       `UPDATE tblposcrumenwebmesas 
        SET estatusmesa = ?,
-           UsuarioModifico = ?,
-           FechaModifico = NOW()
+           usuarioauditoria = ?,
+           fechamodificacionauditoria = NOW()
        WHERE idmesa = ?`,
-      [estatusmesa, UsuarioModifico, idmesa]
+      [estatusmesa, usuarioauditoria, idmesa]
     );
 
     if (result.affectedRows === 0) {
