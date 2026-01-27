@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ModuloPagos.css';
+import { obtenerDescuentos } from '../../services/descuentosService';
+import type { Descuento } from '../../types/descuento.types';
 
 interface ModuloPagosProps {
   onClose: () => void;
@@ -11,26 +13,56 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
   const [montoEfectivo, setMontoEfectivo] = useState<string>('');
   const [numeroReferencia, setNumeroReferencia] = useState<string>('');
   const [pagosMixtos, setPagosMixtos] = useState<Array<{ formaPago: string; importe: string; referencia: string }>>([
-    { formaPago: '', importe: '', referencia: '' },
-    { formaPago: '', importe: '', referencia: '' }
+    { formaPago: 'Efectivo', importe: '', referencia: '' }
   ]);
+  
+  // Estados para descuentos
+  const [descuentos, setDescuentos] = useState<Descuento[]>([]);
+  const [mostrarDescuentos, setMostrarDescuentos] = useState(false);
+  const [descuentoSeleccionado, setDescuentoSeleccionado] = useState<Descuento | null>(null);
+  const [cargandoDescuentos, setCargandoDescuentos] = useState(false);
 
-  // Calcular descuento (ejemplo: 10%)
-  const descuento = totalCuenta * 0.10;
-  const nuevoTotal = totalCuenta - descuento;
+  // Cargar descuentos al montar el componente
+  useEffect(() => {
+    cargarDescuentos();
+  }, []);
 
-  const handleMontoRapido = (monto: number) => {
-    setMontoEfectivo(monto.toString());
+  const cargarDescuentos = async () => {
+    try {
+      setCargandoDescuentos(true);
+      const descuentosData = await obtenerDescuentos();
+      // Filtrar solo descuentos activos
+      const descuentosActivos = descuentosData.filter(d => d.estatusdescuento === 'activo' || d.estatusdescuento === 'Activo');
+      setDescuentos(descuentosActivos);
+    } catch (error) {
+      console.error('Error al cargar descuentos:', error);
+    } finally {
+      setCargandoDescuentos(false);
+    }
+  };
+
+  // Calcular descuento según el tipo y valor
+  const calcularDescuento = (descuento: Descuento): number => {
+    if (descuento.tipodescuento.toLowerCase() === 'porcentaje' || descuento.tipodescuento.toLowerCase() === 'porcentual') {
+      return totalCuenta * (descuento.valor / 100);
+    } else if (descuento.tipodescuento.toLowerCase() === 'monto' || descuento.tipodescuento.toLowerCase() === 'fijo') {
+      return descuento.valor;
+    }
+    return 0;
+  };
+
+  const montoDescuento = descuentoSeleccionado ? calcularDescuento(descuentoSeleccionado) : 0;
+  const nuevoTotal = totalCuenta - montoDescuento;
+
+  const handleSeleccionarDescuento = (descuento: Descuento) => {
+    setDescuentoSeleccionado(descuento);
+    setMostrarDescuentos(false);
   };
 
   const handleCobrar = () => {
     console.log('Procesando cobro...');
     // Aquí se implementaría la lógica de cobro
     alert('Cobro procesado exitosamente');
-  };
-
-  const handleAgregarPagoMixto = () => {
-    setPagosMixtos([...pagosMixtos, { formaPago: '', importe: '', referencia: '' }]);
   };
 
   return (
@@ -49,15 +81,67 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
 
             {/* Sección Descuentos */}
             <div className="pagos-descuentos">
-              <button className="btn-descuentos">Descuentos</button>
-              <div className="descuentos-detalle">
-                <span className="descuento-texto">descuento amigo 10%</span>
-                <span className="descuento-monto">- ${descuento.toFixed(2)}</span>
-              </div>
-              <div className="pagos-nuevo-total">
-                <span className="pagos-label">Nuevo Total</span>
-                <span className="pagos-monto-grande">${nuevoTotal.toFixed(2)}</span>
-              </div>
+              <button 
+                className="btn-descuentos"
+                onClick={() => setMostrarDescuentos(!mostrarDescuentos)}
+                disabled={cargandoDescuentos}
+              >
+                {cargandoDescuentos ? 'Cargando...' : 'Descuentos'}
+              </button>
+              
+              {/* Modal de selección de descuentos */}
+              {mostrarDescuentos && (
+                <div className="descuentos-lista-modal">
+                  <div className="descuentos-lista-header">
+                    <h4>Seleccionar Descuento</h4>
+                    <button 
+                      className="descuentos-lista-cerrar"
+                      onClick={() => setMostrarDescuentos(false)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="descuentos-lista-contenido">
+                    {descuentos.length === 0 ? (
+                      <p className="descuentos-vacio">No hay descuentos disponibles</p>
+                    ) : (
+                      descuentos.map((descuento) => (
+                        <button
+                          key={descuento.id_descuento}
+                          className="descuento-item"
+                          onClick={() => handleSeleccionarDescuento(descuento)}
+                        >
+                          <span className="descuento-item-nombre">{descuento.nombre}</span>
+                          <span className="descuento-item-valor">
+                            {descuento.tipodescuento.toLowerCase() === 'porcentaje' || descuento.tipodescuento.toLowerCase() === 'porcentual' 
+                              ? `${descuento.valor}%` 
+                              : `$${descuento.valor.toFixed(2)}`}
+                          </span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {descuentoSeleccionado && (
+                <>
+                  <div className="descuentos-detalle">
+                    <span className="descuento-texto">{descuentoSeleccionado.nombre}</span>
+                    <span className="descuento-monto">- ${montoDescuento.toFixed(2)}</span>
+                  </div>
+                  <div className="pagos-nuevo-total">
+                    <span className="pagos-label">Nuevo Total</span>
+                    <span className="pagos-monto-grande">${nuevoTotal.toFixed(2)}</span>
+                  </div>
+                  <button 
+                    className="btn-quitar-descuento"
+                    onClick={() => setDescuentoSeleccionado(null)}
+                  >
+                    Quitar Descuento
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Botones de forma de pago */}
@@ -103,18 +187,15 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
             {metodoPagoSeleccionado === 'efectivo' && (
               <div className="pagos-panel-efectivo">
                 <h4>Pagos realizados EFECTIVO</h4>
-                <div className="pagos-montos-rapidos">
-                  <button className="btn-monto-rapido" onClick={() => handleMontoRapido(50)}>$50</button>
-                  <button className="btn-monto-rapido" onClick={() => handleMontoRapido(100)}>$100</button>
-                  <button className="btn-monto-rapido" onClick={() => handleMontoRapido(150)}>$150</button>
-                  <button className="btn-monto-rapido" onClick={() => handleMontoRapido(200)}>$200</button>
-                  <button className="btn-monto-rapido" onClick={() => handleMontoRapido(250)}>$250</button>
-                  <button className="btn-monto-rapido" onClick={() => handleMontoRapido(300)}>$300</button>
+                <label className="pagos-label-monto">Monto a cobrar</label>
+                <div className="pagos-monto-info">
+                  ${descuentoSeleccionado ? nuevoTotal.toFixed(2) : totalCuenta.toFixed(2)}
                 </div>
+                <label className="pagos-label-monto">Total recibido</label>
                 <input 
                   type="number" 
                   className="pagos-input-monto" 
-                  placeholder="Monto manual"
+                  placeholder="Ingrese el monto recibido"
                   value={montoEfectivo}
                   onChange={(e) => setMontoEfectivo(e.target.value)}
                 />
@@ -125,10 +206,15 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
             {metodoPagoSeleccionado === 'transferencia' && (
               <div className="pagos-panel-transferencia">
                 <h4>Pagos realizados TRANSFERENCIA</h4>
+                <label className="pagos-label-referencia">Importe a cobrar</label>
+                <div className="pagos-monto-info">
+                  ${descuentoSeleccionado ? nuevoTotal.toFixed(2) : totalCuenta.toFixed(2)}
+                </div>
                 <label className="pagos-label-referencia">Número de referencia</label>
                 <input 
                   type="text" 
                   className="pagos-input-referencia" 
+                  placeholder="Ingrese número de referencia"
                   value={numeroReferencia}
                   onChange={(e) => setNumeroReferencia(e.target.value)}
                 />
@@ -139,9 +225,6 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
             {metodoPagoSeleccionado === 'mixto' && (
               <div className="pagos-panel-mixto">
                 <h4>Pagos realizados MIXTO</h4>
-                <button className="btn-agrega-pago" onClick={handleAgregarPagoMixto}>
-                  Agrega Pago
-                </button>
                 <div className="pagos-tabla-mixto">
                   <table>
                     <thead>
@@ -155,16 +238,19 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
                       {pagosMixtos.map((pago, index) => (
                         <tr key={index}>
                           <td>
-                            <input 
-                              type="text" 
-                              placeholder="Forma"
+                            <select 
+                              className="pagos-select-forma"
                               value={pago.formaPago}
                               onChange={(e) => {
                                 const nuevos = [...pagosMixtos];
                                 nuevos[index].formaPago = e.target.value;
                                 setPagosMixtos(nuevos);
                               }}
-                            />
+                            >
+                              <option value="">Seleccione...</option>
+                              <option value="Efectivo">Efectivo</option>
+                              <option value="Transferencia">Transferencia</option>
+                            </select>
                           </td>
                           <td>
                             <input 
@@ -183,6 +269,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
                               type="text" 
                               placeholder="Referencia"
                               value={pago.referencia}
+                              disabled={pago.formaPago !== 'Transferencia'}
                               onChange={(e) => {
                                 const nuevos = [...pagosMixtos];
                                 nuevos[index].referencia = e.target.value;
