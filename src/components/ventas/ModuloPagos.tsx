@@ -104,8 +104,9 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
 
             {/* Sección Descuentos */}
             <div className="pagos-descuentos">
-              <label className="pagos-label-descuento">Descuentos</label>
+              <label htmlFor="select-descuento" className="pagos-label-descuento">Descuentos</label>
               <select 
+                id="select-descuento"
                 className="pagos-select-descuento"
                 value={descuentoSeleccionado?.id_descuento.toString() || ''}
                 onChange={(e) => handleSeleccionarDescuento(e.target.value)}
@@ -115,7 +116,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
                   {cargandoDescuentos ? 'Cargando...' : 'Seleccionar descuento'}
                 </option>
                 {descuentos.map((descuento) => (
-                  <option key={descuento.id_descuento} value={descuento.id_descuento}>
+                  <option key={descuento.id_descuento} value={descuento.id_descuento.toString()}>
                     {descuento.nombre} - {formatearValorDescuento(descuento)}
                   </option>
                 ))}
