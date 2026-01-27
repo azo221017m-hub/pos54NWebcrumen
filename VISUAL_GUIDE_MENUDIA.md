@@ -23,7 +23,7 @@ When **Active (menudia = 1)**:
 │  ┌──────┐                               │
 │  │──────◯│  Parte del menú              │
 │  └──────┘                               │
-│  Green toggle slider →                  │
+│  Green gradient slider (#10b981-#34d399)│
 └─────────────────────────────────────────┘
 ```
 
@@ -34,7 +34,7 @@ When **Inactive (menudia = 0)**:
 │  ┌──────┐                               │
 │  │ ◯────│  No parte del menú            │
 │  └──────┘                               │
-│  Gray toggle slider ←                   │
+│  Gray slider (#cbd5e1)                  │
 └─────────────────────────────────────────┘
 ```
 
