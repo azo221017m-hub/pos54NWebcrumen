@@ -403,7 +403,8 @@ const PageVentas: React.FC = () => {
       
       // Si la categoría seleccionada es "Menú Día", filtrar solo productos con menudia = 1
       const categoriaSeleccionadaObj = categorias.find(c => c.idCategoria === categoriaSeleccionada);
-      if (categoriaSeleccionadaObj && categoriaSeleccionadaObj.nombre.toLowerCase().includes('menú día')) {
+      const nombreCategoria = categoriaSeleccionadaObj?.nombre.toLowerCase().trim() || '';
+      if (nombreCategoria === 'menú día' || nombreCategoria === 'menu dia') {
         filtrados = filtrados.filter(p => p.menudia === 1);
       }
     }
@@ -992,10 +993,8 @@ const PageVentas: React.FC = () => {
   const handleCancelar = async () => {
     try {
       // If it's a Mesa type service and we have mesa data, set mesa status back to DISPONIBLE
-      if (tipoServicio === 'Mesa' && mesaData && mesaData.idmesa) {
-        if (usuario) {
-          await cambiarEstatusMesa(mesaData.idmesa, 'DISPONIBLE', usuario.alias || usuario.nombre);
-        }
+      if (tipoServicio === 'Mesa' && mesaData?.idmesa && usuario) {
+        await cambiarEstatusMesa(mesaData.idmesa, 'DISPONIBLE', usuario.alias || usuario.nombre);
       }
     } catch (error) {
       console.error('Error al actualizar estatus de mesa:', error);
