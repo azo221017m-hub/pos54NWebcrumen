@@ -87,7 +87,32 @@ const ConfigProductosWeb: React.FC = () => {
   const handleToggleMenuDia = async (id: number, currentValue: number) => {
     try {
       const newValue = currentValue === 1 ? 0 : 1;
-      const resultado = await actualizarProductoWeb(id, { menudia: newValue });
+      
+      // Find the product in the current state
+      const producto = productos.find(p => p.idProducto === id);
+      if (!producto) {
+        mostrarMensaje('error', 'Producto no encontrado');
+        return;
+      }
+      
+      // Create a complete ProductoWebUpdate object
+      const productoActualizado: ProductoWebUpdate = {
+        idProducto: producto.idProducto,
+        idCategoria: producto.idCategoria,
+        idreferencia: producto.idreferencia,
+        nombre: producto.nombre,
+        descripcion: producto.descripcion,
+        precio: producto.precio,
+        estatus: producto.estatus,
+        imagenProducto: producto.imagenProducto,
+        tipoproducto: producto.tipoproducto,
+        costoproducto: producto.costoproducto,
+        usuarioauditoria: producto.usuarioauditoria,
+        idnegocio: producto.idnegocio,
+        menudia: newValue
+      };
+      
+      const resultado = await actualizarProductoWeb(id, productoActualizado);
       
       if (resultado.success) {
         mostrarMensaje('success', `Producto ${newValue === 1 ? 'agregado al' : 'removido del'} Menú del Día`);
