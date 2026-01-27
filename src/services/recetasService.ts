@@ -30,40 +30,40 @@ export const obtenerRecetaPorId = async (id: number): Promise<Receta | null> => 
 };
 
 // Crear nueva receta
-export const crearReceta = async (receta: RecetaCreate): Promise<{ success: boolean; idReceta?: number }> => {
+export const crearReceta = async (receta: RecetaCreate): Promise<Receta> => {
   try {
     console.log('🔵 recetasService: Creando receta:', receta);
-    const response = await apiClient.post(API_BASE, receta);
+    const response = await apiClient.post<Receta>(API_BASE, receta);
     console.log('🔵 recetasService: Receta creada exitosamente');
-    return { success: true, idReceta: response.data.idReceta };
+    return response.data;
   } catch (error) {
     console.error('🔴 recetasService: Error al crear receta:', error);
-    return { success: false };
+    throw error;
   }
 };
 
 // Actualizar receta
-export const actualizarReceta = async (id: number, receta: RecetaUpdate): Promise<boolean> => {
+export const actualizarReceta = async (id: number, receta: RecetaUpdate): Promise<Receta> => {
   try {
     console.log('🔵 recetasService: Actualizando receta ID:', id);
-    await apiClient.put(`${API_BASE}/${id}`, receta);
+    const response = await apiClient.put<Receta>(`${API_BASE}/${id}`, receta);
     console.log('🔵 recetasService: Receta actualizada exitosamente');
-    return true;
+    return response.data;
   } catch (error) {
     console.error('🔴 recetasService: Error al actualizar receta:', error);
-    return false;
+    throw error;
   }
 };
 
 // Eliminar receta
-export const eliminarReceta = async (id: number): Promise<boolean> => {
+export const eliminarReceta = async (id: number): Promise<number> => {
   try {
     console.log('🔵 recetasService: Eliminando receta ID:', id);
     await apiClient.delete(`${API_BASE}/${id}`);
     console.log('🔵 recetasService: Receta eliminada exitosamente');
-    return true;
+    return id;
   } catch (error) {
     console.error('🔴 recetasService: Error al eliminar receta:', error);
-    return false;
+    throw error;
   }
 };

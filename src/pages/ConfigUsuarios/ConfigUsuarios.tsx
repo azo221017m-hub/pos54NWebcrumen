@@ -66,9 +66,10 @@ export const ConfigUsuarios: React.FC = () => {
   const handleEliminarUsuario = async (id: number) => {
     try {
       setLoading(true);
-      await eliminarUsuario(id);
+      const idEliminado = await eliminarUsuario(id);
       mostrarMensaje('success', 'Usuario eliminado correctamente');
-      await cargarUsuarios();
+      // Actualizar estado local sin recargar
+      setUsuarios(prev => prev.filter(usuario => usuario.idUsuario !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar usuario:', error);
       mostrarMensaje('error', 'Error al eliminar el usuario');
@@ -95,15 +96,22 @@ export const ConfigUsuarios: React.FC = () => {
 
       if (usuarioEditar) {
         // Actualizar
-        await actualizarUsuario(usuarioEditar.idUsuario!, data);
+        const usuarioActualizado = await actualizarUsuario(usuarioEditar.idUsuario!, data);
         mostrarMensaje('success', 'Usuario actualizado correctamente');
+        // Actualizar estado local sin recargar
+        setUsuarios(prev =>
+          prev.map(usuario =>
+            usuario.idUsuario === usuarioActualizado.idUsuario ? usuarioActualizado : usuario
+          )
+        );
       } else {
         // Crear
-        await crearUsuario(data);
+        const nuevoUsuario = await crearUsuario(data);
         mostrarMensaje('success', 'Usuario creado correctamente');
+        // Actualizar estado local sin recargar
+        setUsuarios(prev => [...prev, nuevoUsuario]);
       }
 
-      await cargarUsuarios();
       setVista('lista');
       setUsuarioEditar(null);
     } catch (error) {

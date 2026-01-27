@@ -33,13 +33,16 @@ export const rolesService = {
   },
 
   // Crear un nuevo rol
-  crearRol: async (data: Rol): Promise<RolResponse> => {
+  crearRol: async (data: Rol): Promise<Rol> => {
     try {
       console.log('📡 Creando rol:', data);
       console.log('📡 Datos a enviar:', JSON.stringify(data, null, 2));
       const response = await api.post<RolResponse>('/roles', data);
       console.log('✅ Rol creado:', response.data);
-      return response.data;
+      if (response.data.success && response.data.data) {
+        return response.data.data as Rol;
+      }
+      throw new Error('Respuesta inválida del servidor');
     } catch (error: unknown) {
       console.error('❌ Error al crear rol:', error);
       if (error && typeof error === 'object' && 'response' in error) {
@@ -65,14 +68,17 @@ export const rolesService = {
   },
 
   // Actualizar un rol
-  actualizarRol: async (id: number, data: Rol): Promise<RolResponse> => {
+  actualizarRol: async (id: number, data: Rol): Promise<Rol> => {
     try {
       console.log('📡 Actualizando rol:', { id, data });
       console.log('📡 URL completa:', `/roles/${id}`);
       console.log('📡 Datos a enviar:', JSON.stringify(data, null, 2));
       const response = await api.put<RolResponse>(`/roles/${id}`, data);
       console.log('✅ Rol actualizado:', response.data);
-      return response.data;
+      if (response.data.success && response.data.data) {
+        return response.data.data as Rol;
+      }
+      throw new Error('Respuesta inválida del servidor');
     } catch (error: unknown) {
       console.error('❌ Error al actualizar rol:', error);
       if (error && typeof error === 'object' && 'response' in error) {
@@ -100,12 +106,12 @@ export const rolesService = {
   },
 
   // Eliminar un rol (soft delete)
-  eliminarRol: async (id: number): Promise<RolResponse> => {
+  eliminarRol: async (id: number): Promise<number> => {
     try {
       console.log('📡 Eliminando rol:', id);
-      const response = await api.delete<RolResponse>(`/roles/${id}`);
-      console.log('✅ Rol eliminado:', response.data);
-      return response.data;
+      await api.delete(`/roles/${id}`);
+      console.log('✅ Rol eliminado');
+      return id;
     } catch (error: unknown) {
       console.error('❌ Error al eliminar rol:', error);
       if (error && typeof error === 'object' && 'response' in error) {

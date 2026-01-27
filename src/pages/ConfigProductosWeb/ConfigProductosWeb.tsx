@@ -71,13 +71,10 @@ const ConfigProductosWeb: React.FC = () => {
     }
 
     try {
-      const exito = await eliminarProductoWeb(id);
-      if (exito) {
-        mostrarMensaje('success', 'Producto eliminado exitosamente');
-        cargarProductos();
-      } else {
-        mostrarMensaje('error', 'Error al eliminar el producto');
-      }
+      const idEliminado = await eliminarProductoWeb(id);
+      mostrarMensaje('success', 'Producto eliminado exitosamente');
+      // Actualizar estado local sin recargar
+      setProductos(prev => prev.filter(producto => producto.idProducto !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar producto:', error);
       mostrarMensaje('error', 'Error al eliminar el producto');
@@ -101,14 +98,15 @@ const ConfigProductosWeb: React.FC = () => {
         menudia: newValue
       };
       
-      const resultado = await actualizarProductoWeb(id, productoActualizado);
+      const productoActualizadoCompleto = await actualizarProductoWeb(id, productoActualizado);
       
-      if (resultado.success) {
-        mostrarMensaje('success', `Producto ${newValue === 1 ? 'agregado al' : 'removido del'} Menú del Día`);
-        cargarProductos();
-      } else {
-        mostrarMensaje('error', resultado.message || 'Error al actualizar el producto');
-      }
+      mostrarMensaje('success', `Producto ${newValue === 1 ? 'agregado al' : 'removido del'} Menú del Día`);
+      // Actualizar estado local sin recargar
+      setProductos(prev =>
+        prev.map(p =>
+          p.idProducto === productoActualizadoCompleto.idProducto ? productoActualizadoCompleto : p
+        )
+      );
     } catch (error) {
       console.error('Error al actualizar menú del día:', error);
       mostrarMensaje('error', 'Error al actualizar el producto');
@@ -120,28 +118,28 @@ const ConfigProductosWeb: React.FC = () => {
 
     try {
       if ('idProducto' in data) {
-        const resultado = await actualizarProductoWeb(data.idProducto, data);
-        if (resultado.success) {
-          mostrarMensaje('success', 'Producto actualizado exitosamente');
-          setMostrarFormulario(false);
-          setProductoSeleccionado(null);
-          cargarProductos();
-        } else {
-          mostrarMensaje('error', resultado.message || 'Error al actualizar el producto');
-        }
+        const productoActualizado = await actualizarProductoWeb(data.idProducto, data);
+        mostrarMensaje('success', 'Producto actualizado exitosamente');
+        setMostrarFormulario(false);
+        setProductoSeleccionado(null);
+        // Actualizar estado local sin recargar
+        setProductos(prev =>
+          prev.map(producto =>
+            producto.idProducto === productoActualizado.idProducto ? productoActualizado : producto
+          )
+        );
       } else {
-        const resultado = await crearProductoWeb(data);
-        if (resultado.success) {
-          mostrarMensaje('success', 'Producto creado exitosamente');
-          setMostrarFormulario(false);
-          cargarProductos();
-        } else {
-          mostrarMensaje('error', resultado.message || 'Error al crear el producto');
+        const nuevoProducto = await crearProductoWeb(data);
+        mostrarMensaje('success', 'Producto creado exitosamente');
+        setMostrarFormulario(false);
+        // Actualizar estado local sin recargar - solo si no es Materia Prima
+        if (nuevoProducto.tipoproducto !== 'Materia Prima') {
+          setProductos(prev => [...prev, nuevoProducto]);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al guardar producto:', error);
-      mostrarMensaje('error', 'Error al guardar el producto');
+      mostrarMensaje('error', error.message || 'Error al guardar el producto');
     } finally {
       setGuardando(false);
     }

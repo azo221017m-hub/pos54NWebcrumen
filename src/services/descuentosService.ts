@@ -30,10 +30,10 @@ export const obtenerDescuentoPorId = async (id_descuento: number): Promise<Descu
 };
 
 // Crear un nuevo descuento
-export const crearDescuento = async (descuento: DescuentoCreate): Promise<{ message: string; id_descuento: number }> => {
+export const crearDescuento = async (descuento: DescuentoCreate): Promise<Descuento> => {
   try {
     console.log('Servicio: Creando nuevo descuento:', descuento.nombre);
-    const response = await apiClient.post<{ message: string; id_descuento: number }>(API_BASE, descuento);
+    const response = await apiClient.post<Descuento>(API_BASE, descuento);
     console.log('Servicio: Descuento creado con ID:', response.data.id_descuento);
     return response.data;
   } catch (error) {
@@ -43,10 +43,10 @@ export const crearDescuento = async (descuento: DescuentoCreate): Promise<{ mess
 };
 
 // Actualizar un descuento
-export const actualizarDescuento = async (id_descuento: number, descuento: DescuentoUpdate): Promise<{ message: string }> => {
+export const actualizarDescuento = async (id_descuento: number, descuento: DescuentoUpdate): Promise<Descuento> => {
   try {
     console.log('Servicio: Actualizando descuento ID:', id_descuento);
-    const response = await apiClient.put<{ message: string }>(`${API_BASE}/${id_descuento}`, descuento);
+    const response = await apiClient.put<Descuento>(`${API_BASE}/${id_descuento}`, descuento);
     console.log('Servicio: Descuento actualizado');
     return response.data;
   } catch (error) {
@@ -56,12 +56,12 @@ export const actualizarDescuento = async (id_descuento: number, descuento: Descu
 };
 
 // Eliminar un descuento
-export const eliminarDescuento = async (id_descuento: number): Promise<{ message: string }> => {
+export const eliminarDescuento = async (id_descuento: number): Promise<number> => {
   try {
     console.log('Servicio: Eliminando descuento ID:', id_descuento);
-    const response = await apiClient.delete<{ message: string }>(`${API_BASE}/${id_descuento}`);
+    await apiClient.delete(`${API_BASE}/${id_descuento}`);
     console.log('Servicio: Descuento eliminado');
-    return response.data;
+    return id_descuento;
   } catch (error) {
     console.error('Error en servicio eliminarDescuento:', error);
     throw error;

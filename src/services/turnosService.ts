@@ -30,7 +30,7 @@ export const obtenerTurnoPorId = async (idturno: number): Promise<Turno> => {
 };
 
 // Crear un nuevo turno (iniciar turno)
-export const crearTurno = async (metaturno?: number | null, fondoCaja?: number | null): Promise<{ message: string; idturno: number; numeroturno: number; claveturno: string }> => {
+export const crearTurno = async (metaturno?: number | null, fondoCaja?: number | null): Promise<Turno> => {
   try {
     console.log('Servicio: Iniciando nuevo turno');
     const body: Record<string, number> = {};
@@ -40,7 +40,7 @@ export const crearTurno = async (metaturno?: number | null, fondoCaja?: number |
     if (fondoCaja !== undefined && fondoCaja !== null) {
       body.fondoCaja = fondoCaja;
     }
-    const response = await apiClient.post<{ message: string; idturno: number; numeroturno: number; claveturno: string }>(API_BASE, body);
+    const response = await apiClient.post<Turno>(API_BASE, body);
     console.log('Servicio: Turno iniciado con ID:', response.data.idturno);
     return response.data;
   } catch (error) {
@@ -50,10 +50,10 @@ export const crearTurno = async (metaturno?: number | null, fondoCaja?: number |
 };
 
 // Actualizar un turno (cambiar estatus)
-export const actualizarTurno = async (idturno: number, turno: TurnoUpdate): Promise<{ message: string }> => {
+export const actualizarTurno = async (idturno: number, turno: TurnoUpdate): Promise<Turno> => {
   try {
     console.log('Servicio: Actualizando turno ID:', idturno);
-    const response = await apiClient.put<{ message: string }>(`${API_BASE}/${idturno}`, turno);
+    const response = await apiClient.put<Turno>(`${API_BASE}/${idturno}`, turno);
     console.log('Servicio: Turno actualizado');
     return response.data;
   } catch (error) {
@@ -63,12 +63,12 @@ export const actualizarTurno = async (idturno: number, turno: TurnoUpdate): Prom
 };
 
 // Eliminar un turno
-export const eliminarTurno = async (idturno: number): Promise<{ message: string }> => {
+export const eliminarTurno = async (idturno: number): Promise<number> => {
   try {
     console.log('Servicio: Eliminando turno ID:', idturno);
-    const response = await apiClient.delete<{ message: string }>(`${API_BASE}/${idturno}`);
+    await apiClient.delete(`${API_BASE}/${idturno}`);
     console.log('Servicio: Turno eliminado');
-    return response.data;
+    return idturno;
   } catch (error) {
     console.error('Error en servicio eliminarTurno:', error);
     throw error;

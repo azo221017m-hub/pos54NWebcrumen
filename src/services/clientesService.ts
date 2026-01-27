@@ -36,16 +36,19 @@ export const obtenerCliente = async (idCliente: number): Promise<Cliente | null>
 };
 
 // Crear un nuevo cliente
-export const crearCliente = async (cliente: ClienteCreate): Promise<void> => {
-  await apiClient.post(API_BASE, cliente);
+export const crearCliente = async (cliente: ClienteCreate): Promise<Cliente> => {
+  const response = await apiClient.post<Cliente>(API_BASE, cliente);
+  return response.data;
 };
 
 // Actualizar un cliente
-export const actualizarCliente = async (idCliente: number, cliente: ClienteUpdate): Promise<void> => {
-  await apiClient.put(`${API_BASE}/${idCliente}`, cliente);
+export const actualizarCliente = async (idCliente: number, cliente: ClienteUpdate): Promise<Cliente> => {
+  const response = await apiClient.put<Cliente>(`${API_BASE}/${idCliente}`, cliente);
+  return response.data;
 };
 
 // Eliminar un cliente
-export const eliminarCliente = async (idCliente: number): Promise<void> => {
+export const eliminarCliente = async (idCliente: number): Promise<number> => {
   await apiClient.delete(`${API_BASE}/${idCliente}`);
+  return idCliente;
 };

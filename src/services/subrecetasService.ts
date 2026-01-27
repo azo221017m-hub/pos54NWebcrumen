@@ -30,48 +30,48 @@ export const obtenerSubrecetaPorId = async (id: number): Promise<Subreceta | nul
 };
 
 // Crear nueva subreceta
-export const crearSubreceta = async (subreceta: SubrecetaCreate): Promise<{ success: boolean; idSubReceta?: number }> => {
+export const crearSubreceta = async (subreceta: SubrecetaCreate): Promise<Subreceta> => {
   try {
     console.log('🔵 subrecetasService: Creando subreceta:', subreceta);
-    const response = await apiClient.post(API_BASE, subreceta);
+    const response = await apiClient.post<Subreceta>(API_BASE, subreceta);
     console.log('✅ subrecetasService: Subreceta creada exitosamente');
-    return { success: true, idSubReceta: response.data.idSubReceta };
+    return response.data;
   } catch (error: any) {
     console.error('❌ subrecetasService: Error al crear subreceta:', {
       message: error?.response?.data?.mensaje || error?.response?.data?.message || error?.message || 'Error desconocido',
       status: error?.response?.status,
       data: error?.response?.data
     });
-    return { success: false };
+    throw error;
   }
 };
 
 // Actualizar subreceta
-export const actualizarSubreceta = async (id: number, subreceta: SubrecetaUpdate): Promise<boolean> => {
+export const actualizarSubreceta = async (id: number, subreceta: SubrecetaUpdate): Promise<Subreceta> => {
   try {
     console.log('🔵 subrecetasService: Actualizando subreceta ID:', id);
-    await apiClient.put(`${API_BASE}/${id}`, subreceta);
+    const response = await apiClient.put<Subreceta>(`${API_BASE}/${id}`, subreceta);
     console.log('✅ subrecetasService: Subreceta actualizada exitosamente');
-    return true;
+    return response.data;
   } catch (error: any) {
     console.error('❌ subrecetasService: Error al actualizar subreceta:', {
       message: error?.response?.data?.mensaje || error?.response?.data?.message || error?.message || 'Error desconocido',
       status: error?.response?.status,
       data: error?.response?.data
     });
-    return false;
+    throw error;
   }
 };
 
 // Eliminar subreceta
-export const eliminarSubreceta = async (id: number): Promise<boolean> => {
+export const eliminarSubreceta = async (id: number): Promise<number> => {
   try {
     console.log('🔵 subrecetasService: Eliminando subreceta ID:', id);
     await apiClient.delete(`${API_BASE}/${id}`);
     console.log('🔵 subrecetasService: Subreceta eliminada exitosamente');
-    return true;
+    return id;
   } catch (error) {
     console.error('🔴 subrecetasService: Error al eliminar subreceta:', error);
-    return false;
+    throw error;
   }
 };

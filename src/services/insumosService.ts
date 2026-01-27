@@ -32,16 +32,19 @@ export const obtenerInsumo = async (id_insumo: number): Promise<Insumo> => {
 };
 
 // Crear un nuevo insumo
-export const crearInsumo = async (insumo: InsumoCreate): Promise<void> => {
-  await apiClient.post(API_BASE, insumo);
+export const crearInsumo = async (insumo: InsumoCreate): Promise<Insumo> => {
+  const response = await apiClient.post<Insumo>(API_BASE, insumo);
+  return response.data;
 };
 
 // Actualizar un insumo
-export const actualizarInsumo = async (id_insumo: number, insumo: InsumoUpdate): Promise<void> => {
-  await apiClient.put(`${API_BASE}/${id_insumo}`, insumo);
+export const actualizarInsumo = async (id_insumo: number, insumo: InsumoUpdate): Promise<Insumo> => {
+  const response = await apiClient.put<Insumo>(`${API_BASE}/${id_insumo}`, insumo);
+  return response.data;
 };
 
 // Eliminar un insumo
-export const eliminarInsumo = async (id_insumo: number): Promise<void> => {
+export const eliminarInsumo = async (id_insumo: number): Promise<number> => {
   await apiClient.delete(`${API_BASE}/${id_insumo}`);
+  return id_insumo;
 };

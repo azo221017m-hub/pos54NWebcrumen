@@ -34,16 +34,19 @@ export const obtenerProveedor = async (id_proveedor: number): Promise<Proveedor 
 };
 
 // Crear un nuevo proveedor
-export const crearProveedor = async (proveedor: ProveedorCreate): Promise<void> => {
-  await apiClient.post(API_BASE, proveedor);
+export const crearProveedor = async (proveedor: ProveedorCreate): Promise<Proveedor> => {
+  const response = await apiClient.post<Proveedor>(API_BASE, proveedor);
+  return response.data;
 };
 
 // Actualizar un proveedor
-export const actualizarProveedor = async (id_proveedor: number, proveedor: ProveedorUpdate): Promise<void> => {
-  await apiClient.put(`${API_BASE}/${id_proveedor}`, proveedor);
+export const actualizarProveedor = async (id_proveedor: number, proveedor: ProveedorUpdate): Promise<Proveedor> => {
+  const response = await apiClient.put<Proveedor>(`${API_BASE}/${id_proveedor}`, proveedor);
+  return response.data;
 };
 
 // Eliminar un proveedor
-export const eliminarProveedor = async (id_proveedor: number): Promise<void> => {
+export const eliminarProveedor = async (id_proveedor: number): Promise<number> => {
   await apiClient.delete(`${API_BASE}/${id_proveedor}`);
+  return id_proveedor;
 };
