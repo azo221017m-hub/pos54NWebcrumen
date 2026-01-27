@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit2, Trash2, Package, DollarSign, CheckCircle, XCircle, Image as ImageIcon } from 'lucide-react';
+import { Edit2, Trash2, Package, DollarSign, CheckCircle, XCircle, Image as ImageIcon, Utensils } from 'lucide-react';
 import type { ProductoWeb } from '../../../types/productoWeb.types';
 import './ListaProductosWeb.css';
 
@@ -7,9 +7,10 @@ interface Props {
   productos: ProductoWeb[];
   onEditar: (producto: ProductoWeb) => void;
   onEliminar: (id: number) => void;
+  onToggleMenuDia?: (id: number, currentValue: number) => void;
 }
 
-const ListaProductosWeb: React.FC<Props> = ({ productos, onEditar, onEliminar }) => {
+const ListaProductosWeb: React.FC<Props> = ({ productos, onEditar, onEliminar, onToggleMenuDia }) => {
   const productosArray = Array.isArray(productos) ? productos : [];
 
   const formatCurrency = (value: number) => {
@@ -108,6 +109,16 @@ const ListaProductosWeb: React.FC<Props> = ({ productos, onEditar, onEliminar })
           </div>
 
           <div className="producto-card-footer">
+            {onToggleMenuDia && (
+              <button
+                className={`btn-menudia ${producto.menudia === 1 ? 'active' : ''}`}
+                onClick={() => onToggleMenuDia(producto.idProducto, producto.menudia)}
+                title={producto.menudia === 1 ? 'Quitar de Menú del Día' : 'Marcar como Menú del Día'}
+              >
+                <Utensils size={18} />
+                {producto.menudia === 1 ? 'Menú del Día' : 'Marcar Menú'}
+              </button>
+            )}
             <button
               className="btn-editar"
               onClick={() => onEditar(producto)}
