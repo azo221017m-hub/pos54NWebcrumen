@@ -49,10 +49,14 @@ export const crearProductoWeb = async (producto: ProductoWebCreate): Promise<{ s
     console.log('🔵 productosWebService: Creando producto web:', producto);
     const response = await apiClient.post(API_BASE, producto);
     console.log('🔵 productosWebService: Producto web creado exitosamente');
-    return { success: true, idProducto: response.data.idProducto };
-  } catch (error) {
+    return { 
+      success: response.data.success !== false,
+      idProducto: response.data.idProducto,
+      message: response.data.mensaje
+    };
+  } catch (error: any) {
     console.error('🔴 productosWebService: Error al crear producto web:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+    const errorMessage = error.response?.data?.mensaje || error.message || 'Error desconocido';
     return { success: false, message: errorMessage };
   }
 };
@@ -61,12 +65,15 @@ export const crearProductoWeb = async (producto: ProductoWebCreate): Promise<{ s
 export const actualizarProductoWeb = async (id: number, producto: ProductoWebUpdate): Promise<{ success: boolean; message?: string }> => {
   try {
     console.log('🔵 productosWebService: Actualizando producto web ID:', id);
-    await apiClient.put(`${API_BASE}/${id}`, producto);
+    const response = await apiClient.put(`${API_BASE}/${id}`, producto);
     console.log('🔵 productosWebService: Producto web actualizado exitosamente');
-    return { success: true };
-  } catch (error) {
+    return { 
+      success: response.data.success !== false,
+      message: response.data.mensaje 
+    };
+  } catch (error: any) {
     console.error('🔴 productosWebService: Error al actualizar producto web:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+    const errorMessage = error.response?.data?.mensaje || error.message || 'Error desconocido';
     return { success: false, message: errorMessage };
   }
 };

@@ -258,12 +258,14 @@ export const crearProductoWeb = async (req: AuthRequest, res: Response): Promise
     );
 
     res.status(201).json({
+      success: true,
       mensaje: 'Producto web creado exitosamente',
       idProducto: result.insertId
     });
   } catch (error) {
     console.error('Error al crear producto web:', error);
     res.status(500).json({ 
+      success: false,
       mensaje: 'Error al crear producto web', 
       error: error instanceof Error ? error.message : 'Error desconocido' 
     });
@@ -362,14 +364,21 @@ export const actualizarProductoWeb = async (req: AuthRequest, res: Response): Pr
     const [result] = await pool.query<ResultSetHeader>(updateQuery, params);
 
     if (result.affectedRows === 0) {
-      res.status(500).json({ mensaje: 'No se pudo actualizar el producto web' });
+      res.status(500).json({ 
+        success: false,
+        mensaje: 'No se pudo actualizar el producto web' 
+      });
       return;
     }
 
-    res.status(200).json({ mensaje: 'Producto web actualizado exitosamente' });
+    res.status(200).json({ 
+      success: true,
+      mensaje: 'Producto web actualizado exitosamente' 
+    });
   } catch (error) {
     console.error('Error al actualizar producto web:', error);
     res.status(500).json({ 
+      success: false,
       mensaje: 'Error al actualizar producto web', 
       error: error instanceof Error ? error.message : 'Error desconocido' 
     });
