@@ -314,13 +314,16 @@ const PageVentas: React.FC = () => {
 
   // Show payment module if flag is set from Dashboard
   useEffect(() => {
+    let timer: NodeJS.Timeout | undefined;
     if (showPaymentModuleFlag && isLoadedFromDashboard && comanda.length > 0) {
       // Small delay to ensure the UI is ready
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         setShowModuloPagos(true);
       }, 500);
-      return () => clearTimeout(timer);
     }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [showPaymentModuleFlag, isLoadedFromDashboard, comanda.length]);
 
   // Check for open turno (shift) when component mounts
@@ -427,8 +430,9 @@ const PageVentas: React.FC = () => {
       }
     }
 
-    // If showMenuDia is true, filter only products with menudia = 1
-    if (showMenuDia) {
+    // If showMenuDia is true, filter only products with menudia = 1 (independent of category filter)
+    // Only apply this if no category is selected or if the category is not "Menú Día"
+    if (showMenuDia && categoriaSeleccionada === null) {
       filtrados = filtrados.filter(p => p.menudia === 1);
     }
     
