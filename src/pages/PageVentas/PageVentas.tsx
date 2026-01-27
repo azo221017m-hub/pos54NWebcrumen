@@ -8,6 +8,7 @@ import { crearVentaWeb, agregarDetallesAVenta } from '../../services/ventasWebSe
 import { obtenerModeradores } from '../../services/moderadoresService';
 import { obtenerModeradoresRef } from '../../services/moderadoresRefService';
 import { verificarTurnoAbierto } from '../../services/turnosService';
+import { cambiarEstatusMesa } from '../../services/mesasService';
 import ModalTipoServicio from '../../components/ventas/ModalTipoServicio';
 import ModalSeleccionVentaPageVentas from '../../components/ventas/ModalSeleccionVentaPageVentas';
 import ModalIniciaTurno from '../../components/turnos/ModalIniciaTurno';
@@ -399,6 +400,13 @@ const PageVentas: React.FC = () => {
     // Filtrar por categoría seleccionada
     if (categoriaSeleccionada !== null) {
       filtrados = filtrados.filter(p => p.idCategoria === categoriaSeleccionada);
+      
+      // Si la categoría seleccionada es "Menú Día", filtrar solo productos con menudia = 1
+      const categoriaSeleccionadaObj = categorias.find(c => c.idCategoria === categoriaSeleccionada);
+      const nombreCategoria = categoriaSeleccionadaObj?.nombre.toLowerCase().trim() || '';
+      if (nombreCategoria === 'menú día' || nombreCategoria === 'menu dia') {
+        filtrados = filtrados.filter(p => p.menudia === 1);
+      }
     }
     
     // Filtrar por término de búsqueda
@@ -410,7 +418,7 @@ const PageVentas: React.FC = () => {
     }
     
     setProductosVisibles(filtrados);
-  }, [searchTerm, productos, categoriaSeleccionada]);
+  }, [searchTerm, productos, categoriaSeleccionada, categorias]);
 
   // Helper functions
   const hasSameModeradores = (itemModerators: string | undefined, moderadores: string | undefined): boolean => {
@@ -982,7 +990,17 @@ const PageVentas: React.FC = () => {
     }
   };
 
-  const handleCancelar = () => {
+  const handleCancelar = async () => {
+    try {
+      // If it's a Mesa type service and we have mesa data, set mesa status back to DISPONIBLE
+      if (tipoServicio === 'Mesa' && mesaData?.idmesa && usuario) {
+        await cambiarEstatusMesa(mesaData.idmesa, 'DISPONIBLE', usuario.alias || usuario.nombre);
+      }
+    } catch (error) {
+      console.error('Error al actualizar estatus de mesa:', error);
+      // Continue with navigation even if mesa update fails
+    }
+    
     // Clear comanda (total is calculated dynamically)
     setComanda([]);
     // Reset service configuration
