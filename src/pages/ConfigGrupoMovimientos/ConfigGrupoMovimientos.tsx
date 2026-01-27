@@ -69,15 +69,22 @@ const ConfigGrupoMovimientos: React.FC = () => {
           nombrecuentacontable: grupoData.nombrecuentacontable,
           tipocuentacontable: grupoData.tipocuentacontable
         };
-        await actualizarGrupoMovimientos(grupoEditar.id_cuentacontable, dataUpdate);
+        const grupoActualizado = await actualizarGrupoMovimientos(grupoEditar.id_cuentacontable, dataUpdate);
         mostrarMensaje('success', 'Grupo de movimientos actualizado correctamente');
+        setMostrarFormulario(false);
+        setGrupoEditar(null);
+        setGrupos(prev =>
+          prev.map(g =>
+            g.id_cuentacontable === grupoActualizado.id_cuentacontable ? grupoActualizado : g
+          )
+        );
       } else {
-        await crearGrupoMovimientos(grupoData);
+        const nuevoGrupo = await crearGrupoMovimientos(grupoData);
         mostrarMensaje('success', 'Grupo de movimientos creado correctamente');
+        setMostrarFormulario(false);
+        setGrupoEditar(null);
+        setGrupos(prev => [...prev, nuevoGrupo]);
       }
-      setMostrarFormulario(false);
-      setGrupoEditar(null);
-      cargarGrupos();
     } catch (error) {
       console.error('Error al guardar grupo:', error);
       mostrarMensaje('error', 'Error al guardar el grupo de movimientos');
@@ -94,9 +101,9 @@ const ConfigGrupoMovimientos: React.FC = () => {
     }
 
     try {
-      await eliminarGrupoMovimientos(id);
+      const idEliminado = await eliminarGrupoMovimientos(id);
       mostrarMensaje('success', 'Grupo de movimientos eliminado correctamente');
-      cargarGrupos();
+      setGrupos(prev => prev.filter(g => g.id_cuentacontable !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar grupo:', error);
       mostrarMensaje('error', 'Error al eliminar el grupo de movimientos');

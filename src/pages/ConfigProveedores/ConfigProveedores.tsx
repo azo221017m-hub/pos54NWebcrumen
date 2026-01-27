@@ -70,9 +70,9 @@ const ConfigProveedores: React.FC = () => {
     }
 
     try {
-      await eliminarProveedor(id);
+      const idEliminado = await eliminarProveedor(id);
       mostrarMensaje('success', 'Proveedor eliminado exitosamente');
-      cargarProveedores();
+      setProveedores(prev => prev.filter(p => p.id_proveedor !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar proveedor:', error);
       mostrarMensaje('error', 'Error al eliminar el proveedor');
@@ -84,16 +84,20 @@ const ConfigProveedores: React.FC = () => {
 
     try {
       if ('id_proveedor' in data) {
-        await actualizarProveedor(data.id_proveedor, data);
+        const proveedorActualizado = await actualizarProveedor(data.id_proveedor, data);
         mostrarMensaje('success', 'Proveedor actualizado exitosamente');
         setMostrarFormulario(false);
         setProveedorSeleccionado(null);
-        cargarProveedores();
+        setProveedores(prev =>
+          prev.map(p =>
+            p.id_proveedor === proveedorActualizado.id_proveedor ? proveedorActualizado : p
+          )
+        );
       } else {
-        await crearProveedor(data);
+        const nuevoProveedor = await crearProveedor(data);
         mostrarMensaje('success', 'Proveedor creado exitosamente');
         setMostrarFormulario(false);
-        cargarProveedores();
+        setProveedores(prev => [...prev, nuevoProveedor]);
       }
     } catch (error) {
       console.error('Error al guardar proveedor:', error);

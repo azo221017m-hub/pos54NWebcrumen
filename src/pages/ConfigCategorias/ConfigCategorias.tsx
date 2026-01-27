@@ -57,24 +57,20 @@ const ConfigCategorias: React.FC = () => {
   const handleGuardar = async (data: CategoriaCreate | CategoriaUpdate) => {
     try {
       if (categoriaEditar) {
-        const exito = await actualizarCategoria(categoriaEditar.idCategoria, data as CategoriaUpdate);
-        if (exito) {
-          mostrarMensaje('success', 'Categoría actualizada exitosamente');
-          setMostrarFormulario(false);
-          setCategoriaEditar(null);
-          cargarCategorias();
-        } else {
-          mostrarMensaje('error', 'Error al actualizar la categoría');
-        }
+        const categoriaActualizada = await actualizarCategoria(categoriaEditar.idCategoria, data as CategoriaUpdate);
+        mostrarMensaje('success', 'Categoría actualizada exitosamente');
+        setMostrarFormulario(false);
+        setCategoriaEditar(null);
+        setCategorias(prev =>
+          prev.map(cat =>
+            cat.idCategoria === categoriaActualizada.idCategoria ? categoriaActualizada : cat
+          )
+        );
       } else {
-        const resultado = await crearCategoria(data as CategoriaCreate);
-        if (resultado.success) {
-          mostrarMensaje('success', 'Categoría creada exitosamente');
-          setMostrarFormulario(false);
-          cargarCategorias();
-        } else {
-          mostrarMensaje('error', 'Error al crear la categoría');
-        }
+        const nuevaCategoria = await crearCategoria(data as CategoriaCreate);
+        mostrarMensaje('success', 'Categoría creada exitosamente');
+        setMostrarFormulario(false);
+        setCategorias(prev => [...prev, nuevaCategoria]);
       }
     } catch (error) {
       console.error('Error al guardar categoría:', error);
@@ -92,13 +88,9 @@ const ConfigCategorias: React.FC = () => {
     }
 
     try {
-      const exito = await eliminarCategoria(id);
-      if (exito) {
-        mostrarMensaje('success', 'Categoría eliminada exitosamente');
-        cargarCategorias();
-      } else {
-        mostrarMensaje('error', 'Error al eliminar la categoría');
-      }
+      const idEliminado = await eliminarCategoria(id);
+      mostrarMensaje('success', 'Categoría eliminada exitosamente');
+      setCategorias(prev => prev.filter(cat => cat.idCategoria !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar categoría:', error);
       mostrarMensaje('error', 'Error al eliminar la categoría');

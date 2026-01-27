@@ -91,14 +91,19 @@ export const ConfigRolUsuarios = () => {
       });
 
       if (rolEditar?.idRol) {
-        await rolesService.actualizarRol(rolEditar.idRol, datosRol as Rol);
+        const rolActualizado = await rolesService.actualizarRol(rolEditar.idRol, datosRol as Rol);
         mostrarMensaje('success', 'Rol actualizado exitosamente');
+        setRoles(prev =>
+          prev.map(r =>
+            r.idRol === rolActualizado.idRol ? rolActualizado : r
+          )
+        );
       } else {
-        await rolesService.crearRol(datosRol as Rol);
+        const nuevoRol = await rolesService.crearRol(datosRol as Rol);
         mostrarMensaje('success', 'Rol creado exitosamente');
+        setRoles(prev => [...prev, nuevoRol]);
       }
 
-      await cargarRoles();
       setVistaActual('lista');
       setRolEditar(null);
     } catch (error) {

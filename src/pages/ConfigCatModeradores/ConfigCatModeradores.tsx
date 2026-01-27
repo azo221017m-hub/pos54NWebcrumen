@@ -58,9 +58,9 @@ const ConfigCatModeradores: React.FC = () => {
     }
 
     try {
-      await eliminarCatModerador(id);
+      const idEliminado = await eliminarCatModerador(id);
       mostrarMensaje('success', 'Categoría moderador eliminada exitosamente');
-      cargarCatModeradores();
+      setCatModeradores(prev => prev.filter(cm => cm.idmodref !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar categoría moderador:', error);
       mostrarMensaje('error', 'Error al eliminar la categoría moderador');
@@ -70,15 +70,20 @@ const ConfigCatModeradores: React.FC = () => {
   const handleSubmit = async (data: CatModeradorCreate | CatModeradorUpdate) => {
     try {
       if ('idmodref' in data) {
-        await actualizarCatModerador(data);
+        const catModeradorActualizada = await actualizarCatModerador(data);
         mostrarMensaje('success', 'Categoría moderador actualizada exitosamente');
+        setCatModeradores(prev =>
+          prev.map(cm =>
+            cm.idmodref === catModeradorActualizada.idmodref ? catModeradorActualizada : cm
+          )
+        );
       } else {
-        await crearCatModerador(data);
+        const nuevaCatModerador = await crearCatModerador(data);
         mostrarMensaje('success', 'Categoría moderador creada exitosamente');
+        setCatModeradores(prev => [...prev, nuevaCatModerador]);
       }
       setMostrarFormulario(false);
       setCatModeradorSeleccionada(null);
-      cargarCatModeradores();
     } catch (error) {
       console.error('Error al guardar categoría moderador:', error);
       mostrarMensaje('error', 'Error al guardar la categoría moderador');

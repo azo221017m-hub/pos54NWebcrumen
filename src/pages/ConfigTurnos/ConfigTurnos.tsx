@@ -52,9 +52,9 @@ const ConfigTurnos: React.FC = () => {
         return;
       }
 
-      await crearTurno();
+      const nuevoTurno = await crearTurno();
       mostrarMensaje('success', 'Turno iniciado exitosamente');
-      cargarTurnos();
+      setTurnos(prev => [...prev, nuevoTurno]);
     } catch (error: any) {
       console.error('Error al iniciar turno:', error);
       const errorMsg = error.response?.data?.message || 'Error al iniciar el turno';
@@ -66,11 +66,15 @@ const ConfigTurnos: React.FC = () => {
     if (!turnoEditar) return;
     
     try {
-      await actualizarTurno(turnoEditar.idturno, turno);
+      const turnoActualizado = await actualizarTurno(turnoEditar.idturno, turno);
       mostrarMensaje('success', 'Turno cerrado exitosamente');
       setMostrarFormulario(false);
       setTurnoEditar(undefined);
-      cargarTurnos();
+      setTurnos(prev =>
+        prev.map(t =>
+          t.idturno === turnoActualizado.idturno ? turnoActualizado : t
+        )
+      );
     } catch (error) {
       console.error('Error al cerrar turno:', error);
       mostrarMensaje('error', 'Error al cerrar el turno');
@@ -83,9 +87,9 @@ const ConfigTurnos: React.FC = () => {
     }
 
     try {
-      await eliminarTurno(idturno);
+      const idEliminado = await eliminarTurno(idturno);
       mostrarMensaje('success', 'Turno eliminado exitosamente');
-      cargarTurnos();
+      setTurnos(prev => prev.filter(t => t.idturno !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar turno:', error);
       mostrarMensaje('error', 'Error al eliminar el turno');

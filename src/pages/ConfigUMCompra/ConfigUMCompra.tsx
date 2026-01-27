@@ -64,9 +64,9 @@ export const ConfigUMCompra: React.FC = () => {
   const handleEliminarUnidad = async (id: number) => {
     try {
       setLoading(true);
-      await eliminarUMCompra(id);
+      const idEliminado = await eliminarUMCompra(id);
       mostrarMensaje('success', 'Unidad de medida eliminada correctamente');
-      await cargarUnidades();
+      setUnidades(prev => prev.filter(u => u.idUmCompra !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar unidad:', error);
       mostrarMensaje('error', 'Error al eliminar la unidad de medida');
@@ -92,16 +92,19 @@ export const ConfigUMCompra: React.FC = () => {
       }
 
       if (umEditar) {
-        // Actualizar
-        await actualizarUMCompra(umEditar.idUmCompra!, data);
+        const umActualizada = await actualizarUMCompra(umEditar.idUmCompra!, data);
         mostrarMensaje('success', 'Unidad de medida actualizada correctamente');
+        setUnidades(prev =>
+          prev.map(u =>
+            u.idUmCompra === umActualizada.idUmCompra ? umActualizada : u
+          )
+        );
       } else {
-        // Crear
-        await crearUMCompra(data);
+        const nuevaUM = await crearUMCompra(data);
         mostrarMensaje('success', 'Unidad de medida creada correctamente');
+        setUnidades(prev => [...prev, nuevaUM]);
       }
 
-      await cargarUnidades();
       setVista('lista');
       setUmEditar(null);
     } catch (error) {

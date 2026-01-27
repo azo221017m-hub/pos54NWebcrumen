@@ -64,24 +64,20 @@ const ConfigRecetas: React.FC = () => {
   const handleGuardar = async (data: RecetaCreate | RecetaUpdate) => {
     try {
       if (recetaEditar) {
-        const exito = await actualizarReceta(recetaEditar.idReceta, data as RecetaUpdate);
-        if (exito) {
-          mostrarMensaje('success', 'Receta actualizada exitosamente');
-          setMostrarFormulario(false);
-          setRecetaEditar(null);
-          cargarRecetas();
-        } else {
-          mostrarMensaje('error', 'Error al actualizar la receta');
-        }
+        const recetaActualizada = await actualizarReceta(recetaEditar.idReceta, data as RecetaUpdate);
+        mostrarMensaje('success', 'Receta actualizada exitosamente');
+        setMostrarFormulario(false);
+        setRecetaEditar(null);
+        setRecetas(prev =>
+          prev.map(rec =>
+            rec.idReceta === recetaActualizada.idReceta ? recetaActualizada : rec
+          )
+        );
       } else {
-        const resultado = await crearReceta(data as RecetaCreate);
-        if (resultado.success) {
-          mostrarMensaje('success', 'Receta creada exitosamente');
-          setMostrarFormulario(false);
-          cargarRecetas();
-        } else {
-          mostrarMensaje('error', 'Error al crear la receta');
-        }
+        const nuevaReceta = await crearReceta(data as RecetaCreate);
+        mostrarMensaje('success', 'Receta creada exitosamente');
+        setMostrarFormulario(false);
+        setRecetas(prev => [...prev, nuevaReceta]);
       }
     } catch (error) {
       console.error('Error al guardar receta:', error);
@@ -99,13 +95,9 @@ const ConfigRecetas: React.FC = () => {
     }
 
     try {
-      const exito = await eliminarReceta(id);
-      if (exito) {
-        mostrarMensaje('success', 'Receta eliminada exitosamente');
-        cargarRecetas();
-      } else {
-        mostrarMensaje('error', 'Error al eliminar la receta');
-      }
+      const idEliminado = await eliminarReceta(id);
+      mostrarMensaje('success', 'Receta eliminada exitosamente');
+      setRecetas(prev => prev.filter(rec => rec.idReceta !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar receta:', error);
       mostrarMensaje('error', 'Error al eliminar la receta');

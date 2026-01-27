@@ -64,24 +64,20 @@ const ConfigSubreceta: React.FC = () => {
   const handleGuardar = async (data: SubrecetaCreate | SubrecetaUpdate) => {
     try {
       if (subrecetaEditar) {
-        const exito = await actualizarSubreceta(subrecetaEditar.idSubReceta, data as SubrecetaUpdate);
-        if (exito) {
-          await cargarSubrecetas();
-          setMostrarFormulario(false);
-          setSubrecetaEditar(null);
-          mostrarMensaje('success', 'Subreceta actualizada exitosamente');
-        } else {
-          mostrarMensaje('error', 'Error al actualizar la subreceta');
-        }
+        const subrecetaActualizada = await actualizarSubreceta(subrecetaEditar.idSubReceta, data as SubrecetaUpdate);
+        setMostrarFormulario(false);
+        setSubrecetaEditar(null);
+        mostrarMensaje('success', 'Subreceta actualizada exitosamente');
+        setSubrecetas(prev =>
+          prev.map(sub =>
+            sub.idSubReceta === subrecetaActualizada.idSubReceta ? subrecetaActualizada : sub
+          )
+        );
       } else {
-        const resultado = await crearSubreceta(data as SubrecetaCreate);
-        if (resultado.success) {
-          await cargarSubrecetas();
-          setMostrarFormulario(false);
-          mostrarMensaje('success', 'Subreceta creada exitosamente');
-        } else {
-          mostrarMensaje('error', 'Error al crear la subreceta');
-        }
+        const nuevaSubreceta = await crearSubreceta(data as SubrecetaCreate);
+        setMostrarFormulario(false);
+        mostrarMensaje('success', 'Subreceta creada exitosamente');
+        setSubrecetas(prev => [...prev, nuevaSubreceta]);
       }
     } catch (error) {
       console.error('Error al guardar subreceta:', error);
@@ -95,13 +91,9 @@ const ConfigSubreceta: React.FC = () => {
     }
 
     try {
-      const exito = await eliminarSubreceta(id);
-      if (exito) {
-        await cargarSubrecetas();
-        mostrarMensaje('success', 'Subreceta eliminada exitosamente');
-      } else {
-        mostrarMensaje('error', 'Error al eliminar la subreceta');
-      }
+      const idEliminado = await eliminarSubreceta(id);
+      mostrarMensaje('success', 'Subreceta eliminada exitosamente');
+      setSubrecetas(prev => prev.filter(sub => sub.idSubReceta !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar subreceta:', error);
       mostrarMensaje('error', 'Error al eliminar la subreceta');
