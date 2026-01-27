@@ -81,149 +81,39 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  position: relative;
 }
 
-.btn-descuentos {
-  background: #ff9800;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
+.pagos-label-descuento {
   font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
+  color: #555;
+  font-weight: 600;
+  text-align: center;
+  display: block;
 }
 
-.btn-descuentos:hover:not(:disabled) {
-  background: #f57c00;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
-}
-
-.btn-descuentos:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Modal de lista de descuentos */
-.descuentos-lista-modal {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin-top: 0.5rem;
-  background: white;
+.pagos-select-descuento {
+  width: 100%;
+  padding: 0.75rem 1rem;
   border: 2px solid #ff9800;
   border-radius: 0.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 100;
-  max-height: 20rem;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.descuentos-lista-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  background: #ff9800;
-  color: white;
-  border-bottom: 2px solid #f57c00;
-}
-
-.descuentos-lista-header h4 {
-  margin: 0;
   font-size: 1rem;
-  font-weight: 700;
-}
-
-.descuentos-lista-cerrar {
-  background: transparent;
-  border: none;
-  color: white;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0;
-  width: 1.5rem;
-  height: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background 0.2s;
-}
-
-.descuentos-lista-cerrar:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.descuentos-lista-contenido {
-  overflow-y: auto;
-  max-height: 18rem;
-  padding: 0.5rem;
-}
-
-.descuentos-vacio {
-  padding: 1.5rem;
-  text-align: center;
-  color: #999;
-  font-style: italic;
-}
-
-.descuento-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1rem;
+  font-weight: 600;
   background: white;
-  border: 2px solid #ffe0b2;
-  border-radius: 0.5rem;
-  margin-bottom: 0.5rem;
   cursor: pointer;
   transition: all 0.2s;
-  width: 100%;
-  text-align: left;
-}
-
-.descuento-item:hover {
-  background: #fff3e0;
-  border-color: #ff9800;
-  transform: translateX(4px);
-}
-
-.descuento-item-nombre {
-  font-size: 0.95rem;
   color: #333;
-  font-weight: 600;
 }
 
-.descuento-item-valor {
-  font-size: 1rem;
-  color: #ff9800;
-  font-weight: 700;
+.pagos-select-descuento:focus {
+  outline: none;
+  border-color: #f57c00;
+  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1);
 }
 
-.btn-quitar-descuento {
-  background: #f44336;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  width: 100%;
-}
-
-.btn-quitar-descuento:hover {
-  background: #d32f2f;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+.pagos-select-descuento:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f5f5f5;
 }
 
 .descuentos-detalle {

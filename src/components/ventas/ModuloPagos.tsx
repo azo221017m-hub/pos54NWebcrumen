@@ -18,7 +18,6 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
   
   // Estados para descuentos
   const [descuentos, setDescuentos] = useState<Descuento[]>([]);
-  const [mostrarDescuentos, setMostrarDescuentos] = useState(false);
   const [descuentoSeleccionado, setDescuentoSeleccionado] = useState<Descuento | null>(null);
   const [cargandoDescuentos, setCargandoDescuentos] = useState(false);
 
@@ -74,9 +73,13 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
   const montoDescuento = descuentoSeleccionado ? calcularDescuento(descuentoSeleccionado) : 0;
   const nuevoTotal = totalCuenta - montoDescuento;
 
-  const handleSeleccionarDescuento = (descuento: Descuento) => {
-    setDescuentoSeleccionado(descuento);
-    setMostrarDescuentos(false);
+  const handleSeleccionarDescuento = (id_descuento: string) => {
+    if (id_descuento === '') {
+      setDescuentoSeleccionado(null);
+    } else {
+      const descuento = descuentos.find(d => d.id_descuento.toString() === id_descuento);
+      setDescuentoSeleccionado(descuento || null);
+    }
   };
 
   const handleCobrar = () => {
@@ -101,46 +104,22 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
 
             {/* Sección Descuentos */}
             <div className="pagos-descuentos">
-              <button 
-                className="btn-descuentos"
-                onClick={() => setMostrarDescuentos(!mostrarDescuentos)}
+              <label className="pagos-label-descuento">Descuentos</label>
+              <select 
+                className="pagos-select-descuento"
+                value={descuentoSeleccionado?.id_descuento.toString() || ''}
+                onChange={(e) => handleSeleccionarDescuento(e.target.value)}
                 disabled={cargandoDescuentos}
               >
-                {cargandoDescuentos ? 'Cargando...' : 'Descuentos'}
-              </button>
-              
-              {/* Modal de selección de descuentos */}
-              {mostrarDescuentos && (
-                <div className="descuentos-lista-modal">
-                  <div className="descuentos-lista-header">
-                    <h4>Seleccionar Descuento</h4>
-                    <button 
-                      className="descuentos-lista-cerrar"
-                      onClick={() => setMostrarDescuentos(false)}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                  <div className="descuentos-lista-contenido">
-                    {descuentos.length === 0 ? (
-                      <p className="descuentos-vacio">No hay descuentos disponibles</p>
-                    ) : (
-                      descuentos.map((descuento) => (
-                        <button
-                          key={descuento.id_descuento}
-                          className="descuento-item"
-                          onClick={() => handleSeleccionarDescuento(descuento)}
-                        >
-                          <span className="descuento-item-nombre">{descuento.nombre}</span>
-                          <span className="descuento-item-valor">
-                            {formatearValorDescuento(descuento)}
-                          </span>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                </div>
-              )}
+                <option value="">
+                  {cargandoDescuentos ? 'Cargando...' : 'Seleccionar descuento'}
+                </option>
+                {descuentos.map((descuento) => (
+                  <option key={descuento.id_descuento} value={descuento.id_descuento}>
+                    {descuento.nombre} - {formatearValorDescuento(descuento)}
+                  </option>
+                ))}
+              </select>
               
               {descuentoSeleccionado && (
                 <>
@@ -152,12 +131,6 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
                     <span className="pagos-label">Nuevo Total</span>
                     <span className="pagos-monto-grande">${nuevoTotal.toFixed(2)}</span>
                   </div>
-                  <button 
-                    className="btn-quitar-descuento"
-                    onClick={() => setDescuentoSeleccionado(null)}
-                  >
-                    Quitar Descuento
-                  </button>
                 </>
               )}
             </div>
