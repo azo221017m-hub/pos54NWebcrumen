@@ -263,10 +263,53 @@ export const crearProductoWeb = async (req: AuthRequest, res: Response): Promise
       ]
     );
 
+    // Obtener el producto recién creado para devolverlo
+    const [newProduct] = await pool.query<ProductoWeb[]>(
+      `SELECT 
+        p.idProducto,
+        p.idCategoria,
+        c.nombre AS nombreCategoria,
+        p.idreferencia,
+        p.nombre,
+        p.descripcion,
+        p.precio,
+        p.estatus,
+        TO_BASE64(p.imagenProducto) AS imagenProducto,
+        p.tipoproducto,
+        p.costoproducto,
+        p.fechaRegistroauditoria,
+        p.usuarioauditoria,
+        p.fehamodificacionauditoria,
+        p.idnegocio,
+        p.menudia,
+        CASE 
+          WHEN p.tipoproducto = 'Receta' THEN r.nombreReceta
+          ELSE NULL
+        END AS nombreReceta,
+        CASE 
+          WHEN p.tipoproducto = 'Receta' THEN r.costoReceta
+          ELSE NULL
+        END AS costoReceta,
+        CASE 
+          WHEN p.tipoproducto = 'Inventario' THEN i.nombre
+          ELSE NULL
+        END AS nombreInsumo,
+        CASE 
+          WHEN p.tipoproducto = 'Inventario' THEN i.costo_promedio_ponderado
+          ELSE NULL
+        END AS costoInsumo
+      FROM tblposcrumenwebproductos p
+      LEFT JOIN tblposcrumenwebcategorias c ON p.idCategoria = c.idCategoria
+      LEFT JOIN tblposcrumenwebrecetas r ON p.tipoproducto = 'Receta' AND p.idreferencia = r.idReceta
+      LEFT JOIN tblposcrumenwebinsumos i ON p.tipoproducto = 'Inventario' AND p.idreferencia = i.id_insumo
+      WHERE p.idProducto = ?`,
+      [result.insertId]
+    );
+
     res.status(201).json({
       success: true,
       mensaje: 'Producto web creado exitosamente',
-      idProducto: result.insertId
+      data: newProduct[0]
     });
   } catch (error) {
     console.error('Error al crear producto web:', error);
@@ -386,9 +429,53 @@ export const actualizarProductoWeb = async (req: AuthRequest, res: Response): Pr
       return;
     }
 
+    // Obtener el producto actualizado para devolverlo
+    const [updatedProduct] = await pool.query<ProductoWeb[]>(
+      `SELECT 
+        p.idProducto,
+        p.idCategoria,
+        c.nombre AS nombreCategoria,
+        p.idreferencia,
+        p.nombre,
+        p.descripcion,
+        p.precio,
+        p.estatus,
+        TO_BASE64(p.imagenProducto) AS imagenProducto,
+        p.tipoproducto,
+        p.costoproducto,
+        p.fechaRegistroauditoria,
+        p.usuarioauditoria,
+        p.fehamodificacionauditoria,
+        p.idnegocio,
+        p.menudia,
+        CASE 
+          WHEN p.tipoproducto = 'Receta' THEN r.nombreReceta
+          ELSE NULL
+        END AS nombreReceta,
+        CASE 
+          WHEN p.tipoproducto = 'Receta' THEN r.costoReceta
+          ELSE NULL
+        END AS costoReceta,
+        CASE 
+          WHEN p.tipoproducto = 'Inventario' THEN i.nombre
+          ELSE NULL
+        END AS nombreInsumo,
+        CASE 
+          WHEN p.tipoproducto = 'Inventario' THEN i.costo_promedio_ponderado
+          ELSE NULL
+        END AS costoInsumo
+      FROM tblposcrumenwebproductos p
+      LEFT JOIN tblposcrumenwebcategorias c ON p.idCategoria = c.idCategoria
+      LEFT JOIN tblposcrumenwebrecetas r ON p.tipoproducto = 'Receta' AND p.idreferencia = r.idReceta
+      LEFT JOIN tblposcrumenwebinsumos i ON p.tipoproducto = 'Inventario' AND p.idreferencia = i.id_insumo
+      WHERE p.idProducto = ?`,
+      [id]
+    );
+
     res.status(200).json({ 
       success: true,
-      mensaje: 'Producto web actualizado exitosamente' 
+      mensaje: 'Producto web actualizado exitosamente',
+      data: updatedProduct[0]
     });
   } catch (error) {
     console.error('Error al actualizar producto web:', error);
