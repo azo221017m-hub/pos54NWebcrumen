@@ -54,7 +54,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
 
   // Helper para formatear el valor del descuento para mostrar
   const formatearValorDescuento = (descuento: Descuento): string => {
-    const valor = Number(descuento.valor) || 0;
+    const valor = Number(descuento.valor || 0);
     if (esTipoPorcentaje(descuento.tipodescuento)) {
       return `${valor}%`;
     }
@@ -63,7 +63,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
 
   // Calcular descuento según el tipo y valor
   const calcularDescuento = (descuento: Descuento): number => {
-    const valor = Number(descuento.valor) || 0;
+    const valor = Number(descuento.valor || 0);
     if (esTipoPorcentaje(descuento.tipodescuento)) {
       return totalCuenta * (valor / 100);
     } else if (esTipoMontoFijo(descuento.tipodescuento)) {
