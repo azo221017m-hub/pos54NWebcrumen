@@ -46,10 +46,10 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
     return tipo === 'porcentaje' || tipo === 'porcentual';
   };
 
-  // Helper para verificar si es descuento de tipo monto fijo
-  const esTipoMontoFijo = (tipodescuento: string): boolean => {
+  // Helper para verificar si es descuento de tipo monto fijo (efectivo/$)
+  const esTipoEfectivo = (tipodescuento: string): boolean => {
     const tipo = tipodescuento.toLowerCase();
-    return tipo === 'monto' || tipo === 'fijo';
+    return tipo === 'efectivo' || tipo === 'monto' || tipo === 'fijo';
   };
 
   // Helper para formatear el valor del descuento para mostrar
@@ -65,8 +65,10 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
   const calcularDescuento = (descuento: Descuento): number => {
     const valor = Number(descuento.valor || 0);
     if (esTipoPorcentaje(descuento.tipodescuento)) {
+      // Para porcentaje: convertir el % del total y descontarlo
       return totalCuenta * (valor / 100);
-    } else if (esTipoMontoFijo(descuento.tipodescuento)) {
+    } else if (esTipoEfectivo(descuento.tipodescuento)) {
+      // Para efectivo: descontar directo el valor al total
       return valor;
     }
     return 0;
@@ -84,6 +86,11 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
     }
   };
 
+  const handleCancelarPagar = () => {
+    console.log('Cancelando pago y regresando a dashboard...');
+    onClose();
+  };
+
   const handleCobrar = () => {
     console.log('Procesando cobro...');
     // Aquí se implementaría la lógica de cobro
@@ -91,7 +98,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
   };
 
   return (
-    <div className="modulo-pagos-overlay" onClick={onClose}>
+    <div className="modulo-pagos-overlay">
       <div className="modulo-pagos-container" onClick={(e) => e.stopPropagation()}>
         <div className="modulo-pagos-content">
           {/* Columna Izquierda */}
@@ -169,10 +176,15 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
               </div>
             </div>
 
-            {/* Botón COBRAR */}
-            <button className="btn-cobrar" onClick={handleCobrar}>
-              COBRAR
-            </button>
+            {/* Botones de acción */}
+            <div className="pagos-botones-accion">
+              <button className="btn-cancelar-pagar" onClick={handleCancelarPagar}>
+                CANCELAR PAGAR
+              </button>
+              <button className="btn-cobrar" onClick={handleCobrar}>
+                COBRAR
+              </button>
+            </div>
           </div>
 
           {/* Columna Derecha */}

@@ -234,6 +234,37 @@
   font-size: 0.95rem;
 }
 
+/* Botones de acción */
+.pagos-botones-accion {
+  display: flex;
+  gap: 0.75rem;
+  flex-direction: column;
+}
+
+/* Botón CANCELAR PAGAR */
+.btn-cancelar-pagar {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+}
+
+.btn-cancelar-pagar:hover {
+  background: #d32f2f;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(211, 47, 47, 0.5);
+}
+
+.btn-cancelar-pagar:active {
+  transform: translateY(-1px);
+}
+
 /* Botón COBRAR */
 .btn-cobrar {
   background: #ffd54f;
@@ -478,6 +509,11 @@
     font-size: 2rem;
   }
 
+  .btn-cancelar-pagar {
+    font-size: 1.25rem;
+    padding: 1rem;
+  }
+
   .btn-cobrar {
     font-size: 1.5rem;
   }
@@ -507,6 +543,11 @@
 
   .pagos-monto-grande {
     font-size: 1.75rem;
+  }
+
+  .btn-cancelar-pagar {
+    font-size: 1rem;
+    padding: 1rem;
   }
 
   .btn-cobrar {
