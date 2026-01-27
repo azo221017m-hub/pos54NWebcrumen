@@ -958,13 +958,8 @@ const PageVentas: React.FC = () => {
       return;
     }
     
-    // If there are products to charge, execute Producir function first
-    const success = await crearVenta(ESTADO_ORDENADO, ESTADO_ORDENADO, 'PENDIENTE');
-    
-    // Only show payment module if Producir was successful
-    if (success) {
-      setShowModuloPagos(true);
-    }
+    // Show payment module directly without calling Producir
+    setShowModuloPagos(true);
   };
 
   const handleCategoriaClick = (idCategoria: number) => {
@@ -1290,7 +1285,7 @@ const PageVentas: React.FC = () => {
             >
               Esperar
             </button>
-            {isLoadedFromDashboard && (
+            {isLoadedFromDashboard && !comanda.some(item => item.estadodetalle === ESTADO_ORDENADO) && (
               <button className="btn-listado" onClick={handleListadoPagos} disabled={!isServiceConfigured}>listado de pagos</button>
             )}
           </div>
