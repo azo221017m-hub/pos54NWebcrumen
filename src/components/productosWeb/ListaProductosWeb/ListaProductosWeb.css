@@ -221,6 +221,7 @@
   border-top: 1px solid #e2e8f0;
 }
 
+.btn-menudia,
 .btn-editar,
 .btn-eliminar {
   flex: 1;
@@ -235,6 +236,24 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+}
+
+.btn-menudia {
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  color: white;
+}
+
+.btn-menudia.active {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+}
+
+.btn-menudia:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+}
+
+.btn-menudia.active:hover {
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
 }
 
 .btn-editar {
@@ -331,6 +350,7 @@
     gap: 0.25rem;
   }
 
+  .btn-menudia,
   .btn-editar,
   .btn-eliminar {
     width: 100%;

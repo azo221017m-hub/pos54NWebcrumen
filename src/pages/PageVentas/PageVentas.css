@@ -352,6 +352,49 @@
   color: #f39c12;
 }
 
+/* Menu Dia Container */
+.menu-dia-container {
+  width: 100%;
+  margin-bottom: 0.625rem; /* 10px */
+  padding: 0 0.312rem; /* 5px */
+}
+
+.btn-menu-dia {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem; /* 10px 16px */
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  color: white;
+  border: none;
+  border-radius: 0.625rem; /* 10px */
+  font-size: 0.875rem; /* 14px */
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+}
+
+.btn-menu-dia:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+.btn-menu-dia.active {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+}
+
+.btn-menu-dia.active:hover {
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-menu-dia:active {
+  transform: translateY(0);
+}
+
 /* Grid de Productos */
 .productos-grid {
   display: grid;

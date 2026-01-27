@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Search, Plus, Minus, ChevronLeft, ChevronRight, StickyNote } from 'lucide-react';
+import { ArrowLeft, Search, Plus, Minus, ChevronLeft, ChevronRight, StickyNote, Utensils } from 'lucide-react';
 import { obtenerProductosWeb } from '../../services/productosWebService';
 import { negociosService } from '../../services/negociosService';
 import { obtenerCategorias } from '../../services/categoriasService';
@@ -54,6 +54,7 @@ const PageVentas: React.FC = () => {
   // Get sale data from navigation state
   const ventaToLoad = (location.state as { ventaToLoad?: VentaWebWithDetails })?.ventaToLoad;
   const tipoServicioPreseleccionado = (location.state as { tipoServicioPreseleccionado?: TipoServicio })?.tipoServicioPreseleccionado;
+  const showPaymentModuleFlag = (location.state as { showPaymentModule?: boolean })?.showPaymentModule;
   
   // Utility function to safely format prices
   const formatPrice = (price: number | string | undefined | null): string => {
@@ -98,6 +99,7 @@ const PageVentas: React.FC = () => {
   // Turno states
   const [showIniciaTurnoModal, setShowIniciaTurnoModal] = useState(false);
   const [hasTurnoAbierto, setHasTurnoAbierto] = useState<boolean | null>(null);
+  const [showMenuDia, setShowMenuDia] = useState(false);
   const [isCheckingTurno, setIsCheckingTurno] = useState(true);
 
   // Current venta state (when loading from dashboard or after creating with ORDENADO status)
@@ -310,6 +312,18 @@ const PageVentas: React.FC = () => {
     }
   }, []);
 
+  // Show payment module if flag is set from Dashboard
+  useEffect(() => {
+    let timer: NodeJS.Timeout | undefined;
+    if (showPaymentModuleFlag && isLoadedFromDashboard && comanda.length > 0) {
+      // Small delay to ensure the UI is ready
+      timer = setTimeout(() => {
+        setShowModuloPagos(true);
+      }, 500);
+    }
+    return () => clearTimeout(timer);
+  }, [showPaymentModuleFlag, isLoadedFromDashboard, comanda.length]);
+
   // Check for open turno (shift) when component mounts
   useEffect(() => {
     const checkTurno = async () => {
@@ -413,6 +427,12 @@ const PageVentas: React.FC = () => {
         filtrados = filtrados.filter(p => p.menudia === 1);
       }
     }
+
+    // If showMenuDia is true, filter only products with menudia = 1 (independent of category filter)
+    // Only apply this if no category is selected or if the category is not "Menú Día"
+    if (showMenuDia && categoriaSeleccionada === null) {
+      filtrados = filtrados.filter(p => p.menudia === 1);
+    }
     
     // Filtrar por término de búsqueda
     if (searchTerm.trim() !== '') {
@@ -423,7 +443,7 @@ const PageVentas: React.FC = () => {
     }
     
     setProductosVisibles(filtrados);
-  }, [searchTerm, productos, categoriaSeleccionada, categorias]);
+  }, [searchTerm, productos, categoriaSeleccionada, categorias, showMenuDia]);
 
   // Helper functions
   const hasSameModeradores = (itemModerators: string | undefined, moderadores: string | undefined): boolean => {
@@ -1204,6 +1224,17 @@ const PageVentas: React.FC = () => {
               aria-label="Scroll right"
             >
               <ChevronRight size={24} />
+            </button>
+          </div>
+
+          {/* Ver Menu Día Button */}
+          <div className={`menu-dia-container ${!isServiceConfigured ? 'hidden' : ''}`}>
+            <button 
+              className={`btn-menu-dia ${showMenuDia ? 'active' : ''}`}
+              onClick={() => setShowMenuDia(!showMenuDia)}
+            >
+              <Utensils size={20} />
+              {showMenuDia ? 'Ver Todos los Productos' : 'Ver Menú del Día'}
             </button>
           </div>
 

@@ -84,6 +84,23 @@ const ConfigProductosWeb: React.FC = () => {
     }
   };
 
+  const handleToggleMenuDia = async (id: number, currentValue: number) => {
+    try {
+      const newValue = currentValue === 1 ? 0 : 1;
+      const resultado = await actualizarProductoWeb(id, { menudia: newValue });
+      
+      if (resultado.success) {
+        mostrarMensaje('success', `Producto ${newValue === 1 ? 'agregado al' : 'removido del'} Menú del Día`);
+        cargarProductos();
+      } else {
+        mostrarMensaje('error', resultado.message || 'Error al actualizar el producto');
+      }
+    } catch (error) {
+      console.error('Error al actualizar menú del día:', error);
+      mostrarMensaje('error', 'Error al actualizar el producto');
+    }
+  };
+
   const handleSubmit = async (data: ProductoWebCreate | ProductoWebUpdate) => {
     setGuardando(true);
 
@@ -173,6 +190,7 @@ const ConfigProductosWeb: React.FC = () => {
             productos={productos}
             onEditar={handleEditar}
             onEliminar={handleEliminar}
+            onToggleMenuDia={handleToggleMenuDia}
           />
         )}
       </div>
