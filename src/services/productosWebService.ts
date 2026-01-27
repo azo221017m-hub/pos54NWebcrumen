@@ -50,7 +50,7 @@ export const crearProductoWeb = async (producto: ProductoWebCreate): Promise<{ s
     const response = await apiClient.post(API_BASE, producto);
     console.log('🔵 productosWebService: Producto web creado exitosamente');
     return { 
-      success: response.data.success !== false,
+      success: response.data.success === true,
       idProducto: response.data.idProducto,
       message: response.data.mensaje
     };
@@ -68,7 +68,7 @@ export const actualizarProductoWeb = async (id: number, producto: ProductoWebUpd
     const response = await apiClient.put(`${API_BASE}/${id}`, producto);
     console.log('🔵 productosWebService: Producto web actualizado exitosamente');
     return { 
-      success: response.data.success !== false,
+      success: response.data.success === true,
       message: response.data.mensaje 
     };
   } catch (error: any) {
