@@ -1563,7 +1563,10 @@ const PageVentas: React.FC = () => {
       {/* Módulo de Pagos */}
       {showModuloPagos && (
         <ModuloPagos 
-          onClose={() => setShowModuloPagos(false)}
+          onClose={() => {
+            setShowModuloPagos(false);
+            navigate('/dashboard');
+          }}
           totalCuenta={calcularTotal()}
         />
       )}
