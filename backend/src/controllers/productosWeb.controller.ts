@@ -206,7 +206,10 @@ export const crearProductoWeb = async (req: AuthRequest, res: Response): Promise
 
     // Validar campos requeridos
     if (!nombre || !idCategoria || precio === undefined || !tipoproducto || !idnegocio || !usuarioauditoria) {
-      res.status(400).json({ mensaje: 'Faltan campos requeridos o el usuario no está autenticado' });
+      res.status(400).json({ 
+        success: false,
+        mensaje: 'Faltan campos requeridos o el usuario no está autenticado' 
+      });
       return;
     }
 
@@ -217,7 +220,10 @@ export const crearProductoWeb = async (req: AuthRequest, res: Response): Promise
     );
 
     if (existing[0].count > 0) {
-      res.status(400).json({ mensaje: 'Ya existe un producto con el mismo nombre' });
+      res.status(400).json({ 
+        success: false,
+        mensaje: 'Ya existe un producto con el mismo nombre' 
+      });
       return;
     }
 
@@ -258,12 +264,14 @@ export const crearProductoWeb = async (req: AuthRequest, res: Response): Promise
     );
 
     res.status(201).json({
+      success: true,
       mensaje: 'Producto web creado exitosamente',
       idProducto: result.insertId
     });
   } catch (error) {
     console.error('Error al crear producto web:', error);
     res.status(500).json({ 
+      success: false,
       mensaje: 'Error al crear producto web', 
       error: error instanceof Error ? error.message : 'Error desconocido' 
     });
@@ -291,7 +299,10 @@ export const actualizarProductoWeb = async (req: AuthRequest, res: Response): Pr
     const usuarioauditoria = req.user?.alias;
 
     if (!usuarioauditoria) {
-      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      res.status(400).json({ 
+        success: false,
+        mensaje: 'El usuario no está autenticado' 
+      });
       return;
     }
 
@@ -302,7 +313,10 @@ export const actualizarProductoWeb = async (req: AuthRequest, res: Response): Pr
     );
 
     if (exist.length === 0) {
-      res.status(404).json({ mensaje: 'Producto web no encontrado' });
+      res.status(404).json({ 
+        success: false,
+        mensaje: 'Producto web no encontrado' 
+      });
       return;
     }
 
@@ -313,7 +327,10 @@ export const actualizarProductoWeb = async (req: AuthRequest, res: Response): Pr
     );
 
     if (existing[0].count > 0) {
-      res.status(400).json({ mensaje: 'Ya existe otro producto con el mismo nombre' });
+      res.status(400).json({ 
+        success: false,
+        mensaje: 'Ya existe otro producto con el mismo nombre' 
+      });
       return;
     }
 
@@ -362,14 +379,21 @@ export const actualizarProductoWeb = async (req: AuthRequest, res: Response): Pr
     const [result] = await pool.query<ResultSetHeader>(updateQuery, params);
 
     if (result.affectedRows === 0) {
-      res.status(500).json({ mensaje: 'No se pudo actualizar el producto web' });
+      res.status(500).json({ 
+        success: false,
+        mensaje: 'No se pudo actualizar el producto web' 
+      });
       return;
     }
 
-    res.status(200).json({ mensaje: 'Producto web actualizado exitosamente' });
+    res.status(200).json({ 
+      success: true,
+      mensaje: 'Producto web actualizado exitosamente' 
+    });
   } catch (error) {
     console.error('Error al actualizar producto web:', error);
     res.status(500).json({ 
+      success: false,
       mensaje: 'Error al actualizar producto web', 
       error: error instanceof Error ? error.message : 'Error desconocido' 
     });
