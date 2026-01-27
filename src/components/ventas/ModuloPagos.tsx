@@ -31,8 +31,8 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
     try {
       setCargandoDescuentos(true);
       const descuentosData = await obtenerDescuentos();
-      // Filtrar solo descuentos activos
-      const descuentosActivos = descuentosData.filter(d => d.estatusdescuento === 'activo' || d.estatusdescuento === 'Activo');
+      // Filtrar solo descuentos activos (case-insensitive)
+      const descuentosActivos = descuentosData.filter(d => d.estatusdescuento.toLowerCase() === 'activo');
       setDescuentos(descuentosActivos);
     } catch (error) {
       console.error('Error al cargar descuentos:', error);
@@ -41,11 +41,31 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
     }
   };
 
+  // Helper para verificar si es descuento de tipo porcentaje
+  const esTipoPorcentaje = (tipodescuento: string): boolean => {
+    const tipo = tipodescuento.toLowerCase();
+    return tipo === 'porcentaje' || tipo === 'porcentual';
+  };
+
+  // Helper para verificar si es descuento de tipo monto fijo
+  const esTipoMontoFijo = (tipodescuento: string): boolean => {
+    const tipo = tipodescuento.toLowerCase();
+    return tipo === 'monto' || tipo === 'fijo';
+  };
+
+  // Helper para formatear el valor del descuento para mostrar
+  const formatearValorDescuento = (descuento: Descuento): string => {
+    if (esTipoPorcentaje(descuento.tipodescuento)) {
+      return `${descuento.valor}%`;
+    }
+    return `$${descuento.valor.toFixed(2)}`;
+  };
+
   // Calcular descuento según el tipo y valor
   const calcularDescuento = (descuento: Descuento): number => {
-    if (descuento.tipodescuento.toLowerCase() === 'porcentaje' || descuento.tipodescuento.toLowerCase() === 'porcentual') {
+    if (esTipoPorcentaje(descuento.tipodescuento)) {
       return totalCuenta * (descuento.valor / 100);
-    } else if (descuento.tipodescuento.toLowerCase() === 'monto' || descuento.tipodescuento.toLowerCase() === 'fijo') {
+    } else if (esTipoMontoFijo(descuento.tipodescuento)) {
       return descuento.valor;
     }
     return 0;
@@ -113,9 +133,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
                         >
                           <span className="descuento-item-nombre">{descuento.nombre}</span>
                           <span className="descuento-item-valor">
-                            {descuento.tipodescuento.toLowerCase() === 'porcentaje' || descuento.tipodescuento.toLowerCase() === 'porcentual' 
-                              ? `${descuento.valor}%` 
-                              : `$${descuento.valor.toFixed(2)}`}
+                            {formatearValorDescuento(descuento)}
                           </span>
                         </button>
                       ))
