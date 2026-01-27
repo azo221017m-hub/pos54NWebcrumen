@@ -321,9 +321,7 @@ const PageVentas: React.FC = () => {
         setShowModuloPagos(true);
       }, 500);
     }
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
+    return () => clearTimeout(timer);
   }, [showPaymentModuleFlag, isLoadedFromDashboard, comanda.length]);
 
   // Check for open turno (shift) when component mounts
