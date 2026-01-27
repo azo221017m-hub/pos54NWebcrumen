@@ -219,6 +219,69 @@
   padding: 0.5rem 0.75rem;
   background: #f8fafc;
   border-top: 1px solid #e2e8f0;
+  align-items: center;
+}
+
+/* Modern Checkbox for Menu del Día */
+.checkbox-menudia-container {
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.25rem;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.checkbox-menudia-container:hover {
+  background-color: #f1f5f9;
+}
+
+.checkbox-menudia-input {
+  display: none;
+}
+
+.checkbox-menudia-custom {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid #cbd5e1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.checkbox-menudia-icon {
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.2s;
+  color: white;
+}
+
+.checkbox-menudia-input:checked + .checkbox-menudia-custom {
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  border-color: #f59e0b;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.checkbox-menudia-input:checked + .checkbox-menudia-custom .checkbox-menudia-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.checkbox-menudia-label {
+  font-size: 0.57rem;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.checkbox-menudia-input:checked ~ .checkbox-menudia-label {
+  color: #92400e;
 }
 
 .btn-menudia,
@@ -348,6 +411,11 @@
   .producto-card-footer {
     flex-direction: column;
     gap: 0.25rem;
+    align-items: stretch;
+  }
+
+  .checkbox-menudia-container {
+    justify-content: center;
   }
 
   .btn-menudia,

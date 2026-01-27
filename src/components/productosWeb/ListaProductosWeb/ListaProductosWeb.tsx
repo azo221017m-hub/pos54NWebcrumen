@@ -110,14 +110,18 @@ const ListaProductosWeb: React.FC<Props> = ({ productos, onEditar, onEliminar, o
 
           <div className="producto-card-footer">
             {onToggleMenuDia && (
-              <button
-                className={`btn-menudia ${producto.menudia === 1 ? 'active' : ''}`}
-                onClick={() => onToggleMenuDia(producto.idProducto, producto.menudia)}
-                title={producto.menudia === 1 ? 'Quitar de Menú del Día' : 'Marcar como Menú del Día'}
-              >
-                <Utensils size={18} />
-                {producto.menudia === 1 ? 'Menú del Día' : 'Marcar Menú'}
-              </button>
+              <label className="checkbox-menudia-container">
+                <input
+                  type="checkbox"
+                  checked={producto.menudia === 1}
+                  onChange={() => onToggleMenuDia(producto.idProducto, producto.menudia)}
+                  className="checkbox-menudia-input"
+                />
+                <span className="checkbox-menudia-custom">
+                  <Utensils size={14} className="checkbox-menudia-icon" />
+                </span>
+                <span className="checkbox-menudia-label">Menú del Día</span>
+              </label>
             )}
             <button
               className="btn-editar"
@@ -125,7 +129,7 @@ const ListaProductosWeb: React.FC<Props> = ({ productos, onEditar, onEliminar, o
               title="Editar producto"
             >
               <Edit2 size={18} />
-              Editar (Menú: {producto.menudia})
+              Editar
             </button>
             <button
               className="btn-eliminar"
