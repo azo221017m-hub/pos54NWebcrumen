@@ -75,7 +75,8 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
   };
 
   const montoDescuento = descuentoSeleccionado ? calcularDescuento(descuentoSeleccionado) : 0;
-  const nuevoTotal = totalCuenta - montoDescuento;
+  // Prevent negative totals - discount cannot exceed the total amount
+  const nuevoTotal = Math.max(0, totalCuenta - montoDescuento);
 
   const handleSeleccionarDescuento = (id_descuento: string) => {
     if (id_descuento === '') {
@@ -99,7 +100,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
 
   return (
     <div className="modulo-pagos-overlay">
-      <div className="modulo-pagos-container" onClick={(e) => e.stopPropagation()}>
+      <div className="modulo-pagos-container">
         <div className="modulo-pagos-content">
           {/* Columna Izquierda */}
           <div className="pagos-columna-izquierda">
@@ -179,7 +180,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
             {/* Botones de acción */}
             <div className="pagos-botones-accion">
               <button className="btn-cancelar-pagar" onClick={handleCancelarPagar}>
-                CANCELAR PAGAR
+                CANCELAR
               </button>
               <button className="btn-cobrar" onClick={handleCobrar}>
                 COBRAR
