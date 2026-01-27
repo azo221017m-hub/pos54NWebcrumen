@@ -20,6 +20,9 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
   const [descuentos, setDescuentos] = useState<Descuento[]>([]);
   const [descuentoSeleccionado, setDescuentoSeleccionado] = useState<Descuento | null>(null);
   const [cargandoDescuentos, setCargandoDescuentos] = useState(false);
+  
+  // Estado para pagos realizados
+  const [pagosRealizados, setPagosRealizados] = useState<Array<{ tipo: string; detalles: string }>>([]);
 
   // Cargar descuentos al montar el componente
   useEffect(() => {
@@ -94,8 +97,43 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
 
   const handleCobrar = () => {
     console.log('Procesando cobro...');
-    // Aquí se implementaría la lógica de cobro
-    alert('Cobro procesado exitosamente');
+    
+    const totalAPagar = descuentoSeleccionado ? nuevoTotal : totalCuenta;
+    
+    // Validación para efectivo
+    if (metodoPagoSeleccionado === 'efectivo') {
+      const montoRecibido = parseFloat(montoEfectivo) || 0;
+      
+      if (montoRecibido < totalAPagar) {
+        alert('El monto recibido no puede ser menor al total de la cuenta');
+        return;
+      }
+      
+      // Agregar pago realizado con detalle de efectivo
+      const cambio = montoRecibido - totalAPagar;
+      const detallePago = cambio > 0 
+        ? `Cobro en EFECTIVO, CAMBIO: $${cambio.toFixed(2)}`
+        : `Cobro en EFECTIVO`;
+      
+      setPagosRealizados([...pagosRealizados, { tipo: 'Efectivo', detalles: detallePago }]);
+      alert('Cobro procesado exitosamente');
+    } 
+    // Validación para transferencia
+    else if (metodoPagoSeleccionado === 'transferencia') {
+      if (!numeroReferencia.trim()) {
+        alert('Por favor ingrese el número de referencia');
+        return;
+      }
+      
+      // Agregar pago realizado con detalle de transferencia
+      const detallePago = `Cobro con transferencia Ref. ${numeroReferencia}`;
+      setPagosRealizados([...pagosRealizados, { tipo: 'Transferencia', detalles: detallePago }]);
+      alert('Cobro procesado exitosamente');
+    }
+    // Para mixto (mantener lógica existente)
+    else {
+      alert('Cobro procesado exitosamente');
+    }
   };
 
   return (
@@ -172,16 +210,23 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
             <div className="pagos-realizados-area">
               <h3>Pagos realizados</h3>
               <div className="pagos-realizados-contenido">
-                {/* Aquí se mostrarían los pagos realizados */}
-                <p className="pagos-vacio">No hay pagos registrados</p>
+                {pagosRealizados.length === 0 ? (
+                  <p className="pagos-vacio">No hay pagos registrados</p>
+                ) : (
+                  <div className="pagos-realizados-lista">
+                    {pagosRealizados.map((pago, index) => (
+                      <div key={index} className="pago-realizado-item">
+                        <div className="pago-tipo">{pago.tipo}</div>
+                        <div className="pago-detalles">{pago.detalles}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Botones de acción */}
+            {/* Botón de acción - solo COBRAR */}
             <div className="pagos-botones-accion">
-              <button className="btn-cancelar-pagar" onClick={handleCancelarPagar}>
-                CANCELAR
-              </button>
               <button className="btn-cobrar" onClick={handleCobrar}>
                 COBRAR
               </button>
@@ -206,6 +251,11 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
                   value={montoEfectivo}
                   onChange={(e) => setMontoEfectivo(e.target.value)}
                 />
+                
+                {/* Botón CANCELAR */}
+                <button className="btn-cancelar-pagar" onClick={handleCancelarPagar}>
+                  CANCELAR
+                </button>
               </div>
             )}
 
@@ -225,6 +275,11 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
                   value={numeroReferencia}
                   onChange={(e) => setNumeroReferencia(e.target.value)}
                 />
+                
+                {/* Botón CANCELAR */}
+                <button className="btn-cancelar-pagar" onClick={handleCancelarPagar}>
+                  CANCELAR
+                </button>
               </div>
             )}
 
@@ -289,6 +344,11 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
                     </tbody>
                   </table>
                 </div>
+                
+                {/* Botón CANCELAR */}
+                <button className="btn-cancelar-pagar" onClick={handleCancelarPagar}>
+                  CANCELAR
+                </button>
               </div>
             )}
           </div>
