@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Search, Plus, Minus, ChevronLeft, ChevronRight, StickyNote } from 'lucide-react';
+import { ArrowLeft, Search, Plus, Minus, ChevronLeft, ChevronRight, StickyNote, Utensils } from 'lucide-react';
 import { obtenerProductosWeb } from '../../services/productosWebService';
 import { negociosService } from '../../services/negociosService';
 import { obtenerCategorias } from '../../services/categoriasService';
@@ -98,6 +98,7 @@ const PageVentas: React.FC = () => {
   // Turno states
   const [showIniciaTurnoModal, setShowIniciaTurnoModal] = useState(false);
   const [hasTurnoAbierto, setHasTurnoAbierto] = useState<boolean | null>(null);
+  const [showMenuDia, setShowMenuDia] = useState(false);
   const [isCheckingTurno, setIsCheckingTurno] = useState(true);
 
   // Current venta state (when loading from dashboard or after creating with ORDENADO status)
@@ -413,6 +414,11 @@ const PageVentas: React.FC = () => {
         filtrados = filtrados.filter(p => p.menudia === 1);
       }
     }
+
+    // If showMenuDia is true, filter only products with menudia = 1
+    if (showMenuDia) {
+      filtrados = filtrados.filter(p => p.menudia === 1);
+    }
     
     // Filtrar por término de búsqueda
     if (searchTerm.trim() !== '') {
@@ -423,7 +429,7 @@ const PageVentas: React.FC = () => {
     }
     
     setProductosVisibles(filtrados);
-  }, [searchTerm, productos, categoriaSeleccionada, categorias]);
+  }, [searchTerm, productos, categoriaSeleccionada, categorias, showMenuDia]);
 
   // Helper functions
   const hasSameModeradores = (itemModerators: string | undefined, moderadores: string | undefined): boolean => {
@@ -1204,6 +1210,17 @@ const PageVentas: React.FC = () => {
               aria-label="Scroll right"
             >
               <ChevronRight size={24} />
+            </button>
+          </div>
+
+          {/* Ver Menu Día Button */}
+          <div className={`menu-dia-container ${!isServiceConfigured ? 'hidden' : ''}`}>
+            <button 
+              className={`btn-menu-dia ${showMenuDia ? 'active' : ''}`}
+              onClick={() => setShowMenuDia(!showMenuDia)}
+            >
+              <Utensils size={20} />
+              {showMenuDia ? 'Ver Todos los Productos' : 'Ver Menú del Día'}
             </button>
           </div>
 
