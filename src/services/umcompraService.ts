@@ -36,17 +36,16 @@ export const obtenerUMCompraPorId = async (id: number): Promise<UMCompra | null>
 };
 
 // Crear una nueva unidad de medida
-export const crearUMCompra = async (umcompra: UMCompraFormData): Promise<number | null> => {
+export const crearUMCompra = async (umcompra: UMCompraFormData): Promise<UMCompra> => {
   try {
     console.log('🔄 Creando unidad de medida...', umcompra);
     const response = await api.post<UMCompraResponse>('/umcompra', umcompra);
     console.log('✅ Unidad de medida creada:', response.data);
     
     if (response.data.success && response.data.data && !Array.isArray(response.data.data)) {
-      const data = response.data.data as { idUmCompra: number };
-      return data.idUmCompra;
+      return response.data.data as UMCompra;
     }
-    return null;
+    throw new Error('Respuesta inválida del servidor');
   } catch (error) {
     console.error('❌ Error al crear unidad de medida:', error);
     throw error;
@@ -54,12 +53,16 @@ export const crearUMCompra = async (umcompra: UMCompraFormData): Promise<number 
 };
 
 // Actualizar una unidad de medida
-export const actualizarUMCompra = async (id: number, umcompra: UMCompraFormData): Promise<boolean> => {
+export const actualizarUMCompra = async (id: number, umcompra: UMCompraFormData): Promise<UMCompra> => {
   try {
     console.log(`🔄 Actualizando unidad de medida ${id}...`, umcompra);
     const response = await api.put<UMCompraResponse>(`/umcompra/${id}`, umcompra);
     console.log('✅ Unidad de medida actualizada:', response.data);
-    return response.data.success;
+    
+    if (response.data.success && response.data.data && !Array.isArray(response.data.data)) {
+      return response.data.data as UMCompra;
+    }
+    throw new Error('Respuesta inválida del servidor');
   } catch (error) {
     console.error('❌ Error al actualizar unidad de medida:', error);
     throw error;
@@ -67,12 +70,12 @@ export const actualizarUMCompra = async (id: number, umcompra: UMCompraFormData)
 };
 
 // Eliminar una unidad de medida
-export const eliminarUMCompra = async (id: number): Promise<boolean> => {
+export const eliminarUMCompra = async (id: number): Promise<number> => {
   try {
     console.log(`🔄 Eliminando unidad de medida ${id}...`);
-    const response = await api.delete<UMCompraResponse>(`/umcompra/${id}`);
-    console.log('✅ Unidad de medida eliminada:', response.data);
-    return response.data.success;
+    await api.delete(`/umcompra/${id}`);
+    console.log('✅ Unidad de medida eliminada');
+    return id;
   } catch (error) {
     console.error('❌ Error al eliminar unidad de medida:', error);
     throw error;

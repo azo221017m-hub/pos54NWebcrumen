@@ -34,16 +34,19 @@ export const obtenerGrupoMovimiento = async (id: number): Promise<GrupoMovimient
 };
 
 // Crear nuevo grupo de movimientos
-export const crearGrupoMovimientos = async (grupo: GrupoMovimientosCreate): Promise<void> => {
-  await apiClient.post(API_BASE, grupo);
+export const crearGrupoMovimientos = async (grupo: GrupoMovimientosCreate): Promise<GrupoMovimientos> => {
+  const response = await apiClient.post<GrupoMovimientos>(API_BASE, grupo);
+  return response.data;
 };
 
 // Actualizar grupo de movimientos
-export const actualizarGrupoMovimientos = async (id: number, grupo: GrupoMovimientosUpdate): Promise<void> => {
-  await apiClient.put(`${API_BASE}/${id}`, grupo);
+export const actualizarGrupoMovimientos = async (id: number, grupo: GrupoMovimientosUpdate): Promise<GrupoMovimientos> => {
+  const response = await apiClient.put<GrupoMovimientos>(`${API_BASE}/${id}`, grupo);
+  return response.data;
 };
 
 // Eliminar grupo de movimientos
-export const eliminarGrupoMovimientos = async (id: number): Promise<void> => {
+export const eliminarGrupoMovimientos = async (id: number): Promise<number> => {
   await apiClient.delete(`${API_BASE}/${id}`);
+  return id;
 };

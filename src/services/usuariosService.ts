@@ -50,17 +50,17 @@ export const obtenerUsuarioPorId = async (id: number): Promise<Usuario | null> =
 };
 
 // Crear un nuevo usuario
-export const crearUsuario = async (usuario: UsuarioFormData): Promise<number | null> => {
+export const crearUsuario = async (usuario: UsuarioFormData): Promise<Usuario> => {
   try {
     console.log('🔄 Creando usuario...', usuario);
     const response = await api.post<UsuarioResponse>('/usuarios', usuario);
     console.log('✅ Usuario creado:', response.data);
     
     if (response.data.success && response.data.data && !Array.isArray(response.data.data)) {
-      const data = response.data.data as { idUsuario: number };
-      return data.idUsuario;
+      // Retornar el usuario completo creado
+      return response.data.data as Usuario;
     }
-    return null;
+    throw new Error('Error al crear usuario: respuesta inválida');
   } catch (error) {
     console.error('❌ Error al crear usuario:', error);
     throw error;
@@ -68,12 +68,16 @@ export const crearUsuario = async (usuario: UsuarioFormData): Promise<number | n
 };
 
 // Actualizar un usuario
-export const actualizarUsuario = async (id: number, usuario: UsuarioFormData): Promise<boolean> => {
+export const actualizarUsuario = async (id: number, usuario: UsuarioFormData): Promise<Usuario> => {
   try {
     console.log(`🔄 Actualizando usuario ${id}...`, usuario);
     const response = await api.put<UsuarioResponse>(`/usuarios/${id}`, usuario);
     console.log('✅ Usuario actualizado:', response.data);
-    return response.data.success;
+    
+    if (response.data.success && response.data.data && !Array.isArray(response.data.data)) {
+      return response.data.data as Usuario;
+    }
+    throw new Error('Error al actualizar usuario: respuesta inválida');
   } catch (error) {
     console.error('❌ Error al actualizar usuario:', error);
     throw error;
@@ -81,12 +85,15 @@ export const actualizarUsuario = async (id: number, usuario: UsuarioFormData): P
 };
 
 // Eliminar un usuario (soft delete)
-export const eliminarUsuario = async (id: number): Promise<boolean> => {
+export const eliminarUsuario = async (id: number): Promise<number> => {
   try {
     console.log(`🔄 Eliminando usuario ${id}...`);
     const response = await api.delete<UsuarioResponse>(`/usuarios/${id}`);
     console.log('✅ Usuario eliminado:', response.data);
-    return response.data.success;
+    if (response.data.success) {
+      return id;
+    }
+    throw new Error('Error al eliminar usuario');
   } catch (error) {
     console.error('❌ Error al eliminar usuario:', error);
     throw error;

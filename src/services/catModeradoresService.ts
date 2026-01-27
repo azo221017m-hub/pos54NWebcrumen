@@ -24,9 +24,9 @@ export const obtenerCatModeradorPorId = async (id: number): Promise<CatModerador
 };
 
 // Crear nueva categoría moderador
-export const crearCatModerador = async (catModerador: CatModeradorCreate): Promise<{ mensaje: string; idmodref: number }> => {
+export const crearCatModerador = async (catModerador: CatModeradorCreate): Promise<CatModerador> => {
   try {
-    const response = await apiClient.post(`/cat-moderadores`, catModerador);
+    const response = await apiClient.post<CatModerador>(`/cat-moderadores`, catModerador);
     return response.data;
   } catch (error) {
     console.error('Error al crear categoría moderador:', error);
@@ -35,9 +35,9 @@ export const crearCatModerador = async (catModerador: CatModeradorCreate): Promi
 };
 
 // Actualizar categoría moderador
-export const actualizarCatModerador = async (catModerador: CatModeradorUpdate): Promise<{ mensaje: string }> => {
+export const actualizarCatModerador = async (catModerador: CatModeradorUpdate): Promise<CatModerador> => {
   try {
-    const response = await apiClient.put(`/cat-moderadores/${catModerador.idmodref}`, catModerador);
+    const response = await apiClient.put<CatModerador>(`/cat-moderadores/${catModerador.idmodref}`, catModerador);
     return response.data;
   } catch (error) {
     console.error('Error al actualizar categoría moderador:', error);
@@ -46,10 +46,10 @@ export const actualizarCatModerador = async (catModerador: CatModeradorUpdate): 
 };
 
 // Eliminar categoría moderador
-export const eliminarCatModerador = async (id: number): Promise<{ mensaje: string }> => {
+export const eliminarCatModerador = async (id: number): Promise<number> => {
   try {
-    const response = await apiClient.delete(`/cat-moderadores/${id}`);
-    return response.data;
+    await apiClient.delete(`/cat-moderadores/${id}`);
+    return id;
   } catch (error) {
     console.error('Error al eliminar categoría moderador:', error);
     throw error;

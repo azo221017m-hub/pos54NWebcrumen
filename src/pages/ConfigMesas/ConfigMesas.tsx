@@ -47,10 +47,10 @@ const ConfigMesas: React.FC = () => {
 
   const handleCrearMesa = async (mesa: MesaCreate | MesaUpdate) => {
     try {
-      await crearMesa(mesa as MesaCreate);
+      const nuevaMesa = await crearMesa(mesa as MesaCreate);
       mostrarMensaje('success', 'Mesa creada exitosamente');
       setMostrarFormulario(false);
-      cargarMesas();
+      setMesas(prev => [...prev, nuevaMesa]);
     } catch (error) {
       console.error('Error al crear mesa:', error);
       mostrarMensaje('error', 'Error al crear la mesa');
@@ -61,11 +61,15 @@ const ConfigMesas: React.FC = () => {
     if (!mesaEditar) return;
     
     try {
-      await actualizarMesa(mesaEditar.idmesa, mesa as MesaUpdate);
+      const mesaActualizada = await actualizarMesa(mesaEditar.idmesa, mesa as MesaUpdate);
       mostrarMensaje('success', 'Mesa actualizada exitosamente');
       setMostrarFormulario(false);
       setMesaEditar(undefined);
-      cargarMesas();
+      setMesas(prev =>
+        prev.map(m =>
+          m.idmesa === mesaActualizada.idmesa ? mesaActualizada : m
+        )
+      );
     } catch (error) {
       console.error('Error al actualizar mesa:', error);
       mostrarMensaje('error', 'Error al actualizar la mesa');
@@ -78,9 +82,9 @@ const ConfigMesas: React.FC = () => {
     }
 
     try {
-      await eliminarMesa(idmesa);
+      const idEliminado = await eliminarMesa(idmesa);
       mostrarMensaje('success', 'Mesa eliminada exitosamente');
-      cargarMesas();
+      setMesas(prev => prev.filter(m => m.idmesa !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar mesa:', error);
       mostrarMensaje('error', 'Error al eliminar la mesa');

@@ -68,10 +68,10 @@ const ConfigInsumos: React.FC = () => {
 
   const handleCrear = async (data: InsumoCreate) => {
     try {
-      await crearInsumo(data);
+      const nuevoInsumo = await crearInsumo(data);
       mostrarMensaje('success', 'Insumo creado exitosamente');
       setMostrarFormulario(false);
-      cargarInsumos();
+      setInsumos(prev => [...prev, nuevoInsumo]);
     } catch (error) {
       console.error('Error al crear insumo:', error);
       mostrarMensaje('error', 'Error al crear el insumo');
@@ -82,11 +82,15 @@ const ConfigInsumos: React.FC = () => {
     if (!insumoEditar) return;
 
     try {
-      await actualizarInsumo(insumoEditar.id_insumo, data);
+      const insumoActualizado = await actualizarInsumo(insumoEditar.id_insumo, data);
       mostrarMensaje('success', 'Insumo actualizado exitosamente');
       setMostrarFormulario(false);
       setInsumoEditar(null);
-      cargarInsumos();
+      setInsumos(prev =>
+        prev.map(ins =>
+          ins.id_insumo === insumoActualizado.id_insumo ? insumoActualizado : ins
+        )
+      );
     } catch (error) {
       console.error('Error al actualizar insumo:', error);
       mostrarMensaje('error', 'Error al actualizar el insumo');
@@ -103,9 +107,9 @@ const ConfigInsumos: React.FC = () => {
     }
 
     try {
-      await eliminarInsumo(id);
+      const idEliminado = await eliminarInsumo(id);
       mostrarMensaje('success', 'Insumo eliminado exitosamente');
-      cargarInsumos();
+      setInsumos(prev => prev.filter(ins => ins.id_insumo !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar insumo:', error);
       mostrarMensaje('error', 'Error al eliminar el insumo');

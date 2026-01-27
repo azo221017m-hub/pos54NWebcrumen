@@ -42,10 +42,10 @@ const ConfigDescuentos: React.FC = () => {
 
   const handleCrearDescuento = async (descuento: DescuentoCreate | DescuentoUpdate) => {
     try {
-      await crearDescuento(descuento as DescuentoCreate);
+      const nuevoDescuento = await crearDescuento(descuento as DescuentoCreate);
       mostrarMensaje('success', 'Descuento creado exitosamente');
       setMostrarFormulario(false);
-      cargarDescuentos();
+      setDescuentos(prev => [...prev, nuevoDescuento]);
     } catch (error) {
       console.error('Error al crear descuento:', error);
       mostrarMensaje('error', 'Error al crear el descuento');
@@ -56,11 +56,15 @@ const ConfigDescuentos: React.FC = () => {
     if (!descuentoEditar) return;
     
     try {
-      await actualizarDescuento(descuentoEditar.id_descuento, descuento as DescuentoUpdate);
+      const descuentoActualizado = await actualizarDescuento(descuentoEditar.id_descuento, descuento as DescuentoUpdate);
       mostrarMensaje('success', 'Descuento actualizado exitosamente');
       setMostrarFormulario(false);
       setDescuentoEditar(undefined);
-      cargarDescuentos();
+      setDescuentos(prev =>
+        prev.map(d =>
+          d.id_descuento === descuentoActualizado.id_descuento ? descuentoActualizado : d
+        )
+      );
     } catch (error) {
       console.error('Error al actualizar descuento:', error);
       mostrarMensaje('error', 'Error al actualizar el descuento');
@@ -73,9 +77,9 @@ const ConfigDescuentos: React.FC = () => {
     }
 
     try {
-      await eliminarDescuento(id_descuento);
+      const idEliminado = await eliminarDescuento(id_descuento);
       mostrarMensaje('success', 'Descuento eliminado exitosamente');
-      cargarDescuentos();
+      setDescuentos(prev => prev.filter(d => d.id_descuento !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar descuento:', error);
       mostrarMensaje('error', 'Error al eliminar el descuento');

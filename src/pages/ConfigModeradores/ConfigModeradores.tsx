@@ -69,15 +69,22 @@ const ConfigModeradores: React.FC = () => {
           usuarioauditoria: moderadorData.usuarioauditoria,
           estatus: moderadorData.estatus
         };
-        await actualizarModerador(moderadorEditar.idmoderador, dataUpdate);
+        const moderadorActualizado = await actualizarModerador(moderadorEditar.idmoderador, dataUpdate);
         mostrarMensaje('success', 'Moderador actualizado correctamente');
+        setMostrarFormulario(false);
+        setModeradorEditar(null);
+        setModeradores(prev =>
+          prev.map(mod =>
+            mod.idmoderador === moderadorActualizado.idmoderador ? moderadorActualizado : mod
+          )
+        );
       } else {
-        await crearModerador(moderadorData);
+        const nuevoModerador = await crearModerador(moderadorData);
         mostrarMensaje('success', 'Moderador creado correctamente');
+        setMostrarFormulario(false);
+        setModeradorEditar(null);
+        setModeradores(prev => [...prev, nuevoModerador]);
       }
-      setMostrarFormulario(false);
-      setModeradorEditar(null);
-      cargarModeradores();
     } catch (error: any) {
       console.error('❌ Error al guardar moderador:', {
         message: error?.response?.data?.message || error?.response?.data?.mensaje || error?.message || 'Error desconocido',
@@ -99,9 +106,9 @@ const ConfigModeradores: React.FC = () => {
     }
 
     try {
-      await eliminarModerador(id);
+      const idEliminado = await eliminarModerador(id);
       mostrarMensaje('success', 'Moderador eliminado correctamente');
-      cargarModeradores();
+      setModeradores(prev => prev.filter(mod => mod.idmoderador !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar moderador:', error);
       mostrarMensaje('error', 'Error al eliminar el moderador');

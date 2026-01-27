@@ -68,9 +68,9 @@ export const ConfigNegocios = () => {
     }
 
     try {
-      await negociosService.eliminarNegocio(id);
+      const idEliminado = await negociosService.eliminarNegocio(id);
       mostrarMensaje('success', 'Negocio eliminado exitosamente');
-      await cargarNegocios();
+      setNegocios(prev => prev.filter(n => n.idNegocio !== idEliminado));
     } catch (error) {
       mostrarMensaje('error', 'Error al eliminar el negocio');
       console.error('Error:', error);
@@ -96,17 +96,22 @@ export const ConfigNegocios = () => {
       data.parametros.usuarioAuditoria = usuario?.alias || 'sistema';
 
       if (negocioEditar?.negocio.idNegocio) {
-        await negociosService.actualizarNegocio(negocioEditar.negocio.idNegocio, data);
+        const negocioActualizado = await negociosService.actualizarNegocio(negocioEditar.negocio.idNegocio, data);
         mostrarMensaje('success', 'Negocio actualizado exitosamente');
+        setNegocios(prev =>
+          prev.map(n =>
+            n.idNegocio === negocioActualizado.idNegocio ? negocioActualizado : n
+          )
+        );
       } else {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { numeronegocio, ...negocioSinNumero } = data.negocio;
         const dataNuevo = { ...data, negocio: negocioSinNumero };
-        await negociosService.crearNegocio(dataNuevo);
+        const nuevoNegocio = await negociosService.crearNegocio(dataNuevo);
         mostrarMensaje('success', 'Negocio creado exitosamente');
+        setNegocios(prev => [...prev, nuevoNegocio]);
       }
 
-      await cargarNegocios();
       setVistaActual('lista');
       setNegocioEditar(null);
     } catch (error) {

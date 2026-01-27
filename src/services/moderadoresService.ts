@@ -34,9 +34,10 @@ export const obtenerModerador = async (id: number): Promise<Moderador | null> =>
 };
 
 // Crear nuevo moderador
-export const crearModerador = async (moderador: ModeradorCreate): Promise<void> => {
+export const crearModerador = async (moderador: ModeradorCreate): Promise<Moderador> => {
   try {
-    await apiClient.post(API_BASE, moderador);
+    const response = await apiClient.post<Moderador>(API_BASE, moderador);
+    return response.data;
   } catch (error: any) {
     console.error('❌ moderadoresService - Error al crear moderador:', {
       message: error?.response?.data?.message || error?.response?.data?.mensaje || error?.message || 'Error desconocido',
@@ -48,9 +49,10 @@ export const crearModerador = async (moderador: ModeradorCreate): Promise<void> 
 };
 
 // Actualizar moderador
-export const actualizarModerador = async (id: number, moderador: ModeradorUpdate): Promise<void> => {
+export const actualizarModerador = async (id: number, moderador: ModeradorUpdate): Promise<Moderador> => {
   try {
-    await apiClient.put(`${API_BASE}/${id}`, moderador);
+    const response = await apiClient.put<Moderador>(`${API_BASE}/${id}`, moderador);
+    return response.data;
   } catch (error: any) {
     console.error('❌ moderadoresService - Error al actualizar moderador:', {
       message: error?.response?.data?.message || error?.response?.data?.mensaje || error?.message || 'Error desconocido',
@@ -62,6 +64,7 @@ export const actualizarModerador = async (id: number, moderador: ModeradorUpdate
 };
 
 // Eliminar moderador
-export const eliminarModerador = async (id: number): Promise<void> => {
+export const eliminarModerador = async (id: number): Promise<number> => {
   await apiClient.delete(`${API_BASE}/${id}`);
+  return id;
 };

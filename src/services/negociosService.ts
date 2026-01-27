@@ -33,10 +33,13 @@ export const negociosService = {
   },
 
   // Crear un nuevo negocio con sus parámetros
-  crearNegocio: async (data: NegocioCompleto): Promise<NegocioResponse> => {
+  crearNegocio: async (data: NegocioCompleto): Promise<Negocio> => {
     try {
       const response = await api.post<NegocioResponse>('/negocios', data);
-      return response.data;
+      if (response.data.success && response.data.data) {
+        return response.data.data as Negocio;
+      }
+      throw new Error('Respuesta inválida del servidor');
     } catch (error: unknown) {
       console.error('Error al crear negocio:', error);
       if (error && typeof error === 'object' && 'response' in error) {
@@ -50,10 +53,13 @@ export const negociosService = {
   },
 
   // Actualizar un negocio y sus parámetros
-  actualizarNegocio: async (id: number, data: NegocioCompleto): Promise<NegocioResponse> => {
+  actualizarNegocio: async (id: number, data: NegocioCompleto): Promise<Negocio> => {
     try {
       const response = await api.put<NegocioResponse>(`/negocios/${id}`, data);
-      return response.data;
+      if (response.data.success && response.data.data) {
+        return response.data.data as Negocio;
+      }
+      throw new Error('Respuesta inválida del servidor');
     } catch (error: unknown) {
       console.error('Error al actualizar negocio:', error);
       if (error && typeof error === 'object' && 'response' in error) {
@@ -67,10 +73,10 @@ export const negociosService = {
   },
 
   // Eliminar un negocio (soft delete - cambiar estatus)
-  eliminarNegocio: async (id: number): Promise<NegocioResponse> => {
+  eliminarNegocio: async (id: number): Promise<number> => {
     try {
-      const response = await api.delete<NegocioResponse>(`/negocios/${id}`);
-      return response.data;
+      await api.delete(`/negocios/${id}`);
+      return id;
     } catch (error) {
       console.error('Error al eliminar negocio:', error);
       throw error;

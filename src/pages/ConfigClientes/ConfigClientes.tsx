@@ -63,10 +63,11 @@ const ConfigClientes: React.FC = () => {
 
   const handleCrear = async (data: ClienteCreate) => {
     try {
-      await crearCliente(data);
+      const nuevoCliente = await crearCliente(data);
       mostrarMensaje('success', 'Cliente creado exitosamente');
       setMostrarFormulario(false);
-      cargarClientes();
+      // Actualizar estado local sin recargar
+      setClientes(prev => [...prev, nuevoCliente]);
     } catch (error) {
       console.error('Error al crear cliente:', error);
       mostrarMensaje('error', 'Error al crear el cliente');
@@ -86,11 +87,16 @@ const ConfigClientes: React.FC = () => {
         estatus: data.estatus !== undefined ? data.estatus : 1
       };
       
-      await actualizarCliente(clienteEditar.idCliente, dataUpdate);
+      const clienteActualizado = await actualizarCliente(clienteEditar.idCliente, dataUpdate);
       mostrarMensaje('success', 'Cliente actualizado exitosamente');
       setMostrarFormulario(false);
       setClienteEditar(null);
-      cargarClientes();
+      // Actualizar estado local sin recargar
+      setClientes(prev =>
+        prev.map(cliente =>
+          cliente.idCliente === clienteActualizado.idCliente ? clienteActualizado : cliente
+        )
+      );
     } catch (error) {
       console.error('Error al actualizar cliente:', error);
       mostrarMensaje('error', 'Error al actualizar el cliente');
@@ -107,9 +113,10 @@ const ConfigClientes: React.FC = () => {
     }
 
     try {
-      await eliminarCliente(id);
+      const idEliminado = await eliminarCliente(id);
       mostrarMensaje('success', 'Cliente eliminado exitosamente');
-      cargarClientes();
+      // Actualizar estado local sin recargar
+      setClientes(prev => prev.filter(cliente => cliente.idCliente !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar cliente:', error);
       mostrarMensaje('error', 'Error al eliminar el cliente');

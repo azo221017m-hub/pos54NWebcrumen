@@ -44,49 +44,48 @@ export const verificarNombreProducto = async (nombre: string, idnegocio: number,
 };
 
 // Crear nuevo producto web
-export const crearProductoWeb = async (producto: ProductoWebCreate): Promise<{ success: boolean; idProducto?: number; message?: string }> => {
+export const crearProductoWeb = async (producto: ProductoWebCreate): Promise<ProductoWeb> => {
   try {
     console.log('🔵 productosWebService: Creando producto web:', producto);
-    const response = await apiClient.post(API_BASE, producto);
+    const response = await apiClient.post<{ success: boolean; data: ProductoWeb; mensaje: string }>(API_BASE, producto);
     console.log('🔵 productosWebService: Producto web creado exitosamente');
-    return { 
-      success: response.data.success === true,
-      idProducto: response.data.idProducto,
-      message: response.data.mensaje
-    };
+    if (response.data.success && response.data.data) {
+      return response.data.data;
+    }
+    throw new Error(response.data.mensaje || 'Error al crear producto');
   } catch (error: any) {
     console.error('🔴 productosWebService: Error al crear producto web:', error);
     const errorMessage = error.response?.data?.mensaje || error.message || 'Error desconocido';
-    return { success: false, message: errorMessage };
+    throw new Error(errorMessage);
   }
 };
 
 // Actualizar producto web
-export const actualizarProductoWeb = async (id: number, producto: ProductoWebUpdate): Promise<{ success: boolean; message?: string }> => {
+export const actualizarProductoWeb = async (id: number, producto: ProductoWebUpdate): Promise<ProductoWeb> => {
   try {
     console.log('🔵 productosWebService: Actualizando producto web ID:', id);
-    const response = await apiClient.put(`${API_BASE}/${id}`, producto);
+    const response = await apiClient.put<{ success: boolean; data: ProductoWeb; mensaje: string }>(`${API_BASE}/${id}`, producto);
     console.log('🔵 productosWebService: Producto web actualizado exitosamente');
-    return { 
-      success: response.data.success === true,
-      message: response.data.mensaje 
-    };
+    if (response.data.success && response.data.data) {
+      return response.data.data;
+    }
+    throw new Error(response.data.mensaje || 'Error al actualizar producto');
   } catch (error: any) {
     console.error('🔴 productosWebService: Error al actualizar producto web:', error);
     const errorMessage = error.response?.data?.mensaje || error.message || 'Error desconocido';
-    return { success: false, message: errorMessage };
+    throw new Error(errorMessage);
   }
 };
 
 // Eliminar producto web (soft delete)
-export const eliminarProductoWeb = async (id: number): Promise<boolean> => {
+export const eliminarProductoWeb = async (id: number): Promise<number> => {
   try {
     console.log('🔵 productosWebService: Eliminando producto web ID:', id);
     await apiClient.delete(`${API_BASE}/${id}`);
     console.log('🔵 productosWebService: Producto web eliminado exitosamente');
-    return true;
+    return id;
   } catch (error) {
     console.error('🔴 productosWebService: Error al eliminar producto web:', error);
-    return false;
+    throw error;
   }
 };

@@ -30,10 +30,10 @@ export const obtenerMesaPorId = async (idmesa: number): Promise<Mesa> => {
 };
 
 // Crear una nueva mesa
-export const crearMesa = async (mesa: MesaCreate): Promise<{ message: string; idmesa: number }> => {
+export const crearMesa = async (mesa: MesaCreate): Promise<Mesa> => {
   try {
     console.log('Servicio: Creando nueva mesa:', mesa.nombremesa);
-    const response = await apiClient.post<{ message: string; idmesa: number }>(API_BASE, mesa);
+    const response = await apiClient.post<Mesa>(API_BASE, mesa);
     console.log('Servicio: Mesa creada con ID:', response.data.idmesa);
     return response.data;
   } catch (error) {
@@ -43,10 +43,10 @@ export const crearMesa = async (mesa: MesaCreate): Promise<{ message: string; id
 };
 
 // Actualizar una mesa
-export const actualizarMesa = async (idmesa: number, mesa: MesaUpdate): Promise<{ message: string }> => {
+export const actualizarMesa = async (idmesa: number, mesa: MesaUpdate): Promise<Mesa> => {
   try {
     console.log('Servicio: Actualizando mesa ID:', idmesa);
-    const response = await apiClient.put<{ message: string }>(`${API_BASE}/${idmesa}`, mesa);
+    const response = await apiClient.put<Mesa>(`${API_BASE}/${idmesa}`, mesa);
     console.log('Servicio: Mesa actualizada');
     return response.data;
   } catch (error) {
@@ -56,12 +56,12 @@ export const actualizarMesa = async (idmesa: number, mesa: MesaUpdate): Promise<
 };
 
 // Eliminar una mesa
-export const eliminarMesa = async (idmesa: number): Promise<{ message: string }> => {
+export const eliminarMesa = async (idmesa: number): Promise<number> => {
   try {
     console.log('Servicio: Eliminando mesa ID:', idmesa);
-    const response = await apiClient.delete<{ message: string }>(`${API_BASE}/${idmesa}`);
+    await apiClient.delete(`${API_BASE}/${idmesa}`);
     console.log('Servicio: Mesa eliminada');
-    return response.data;
+    return idmesa;
   } catch (error) {
     console.error('Error en servicio eliminarMesa:', error);
     throw error;
