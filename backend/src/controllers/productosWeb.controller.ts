@@ -19,6 +19,7 @@ interface ProductoWeb extends RowDataPacket {
   usuarioauditoria: string;
   fehamodificacionauditoria: Date;
   idnegocio: number;
+  menudia: number;
   nombreReceta?: string;
   costoReceta?: number;
   nombreInsumo?: string;
@@ -58,6 +59,7 @@ export const obtenerProductosWeb = async (req: AuthRequest, res: Response): Prom
         p.usuarioauditoria,
         p.fehamodificacionauditoria,
         p.idnegocio,
+        p.menudia,
         CASE 
           WHEN p.tipoproducto = 'Receta' THEN r.nombreReceta
           ELSE NULL
@@ -115,6 +117,7 @@ export const obtenerProductoWebPorId = async (req: Request, res: Response): Prom
         p.usuarioauditoria,
         p.fehamodificacionauditoria,
         p.idnegocio,
+        p.menudia,
         CASE 
           WHEN p.tipoproducto = 'Receta' THEN r.nombreReceta
           ELSE NULL
@@ -193,7 +196,8 @@ export const crearProductoWeb = async (req: AuthRequest, res: Response): Promise
       estatus,
       imagenProducto,
       tipoproducto,
-      costoproducto
+      costoproducto,
+      menudia
     } = req.body;
 
     // Obtener idnegocio y alias del usuario autenticado
@@ -234,8 +238,9 @@ export const crearProductoWeb = async (req: AuthRequest, res: Response): Promise
         fechaRegistroauditoria,
         usuarioauditoria,
         fehamodificacionauditoria,
-        idnegocio
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, NOW(), ?)`,
+        idnegocio,
+        menudia
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, NOW(), ?, ?)`,
       [
         idCategoria,
         idreferencia || null,
@@ -247,7 +252,8 @@ export const crearProductoWeb = async (req: AuthRequest, res: Response): Promise
         tipoproducto,
         costoproducto || 0,
         usuarioauditoria,
-        idnegocio
+        idnegocio,
+        menudia || 0
       ]
     );
 
@@ -277,7 +283,8 @@ export const actualizarProductoWeb = async (req: AuthRequest, res: Response): Pr
       estatus,
       imagenProducto,
       tipoproducto,
-      costoproducto
+      costoproducto,
+      menudia
     } = req.body;
 
     // Obtener alias del usuario autenticado
@@ -327,7 +334,8 @@ export const actualizarProductoWeb = async (req: AuthRequest, res: Response): Pr
       tipoproducto = ?,
       costoproducto = ?,
       usuarioauditoria = ?,
-      fehamodificacionauditoria = NOW()`;
+      fehamodificacionauditoria = NOW(),
+      menudia = ?`;
 
     const params: (string | number | Buffer | null)[] = [
       idCategoria,
@@ -338,7 +346,8 @@ export const actualizarProductoWeb = async (req: AuthRequest, res: Response): Pr
       estatus,
       tipoproducto,
       costoproducto || 0,
-      usuarioauditoria
+      usuarioauditoria,
+      menudia || 0
     ];
 
     // Solo actualizar imagen si se proporcionó

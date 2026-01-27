@@ -261,7 +261,8 @@ const PageVentas: React.FC = () => {
             usuarioauditoria: detalle.usuarioauditoria,
             fechamodificacionauditoria: detalle.fechamodificacionauditoria,
             fechaRegistroauditoria: new Date().toISOString(),
-            fehamodificacionauditoria: new Date().toISOString()
+            fehamodificacionauditoria: new Date().toISOString(),
+            menudia: 0
           } as ProductoWeb,
           cantidad: Math.round(detalle.cantidad), // Ensure integer value
           notas: detalle.observaciones || undefined,

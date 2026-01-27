@@ -18,6 +18,7 @@ export interface ProductoWeb {
   usuarioauditoria: string;
   fehamodificacionauditoria: Date | string;
   idnegocio: number;
+  menudia: number;
   // Campos relacionados (JOIN)
   nombreReceta?: string;
   costoReceta?: number;
@@ -37,6 +38,7 @@ export interface ProductoWebCreate {
   costoproducto: number;
   usuarioauditoria: string;
   idnegocio: number;
+  menudia: number;
 }
 
 export interface ProductoWebUpdate extends ProductoWebCreate {

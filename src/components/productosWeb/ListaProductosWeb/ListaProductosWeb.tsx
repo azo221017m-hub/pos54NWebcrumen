@@ -75,6 +75,11 @@ const ListaProductosWeb: React.FC<Props> = ({ productos, onEditar, onEliminar })
                   Inactivo
                 </span>
               )}
+              {producto.menudia === 1 && (
+                <span className="badge badge-menudia">
+                  🍽️ Menú del Día
+                </span>
+              )}
             </div>
           </div>
 

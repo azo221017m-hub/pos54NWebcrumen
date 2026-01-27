@@ -34,7 +34,8 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
         tipoproducto: productoEditar.tipoproducto as TipoProducto,
         costoproducto: productoEditar.costoproducto,
         usuarioauditoria: productoEditar.usuarioauditoria || '',
-        idnegocio: productoEditar.idnegocio
+        idnegocio: productoEditar.idnegocio,
+        menudia: productoEditar.menudia || 0
       };
     }
     return {
@@ -50,7 +51,8 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
       usuarioauditoria: localStorage.getItem('usuario') 
         ? JSON.parse(localStorage.getItem('usuario')!).alias 
         : '',
-      idnegocio
+      idnegocio,
+      menudia: 0
     };
   }, [productoEditar, idnegocio]);
 
@@ -616,6 +618,27 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
                 </label>
                 <span className="toggle-label">
                   {formData.estatus === 1 ? 'Activo' : 'Inactivo'}
+                </span>
+              </div>
+            </div>
+
+            {/* Menú del Día */}
+            <div className="form-group">
+              <label className="form-label">Menú del Día</label>
+              <div className="toggle-switch-container">
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={formData.menudia === 1}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      menudia: e.target.checked ? 1 : 0 
+                    }))}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+                <span className="toggle-label">
+                  {formData.menudia === 1 ? 'Parte del menú' : 'No parte del menú'}
                 </span>
               </div>
             </div>
