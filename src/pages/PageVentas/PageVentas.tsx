@@ -41,6 +41,11 @@ const SELECTION_MODAL_DISPLAY_DELAY_MS = 500;
 const MODERADORES_PLACEHOLDER = 'Moderadores';
 const ESTADO_ORDENADO: EstadoDetalle = 'ORDENADO';
 
+// Helper function to check if any item in comanda has ORDENADO status
+const hasOrdenadoItems = (comanda: ItemComanda[]): boolean => {
+  return comanda.some(item => item.estadodetalle === ESTADO_ORDENADO);
+};
+
 const PageVentas: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -958,13 +963,12 @@ const PageVentas: React.FC = () => {
       return;
     }
     
-    // If there are products to charge, execute Producir function first
-    const success = await crearVenta(ESTADO_ORDENADO, ESTADO_ORDENADO, 'PENDIENTE');
-    
-    // Only show payment module if Producir was successful
-    if (success) {
-      setShowModuloPagos(true);
-    }
+    // Show payment module directly without calling Producir
+    // Note: The crearVenta (Producir) call was removed as per requirement.
+    // The payment list should only display the payment module (ModuloPagos)
+    // without creating a new sale or changing item status to ORDENADO.
+    // Users should use the separate "Producir" button for that operation.
+    setShowModuloPagos(true);
   };
 
   const handleCategoriaClick = (idCategoria: number) => {
@@ -1286,11 +1290,11 @@ const PageVentas: React.FC = () => {
             <button 
               className="btn-esperar" 
               onClick={handleEsperar} 
-              disabled={!isServiceConfigured || comanda.length === 0 || comanda.some(item => item.estadodetalle === ESTADO_ORDENADO)}
+              disabled={!isServiceConfigured || comanda.length === 0 || hasOrdenadoItems(comanda)}
             >
               Esperar
             </button>
-            {isLoadedFromDashboard && (
+            {isLoadedFromDashboard && !hasOrdenadoItems(comanda) && (
               <button className="btn-listado" onClick={handleListadoPagos} disabled={!isServiceConfigured}>listado de pagos</button>
             )}
           </div>
