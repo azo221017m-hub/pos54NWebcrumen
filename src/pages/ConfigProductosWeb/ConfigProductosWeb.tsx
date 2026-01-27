@@ -95,20 +95,9 @@ const ConfigProductosWeb: React.FC = () => {
         return;
       }
       
-      // Create a complete ProductoWebUpdate object
+      // Create a complete ProductoWebUpdate object with only menudia updated
       const productoActualizado: ProductoWebUpdate = {
-        idProducto: producto.idProducto,
-        idCategoria: producto.idCategoria,
-        idreferencia: producto.idreferencia,
-        nombre: producto.nombre,
-        descripcion: producto.descripcion,
-        precio: producto.precio,
-        estatus: producto.estatus,
-        imagenProducto: producto.imagenProducto,
-        tipoproducto: producto.tipoproducto,
-        costoproducto: producto.costoproducto,
-        usuarioauditoria: producto.usuarioauditoria,
-        idnegocio: producto.idnegocio,
+        ...producto,
         menudia: newValue
       };
       
