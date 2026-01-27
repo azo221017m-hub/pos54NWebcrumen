@@ -1271,7 +1271,9 @@ const PageVentas: React.FC = () => {
             >
               Esperar
             </button>
-            <button className="btn-listado" onClick={handleListadoPagos} disabled={!isServiceConfigured}>listado de pagos</button>
+            {isLoadedFromDashboard && (
+              <button className="btn-listado" onClick={handleListadoPagos} disabled={!isServiceConfigured}>listado de pagos</button>
+            )}
           </div>
 
           <div className="comanda-total">
