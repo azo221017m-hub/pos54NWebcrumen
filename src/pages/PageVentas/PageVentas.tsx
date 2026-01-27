@@ -54,6 +54,7 @@ const PageVentas: React.FC = () => {
   // Get sale data from navigation state
   const ventaToLoad = (location.state as { ventaToLoad?: VentaWebWithDetails })?.ventaToLoad;
   const tipoServicioPreseleccionado = (location.state as { tipoServicioPreseleccionado?: TipoServicio })?.tipoServicioPreseleccionado;
+  const showPaymentModuleFlag = (location.state as { showPaymentModule?: boolean })?.showPaymentModule;
   
   // Utility function to safely format prices
   const formatPrice = (price: number | string | undefined | null): string => {
@@ -310,6 +311,17 @@ const PageVentas: React.FC = () => {
       }
     }
   }, []);
+
+  // Show payment module if flag is set from Dashboard
+  useEffect(() => {
+    if (showPaymentModuleFlag && isLoadedFromDashboard && comanda.length > 0) {
+      // Small delay to ensure the UI is ready
+      const timer = setTimeout(() => {
+        setShowModuloPagos(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [showPaymentModuleFlag, isLoadedFromDashboard, comanda.length]);
 
   // Check for open turno (shift) when component mounts
   useEffect(() => {
