@@ -940,9 +940,22 @@ const PageVentas: React.FC = () => {
     return moderadores.filter(m => uniqueModeradorIds.includes(m.idmoderador));
   };
 
-  const handleListadoPagos = () => {
-    // Mostrar el módulo de pagos
-    setShowModuloPagos(true);
+  const handleListadoPagos = async () => {
+    const total = calcularTotal();
+    
+    // Check if there are no products or total is 0
+    if (comanda.length === 0 || total === 0) {
+      alert('No hay productos por cobrar');
+      return;
+    }
+    
+    // If there are products to charge, execute Producir function first
+    const success = await crearVenta(ESTADO_ORDENADO, ESTADO_ORDENADO, 'PENDIENTE');
+    
+    // Only show payment module if Producir was successful
+    if (success) {
+      setShowModuloPagos(true);
+    }
   };
 
   const handleCategoriaClick = (idCategoria: number) => {
