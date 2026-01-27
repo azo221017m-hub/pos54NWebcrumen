@@ -12,6 +12,7 @@ import ModalTipoServicio from '../../components/ventas/ModalTipoServicio';
 import ModalSeleccionVentaPageVentas from '../../components/ventas/ModalSeleccionVentaPageVentas';
 import ModalIniciaTurno from '../../components/turnos/ModalIniciaTurno';
 import FichaDeComanda from '../../components/ventas/FichaDeComanda';
+import ModuloPagos from '../../components/ventas/ModuloPagos';
 import type { MesaFormData, LlevarFormData, DomicilioFormData } from '../../components/ventas/ModalTipoServicio';
 import type { ProductoWeb } from '../../types/productoWeb.types';
 import type { Usuario } from '../../types/usuario.types';
@@ -97,6 +98,9 @@ const PageVentas: React.FC = () => {
   const [currentVentaId, setCurrentVentaId] = useState<number | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_currentFolioVenta, setCurrentFolioVenta] = useState<string | null>(null);
+
+  // Módulo de pagos state
+  const [showModuloPagos, setShowModuloPagos] = useState(false);
 
 
   // Close user menu when clicking outside
@@ -937,9 +941,8 @@ const PageVentas: React.FC = () => {
   };
 
   const handleListadoPagos = () => {
-    // Lógica para mostrar listado de pagos
-    console.log('Mostrando listado de pagos');
-    alert('Funcionalidad de listado de pagos en desarrollo');
+    // Mostrar el módulo de pagos
+    setShowModuloPagos(true);
   };
 
   const handleCategoriaClick = (idCategoria: number) => {
@@ -1487,6 +1490,14 @@ const PageVentas: React.FC = () => {
             )}
           </div>
         </div>
+      )}
+
+      {/* Módulo de Pagos */}
+      {showModuloPagos && (
+        <ModuloPagos 
+          onClose={() => setShowModuloPagos(false)}
+          totalCuenta={calcularTotal()}
+        />
       )}
     </div>
   );
