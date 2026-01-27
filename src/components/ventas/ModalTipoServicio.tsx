@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
-import { obtenerMesas } from '../../services/mesasService';
+import { obtenerMesas, cambiarEstatusMesa } from '../../services/mesasService';
 import { obtenerClientes } from '../../services/clientesService';
 import type { Mesa, TipoServicio } from '../../types/mesa.types';
 import type { Cliente } from '../../types/cliente.types';
@@ -66,6 +66,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
 }) => {
   const [mesas, setMesas] = useState<Mesa[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [previousMesaId, setPreviousMesaId] = useState<number | null>(null);
 
   // Form data states
   const [mesaFormData, setMesaFormData] = useState<MesaFormData>(INITIAL_MESA_DATA);
@@ -109,6 +110,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
         cargarMesas();
         if (initialData && 'idmesa' in initialData) {
           setMesaFormData(initialData as MesaFormData);
+          setPreviousMesaId(initialData.idmesa);
         }
       } else {
         cargarClientes();
@@ -138,13 +140,30 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     }
   }, [isOpen, tipoServicio, initialData]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (tipoServicio === 'Mesa') {
       if (!mesaFormData.idmesa) {
         alert('Por favor seleccione una mesa');
         return;
       }
-      onSave(mesaFormData);
+      
+      try {
+        // Get usuario from localStorage
+        const usuarioData = localStorage.getItem('usuario');
+        if (!usuarioData) {
+          alert('Error: Usuario no autenticado');
+          return;
+        }
+        const usuario = JSON.parse(usuarioData);
+        
+        // Update mesa status to OCUPADA
+        await cambiarEstatusMesa(mesaFormData.idmesa, 'OCUPADA', usuario.alias || usuario.nombre);
+        
+        onSave(mesaFormData);
+      } catch (error) {
+        console.error('Error al actualizar estatus de mesa:', error);
+        alert('Error al configurar la mesa. Por favor intente nuevamente.');
+      }
     } else if (tipoServicio === 'Llevar') {
       if (!llevarFormData.cliente.trim()) {
         alert('Por favor ingrese el nombre del cliente');
@@ -176,11 +195,25 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     }
   };
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
+    try {
+      // If canceling a Mesa service and there was a previously selected mesa, set it back to DISPONIBLE
+      if (tipoServicio === 'Mesa' && previousMesaId) {
+        const usuarioData = localStorage.getItem('usuario');
+        if (usuarioData) {
+          const usuario = JSON.parse(usuarioData);
+          await cambiarEstatusMesa(previousMesaId, 'DISPONIBLE', usuario.alias || usuario.nombre);
+        }
+      }
+    } catch (error) {
+      console.error('Error al actualizar estatus de mesa:', error);
+    }
+    
     // Reset all forms to initial state
     setMesaFormData(INITIAL_MESA_DATA);
     setLlevarFormData(INITIAL_LLEVAR_DATA);
     setDomicilioFormData(INITIAL_DOMICILIO_DATA);
+    setPreviousMesaId(null);
     onClose();
   };
 
@@ -215,7 +248,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                 <option value="">Seleccione una mesa</option>
                 {mesas.map((mesa) => (
                   <option key={mesa.idmesa} value={mesa.idmesa}>
-                    {mesa.nombremesa} - Mesa {mesa.numeromesa}
+                    {mesa.numeromesa} {mesa.nombremesa}
                   </option>
                 ))}
               </select>
