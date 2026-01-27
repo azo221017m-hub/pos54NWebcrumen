@@ -428,9 +428,8 @@ const PageVentas: React.FC = () => {
       }
     }
 
-    // If showMenuDia is true, filter only products with menudia = 1 (independent of category filter)
-    // Only apply this if no category is selected or if the category is not "Menú Día"
-    if (showMenuDia && categoriaSeleccionada === null) {
+    // If showMenuDia is true, filter only products with menudia = 1 (regardless of category selection)
+    if (showMenuDia) {
       filtrados = filtrados.filter(p => p.menudia === 1);
     }
     
