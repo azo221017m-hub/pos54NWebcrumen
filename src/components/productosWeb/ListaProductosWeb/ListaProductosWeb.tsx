@@ -125,7 +125,7 @@ const ListaProductosWeb: React.FC<Props> = ({ productos, onEditar, onEliminar, o
               title="Editar producto"
             >
               <Edit2 size={18} />
-              Editar
+              Editar (Menú: {producto.menudia})
             </button>
             <button
               className="btn-eliminar"

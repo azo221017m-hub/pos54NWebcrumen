@@ -109,8 +109,8 @@
 }
 
 .login-logo {
-  width: 70px;
-  height: 50px;
+  width: 250px;
+  height: 200px;
   margin: 0 auto 0.750rem; /* 12px */
   display: flex;
   align-items: center;
@@ -118,8 +118,8 @@
 }
 
 .logo-icon {
-  width: 70px;
-  height: 50px;
+  width: 250px;
+  height: 200px;
   object-fit: contain;
 }
 
