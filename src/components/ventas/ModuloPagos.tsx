@@ -102,7 +102,17 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
     
     // Validación para efectivo
     if (metodoPagoSeleccionado === 'efectivo') {
-      const montoRecibido = parseFloat(montoEfectivo) || 0;
+      if (!montoEfectivo.trim()) {
+        alert('Por favor ingrese el monto recibido');
+        return;
+      }
+      
+      const montoRecibido = parseFloat(montoEfectivo);
+      
+      if (isNaN(montoRecibido) || montoRecibido < 0) {
+        alert('Por favor ingrese un monto válido');
+        return;
+      }
       
       if (montoRecibido < totalAPagar) {
         alert('El monto recibido no puede ser menor al total de la cuenta');
@@ -116,6 +126,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
         : `Cobro en EFECTIVO`;
       
       setPagosRealizados([...pagosRealizados, { tipo: 'Efectivo', detalles: detallePago }]);
+      setMontoEfectivo(''); // Reset input after successful payment
       alert('Cobro procesado exitosamente');
     } 
     // Validación para transferencia
@@ -128,6 +139,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
       // Agregar pago realizado con detalle de transferencia
       const detallePago = `Cobro con transferencia Ref. ${numeroReferencia}`;
       setPagosRealizados([...pagosRealizados, { tipo: 'Transferencia', detalles: detallePago }]);
+      setNumeroReferencia(''); // Reset input after successful payment
       alert('Cobro procesado exitosamente');
     }
     // Para mixto (mantener lógica existente)
@@ -250,6 +262,8 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
                   placeholder="Ingrese el monto recibido"
                   value={montoEfectivo}
                   onChange={(e) => setMontoEfectivo(e.target.value)}
+                  min="0"
+                  step="0.01"
                 />
                 
                 {/* Botón CANCELAR */}
