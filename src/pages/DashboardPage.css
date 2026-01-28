@@ -11,14 +11,14 @@
 /* ========== ENCABEZADO ========== */
 .dashboard-header {
   background: white;
-  padding: 0.4rem 0.75rem;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 0.5rem 0.75rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
   z-index: 100;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
   width: 100%;
   box-sizing: border-box;
 }
@@ -64,14 +64,14 @@
 }
 
 .logo-icon {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   color: #1e3a5f;
   flex-shrink: 0;
 }
 
 .logo-text h1 {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   color: #2d3748;
   margin: 0;
@@ -263,10 +263,10 @@
 /* ========== NAVEGACIÓN ========== */
 .dashboard-navigation {
   background: white;
-  padding: 0 1rem;
+  padding: 0 0.75rem;
   display: flex;
   gap: 0.25rem;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   flex-shrink: 0;
   border-bottom: 1px solid #e2e8f0;
   width: 100%;
@@ -293,16 +293,16 @@
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1rem;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
   background: transparent;
   border: none;
-  border-bottom: 3px solid transparent;
+  border-bottom: 2px solid transparent;
   color: #718096;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   white-space: nowrap;
 }
 
@@ -329,8 +329,8 @@
 }
 
 .nav-item svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 
 /* Chevron para submenú */
@@ -449,7 +449,7 @@
 }
 
 .welcome-title {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: #2d3748;
   margin: 0 0 0.25rem 0;
@@ -464,30 +464,30 @@
 /* Cards Grid */
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 0.75rem;
   margin-bottom: 0.75rem;
 }
 
 .dashboard-card {
   background: white;
-  padding: 0.75rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 0.625rem;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   transition: all 0.2s;
   cursor: pointer;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
 }
 
 .dashboard-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
   border-color: #e2e8f0;
 }
 
 .card-icon {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -496,8 +496,8 @@
 }
 
 .card-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   color: white;
 }
 
@@ -518,31 +518,31 @@
 }
 
 .card-title {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: #2d3748;
   margin: 0 0 0.25rem 0;
 }
 
 .card-text {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: #718096;
   margin: 0 0 0.5rem 0;
 }
 
 .card-stat {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1e3a5f;
 }
 
 /* ========== COMANDAS DEL DÍA SECTION ========== */
 .ventas-solicitadas-section {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
   background: white;
-  border-radius: 10px;
-  padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  padding: 0.75rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .section-header {
@@ -551,7 +551,7 @@
   align-items: center;
   margin-bottom: 0.75rem;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 /* Tipo Venta Filter */
@@ -593,7 +593,7 @@
 }
 
 .section-title {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   color: #2d3748;
   margin: 0;
@@ -603,8 +603,8 @@
 }
 
 .section-title svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   color: #ed8936;
 }
 
@@ -621,15 +621,15 @@
 
 .ventas-solicitadas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 0.75rem;
 }
 
 .venta-solicitada-card {
   background: #fffaf0;
-  border: 2px solid #feebc8;
-  border-radius: 8px;
-  padding: 0.75rem;
+  border: 1px solid #feebc8;
+  border-radius: 6px;
+  padding: 0.625rem;
   transition: all 0.2s;
   cursor: pointer;
 }
@@ -717,19 +717,19 @@
 
 /* ========== PANEL DE PEDIDOS ONLINE ========== */
 .pedidos-panel {
-  width: 280px;
-  max-width: 280px;
+  width: 260px;
+  max-width: 260px;
   background: white;
   border-left: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05);
+  box-shadow: -1px 0 4px rgba(0, 0, 0, 0.05);
 }
 
 .panel-header {
-  padding: 0.75rem 1rem;
-  border-bottom: 2px solid #e2e8f0;
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -737,7 +737,7 @@
 }
 
 .panel-title {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 700;
   color: #2d3748;
   margin: 0;
@@ -747,8 +747,8 @@
 }
 
 .panel-title svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   color: #1e3a5f;
 }
 
