@@ -27,6 +27,7 @@ export interface VentaWeb {
   telefonodeentrega: string | null;
   propinadeventa: number;
   formadepago: FormaDePago;
+  importedepago: number;
   estatusdepago: EstatusDePago;
   tiempototaldeventa: number | null;
   claveturno?: string | null;
