@@ -96,7 +96,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
   };
 
   const handleAgregarPagoMixto = () => {
-    setPagosMixtos([...pagosMixtos, { formaPago: '', importe: '', referencia: '' }]);
+    setPagosMixtos([...pagosMixtos, { formaPago: 'Efectivo', importe: '', referencia: '' }]);
   };
 
   const handleCobrar = () => {
