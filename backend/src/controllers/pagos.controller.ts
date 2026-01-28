@@ -1,11 +1,10 @@
 import type { Response } from 'express';
 import { pool } from '../config/db';
-import type { RowDataPacket, ResultSetHeader } from 'mysql2';
+import type { RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
 import type { 
   PagoSimpleRequest, 
   PagoMixtoRequest,
-  DetallePagoCreate,
   VentaWeb
 } from '../types/ventasWeb.types';
 

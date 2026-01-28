@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateToken } from '../middlewares/auth';
+import { authMiddleware } from '../middlewares/auth';
 import { 
   procesarPagoSimple, 
   procesarPagoMixto,
@@ -9,7 +9,7 @@ import {
 const router = Router();
 
 // All routes require authentication
-router.use(authenticateToken);
+router.use(authMiddleware);
 
 // POST /api/pagos/simple - Process simple payment (EFECTIVO or TRANSFERENCIA)
 router.post('/simple', procesarPagoSimple);
