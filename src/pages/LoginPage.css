@@ -109,17 +109,18 @@
 }
 
 .login-logo {
-  width: 250px;
-  height: 200px;
+  width: 100%;
+  max-width: 350px;
+  height: auto;
   margin: 0 auto 0.750rem; /* 12px */
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.logo-icon {
-  width: 250px;
-  height: 200px;
+.logo-image {
+  width: 100%;
+  height: auto;
   object-fit: contain;
 }
 
@@ -498,6 +499,10 @@
 @media (max-width: 640px) {
   .login-card {
     padding: 1.866rem 1.250rem; /* 20px */
+  }
+
+  .login-logo {
+    max-width: 280px;
   }
 
   .login-title {
