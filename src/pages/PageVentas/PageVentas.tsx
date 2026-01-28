@@ -268,8 +268,8 @@ const PageVentas: React.FC = () => {
             idnegocio: detalle.idnegocio,
             usuarioauditoria: detalle.usuarioauditoria,
             fechamodificacionauditoria: detalle.fechamodificacionauditoria,
-            fechaRegistroauditoria: new Date().toISOString(),
-            fehamodificacionauditoria: new Date().toISOString(),
+            fechaRegistroauditoria: '',
+            fehamodificacionauditoria: detalle.fechamodificacionauditoria || '',
             menudia: 0
           } as ProductoWeb,
           cantidad: Math.round(detalle.cantidad), // Ensure integer value

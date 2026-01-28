@@ -6,6 +6,7 @@ import type {
   LoginMetadata, 
   LoginAuditResponse 
 } from '../types/intentoLogin.types';
+import { getMexicoTime, getMexicoTimeISO, getMexicoTimestamp } from '../utils/dateTime';
 
 // Constantes
 const MAX_INTENTOS_PERMITIDOS = 3;
@@ -13,13 +14,14 @@ const TIEMPO_BLOQUEO_MINUTOS = 30; // Tiempo de bloqueo después de exceder inte
 
 /**
  * Extraer metadata del request para auditoría
+ * Usa hora del servidor en zona horaria de México
  */
 export const extraerMetadata = (req: Request, exito: boolean, mensaje?: string): LoginMetadata => {
   const userAgent = req.headers['user-agent'] || '';
   const ip = req.ip || req.socket.remoteAddress || '';
   
   return {
-    timestamp: new Date().toISOString(),
+    timestamp: getMexicoTimeISO(),
     ip,
     userAgent,
     navegador: extraerNavegador(userAgent),
@@ -65,10 +67,10 @@ const extraerDispositivo = (userAgent: string): string => {
 };
 
 /**
- * Generar ID de sesión único
+ * Generar ID de sesión único usando timestamp del servidor
  */
 const generarSessionId = (): string => {
-  return `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+  return `${getMexicoTimestamp()}-${Math.random().toString(36).substring(7)}`;
 };
 
 /**
@@ -96,7 +98,7 @@ export const verificarBloqueo = async (aliasusuario: string): Promise<LoginAudit
     // Si tiene fecha de bloqueo
     if (registro.fechabloqueado) {
       const tiempoBloqueo = new Date(registro.fechabloqueado);
-      const ahora = new Date();
+      const ahora = getMexicoTime();
       const minutosTranscurridos = (ahora.getTime() - tiempoBloqueo.getTime()) / 60000;
 
       // Si aún está en período de bloqueo
@@ -126,7 +128,7 @@ export const verificarBloqueo = async (aliasusuario: string): Promise<LoginAudit
         permitido: false,
         bloqueado: true,
         mensaje: 'Cuenta bloqueada por exceder intentos permitidos',
-        fechaBloqueado: new Date()
+        fechaBloqueado: getMexicoTime()
       };
     }
 

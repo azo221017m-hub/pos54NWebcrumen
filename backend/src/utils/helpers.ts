@@ -1,3 +1,5 @@
+import { getMexicoTimestamp } from './dateTime';
+
 /**
  * Formatea un número como moneda
  */
@@ -17,10 +19,11 @@ export const isValidEmail = (email: string): boolean => {
 };
 
 /**
- * Genera un código único
+ * Generate a unique code using server timestamp
+ * Note: Timestamp is universal (timezone-agnostic), represents the same moment everywhere
  */
 export const generateCode = (prefix: string = ''): string => {
-  const timestamp = Date.now().toString(36);
+  const timestamp = getMexicoTimestamp().toString(36);
   const random = Math.random().toString(36).substring(2, 7);
   return `${prefix}${timestamp}${random}`.toUpperCase();
 };
