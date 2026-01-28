@@ -1,38 +1,45 @@
 /**
  * Utility functions for date and time operations with Mexico timezone
  * This ensures all timestamps are server-side and user-immutable
+ * 
+ * Important Note on Timestamps and Timezones:
+ * - Date objects and timestamps (milliseconds since epoch) are UNIVERSAL and timezone-agnostic
+ * - They represent the same moment in time regardless of timezone
+ * - Timezone only affects how we DISPLAY or FORMAT that moment
+ * - This module provides utilities to format times in Mexico timezone for business logic
  */
 
 // Mexico timezone constant - UTC-6 (Mexico City standard time)
-// Note: Mexico observes daylight saving time from April to October (UTC-5)
+// Note: As of October 2022, Mexico abolished daylight saving time nationwide
+// (except some border regions). Most of the country now uses UTC-6 year-round.
 export const MEXICO_TIMEZONE = 'America/Mexico_City';
 export const MEXICO_TIMEZONE_OFFSET = '-06:00'; // For MySQL compatibility
 
 /**
- * Get current date/time adjusted for Mexico timezone offset
- * This function ensures timestamps are server-generated and cannot be manipulated by the client
- * Note: Returns a Date object representing the current moment, to be used for calculations
- * @returns Date object representing current server time
+ * Get current server time as Date object
+ * Note: Date objects are universal - they represent a moment in time, not a timezone
+ * Use formatting functions to display in Mexico timezone
+ * @returns Date object representing current moment
  */
 export const getMexicoTime = (): Date => {
-  // Return current server time - MySQL NOW() handles timezone via connection config
   return new Date();
 };
 
 /**
- * Get current date/time as ISO string
- * @returns ISO 8601 formatted string
+ * Get current time as ISO 8601 string (always in UTC with 'Z' suffix)
+ * Note: ISO timestamps are always in UTC by convention
+ * @returns ISO 8601 formatted string in UTC
  */
 export const getMexicoTimeISO = (): string => {
   return new Date().toISOString();
 };
 
 /**
- * Format a date for MySQL DATETIME column (YYYY-MM-DD HH:MM:SS)
- * Note: This formats in server's local time. MySQL connection is configured
- * to use Mexico timezone, so all NOW() and timestamp operations use Mexico time.
+ * Format a date for MySQL DATETIME column in Mexico timezone
+ * Format: YYYY-MM-DD HH:MM:SS in Mexico timezone
+ * Note: This converts the universal moment to Mexico local time for display
  * @param date Optional date to format, defaults to current time
- * @returns MySQL-formatted datetime string
+ * @returns MySQL-formatted datetime string in Mexico timezone
  */
 export const formatMySQLDateTime = (date?: Date): string => {
   const d = date || new Date();
@@ -63,7 +70,9 @@ export const formatMySQLDateTime = (date?: Date): string => {
 };
 
 /**
- * Get timestamp for generating unique codes
+ * Get server timestamp in milliseconds since Unix epoch
+ * Note: Timestamps are UNIVERSAL and timezone-agnostic
+ * They represent the same moment everywhere
  * @returns Timestamp in milliseconds
  */
 export const getMexicoTimestamp = (): number => {
@@ -71,7 +80,9 @@ export const getMexicoTimestamp = (): number => {
 };
 
 /**
- * Get time components in Mexico timezone for generating codes
+ * Get time components formatted in Mexico timezone
+ * This is used for generating business codes (folios, claveturno) that should
+ * reflect Mexico local time
  * @returns Object with date/time components in Mexico timezone
  */
 export const getMexicoTimeComponents = (): {

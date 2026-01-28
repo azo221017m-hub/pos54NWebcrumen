@@ -52,7 +52,10 @@ const dbConfig = {
 - Todas las funciones MySQL como `NOW()`, `CURRENT_TIMESTAMP` usan hora con offset de México
 - Las conversiones de fecha/hora son consistentes
 - Los datos almacenados reflejan la hora local del negocio
-- Usa formato de offset numérico compatible con MySQL sin necesidad de tablas de zona horaria
+- Usa formato de offset numérico (`-06:00`) compatible con MySQL sin necesidad de tablas de zona horaria
+
+**Nota sobre horario de verano:**
+Desde octubre de 2022, México abolió el horario de verano a nivel nacional (excepto algunas regiones fronterizas). El país usa UTC-6 todo el año. El offset `-06:00` es apropiado para la mayoría de los casos de uso.
 
 ### 3. Actualización de Controladores Backend
 
@@ -147,9 +150,12 @@ El cliente solo puede enviar datos de negocio que requieren input del usuario:
 ### ¿Qué pasa si el servidor está en otra zona horaria?
 **No hay problema**. Razones:
 
-1. `getMexicoTime()` convierte la hora del sistema a hora de México
-2. MySQL está configurado con `timezone: MEXICO_TIMEZONE`
+1. `getMexicoTimeComponents()` usa `Intl.DateTimeFormat` con zona horaria México
+2. MySQL está configurado con `timezone: '-06:00'` (offset de México)
 3. Las consultas SQL con `NOW()` respetan la configuración de timezone
+4. Los Date objects y timestamps son universales - la zona horaria solo afecta el formato de salida
+
+**Concepto importante:** Los objetos Date y los timestamps (milisegundos desde epoch) son UNIVERSALES. Representan el mismo momento en tiempo sin importar la zona horaria. La zona horaria solo afecta cómo MOSTRAMOS o FORMATEAMOS ese momento.
 
 ## Testing
 

@@ -1,3 +1,5 @@
+import { getMexicoTimestamp } from './dateTime';
+
 /**
  * Formatea un número como moneda
  */
@@ -16,10 +18,9 @@ export const isValidEmail = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
-import { getMexicoTimestamp } from './dateTime';
-
 /**
- * Generate a unique code using server timestamp in Mexico timezone
+ * Generate a unique code using server timestamp
+ * Note: Timestamp is universal (timezone-agnostic), represents the same moment everywhere
  */
 export const generateCode = (prefix: string = ''): string => {
   const timestamp = getMexicoTimestamp().toString(36);
