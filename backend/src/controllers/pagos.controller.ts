@@ -294,9 +294,9 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
     for (const detalle of pagoData.detallesPagos) {
       await connection.execute(
         `INSERT INTO tblposcrumenwebdetallepagos (
-          idfolioventa, fechadepago, totaldepago, formadepagodetalle,
-          referencia, claveturno, idnegocio, usuarioauditoria, fechamodificacionauditoria
-        ) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, NOW())`,
+          idfolioventa, totaldepago, formadepagodetalle,
+          referencia, claveturno, idnegocio, usuarioauditoria
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           venta.folioventa,
           detalle.totaldepago,
