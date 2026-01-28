@@ -19,7 +19,7 @@ export const isValidEmail = (email: string): boolean => {
 import { getMexicoTimestamp } from './dateTime';
 
 /**
- * Genera un código único usando timestamp del servidor en zona horaria de México
+ * Generate a unique code using server timestamp in Mexico timezone
  */
 export const generateCode = (prefix: string = ''): string => {
   const timestamp = getMexicoTimestamp().toString(36);

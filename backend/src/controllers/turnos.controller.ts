@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
-import { getMexicoTime } from '../utils/dateTime';
+import { getMexicoTimeComponents } from '../utils/dateTime';
 
 // Interface para Turno
 interface Turno extends RowDataPacket {
@@ -21,13 +21,13 @@ interface Turno extends RowDataPacket {
 // Formato: [AAMMDD]+[idnegocio]+[idusuario]+[HHMMSS]
 // Usa hora del servidor en zona horaria de México
 const generarClaveTurno = (idusuario: number, idnegocio: number): string => {
-  const now = getMexicoTime();
-  const aa = String(now.getFullYear()).slice(-2); // Últimos 2 dígitos del año
-  const mm = String(now.getMonth() + 1).padStart(2, '0');
-  const dd = String(now.getDate()).padStart(2, '0');
-  const HH = String(now.getHours()).padStart(2, '0');
-  const MM = String(now.getMinutes()).padStart(2, '0');
-  const SS = String(now.getSeconds()).padStart(2, '0');
+  const time = getMexicoTimeComponents();
+  const aa = time.year.slice(-2); // Últimos 2 dígitos del año
+  const mm = time.month;
+  const dd = time.day;
+  const HH = time.hours;
+  const MM = time.minutes;
+  const SS = time.seconds;
   
   return `${aa}${mm}${dd}${idnegocio}${idusuario}${HH}${MM}${SS}`;
 };
@@ -245,11 +245,8 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
     const idventa = ventaResult.insertId;
 
     // Generar HHMMSS para el folio usando hora del servidor en zona horaria de México
-    const now = getMexicoTime();
-    const HH = String(now.getHours()).padStart(2, '0');
-    const MM = String(now.getMinutes()).padStart(2, '0');
-    const SS = String(now.getSeconds()).padStart(2, '0');
-    const HHMMSS = `${HH}${MM}${SS}`;
+    const time = getMexicoTimeComponents();
+    const HHMMSS = `${time.hours}${time.minutes}${time.seconds}`;
 
     // Actualizar folioventa con formato: claveturno+HHMMSS+[primer letra del tipo de venta]+idventa
     // Para MOVIMIENTO, usamos 'M'
