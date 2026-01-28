@@ -121,7 +121,7 @@ export const LoginPage = () => {
         <div className="login-card">
           <div className="login-header">
             <div className="login-logo">
-              <img src="/logowebposcrumen.svg" alt="Logo Poscrumen" className="logo-icon" />
+              <img src="/logowebposcrumen.svg" alt="Logo Poscrumen" className="logo-image" />
             </div>
             <h1 className="login-title">
               {logoutMessage ? 'Sesión Expirada' : 'Iniciar Sesión'}
@@ -221,7 +221,7 @@ export const LoginPage = () => {
           </form>
 
           <div className="login-footer">
-            <p className="version-text">Ver 26.08.0856</p>
+            <p className="version-text">Ver 26.2701-613p</p>
           </div>
         </div>
       </div>
