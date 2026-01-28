@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import './ModuloPagos.css';
 import { obtenerDescuentos } from '../../services/descuentosService';
+import { procesarPagoSimple, procesarPagoMixto } from '../../services/pagosService';
 import type { Descuento } from '../../types/descuento.types';
 
 interface ModuloPagosProps {
   onClose: () => void;
   totalCuenta: number;
+  ventaId: number | null;
 }
 
-const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
+const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId }) => {
   const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState<'efectivo' | 'transferencia' | 'mixto'>('efectivo');
   const [montoEfectivo, setMontoEfectivo] = useState<string>('');
   const [numeroReferencia, setNumeroReferencia] = useState<string>('');
@@ -23,11 +25,19 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
   
   // Estado para pagos realizados
   const [pagosRealizados, setPagosRealizados] = useState<Array<{ tipo: string; detalles: string }>>([]);
+  
+  // Estado para procesar pago
+  const [procesandoPago, setProcesandoPago] = useState(false);
 
   // Cargar descuentos al montar el componente
   useEffect(() => {
     cargarDescuentos();
-  }, []);
+    
+    // Show warning if no ventaId
+    if (!ventaId) {
+      console.warn('⚠️ ModuloPagos abierto sin ventaId. El usuario debe usar PRODUCIR primero.');
+    }
+  }, [ventaId]);
 
   const cargarDescuentos = async () => {
     try {
@@ -99,56 +109,158 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
     setPagosMixtos([...pagosMixtos, { formaPago: 'Efectivo', importe: '', referencia: '' }]);
   };
 
-  const handleCobrar = () => {
+  const handleCobrar = async () => {
+    if (!ventaId) {
+      alert('Error: No se ha seleccionado una venta para cobrar');
+      return;
+    }
+
+    if (procesandoPago) {
+      return; // Prevent double submission
+    }
+
     console.log('Procesando cobro...');
     
     const totalAPagar = descuentoSeleccionado ? nuevoTotal : totalCuenta;
+    const descuento = descuentoSeleccionado ? calcularDescuento(descuentoSeleccionado) : 0;
     
-    // Validación para efectivo
-    if (metodoPagoSeleccionado === 'efectivo') {
-      if (!montoEfectivo.trim()) {
-        alert('Por favor ingrese el monto recibido');
-        return;
+    setProcesandoPago(true);
+
+    try {
+      // Validación para efectivo
+      if (metodoPagoSeleccionado === 'efectivo') {
+        if (!montoEfectivo.trim()) {
+          alert('Por favor ingrese el monto recibido');
+          setProcesandoPago(false);
+          return;
+        }
+        
+        const montoRecibido = parseFloat(montoEfectivo);
+        
+        if (isNaN(montoRecibido) || montoRecibido < 0) {
+          alert('Por favor ingrese un monto válido');
+          setProcesandoPago(false);
+          return;
+        }
+        
+        if (montoRecibido < totalAPagar) {
+          alert('El monto recibido no puede ser menor al total de la cuenta');
+          setProcesandoPago(false);
+          return;
+        }
+        
+        // Process simple payment - EFECTIVO
+        const resultado = await procesarPagoSimple({
+          idventa: ventaId,
+          formadepago: 'EFECTIVO',
+          importedepago: totalAPagar,
+          montorecibido: montoRecibido,
+          descuento
+        });
+
+        if (!resultado.success) {
+          alert(resultado.message || 'Error al procesar el pago');
+          setProcesandoPago(false);
+          return;
+        }
+
+        const cambio = resultado.data?.cambio || 0;
+        const detallePago = cambio > 0 
+          ? `Cobro en EFECTIVO, CAMBIO: $${cambio.toFixed(2)}`
+          : `Cobro en EFECTIVO`;
+        
+        alert(`Pago procesado exitosamente${cambio > 0 ? `\nCAMBIO: $${cambio.toFixed(2)}` : ''}`);
+        
+        // Close modal and return to dashboard
+        onClose();
+      } 
+      // Validación para transferencia
+      else if (metodoPagoSeleccionado === 'transferencia') {
+        if (!numeroReferencia.trim()) {
+          alert('Por favor ingrese el número de referencia');
+          setProcesandoPago(false);
+          return;
+        }
+        
+        // Process simple payment - TRANSFERENCIA
+        const resultado = await procesarPagoSimple({
+          idventa: ventaId,
+          formadepago: 'TRANSFERENCIA',
+          importedepago: totalAPagar,
+          referencia: numeroReferencia,
+          descuento
+        });
+
+        if (!resultado.success) {
+          alert(resultado.message || 'Error al procesar el pago');
+          setProcesandoPago(false);
+          return;
+        }
+
+        alert('Pago procesado exitosamente');
+        
+        // Close modal and return to dashboard
+        onClose();
       }
-      
-      const montoRecibido = parseFloat(montoEfectivo);
-      
-      if (isNaN(montoRecibido) || montoRecibido < 0) {
-        alert('Por favor ingrese un monto válido');
-        return;
+      // Para mixto
+      else {
+        // Validate mixed payments
+        if (pagosMixtos.length === 0) {
+          alert('Debe agregar al menos una forma de pago');
+          setProcesandoPago(false);
+          return;
+        }
+
+        // Validate all payments have required fields
+        for (const pago of pagosMixtos) {
+          if (!pago.formaPago || pago.formaPago === '') {
+            alert('Todas las formas de pago deben estar seleccionadas');
+            setProcesandoPago(false);
+            return;
+          }
+
+          if (!pago.importe || pago.importe === '' || parseFloat(pago.importe) <= 0) {
+            alert('Todos los importes deben ser mayores a cero');
+            setProcesandoPago(false);
+            return;
+          }
+
+          if (pago.formaPago === 'Transferencia' && !pago.referencia) {
+            alert('Debe ingresar el número de referencia para pagos con transferencia');
+            setProcesandoPago(false);
+            return;
+          }
+        }
+
+        // Map form data to API format
+        const detallesPagos = pagosMixtos.map(pago => ({
+          formadepagodetalle: pago.formaPago.toUpperCase() as 'EFECTIVO' | 'TARJETA' | 'TRANSFERENCIA',
+          totaldepago: parseFloat(pago.importe),
+          referencia: pago.referencia || null
+        }));
+
+        // Process mixed payment
+        const resultado = await procesarPagoMixto({
+          idventa: ventaId,
+          detallesPagos,
+          descuento
+        });
+
+        if (!resultado.success) {
+          alert(resultado.message || 'Error al procesar el pago mixto');
+          setProcesandoPago(false);
+          return;
+        }
+
+        alert(resultado.message || 'Pago procesado exitosamente');
+        
+        // Close modal and return to dashboard
+        onClose();
       }
-      
-      if (montoRecibido < totalAPagar) {
-        alert('El monto recibido no puede ser menor al total de la cuenta');
-        return;
-      }
-      
-      // Agregar pago realizado con detalle de efectivo
-      const cambio = montoRecibido - totalAPagar;
-      const detallePago = cambio > 0 
-        ? `Cobro en EFECTIVO, CAMBIO: $${cambio.toFixed(2)}`
-        : `Cobro en EFECTIVO`;
-      
-      setPagosRealizados([...pagosRealizados, { tipo: 'Efectivo', detalles: detallePago }]);
-      setMontoEfectivo(''); // Reset input after successful payment
-      alert('Cobro procesado exitosamente');
-    } 
-    // Validación para transferencia
-    else if (metodoPagoSeleccionado === 'transferencia') {
-      if (!numeroReferencia.trim()) {
-        alert('Por favor ingrese el número de referencia');
-        return;
-      }
-      
-      // Agregar pago realizado con detalle de transferencia
-      const detallePago = `Cobro con transferencia Ref. ${numeroReferencia}`;
-      setPagosRealizados([...pagosRealizados, { tipo: 'Transferencia', detalles: detallePago }]);
-      setNumeroReferencia(''); // Reset input after successful payment
-      alert('Cobro procesado exitosamente');
-    }
-    // Para mixto (mantener lógica existente)
-    else {
-      alert('Cobro procesado exitosamente');
+    } catch (error) {
+      console.error('Error al procesar pago:', error);
+      alert('Error al procesar el pago. Por favor intente nuevamente.');
+      setProcesandoPago(false);
     }
   };
 
@@ -164,6 +276,21 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
                 <span className="pagos-label">Total de Cuenta</span>
                 <span className="pagos-monto-grande">${totalCuenta.toFixed(2)}</span>
               </div>
+              
+              {/* Warning if no ventaId */}
+              {!ventaId && (
+                <div style={{ 
+                  backgroundColor: '#fff3cd', 
+                  color: '#856404', 
+                  padding: '10px', 
+                  borderRadius: '4px', 
+                  marginTop: '10px',
+                  fontSize: '14px',
+                  textAlign: 'center'
+                }}>
+                  ⚠️ Debe usar el botón PRODUCIR antes de procesar el cobro
+                </div>
+              )}
             </div>
 
             {/* Sección Descuentos */}
@@ -243,8 +370,12 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta }) => {
 
             {/* Botón de acción - solo COBRAR */}
             <div className="pagos-botones-accion">
-              <button className="btn-cobrar" onClick={handleCobrar}>
-                COBRAR
+              <button 
+                className="btn-cobrar" 
+                onClick={handleCobrar}
+                disabled={procesandoPago || !ventaId}
+              >
+                {procesandoPago ? 'PROCESANDO...' : 'COBRAR'}
               </button>
             </div>
           </div>

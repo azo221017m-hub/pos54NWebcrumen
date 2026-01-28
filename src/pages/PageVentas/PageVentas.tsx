@@ -1568,6 +1568,7 @@ const PageVentas: React.FC = () => {
             navigate('/dashboard');
           }}
           totalCuenta={calcularTotal()}
+          ventaId={currentVentaId}
         />
       )}
     </div>

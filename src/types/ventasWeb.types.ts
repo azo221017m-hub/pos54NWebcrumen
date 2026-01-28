@@ -27,6 +27,7 @@ export interface VentaWeb {
   telefonodeentrega: string | null;
   propinadeventa: number;
   formadepago: FormaDePago;
+  importedepago: number;
   estatusdepago: EstatusDePago;
   tiempototaldeventa: number | null;
   claveturno?: string | null;
@@ -102,4 +103,41 @@ export interface DetalleVentaWebUpdate {
 
 export interface VentaWebWithDetails extends VentaWeb {
   detalles: DetalleVentaWeb[];
+}
+
+// Tipos para tblposcrumenwebdetallepagos
+export type FormaDePagoDetalle = 'EFECTIVO' | 'TARJETA' | 'TRANSFERENCIA';
+
+export interface DetallePago {
+  iddetallepagos: number;
+  idfolioventa: string;
+  fechadepago: Date | string;
+  totaldepago: number;
+  formadepagodetalle: FormaDePagoDetalle;
+  referencia: string | null;
+  claveturno: string | null;
+  idnegocio: number;
+  usuarioauditoria: string;
+  fechamodificacionauditoria: Date | string;
+}
+
+export interface DetallePagoCreate {
+  formadepagodetalle: FormaDePagoDetalle;
+  totaldepago: number;
+  referencia?: string | null;
+}
+
+export interface PagoSimpleRequest {
+  idventa: number;
+  formadepago: 'EFECTIVO' | 'TRANSFERENCIA';
+  importedepago: number;
+  montorecibido?: number;
+  referencia?: string;
+  descuento?: number;
+}
+
+export interface PagoMixtoRequest {
+  idventa: number;
+  detallesPagos: DetallePagoCreate[];
+  descuento?: number;
 }
