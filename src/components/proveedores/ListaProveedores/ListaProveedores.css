@@ -1,9 +1,10 @@
 /* Lista de Proveedores */
 .lista-proveedores {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(11.25rem, 1fr));  /* 180px */
   gap: 0.75rem;
-  max-height: calc(100vh - 280px);
+  /* Adjusted height to better fit viewport - accounts for header and controls */
+  max-height: calc(100vh - 17.5rem);  /* ~280px */
   overflow-y: auto;
   padding: 0.25rem;
 }

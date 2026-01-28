@@ -1,10 +1,11 @@
 /* Lista de Negocios */
 .lista-negocios {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));  /* 160px */
   gap: 0.5rem;
   padding: 0.25rem 0;
-  max-height: calc(100vh - 240px);
+  /* Adjusted height to better fit viewport - accounts for header and controls */
+  max-height: calc(100vh - 15rem);  /* ~240px */
   overflow-y: auto;
   overflow-x: hidden;
 }
