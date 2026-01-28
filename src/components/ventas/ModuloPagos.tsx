@@ -32,7 +32,12 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   // Cargar descuentos al montar el componente
   useEffect(() => {
     cargarDescuentos();
-  }, []);
+    
+    // Show warning if no ventaId
+    if (!ventaId) {
+      console.warn('⚠️ ModuloPagos abierto sin ventaId. El usuario debe usar PRODUCIR primero.');
+    }
+  }, [ventaId]);
 
   const cargarDescuentos = async () => {
     try {
@@ -271,6 +276,21 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
                 <span className="pagos-label">Total de Cuenta</span>
                 <span className="pagos-monto-grande">${totalCuenta.toFixed(2)}</span>
               </div>
+              
+              {/* Warning if no ventaId */}
+              {!ventaId && (
+                <div style={{ 
+                  backgroundColor: '#fff3cd', 
+                  color: '#856404', 
+                  padding: '10px', 
+                  borderRadius: '4px', 
+                  marginTop: '10px',
+                  fontSize: '14px',
+                  textAlign: 'center'
+                }}>
+                  ⚠️ Debe usar el botón PRODUCIR antes de procesar el cobro
+                </div>
+              )}
             </div>
 
             {/* Sección Descuentos */}
