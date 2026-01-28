@@ -29,6 +29,7 @@ import productosWebRoutes from './routes/productosWeb.routes';
 import proveedoresRoutes from './routes/proveedores.routes';
 import ventasWebRoutes from './routes/ventasWeb.routes';
 import turnosRoutes from './routes/turnos.routes';
+import pagosRoutes from './routes/pagos.routes';
 
 dotenv.config();
 
@@ -133,6 +134,7 @@ app.use('/api/productos-web', productosWebRoutes);
 app.use('/api/proveedores', proveedoresRoutes);
 app.use('/api/ventas-web', ventasWebRoutes);
 app.use('/api/turnos', turnosRoutes);
+app.use('/api/pagos', pagosRoutes);
 
 // Manejo de rutas no encontradas (404)
 app.use((_req: Request, res: Response) => {
