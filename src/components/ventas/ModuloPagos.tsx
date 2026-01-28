@@ -23,9 +23,6 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   const [descuentoSeleccionado, setDescuentoSeleccionado] = useState<Descuento | null>(null);
   const [cargandoDescuentos, setCargandoDescuentos] = useState(false);
   
-  // Estado para pagos realizados
-  const [pagosRealizados, setPagosRealizados] = useState<Array<{ tipo: string; detalles: string }>>([]);
-  
   // Estado para procesar pago
   const [procesandoPago, setProcesandoPago] = useState(false);
 
@@ -165,9 +162,6 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
         }
 
         const cambio = resultado.data?.cambio || 0;
-        const detallePago = cambio > 0 
-          ? `Cobro en EFECTIVO, CAMBIO: $${cambio.toFixed(2)}`
-          : `Cobro en EFECTIVO`;
         
         alert(`Pago procesado exitosamente${cambio > 0 ? `\nCAMBIO: $${cambio.toFixed(2)}` : ''}`);
         
@@ -353,18 +347,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
             <div className="pagos-realizados-area">
               <h3>Pagos realizados</h3>
               <div className="pagos-realizados-contenido">
-                {pagosRealizados.length === 0 ? (
-                  <p className="pagos-vacio">No hay pagos registrados</p>
-                ) : (
-                  <div className="pagos-realizados-lista">
-                    {pagosRealizados.map((pago, index) => (
-                      <div key={index} className="pago-realizado-item">
-                        <div className="pago-tipo">{pago.tipo}</div>
-                        <div className="pago-detalles">{pago.detalles}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <p className="pagos-vacio">No hay pagos registrados</p>
               </div>
             </div>
 
