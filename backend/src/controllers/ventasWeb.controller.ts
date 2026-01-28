@@ -10,6 +10,7 @@ import type {
   VentaWebWithDetails,
   FormaDePago
 } from '../types/ventasWeb.types';
+import { getMexicoTime } from '../utils/dateTime';
 
 // Constantes para validación
 const FORMAS_DE_PAGO_VALIDAS: FormaDePago[] = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'MIXTO', 'sinFP'];
@@ -244,8 +245,8 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
 
     const ventaId = ventaResult.insertId;
 
-    // Generar HHMMSS para el folio
-    const now = new Date();
+    // Generar HHMMSS para el folio usando hora del servidor en zona horaria de México
+    const now = getMexicoTime();
     const HH = String(now.getHours()).padStart(2, '0');
     const MM = String(now.getMinutes()).padStart(2, '0');
     const SS = String(now.getSeconds()).padStart(2, '0');

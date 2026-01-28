@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
+import { getMexicoTime } from '../utils/dateTime';
 
 // Interface para Turno
 interface Turno extends RowDataPacket {
@@ -18,8 +19,9 @@ interface Turno extends RowDataPacket {
 
 // Función auxiliar para generar claveturno
 // Formato: [AAMMDD]+[idnegocio]+[idusuario]+[HHMMSS]
+// Usa hora del servidor en zona horaria de México
 const generarClaveTurno = (idusuario: number, idnegocio: number): string => {
-  const now = new Date();
+  const now = getMexicoTime();
   const aa = String(now.getFullYear()).slice(-2); // Últimos 2 dígitos del año
   const mm = String(now.getMonth() + 1).padStart(2, '0');
   const dd = String(now.getDate()).padStart(2, '0');
@@ -242,8 +244,8 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
 
     const idventa = ventaResult.insertId;
 
-    // Generar HHMMSS para el folio
-    const now = new Date();
+    // Generar HHMMSS para el folio usando hora del servidor en zona horaria de México
+    const now = getMexicoTime();
     const HH = String(now.getHours()).padStart(2, '0');
     const MM = String(now.getMinutes()).padStart(2, '0');
     const SS = String(now.getSeconds()).padStart(2, '0');

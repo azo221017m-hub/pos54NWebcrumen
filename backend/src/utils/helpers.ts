@@ -16,11 +16,13 @@ export const isValidEmail = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
+import { getMexicoTimestamp } from './dateTime';
+
 /**
- * Genera un código único
+ * Genera un código único usando timestamp del servidor en zona horaria de México
  */
 export const generateCode = (prefix: string = ''): string => {
-  const timestamp = Date.now().toString(36);
+  const timestamp = getMexicoTimestamp().toString(36);
   const random = Math.random().toString(36).substring(2, 7);
   return `${prefix}${timestamp}${random}`.toUpperCase();
 };

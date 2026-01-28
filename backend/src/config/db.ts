@@ -1,5 +1,6 @@
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
+import { MEXICO_TIMEZONE } from '../utils/dateTime';
 
 dotenv.config();
 
@@ -15,7 +16,8 @@ const dbConfig = {
   connectionLimit: 20, // Aumentado de 10 a 20 para mejor rendimiento
   queueLimit: 0,
   enableKeepAlive: true, // Mantener conexiones vivas
-  keepAliveInitialDelay: 0
+  keepAliveInitialDelay: 0,
+  timezone: MEXICO_TIMEZONE // Configurar zona horaria de México
 };
 
 // Pool de conexiones
