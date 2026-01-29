@@ -718,8 +718,8 @@ const PageVentas: React.FC = () => {
           // Update local state
           setCurrentEstadoDeVenta('ORDENADO');
           
-          // Mark all items in comanda as ORDENADO
-          setComanda(comanda.map(item => ({ ...item, estadodetalle: ESTADO_ORDENADO })));
+          // Mark all items in comanda as ORDENADO using functional update
+          setComanda(prevComanda => prevComanda.map(item => ({ ...item, estadodetalle: ESTADO_ORDENADO })));
           
           navigate('/dashboard');
           return;
