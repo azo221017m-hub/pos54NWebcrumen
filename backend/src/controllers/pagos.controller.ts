@@ -281,18 +281,18 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
       );
     }
 
-    // Now get the first payment timestamp (after inserting current payments)
-    const [primeraFecha] = await connection.execute<RowDataPacket[]>(
-      `SELECT MIN(fechadepago) as primerPagoFecha
+    // Now get the last payment timestamp (after inserting current payments)
+    const [ultimaFecha] = await connection.execute<RowDataPacket[]>(
+      `SELECT MAX(fechadepago) as ultimoPagoFecha
        FROM tblposcrumenwebdetallepagos 
        WHERE idfolioventa = ? AND idnegocio = ?`,
       [venta.folioventa, idnegocio]
     );
 
-    const primerPagoFecha = primeraFecha[0]?.primerPagoFecha;
+    const ultimoPagoFecha = ultimaFecha[0]?.ultimoPagoFecha;
 
     // Update the sale with payment information
-    // For MIXTO payments, tiempototaldeventa should be set to the first payment timestamp
+    // For MIXTO payments, tiempototaldeventa should be set to the last payment timestamp when fully paid
     await connection.execute(
       `UPDATE tblposcrumenwebventas 
        SET estadodeventa = ?,
@@ -316,7 +316,7 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
         totalPagadoAcumulado,
         estatusdepago,
         estadodeventa,
-        primerPagoFecha,
+        ultimoPagoFecha,
         usuarioauditoria,
         pagoData.idventa,
         idnegocio
