@@ -134,20 +134,24 @@ export const DashboardPage = () => {
       );
       setVentasSolicitadas(ventasFiltradas);
       
-      // Fetch registered payments for MIXTO sales
-      const pagosMap: Record<string, number> = {};
-      for (const venta of ventasFiltradas) {
-        if (venta.formadepago === 'MIXTO') {
-          try {
-            const detallesPagos = await obtenerDetallesPagos(venta.folioventa);
-            const sumaPagos = detallesPagos.reduce((sum, pago) => sum + Number(pago.totaldepago || 0), 0);
-            pagosMap[venta.folioventa] = sumaPagos;
-          } catch (error) {
-            console.error(`Error al cargar pagos para folio ${venta.folioventa}:`, error);
-            pagosMap[venta.folioventa] = 0;
-          }
+      // Fetch registered payments for MIXTO sales in parallel
+      const ventasMixto = ventasFiltradas.filter(v => v.formadepago === 'MIXTO');
+      const pagosPromises = ventasMixto.map(async (venta) => {
+        try {
+          const detallesPagos = await obtenerDetallesPagos(venta.folioventa);
+          const sumaPagos = detallesPagos.reduce((sum, pago) => sum + Number(pago.totaldepago || 0), 0);
+          return { folioventa: venta.folioventa, sumaPagos };
+        } catch (error) {
+          console.error(`Error al cargar pagos para folio ${venta.folioventa}:`, error);
+          return { folioventa: venta.folioventa, sumaPagos: 0 };
         }
-      }
+      });
+      
+      const pagosResults = await Promise.all(pagosPromises);
+      const pagosMap: Record<string, number> = {};
+      pagosResults.forEach(result => {
+        pagosMap[result.folioventa] = result.sumaPagos;
+      });
       setPagosRegistrados(pagosMap);
     } catch (error) {
       console.error('Error al cargar comandas del día:', error);
