@@ -105,6 +105,7 @@ const PageVentas: React.FC = () => {
   // Current venta state (when loading from dashboard or after creating with ORDENADO status)
   const [currentVentaId, setCurrentVentaId] = useState<number | null>(null);
   const [currentFolioVenta, setCurrentFolioVenta] = useState<string | null>(null);
+  const [currentFormaDePago, setCurrentFormaDePago] = useState<string | null>(null);
 
   // Módulo de pagos state
   const [showModuloPagos, setShowModuloPagos] = useState(false);
@@ -235,6 +236,7 @@ const PageVentas: React.FC = () => {
       // Store the current venta ID and folio for adding more items
       setCurrentVentaId(ventaToLoad.idventa);
       setCurrentFolioVenta(ventaToLoad.folioventa);
+      setCurrentFormaDePago(ventaToLoad.formadepago);
 
       // Load products into comanda
       const itemsComanda: ItemComanda[] = ventaToLoad.detalles.map(detalle => {
@@ -660,6 +662,7 @@ const PageVentas: React.FC = () => {
         if (resultado.success && resultado.idventa && resultado.folioventa) {
           setCurrentVentaId(resultado.idventa);
           setCurrentFolioVenta(resultado.folioventa);
+          setCurrentFormaDePago('sinFP'); // Store the formadepago value
         }
       }
 
@@ -1569,6 +1572,7 @@ const PageVentas: React.FC = () => {
           totalCuenta={calcularTotal()}
           ventaId={currentVentaId}
           folioventa={currentFolioVenta || undefined}
+          formadepago={currentFormaDePago || undefined}
         />
       )}
     </div>
