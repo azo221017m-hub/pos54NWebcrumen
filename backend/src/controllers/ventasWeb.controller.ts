@@ -814,3 +814,73 @@ export const addDetallesToVenta = async (req: AuthRequest, res: Response): Promi
     connection.release();
   }
 };
+
+// Obtener resumen de ventas del turno actual abierto
+export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
+    // Obtener el turno abierto actual del negocio
+    const [turnoRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT claveturno, metaturno FROM tblposcrumenwebturnos 
+       WHERE idnegocio = ? AND estatusturno = 'abierto'
+       LIMIT 1`,
+      [idnegocio]
+    );
+
+    if (turnoRows.length === 0) {
+      // No hay turno abierto, retornar valores en 0
+      res.json({
+        success: true,
+        data: {
+          totalCobrado: 0,
+          totalOrdenado: 0,
+          metaTurno: 0,
+          hasTurnoAbierto: false
+        }
+      });
+      return;
+    }
+
+    const turnoActual = turnoRows[0];
+    const claveturno = turnoActual.claveturno;
+    const metaturno = Number(turnoActual.metaturno) || 0;
+
+    // Use single query with conditional aggregation for better performance
+    const [salesRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT 
+        COALESCE(SUM(CASE WHEN estadodeventa = 'COBRADO' THEN importedepago ELSE 0 END), 0) as totalCobrado,
+        COALESCE(SUM(CASE WHEN estadodeventa = 'ORDENADO' THEN totaldeventa ELSE 0 END), 0) as totalOrdenado
+       FROM tblposcrumenwebventas 
+       WHERE claveturno = ? AND idnegocio = ?`,
+      [claveturno, idnegocio]
+    );
+
+    const totalCobrado = Number(salesRows[0]?.totalCobrado) || 0;
+    const totalOrdenado = Number(salesRows[0]?.totalOrdenado) || 0;
+
+    res.json({
+      success: true,
+      data: {
+        totalCobrado,
+        totalOrdenado,
+        metaTurno: metaturno,
+        hasTurnoAbierto: true
+      }
+    });
+  } catch (error) {
+    console.error('Error al obtener resumen de ventas:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener resumen de ventas'
+    });
+  }
+};
