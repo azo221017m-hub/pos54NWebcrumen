@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import './ModuloPagos.css';
 import { obtenerDescuentos } from '../../services/descuentosService';
-import { procesarPagoSimple, procesarPagoMixto } from '../../services/pagosService';
+import { procesarPagoSimple, procesarPagoMixto, obtenerDetallesPagos } from '../../services/pagosService';
 import type { Descuento } from '../../types/descuento.types';
+import type { DetallePago } from '../../types/ventasWeb.types';
 
 interface ModuloPagosProps {
   onClose: () => void;
   totalCuenta: number;
   ventaId: number | null;
+  folioventa?: string;
 }
 
-const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId }) => {
+const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId, folioventa }) => {
   const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState<'efectivo' | 'transferencia' | 'mixto'>('efectivo');
   const [montoEfectivo, setMontoEfectivo] = useState<string>('');
   const [numeroReferencia, setNumeroReferencia] = useState<string>('');
@@ -26,6 +28,10 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   // Estado para procesar pago
   const [procesandoPago, setProcesandoPago] = useState(false);
 
+  // Estado para pagos registrados
+  const [pagosRegistrados, setPagosRegistrados] = useState<DetallePago[]>([]);
+  const [cargandoPagosRegistrados, setCargandoPagosRegistrados] = useState(false);
+
   // Cargar descuentos al montar el componente
   useEffect(() => {
     cargarDescuentos();
@@ -35,6 +41,28 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
       console.warn('⚠️ ModuloPagos abierto sin ventaId. El usuario debe usar PRODUCIR primero.');
     }
   }, [ventaId]);
+
+  // Cargar pagos registrados cuando cambia el método de pago a MIXTO o cuando cambia folioventa
+  useEffect(() => {
+    if (metodoPagoSeleccionado === 'mixto' && folioventa) {
+      cargarPagosRegistrados();
+    }
+  }, [metodoPagoSeleccionado, folioventa]);
+
+  const cargarPagosRegistrados = async () => {
+    if (!folioventa) return;
+    
+    try {
+      setCargandoPagosRegistrados(true);
+      const pagos = await obtenerDetallesPagos(folioventa);
+      setPagosRegistrados(pagos);
+    } catch (error) {
+      console.error('Error al cargar pagos registrados:', error);
+      setPagosRegistrados([]);
+    } finally {
+      setCargandoPagosRegistrados(false);
+    }
+  };
 
   const cargarDescuentos = async () => {
     try {
@@ -87,6 +115,12 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   const montoDescuento = descuentoSeleccionado ? calcularDescuento(descuentoSeleccionado) : 0;
   // Prevent negative totals - discount cannot exceed the total amount
   const nuevoTotal = Math.max(0, totalCuenta - montoDescuento);
+
+  // Calculate sum of registered payments for MIXTO
+  const sumaPagosRegistrados = pagosRegistrados.reduce((sum, pago) => sum + Number(pago.totaldepago || 0), 0);
+  
+  // Calculate amount to charge for MIXTO (nuevo total - suma de pagos registrados)
+  const montoACobrar = metodoPagoSeleccionado === 'mixto' ? Math.max(0, nuevoTotal - sumaPagosRegistrados) : nuevoTotal;
 
   const handleSeleccionarDescuento = (id_descuento: string) => {
     if (id_descuento === '') {
@@ -347,7 +381,25 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
             <div className="pagos-realizados-area">
               <h3>Pagos realizados</h3>
               <div className="pagos-realizados-contenido">
-                <p className="pagos-vacio">No hay pagos registrados</p>
+                {metodoPagoSeleccionado === 'mixto' && pagosRegistrados.length > 0 ? (
+                  <div className="pagos-registrados-lista">
+                    {pagosRegistrados.map((pago, index) => (
+                      <div key={index} className="pago-registrado-item">
+                        <span className="pago-forma">{pago.formadepagodetalle}</span>
+                        <span className="pago-monto">${Number(pago.totaldepago).toFixed(2)}</span>
+                        {pago.referencia && (
+                          <span className="pago-referencia">Ref: {pago.referencia}</span>
+                        )}
+                      </div>
+                    ))}
+                    <div className="pago-registrado-total">
+                      <span>Total Pagado:</span>
+                      <span className="pago-total-monto">${sumaPagosRegistrados.toFixed(2)}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="pagos-vacio">No hay pagos registrados</p>
+                )}
               </div>
             </div>
 
@@ -419,6 +471,20 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
             {metodoPagoSeleccionado === 'mixto' && (
               <div className="pagos-panel-mixto">
                 <h4>Pagos realizados MIXTO</h4>
+                
+                {/* Show amount to charge */}
+                <div className="pagos-monto-cobrar-info">
+                  <label className="pagos-label-monto">Monto a cobrar</label>
+                  <div className="pagos-monto-info">
+                    ${montoACobrar.toFixed(2)}
+                  </div>
+                  {pagosRegistrados.length > 0 && (
+                    <div className="pagos-info-detalle">
+                      Total: ${nuevoTotal.toFixed(2)} - Pagado: ${sumaPagosRegistrados.toFixed(2)}
+                    </div>
+                  )}
+                </div>
+
                 <div className="pagos-tabla-mixto">
                   <table>
                     <thead>

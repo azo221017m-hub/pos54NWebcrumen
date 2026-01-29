@@ -104,8 +104,7 @@ const PageVentas: React.FC = () => {
 
   // Current venta state (when loading from dashboard or after creating with ORDENADO status)
   const [currentVentaId, setCurrentVentaId] = useState<number | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_currentFolioVenta, setCurrentFolioVenta] = useState<string | null>(null);
+  const [currentFolioVenta, setCurrentFolioVenta] = useState<string | null>(null);
 
   // Módulo de pagos state
   const [showModuloPagos, setShowModuloPagos] = useState(false);
@@ -1569,6 +1568,7 @@ const PageVentas: React.FC = () => {
           }}
           totalCuenta={calcularTotal()}
           ventaId={currentVentaId}
+          folioventa={currentFolioVenta || undefined}
         />
       )}
     </div>

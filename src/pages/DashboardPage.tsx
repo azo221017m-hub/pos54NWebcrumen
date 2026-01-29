@@ -908,23 +908,25 @@ export const DashboardPage = () => {
                         <strong>{venta.detalles?.reduce((sum, d) => sum + Number(d.cantidad), 0) || 0}</strong> producto(s)
                       </p>
                       
-                      {/* Status selector */}
-                      <div className="venta-status-selector">
-                        <label htmlFor={`status-${venta.idventa}`}>Estado:</label>
-                        <select
-                          id={`status-${venta.idventa}`}
-                          value={venta.estadodeventa}
-                          onChange={(e) => handleStatusChange(venta.idventa, e.target.value as EstadoDeVenta)}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <option value="SOLICITADO">Solicitado</option>
-                          <option value="PREPARANDO">Preparando</option>
-                          <option value="EN_CAMINO">En Camino</option>
-                          <option value="ENTREGADO">Entregado</option>
-                          <option value="CANCELADO">Cancelado</option>
-                          <option value="DEVUELTO">Devuelto</option>
-                        </select>
-                      </div>
+                      {/* Status selector - only show for ONLINE sales */}
+                      {venta.tipodeventa === 'ONLINE' && (
+                        <div className="venta-status-selector">
+                          <label htmlFor={`status-${venta.idventa}`}>Estado:</label>
+                          <select
+                            id={`status-${venta.idventa}`}
+                            value={venta.estadodeventa}
+                            onChange={(e) => handleStatusChange(venta.idventa, e.target.value as EstadoDeVenta)}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <option value="SOLICITADO">Solicitado</option>
+                            <option value="PREPARANDO">Preparando</option>
+                            <option value="EN_CAMINO">En Camino</option>
+                            <option value="ENTREGADO">Entregado</option>
+                            <option value="CANCELADO">Cancelado</option>
+                            <option value="DEVUELTO">Devuelto</option>
+                          </select>
+                        </div>
+                      )}
                     </div>
                     <div className="venta-card-footer">
                       <span className="venta-total">${(Number(venta.totaldeventa) || 0).toFixed(2)}</span>
