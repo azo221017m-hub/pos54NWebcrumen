@@ -24,9 +24,11 @@ async function applyReferenciaMigration() {
     console.log('⚠️  referencia column NOT FOUND - applying migration...');
     
     // SQL migration statements
+    // Note: We don't use IF NOT EXISTS because it's not supported in older MySQL versions
+    // and we already checked for column existence above
     const statements = [
       `ALTER TABLE tblposcrumenwebdetallepagos 
-       ADD COLUMN IF NOT EXISTS referencia VARCHAR(255) NULL 
+       ADD COLUMN referencia VARCHAR(255) NULL 
        AFTER formadepagodetalle`
     ];
     
@@ -41,13 +43,8 @@ async function applyReferenciaMigration() {
         await pool.execute(statement);
         console.log(`✅ Statement ${i + 1} executed successfully`);
       } catch (error: any) {
-        // Check if error is about field already existing
-        if (error.code === 'ER_DUP_FIELDNAME' || error.message?.includes('Duplicate column name')) {
-          console.log(`⚠️  Statement ${i + 1}: Column already exists, skipping...`);
-        } else {
-          console.error(`❌ Error executing statement ${i + 1}:`, error.message);
-          throw error;
-        }
+        console.error(`❌ Error executing statement ${i + 1}:`, error.message);
+        throw error;
       }
     }
     

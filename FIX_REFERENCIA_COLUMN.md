@@ -33,13 +33,17 @@ Este script:
 - Si no existe, la agrega a la tabla
 - Valida que la migración se aplicó correctamente
 
-#### Opción 2: Ejecutar el SQL directamente
+#### Option 2: Ejecutar el SQL directamente
 
 Conectarse a la base de datos MySQL y ejecutar:
 
 ```sql
+-- First verify the column doesn't exist
+DESCRIBE tblposcrumenwebdetallepagos;
+
+-- Then add the column (only if it doesn't exist)
 ALTER TABLE tblposcrumenwebdetallepagos 
-ADD COLUMN IF NOT EXISTS referencia VARCHAR(255) NULL 
+ADD COLUMN referencia VARCHAR(255) NULL 
 AFTER formadepagodetalle;
 ```
 

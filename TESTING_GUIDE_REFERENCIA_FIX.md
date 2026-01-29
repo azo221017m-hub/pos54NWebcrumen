@@ -145,8 +145,12 @@ There are two options:
 
 #### Option A: Run SQL Directly
 ```sql
+-- First verify the column doesn't exist
+DESCRIBE tblposcrumenwebdetallepagos;
+
+-- Then add the column (only if it doesn't exist in the output above)
 ALTER TABLE tblposcrumenwebdetallepagos 
-ADD COLUMN IF NOT EXISTS referencia VARCHAR(255) NULL 
+ADD COLUMN referencia VARCHAR(255) NULL 
 AFTER formadepagodetalle;
 ```
 
@@ -172,11 +176,16 @@ DROP COLUMN IF EXISTS referencia;
 ## Common Issues and Solutions
 
 ### Issue: "Table 'tblposcrumenwebdetallepagos' doesn't exist"
-**Solution**: The payment details table needs to be created first. Run:
+**Solution**: The payment details table needs to be created first. Run the table creation script:
 ```bash
+# First, create the table if it doesn't exist
+# This should already be done in production, but if not, run:
+cd backend
+ts-node src/scripts/applyPaymentMigration.ts
+
+# Then run the referencia column migration:
 npm run db:fix-referencia
 ```
-This will create the table if it doesn't exist.
 
 ### Issue: "Access denied" when running migration
 **Solution**: Check that your `.env` file has the correct database credentials.
