@@ -242,7 +242,7 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
 
     // Get existing payments for this sale
     const [pagosPrevios] = await connection.execute<RowDataPacket[]>(
-      `SELECT SUM(totaldepago) as totalPagadoPrevio, MIN(fechadepago) as primerPagoFecha
+      `SELECT SUM(totaldepago) as totalPagadoPrevio
        FROM tblposcrumenwebdetallepagos 
        WHERE idfolioventa = ? AND idnegocio = ?`,
       [venta.folioventa, idnegocio]
@@ -250,7 +250,6 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
 
     const totalPagadoPrevio = Number(pagosPrevios[0]?.totalPagadoPrevio || 0);
     const totalPagadoAcumulado = totalPagadoPrevio + totalPagado;
-    const primerPagoFecha = pagosPrevios[0]?.primerPagoFecha;
 
     // Determine payment status
     let estatusdepago: 'PENDIENTE' | 'PAGADO' | 'PARCIAL' = 'PENDIENTE';
@@ -262,6 +261,35 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
     } else if (totalPagadoAcumulado > 0) {
       estatusdepago = 'PARCIAL';
     }
+
+    // Insert payment details into tblposcrumenwebdetallepagos FIRST
+    for (const detalle of pagoData.detallesPagos) {
+      await connection.execute(
+        `INSERT INTO tblposcrumenwebdetallepagos (
+          idfolioventa, totaldepago, formadepagodetalle,
+          referencia, claveturno, idnegocio, usuarioauditoria
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          venta.folioventa,
+          detalle.totaldepago,
+          detalle.formadepagodetalle,
+          detalle.referencia || null,
+          venta.claveturno,
+          idnegocio,
+          usuarioauditoria
+        ]
+      );
+    }
+
+    // Now get the first payment timestamp (after inserting current payments)
+    const [primeraFecha] = await connection.execute<RowDataPacket[]>(
+      `SELECT MIN(fechadepago) as primerPagoFecha
+       FROM tblposcrumenwebdetallepagos 
+       WHERE idfolioventa = ? AND idnegocio = ?`,
+      [venta.folioventa, idnegocio]
+    );
+
+    const primerPagoFecha = primeraFecha[0]?.primerPagoFecha;
 
     // Update the sale with payment information
     // For MIXTO payments, tiempototaldeventa should be set to the first payment timestamp
@@ -275,7 +303,7 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
            importedepago = ?,
            estatusdepago = ?,
            tiempototaldeventa = IF(? = 'COBRADO' AND tiempototaldeventa IS NULL, 
-                                   COALESCE(?, NOW()), 
+                                   ?, 
                                    tiempototaldeventa),
            usuarioauditoria = ?,
            fechamodificacionauditoria = NOW()
@@ -294,25 +322,6 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
         idnegocio
       ]
     );
-
-    // Insert payment details into tblposcrumenwebdetallepagos
-    for (const detalle of pagoData.detallesPagos) {
-      await connection.execute(
-        `INSERT INTO tblposcrumenwebdetallepagos (
-          idfolioventa, totaldepago, formadepagodetalle,
-          referencia, claveturno, idnegocio, usuarioauditoria
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-          venta.folioventa,
-          detalle.totaldepago,
-          detalle.formadepagodetalle,
-          detalle.referencia || null,
-          venta.claveturno,
-          idnegocio,
-          usuarioauditoria
-        ]
-      );
-    }
 
     // Update details status if fully paid
     if (estatusdepago === 'PAGADO') {
