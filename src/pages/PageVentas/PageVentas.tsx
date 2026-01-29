@@ -4,7 +4,7 @@ import { ArrowLeft, Search, Plus, Minus, ChevronLeft, ChevronRight, StickyNote, 
 import { obtenerProductosWeb } from '../../services/productosWebService';
 import { negociosService } from '../../services/negociosService';
 import { obtenerCategorias } from '../../services/categoriasService';
-import { crearVentaWeb, agregarDetallesAVenta } from '../../services/ventasWebService';
+import { crearVentaWeb, agregarDetallesAVenta, actualizarVentaWeb } from '../../services/ventasWebService';
 import { obtenerModeradores } from '../../services/moderadoresService';
 import { obtenerModeradoresRef } from '../../services/moderadoresRefService';
 import { verificarTurnoAbierto } from '../../services/turnosService';
@@ -106,6 +106,7 @@ const PageVentas: React.FC = () => {
   const [currentVentaId, setCurrentVentaId] = useState<number | null>(null);
   const [currentFolioVenta, setCurrentFolioVenta] = useState<string | null>(null);
   const [currentFormaDePago, setCurrentFormaDePago] = useState<string | null>(null);
+  const [currentEstadoDeVenta, setCurrentEstadoDeVenta] = useState<EstadoDeVenta | null>(null);
 
   // Módulo de pagos state
   const [showModuloPagos, setShowModuloPagos] = useState(false);
@@ -237,6 +238,7 @@ const PageVentas: React.FC = () => {
       setCurrentVentaId(ventaToLoad.idventa);
       setCurrentFolioVenta(ventaToLoad.folioventa);
       setCurrentFormaDePago(ventaToLoad.formadepago);
+      setCurrentEstadoDeVenta(ventaToLoad.estadodeventa);
 
       // Load products into comanda
       const itemsComanda: ItemComanda[] = ventaToLoad.detalles.map(detalle => {
@@ -663,6 +665,7 @@ const PageVentas: React.FC = () => {
           setCurrentVentaId(resultado.idventa);
           setCurrentFolioVenta(resultado.folioventa);
           setCurrentFormaDePago('sinFP'); // Store the formadepago value
+          setCurrentEstadoDeVenta(estadodeventa); // Store the estadodeventa value
         }
       }
 
@@ -701,6 +704,37 @@ const PageVentas: React.FC = () => {
   };
 
   const handleProducir = async () => {
+    // Check if current venta has ESPERAR status - if so, UPDATE instead of creating new record
+    if (currentVentaId && currentEstadoDeVenta === 'ESPERAR') {
+      try {
+        // Update existing venta: estadodeventa = 'ORDENADO', estatusdepago = 'PENDIENTE'
+        const resultado = await actualizarVentaWeb(currentVentaId, {
+          estadodeventa: 'ORDENADO',
+          estatusdepago: 'PENDIENTE'
+        });
+
+        if (resultado.success) {
+          alert(`¡Venta actualizada exitosamente!\nFolio: ${currentFolioVenta}`);
+          // Update local state
+          setCurrentEstadoDeVenta('ORDENADO');
+          
+          // Mark all items in comanda as ORDENADO
+          setComanda(comanda.map(item => ({ ...item, estadodetalle: ESTADO_ORDENADO })));
+          
+          navigate('/dashboard');
+          return;
+        } else {
+          alert(`Error al actualizar la venta: ${resultado.message || 'Error desconocido'}`);
+          return;
+        }
+      } catch (error) {
+        console.error('Error al actualizar venta ESPERAR:', error);
+        alert('Error al actualizar la venta');
+        return;
+      }
+    }
+
+    // Normal flow: create or add to existing venta
     const success = await crearVenta(ESTADO_ORDENADO, ESTADO_ORDENADO, 'PENDIENTE');
     if (success) {
       navigate('/dashboard');
