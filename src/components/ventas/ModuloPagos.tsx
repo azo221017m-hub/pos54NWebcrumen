@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './ModuloPagos.css';
 import { obtenerDescuentos } from '../../services/descuentosService';
 import { procesarPagoSimple, procesarPagoMixto, obtenerDetallesPagos } from '../../services/pagosService';
@@ -42,14 +42,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     }
   }, [ventaId]);
 
-  // Cargar pagos registrados cuando cambia el método de pago a MIXTO o cuando cambia folioventa
-  useEffect(() => {
-    if (metodoPagoSeleccionado === 'mixto' && folioventa) {
-      cargarPagosRegistrados();
-    }
-  }, [metodoPagoSeleccionado, folioventa]);
-
-  const cargarPagosRegistrados = async () => {
+  const cargarPagosRegistrados = useCallback(async () => {
     if (!folioventa) return;
     
     try {
@@ -62,7 +55,14 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     } finally {
       setCargandoPagosRegistrados(false);
     }
-  };
+  }, [folioventa]);
+
+  // Cargar pagos registrados cuando cambia el método de pago a MIXTO o cuando cambia folioventa
+  useEffect(() => {
+    if (metodoPagoSeleccionado === 'mixto' && folioventa) {
+      cargarPagosRegistrados();
+    }
+  }, [metodoPagoSeleccionado, folioventa, cargarPagosRegistrados]);
 
   const cargarDescuentos = async () => {
     try {
@@ -381,7 +381,9 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
             <div className="pagos-realizados-area">
               <h3>Pagos realizados</h3>
               <div className="pagos-realizados-contenido">
-                {metodoPagoSeleccionado === 'mixto' && pagosRegistrados.length > 0 ? (
+                {cargandoPagosRegistrados ? (
+                  <p className="pagos-vacio">Cargando pagos...</p>
+                ) : metodoPagoSeleccionado === 'mixto' && pagosRegistrados.length > 0 ? (
                   <div className="pagos-registrados-lista">
                     {pagosRegistrados.map((pago, index) => (
                       <div key={index} className="pago-registrado-item">
