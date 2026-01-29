@@ -15,6 +15,7 @@
     "db:reset-login-attempts": "ts-node src/scripts/resetLoginAttempts.ts",
     "db:create-superuser": "ts-node src/scripts/createSuperuser.ts",
     "db:init-crumensys": "ts-node src/scripts/initializeCrumensys.ts",
+    "db:fix-referencia": "ts-node src/scripts/applyReferenciaMigration.ts",
     "test:superuser": "ts-node src/scripts/testCreateSuperuser.ts",
     "test:image-conversion": "ts-node src/scripts/testImageConversion.ts",
     "verify:user-filtering": "ts-node src/scripts/verifyUserFiltering.ts"
