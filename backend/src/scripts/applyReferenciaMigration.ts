@@ -1,6 +1,4 @@
 import { pool } from '../config/db';
-import * as fs from 'fs';
-import * as path from 'path';
 
 /**
  * Apply database migration to add referencia column to tblposcrumenwebdetallepagos
@@ -25,15 +23,12 @@ async function applyReferenciaMigration() {
     
     console.log('⚠️  referencia column NOT FOUND - applying migration...');
     
-    // Read the SQL migration file
-    const sqlFile = path.join(__dirname, 'fix_referencia_column.sql');
-    const sqlContent = fs.readFileSync(sqlFile, 'utf8');
-    
-    // Split by semicolon to execute statements separately
-    const statements = sqlContent
-      .split(';')
-      .map(stmt => stmt.trim())
-      .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
+    // SQL migration statements
+    const statements = [
+      `ALTER TABLE tblposcrumenwebdetallepagos 
+       ADD COLUMN IF NOT EXISTS referencia VARCHAR(255) NULL 
+       AFTER formadepagodetalle`
+    ];
     
     console.log(`📝 Found ${statements.length} SQL statements to execute`);
     
