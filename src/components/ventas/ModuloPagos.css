@@ -204,6 +204,24 @@
   box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
 }
 
+/* Disabled state for payment buttons */
+.btn-forma-pago:disabled,
+.btn-forma-pago.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: #f5f5f5;
+  color: #999;
+  border-color: #ccc;
+}
+
+.btn-forma-pago:disabled:hover,
+.btn-forma-pago.disabled:hover {
+  background: #f5f5f5;
+  color: #999;
+  transform: none;
+  box-shadow: none;
+}
+
 /* Área de pagos realizados */
 .pagos-realizados-area {
   background: #f5f5f5;

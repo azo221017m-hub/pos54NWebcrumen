@@ -10,9 +10,10 @@ interface ModuloPagosProps {
   totalCuenta: number;
   ventaId: number | null;
   folioventa?: string;
+  formadepago?: string;
 }
 
-const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId, folioventa }) => {
+const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId, folioventa, formadepago }) => {
   const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState<'efectivo' | 'transferencia' | 'mixto'>('efectivo');
   const [montoEfectivo, setMontoEfectivo] = useState<string>('');
   const [numeroReferencia, setNumeroReferencia] = useState<string>('');
@@ -40,7 +41,12 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     if (!ventaId) {
       console.warn('⚠️ ModuloPagos abierto sin ventaId. El usuario debe usar PRODUCIR primero.');
     }
-  }, [ventaId]);
+
+    // If the sale already has MIXTO payment, set the default to mixto
+    if (formadepago === 'MIXTO') {
+      setMetodoPagoSeleccionado('mixto');
+    }
+  }, [ventaId, formadepago]);
 
   const cargarPagosRegistrados = useCallback(async () => {
     if (!folioventa) return;
@@ -358,14 +364,16 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
             {/* Botones de forma de pago */}
             <div className="pagos-formas-pago">
               <button 
-                className={`btn-forma-pago btn-efectivo ${metodoPagoSeleccionado === 'efectivo' ? 'activo' : ''}`}
+                className={`btn-forma-pago btn-efectivo ${metodoPagoSeleccionado === 'efectivo' ? 'activo' : ''} ${formadepago === 'MIXTO' ? 'disabled' : ''}`}
                 onClick={() => setMetodoPagoSeleccionado('efectivo')}
+                disabled={formadepago === 'MIXTO'}
               >
                 Efectivo
               </button>
               <button 
-                className={`btn-forma-pago btn-transferencia ${metodoPagoSeleccionado === 'transferencia' ? 'activo' : ''}`}
+                className={`btn-forma-pago btn-transferencia ${metodoPagoSeleccionado === 'transferencia' ? 'activo' : ''} ${formadepago === 'MIXTO' ? 'disabled' : ''}`}
                 onClick={() => setMetodoPagoSeleccionado('transferencia')}
+                disabled={formadepago === 'MIXTO'}
               >
                 Transferencia
               </button>
