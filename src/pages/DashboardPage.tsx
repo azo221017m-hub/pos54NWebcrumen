@@ -102,6 +102,16 @@ const getTipoVentaColorClass = (tipo: TipoDeVenta): string => {
   return colors[tipo] || 'tipo-mesa';
 };
 
+// Helper to calculate display amount for MIXTO sales
+const calcularImporteMostrar = (venta: VentaWebWithDetails, pagosRegistrados: Record<string, number>): number => {
+  const total = Number(venta.totaldeventa) || 0;
+  if (venta.formadepago === 'MIXTO') {
+    const pagos = pagosRegistrados[venta.folioventa] || 0;
+    return Math.max(0, total - pagos);
+  }
+  return total;
+};
+
 export const DashboardPage = () => {
   const navigate = useNavigate();
   const [usuario] = useState<Usuario | null>(getUsuarioFromStorage());
@@ -132,7 +142,6 @@ export const DashboardPage = () => {
       const ventasFiltradas = ventas.filter(venta => 
         venta.estadodeventa === 'ORDENADO' || venta.estadodeventa === 'ESPERAR'
       );
-      setVentasSolicitadas(ventasFiltradas);
       
       // Fetch registered payments for MIXTO sales in parallel
       const ventasMixto = ventasFiltradas.filter(v => v.formadepago === 'MIXTO');
@@ -152,6 +161,9 @@ export const DashboardPage = () => {
       pagosResults.forEach(result => {
         pagosMap[result.folioventa] = result.sumaPagos;
       });
+      
+      // Set both states together (React 18 will batch these automatically)
+      setVentasSolicitadas(ventasFiltradas);
       setPagosRegistrados(pagosMap);
     } catch (error) {
       console.error('Error al cargar comandas del día:', error);
@@ -952,14 +964,7 @@ export const DashboardPage = () => {
                     </div>
                     <div className="venta-card-footer">
                       <span className="venta-total">
-                        ${(() => {
-                          const total = Number(venta.totaldeventa) || 0;
-                          if (venta.formadepago === 'MIXTO') {
-                            const pagos = pagosRegistrados[venta.folioventa] || 0;
-                            return Math.max(0, total - pagos).toFixed(2);
-                          }
-                          return total.toFixed(2);
-                        })()}
+                        ${calcularImporteMostrar(venta, pagosRegistrados).toFixed(2)}
                       </span>
                       <div className="venta-card-actions">
                         <button 
