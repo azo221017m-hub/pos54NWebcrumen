@@ -1194,8 +1194,8 @@
 
 .lock-logo {
   margin: 0 auto 1.5rem;
-  width: 120px;
-  height: 120px;
+  width: 360px;
+  height: 360px;
   background: white;
   border-radius: 50%;
   display: flex;
@@ -1204,7 +1204,7 @@
   box-shadow: 0 20px 60px rgba(16, 185, 129, 0.4);
   animation: pulse 2s ease-in-out infinite;
   overflow: hidden;
-  padding: 15px;
+  padding: 45px;
 }
 
 @keyframes pulse {
@@ -1263,8 +1263,8 @@
 /* Responsive para bloqueo de pantalla */
 @media (max-width: 768px) {
   .lock-logo {
-    width: 100px;
-    height: 100px;
+    width: 300px;
+    height: 300px;
   }
 
   .lock-logo img {
@@ -1287,8 +1287,8 @@
 
 @media (max-width: 480px) {
   .lock-logo {
-    width: 80px;
-    height: 80px;
+    width: 240px;
+    height: 240px;
   }
 
   .lock-logo img {
