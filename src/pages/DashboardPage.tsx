@@ -473,14 +473,10 @@ export const DashboardPage = () => {
             </svg>
           </button>
           <div className="business-logo">
-            <svg viewBox="0 0 100 100" className="logo-icon">
-              <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="3"/>
-              <path d="M 30 50 L 45 35 L 70 60 L 45 65 Z" fill="currentColor"/>
-              <circle cx="50" cy="50" r="8" fill="currentColor"/>
-            </svg>
+            <img src="/logowebposcrumen.svg" alt="Logo" className="logo-icon" />
             <div className="logo-text">
-              <h1>POS Crumen</h1>
-              <p>Sistema de Punto de Venta</p>
+              <h1>POSWEB Crumen</h1>
+              <p>Sistema Administrador de Negocios</p>
             </div>
           </div>
         </div>
@@ -1145,13 +1141,9 @@ export const DashboardPage = () => {
         >
           <div className="screen-lock-content">
             <div className="lock-logo">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                <path d="M2 17l10 5 10-5"/>
-                <path d="M2 12l10 5 10-5"/>
-              </svg>
+              <img src="/logowebposcrumen.svg" alt="Logo" />
             </div>
-            <h2 className="lock-title">POS Crumen</h2>
+            <h2 className="lock-title">POSWEB Crumen</h2>
             <p className="lock-subtitle">Pantalla Protegida</p>
             <p className="lock-hint">Haz clic en cualquier lugar para desbloquear</p>
           </div>
