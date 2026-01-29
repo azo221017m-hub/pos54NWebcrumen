@@ -854,24 +854,18 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const claveturno = turnoActual.claveturno;
     const metaturno = Number(turnoActual.metaturno) || 0;
 
-    // Sumar importedepago de ventas con estadodeventa = 'COBRADO' del turno actual
-    const [cobradoRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT COALESCE(SUM(importedepago), 0) as totalCobrado
+    // Use single query with conditional aggregation for better performance
+    const [salesRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT 
+        COALESCE(SUM(CASE WHEN estadodeventa = 'COBRADO' THEN importedepago ELSE 0 END), 0) as totalCobrado,
+        COALESCE(SUM(CASE WHEN estadodeventa = 'ORDENADO' THEN totaldeventa ELSE 0 END), 0) as totalOrdenado
        FROM tblposcrumenwebventas 
-       WHERE claveturno = ? AND estadodeventa = 'COBRADO' AND idnegocio = ?`,
+       WHERE claveturno = ? AND idnegocio = ?`,
       [claveturno, idnegocio]
     );
 
-    // Sumar totaldeventa de ventas con estadodeventa = 'ORDENADO' del turno actual
-    const [ordenadoRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT COALESCE(SUM(totaldeventa), 0) as totalOrdenado
-       FROM tblposcrumenwebventas 
-       WHERE claveturno = ? AND estadodeventa = 'ORDENADO' AND idnegocio = ?`,
-      [claveturno, idnegocio]
-    );
-
-    const totalCobrado = Number(cobradoRows[0]?.totalCobrado) || 0;
-    const totalOrdenado = Number(ordenadoRows[0]?.totalOrdenado) || 0;
+    const totalCobrado = Number(salesRows[0]?.totalCobrado) || 0;
+    const totalOrdenado = Number(salesRows[0]?.totalOrdenado) || 0;
 
     res.json({
       success: true,

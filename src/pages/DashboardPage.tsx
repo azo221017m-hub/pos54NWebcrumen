@@ -36,6 +36,9 @@ const getUsuarioFromStorage = (): Usuario | null => {
 const TIPO_VENTA_FILTER_ALL = 'TODOS' as const;
 type TipoVentaFilterOption = TipoDeVenta | typeof TIPO_VENTA_FILTER_ALL;
 
+// Refresh interval for sales summary (in milliseconds)
+const SALES_SUMMARY_REFRESH_INTERVAL = 30000; // 30 seconds
+
 // Helper to render icon SVG for sale type as React component
 const TipoVentaIcon: React.FC<{ tipo: TipoDeVenta }> = ({ tipo }) => {
   switch (tipo) {
@@ -405,10 +408,10 @@ export const DashboardPage = () => {
     // Load sales summary for current shift
     cargarResumenVentas();
 
-    // Refresh sales summary every 30 seconds
+    // Refresh sales summary periodically
     const intervalId = setInterval(() => {
       cargarResumenVentas();
-    }, 30000);
+    }, SALES_SUMMARY_REFRESH_INTERVAL);
 
     return () => clearInterval(intervalId);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas, cargarModeradores, and cargarResumenVentas omitted to prevent infinite refresh loop
@@ -927,7 +930,7 @@ export const DashboardPage = () => {
                     marginBottom: '0.25rem'
                   }}>
                     <div style={{
-                      width: `${Math.min((resumenVentas.totalCobrado / resumenVentas.metaTurno) * 100, 100)}%`,
+                      width: `${Math.min((resumenVentas.totalCobrado / (resumenVentas.metaTurno || 1)) * 100, 100)}%`,
                       height: '100%',
                       backgroundColor: resumenVentas.totalCobrado >= resumenVentas.metaTurno ? '#10b981' : '#3b82f6',
                       transition: 'width 0.3s ease',
@@ -935,7 +938,7 @@ export const DashboardPage = () => {
                     }}></div>
                   </div>
                   <div style={{ fontSize: '0.55rem', color: '#6b7280', textAlign: 'center' }}>
-                    {((resumenVentas.totalCobrado / resumenVentas.metaTurno) * 100).toFixed(1)}% completado
+                    {((resumenVentas.totalCobrado / (resumenVentas.metaTurno || 1)) * 100).toFixed(1)}% completado
                   </div>
                 </div>
               )}
