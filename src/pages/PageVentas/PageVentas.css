@@ -884,6 +884,10 @@
   transition: background-color 0.2s;
 }
 
+.user-dropdown-ventas button.btn-lock-screen {
+  color: #e67e22; /* Orange color for lock button */
+}
+
 .user-dropdown-ventas button:hover {
   background-color: #f5f5f5;
 }
