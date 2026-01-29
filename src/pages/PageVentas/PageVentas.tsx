@@ -662,6 +662,7 @@ const PageVentas: React.FC = () => {
         if (resultado.success && resultado.idventa && resultado.folioventa) {
           setCurrentVentaId(resultado.idventa);
           setCurrentFolioVenta(resultado.folioventa);
+          setCurrentFormaDePago('sinFP'); // Store the formadepago value
         }
       }
 

@@ -41,12 +41,14 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     if (!ventaId) {
       console.warn('⚠️ ModuloPagos abierto sin ventaId. El usuario debe usar PRODUCIR primero.');
     }
+  }, [ventaId]);
 
-    // If the sale already has MIXTO payment, set the default to mixto
+  // Set default payment method to mixto if sale has MIXTO payment
+  useEffect(() => {
     if (formadepago === 'MIXTO') {
       setMetodoPagoSeleccionado('mixto');
     }
-  }, [ventaId, formadepago]);
+  }, [formadepago]);
 
   const cargarPagosRegistrados = useCallback(async () => {
     if (!folioventa) return;
