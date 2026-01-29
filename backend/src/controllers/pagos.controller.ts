@@ -252,14 +252,14 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
     const totalPagadoAcumulado = totalPagadoPrevio + totalPagado;
 
     // Determine payment status
-    let estatusdepago: 'PENDIENTE' | 'PAGADO' | 'PARCIAL' = 'PENDIENTE';
+    let estatusdepago: 'PENDIENTE' | 'PAGADO' = 'PENDIENTE';
     let estadodeventa: 'COBRADO' | 'ORDENADO' = 'ORDENADO';
 
     if (totalPagadoAcumulado >= totaldeventa) {
       estatusdepago = 'PAGADO';
       estadodeventa = 'COBRADO';
     } else if (totalPagadoAcumulado > 0) {
-      estatusdepago = 'PARCIAL';
+      estatusdepago = 'PENDIENTE';
     }
 
     // Insert payment details into tblposcrumenwebdetallepagos FIRST
