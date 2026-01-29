@@ -242,7 +242,7 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
 
     // Get existing payments for this sale
     const [pagosPrevios] = await connection.execute<RowDataPacket[]>(
-      `SELECT SUM(totaldepago) as totalPagadoPrevio 
+      `SELECT SUM(totaldepago) as totalPagadoPrevio, MIN(fechadepago) as primerPagoFecha
        FROM tblposcrumenwebdetallepagos 
        WHERE idfolioventa = ? AND idnegocio = ?`,
       [venta.folioventa, idnegocio]
@@ -250,6 +250,7 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
 
     const totalPagadoPrevio = Number(pagosPrevios[0]?.totalPagadoPrevio || 0);
     const totalPagadoAcumulado = totalPagadoPrevio + totalPagado;
+    const primerPagoFecha = pagosPrevios[0]?.primerPagoFecha;
 
     // Determine payment status
     let estatusdepago: 'PENDIENTE' | 'PAGADO' | 'PARCIAL' = 'PENDIENTE';
@@ -263,6 +264,7 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
     }
 
     // Update the sale with payment information
+    // For MIXTO payments, tiempototaldeventa should be set to the first payment timestamp
     await connection.execute(
       `UPDATE tblposcrumenwebventas 
        SET estadodeventa = ?,
@@ -272,7 +274,9 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
            formadepago = 'MIXTO',
            importedepago = ?,
            estatusdepago = ?,
-           tiempototaldeventa = IF(? = 'COBRADO', NOW(), tiempototaldeventa),
+           tiempototaldeventa = IF(? = 'COBRADO' AND tiempototaldeventa IS NULL, 
+                                   COALESCE(?, NOW()), 
+                                   tiempototaldeventa),
            usuarioauditoria = ?,
            fechamodificacionauditoria = NOW()
        WHERE idventa = ? AND idnegocio = ?`,
@@ -284,6 +288,7 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
         totalPagadoAcumulado,
         estatusdepago,
         estadodeventa,
+        primerPagoFecha,
         usuarioauditoria,
         pagoData.idventa,
         idnegocio
