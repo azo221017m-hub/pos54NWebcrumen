@@ -49,10 +49,10 @@ echo ""
 
 # Check current ENUM definition
 echo "Checking current estatusdepago column definition..."
-CURRENT_TYPE=$(mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -N -e "
+CURRENT_TYPE=$(mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" -D "$DB_NAME" -N -e "
 SELECT COLUMN_TYPE 
 FROM INFORMATION_SCHEMA.COLUMNS 
-WHERE TABLE_SCHEMA = '$DB_NAME'
+WHERE TABLE_SCHEMA = DATABASE()
   AND TABLE_NAME = 'tblposcrumenwebventas' 
   AND COLUMN_NAME = 'estatusdepago';
 ")
@@ -85,7 +85,7 @@ else
     echo "Applying migration..."
     
     # Apply the fix
-    mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" <<EOF
+    mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" -D "$DB_NAME" <<'EOF'
 ALTER TABLE tblposcrumenwebventas 
 MODIFY COLUMN estatusdepago ENUM('PENDIENTE', 'PAGADO', 'PARCIAL', 'ESPERAR') 
 NOT NULL DEFAULT 'PENDIENTE';
@@ -96,10 +96,10 @@ EOF
     
     # Verify the fix
     echo "Verifying the migration..."
-    NEW_TYPE=$(mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -N -e "
+    NEW_TYPE=$(mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" -D "$DB_NAME" -N -e "
 SELECT COLUMN_TYPE 
 FROM INFORMATION_SCHEMA.COLUMNS 
-WHERE TABLE_SCHEMA = '$DB_NAME'
+WHERE TABLE_SCHEMA = DATABASE()
   AND TABLE_NAME = 'tblposcrumenwebventas' 
   AND COLUMN_NAME = 'estatusdepago';
 ")

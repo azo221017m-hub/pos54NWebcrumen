@@ -25,8 +25,8 @@ NOT NULL DEFAULT 'PENDIENTE';
 SELECT 'Migration complete. New schema:' as step;
 SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, COLUMN_DEFAULT,
        CASE 
-         WHEN COLUMN_TYPE LIKE '%PARCIAL%' THEN '✓ SUCCESS: PARCIAL value is now included'
-         ELSE '✗ ERROR: PARCIAL value is still missing'
+         WHEN COLUMN_TYPE LIKE '%PARCIAL%' THEN 'SUCCESS: PARCIAL value is now included'
+         ELSE 'ERROR: PARCIAL value is still missing'
        END as validation_result
 FROM INFORMATION_SCHEMA.COLUMNS 
 WHERE TABLE_SCHEMA = DATABASE()
@@ -35,4 +35,4 @@ WHERE TABLE_SCHEMA = DATABASE()
 
 -- Expected result:
 -- COLUMN_TYPE should be: enum('PENDIENTE','PAGADO','PARCIAL','ESPERAR')
--- validation_result should be: ✓ SUCCESS: PARCIAL value is now included
+-- validation_result should be: SUCCESS: PARCIAL value is now included

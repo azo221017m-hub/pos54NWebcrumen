@@ -35,8 +35,19 @@ estatusdepago ENUM('PENDIENTE', 'PAGADO', 'PARCIAL', 'ESPERAR')
 
 #### Option A: Using the automated script (Recommended)
 
+**Note:** If the script is not executable, make it executable first:
+```bash
+chmod +x fix_estatusdepago.sh
+```
+
+Then run:
 ```bash
 ./fix_estatusdepago.sh
+```
+
+Or run with bash directly:
+```bash
+bash fix_estatusdepago.sh
 ```
 
 The script will:
@@ -127,6 +138,19 @@ After applying the migration, test mixed payment scenarios:
    - Verify no errors in logs
 
 ## 🆘 Troubleshooting
+
+### Security Note
+The interactive script prompts for database credentials. While convenient, be aware that:
+- The password is hidden during input (using `read -sp`)
+- The password may be visible in process list during execution
+- For production use, consider using mysql_config_editor or environment variables
+
+For more secure authentication without password exposure:
+```bash
+# Create a secure MySQL config
+mysql_config_editor set --login-path=local --host=localhost --user=youruser --password
+# Then modify the script to use: mysql --login-path=local
+```
 
 ### Error: "Cannot connect to database"
 - Verify database credentials
