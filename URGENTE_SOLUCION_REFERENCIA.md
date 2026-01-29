@@ -15,7 +15,11 @@ La tabla `tblposcrumenwebdetallepagos` en la base de datos de **PRODUCCIÓN** no
 1. Ir a Render Dashboard
 2. Seleccionar el servicio del backend
 3. Abrir la pestaña "Shell"
-4. Ejecutar:
+4. Cambiar al directorio backend:
+```bash
+cd backend
+```
+5. Ejecutar el script de migración:
 ```bash
 npm run db:fix-referencia
 ```
