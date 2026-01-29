@@ -7,6 +7,7 @@ import { SessionTimer } from '../components/common/SessionTimer';
 import { clearSession } from '../services/sessionService';
 import { obtenerModeradores } from '../services/moderadoresService';
 import type { Moderador } from '../types/moderador.types';
+import { obtenerDetallesPagos } from '../services/pagosService';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -101,6 +102,16 @@ const getTipoVentaColorClass = (tipo: TipoDeVenta): string => {
   return colors[tipo] || 'tipo-mesa';
 };
 
+// Helper to calculate display amount for MIXTO sales
+const calcularImporteMostrar = (venta: VentaWebWithDetails, pagosRegistrados: Record<string, number>): number => {
+  const total = Number(venta.totaldeventa) || 0;
+  if (venta.formadepago === 'MIXTO') {
+    const pagos = pagosRegistrados[venta.folioventa] || 0;
+    return Math.max(0, total - pagos);
+  }
+  return total;
+};
+
 export const DashboardPage = () => {
   const navigate = useNavigate();
   const [usuario] = useState<Usuario | null>(getUsuarioFromStorage());
@@ -113,6 +124,7 @@ export const DashboardPage = () => {
   const [ventasSolicitadas, setVentasSolicitadas] = useState<VentaWebWithDetails[]>([]);
   const [tipoVentaFilter, setTipoVentaFilter] = useState<TipoVentaFilterOption>(TIPO_VENTA_FILTER_ALL);
   const [moderadores, setModeradores] = useState<Moderador[]>([]);
+  const [pagosRegistrados, setPagosRegistrados] = useState<Record<string, number>>({});
 
   const handleLogout = useCallback(() => {
     // Limpiar completamente la sesión
@@ -130,7 +142,29 @@ export const DashboardPage = () => {
       const ventasFiltradas = ventas.filter(venta => 
         venta.estadodeventa === 'ORDENADO' || venta.estadodeventa === 'ESPERAR'
       );
+      
+      // Fetch registered payments for MIXTO sales in parallel
+      const ventasMixto = ventasFiltradas.filter(v => v.formadepago === 'MIXTO');
+      const pagosPromises = ventasMixto.map(async (venta) => {
+        try {
+          const detallesPagos = await obtenerDetallesPagos(venta.folioventa);
+          const sumaPagos = detallesPagos.reduce((sum, pago) => sum + Number(pago.totaldepago || 0), 0);
+          return { folioventa: venta.folioventa, sumaPagos };
+        } catch (error) {
+          console.error(`Error al cargar pagos para folio ${venta.folioventa}:`, error);
+          return { folioventa: venta.folioventa, sumaPagos: 0 };
+        }
+      });
+      
+      const pagosResults = await Promise.all(pagosPromises);
+      const pagosMap: Record<string, number> = {};
+      pagosResults.forEach(result => {
+        pagosMap[result.folioventa] = result.sumaPagos;
+      });
+      
+      // Set both states together (React 18 will batch these automatically)
       setVentasSolicitadas(ventasFiltradas);
+      setPagosRegistrados(pagosMap);
     } catch (error) {
       console.error('Error al cargar comandas del día:', error);
     }
@@ -929,7 +963,9 @@ export const DashboardPage = () => {
                       )}
                     </div>
                     <div className="venta-card-footer">
-                      <span className="venta-total">${(Number(venta.totaldeventa) || 0).toFixed(2)}</span>
+                      <span className="venta-total">
+                        ${calcularImporteMostrar(venta, pagosRegistrados).toFixed(2)}
+                      </span>
                       <div className="venta-card-actions">
                         <button 
                           className="btn-comanda"
@@ -963,15 +999,17 @@ export const DashboardPage = () => {
                             Pagar
                           </button>
                         )}
-                        <button 
-                          className="btn-ver-detalle"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleVerDetalle(venta);
-                          }}
-                        >
-                          Ver detalle
-                        </button>
+                        {venta.formadepago !== 'MIXTO' && (
+                          <button 
+                            className="btn-ver-detalle"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleVerDetalle(venta);
+                            }}
+                          >
+                            Ver detalle
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
