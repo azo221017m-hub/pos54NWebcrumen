@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { obtenerVentasWeb, actualizarVentaWeb } from '../services/ventasWebService';
+import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, type ResumenVentas } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import jsPDF from 'jspdf';
 import { SessionTimer } from '../components/common/SessionTimer';
@@ -125,6 +125,12 @@ export const DashboardPage = () => {
   const [tipoVentaFilter, setTipoVentaFilter] = useState<TipoVentaFilterOption>(TIPO_VENTA_FILTER_ALL);
   const [moderadores, setModeradores] = useState<Moderador[]>([]);
   const [pagosRegistrados, setPagosRegistrados] = useState<Record<string, number>>({});
+  const [resumenVentas, setResumenVentas] = useState<ResumenVentas>({
+    totalCobrado: 0,
+    totalOrdenado: 0,
+    metaTurno: 0,
+    hasTurnoAbierto: false
+  });
 
   const handleLogout = useCallback(() => {
     // Limpiar completamente la sesión
@@ -179,6 +185,15 @@ export const DashboardPage = () => {
       console.error('Error al cargar moderadores:', error);
     }
   }, [usuario?.idNegocio]);
+
+  const cargarResumenVentas = useCallback(async () => {
+    try {
+      const resumen = await obtenerResumenVentas();
+      setResumenVentas(resumen);
+    } catch (error) {
+      console.error('Error al cargar resumen de ventas:', error);
+    }
+  }, []);
 
   const handleStatusChange = async (ventaId: number, newStatus: EstadoDeVenta) => {
     try {
@@ -387,7 +402,16 @@ export const DashboardPage = () => {
     cargarVentasSolicitadas();
     // Load moderadores for PDF generation
     cargarModeradores();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas and cargarModeradores omitted to prevent infinite refresh loop
+    // Load sales summary for current shift
+    cargarResumenVentas();
+
+    // Refresh sales summary every 30 seconds
+    const intervalId = setInterval(() => {
+      cargarResumenVentas();
+    }, 30000);
+
+    return () => clearInterval(intervalId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas, cargarModeradores, and cargarResumenVentas omitted to prevent infinite refresh loop
   }, [navigate]);
 
   // Early return if not authenticated
@@ -869,8 +893,52 @@ export const DashboardPage = () => {
                 </svg>
               </div>
               <h3 className="card-title">Ventas Hoy</h3>
-              <p className="card-text">Total del día</p>
-              <div className="card-stat">$0.00</div>
+              <p className="card-text" style={{ fontSize: '0.55rem', marginBottom: '0.35rem' }}>Turno Actual</p>
+              
+              <div style={{ marginBottom: '0.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.2rem' }}>
+                  <span style={{ fontSize: '0.55rem', color: '#718096' }}>Cobrado:</span>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#10b981' }}>
+                    ${resumenVentas.totalCobrado.toFixed(2)}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <span style={{ fontSize: '0.55rem', color: '#718096' }}>Ordenado:</span>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#f59e0b' }}>
+                    ${resumenVentas.totalOrdenado.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {resumenVentas.metaTurno > 0 && (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.25rem' }}>
+                    <span style={{ fontSize: '0.55rem', color: '#718096' }}>Meta:</span>
+                    <span style={{ fontSize: '0.65rem', fontWeight: '600', color: '#6b7280' }}>
+                      ${resumenVentas.metaTurno.toFixed(2)}
+                    </span>
+                  </div>
+                  <div style={{ 
+                    width: '100%', 
+                    height: '8px', 
+                    backgroundColor: '#e5e7eb', 
+                    borderRadius: '4px', 
+                    overflow: 'hidden',
+                    marginBottom: '0.25rem'
+                  }}>
+                    <div style={{
+                      width: `${Math.min((resumenVentas.totalCobrado / resumenVentas.metaTurno) * 100, 100)}%`,
+                      height: '100%',
+                      backgroundColor: resumenVentas.totalCobrado >= resumenVentas.metaTurno ? '#10b981' : '#3b82f6',
+                      transition: 'width 0.3s ease',
+                      borderRadius: '4px'
+                    }}></div>
+                  </div>
+                  <div style={{ fontSize: '0.55rem', color: '#6b7280', textAlign: 'center' }}>
+                    {((resumenVentas.totalCobrado / resumenVentas.metaTurno) * 100).toFixed(1)}% completado
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="dashboard-card">

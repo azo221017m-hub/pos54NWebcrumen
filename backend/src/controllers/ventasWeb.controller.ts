@@ -814,3 +814,79 @@ export const addDetallesToVenta = async (req: AuthRequest, res: Response): Promi
     connection.release();
   }
 };
+
+// Obtener resumen de ventas del turno actual abierto
+export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
+    // Obtener el turno abierto actual del negocio
+    const [turnoRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT claveturno, metaturno FROM tblposcrumenwebturnos 
+       WHERE idnegocio = ? AND estatusturno = 'abierto'
+       LIMIT 1`,
+      [idnegocio]
+    );
+
+    if (turnoRows.length === 0) {
+      // No hay turno abierto, retornar valores en 0
+      res.json({
+        success: true,
+        data: {
+          totalCobrado: 0,
+          totalOrdenado: 0,
+          metaTurno: 0,
+          hasTurnoAbierto: false
+        }
+      });
+      return;
+    }
+
+    const turnoActual = turnoRows[0];
+    const claveturno = turnoActual.claveturno;
+    const metaturno = Number(turnoActual.metaturno) || 0;
+
+    // Sumar importedepago de ventas con estatusdepago = 'COBRADO' del turno actual
+    const [cobradoRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(importedepago), 0) as totalCobrado
+       FROM tblposcrumenwebventas 
+       WHERE claveturno = ? AND estatusdepago = 'COBRADO' AND idnegocio = ?`,
+      [claveturno, idnegocio]
+    );
+
+    // Sumar totaldeventa de ventas con estatusdepago = 'ORDENADO' del turno actual
+    const [ordenadoRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(totaldeventa), 0) as totalOrdenado
+       FROM tblposcrumenwebventas 
+       WHERE claveturno = ? AND estatusdepago = 'ORDENADO' AND idnegocio = ?`,
+      [claveturno, idnegocio]
+    );
+
+    const totalCobrado = Number(cobradoRows[0]?.totalCobrado) || 0;
+    const totalOrdenado = Number(ordenadoRows[0]?.totalOrdenado) || 0;
+
+    res.json({
+      success: true,
+      data: {
+        totalCobrado,
+        totalOrdenado,
+        metaTurno: metaturno,
+        hasTurnoAbierto: true
+      }
+    });
+  } catch (error) {
+    console.error('Error al obtener resumen de ventas:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener resumen de ventas'
+    });
+  }
+};

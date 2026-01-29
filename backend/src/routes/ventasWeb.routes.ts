@@ -7,7 +7,8 @@ import {
   deleteVentaWeb,
   updateDetalleEstado,
   getDetallesByEstado,
-  addDetallesToVenta
+  addDetallesToVenta,
+  getSalesSummary
 } from '../controllers/ventasWeb.controller';
 import { authMiddleware } from '../middlewares/auth';
 
@@ -71,5 +72,12 @@ router.patch('/:id/detalles/:iddetalle/estado', updateDetalleEstado);
  * @access  Private
  */
 router.get('/detalles/estado/:estado', getDetallesByEstado);
+
+/**
+ * @route   GET /api/ventas-web/resumen/turno-actual
+ * @desc    Obtener resumen de ventas del turno actual abierto
+ * @access  Private
+ */
+router.get('/resumen/turno-actual', getSalesSummary);
 
 export default router;

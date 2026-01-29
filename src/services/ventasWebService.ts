@@ -187,3 +187,31 @@ export const agregarDetallesAVenta = async (
     return { success: false, message: errorMessage };
   }
 };
+
+// Obtener resumen de ventas del turno actual abierto
+export interface ResumenVentas {
+  totalCobrado: number;
+  totalOrdenado: number;
+  metaTurno: number;
+  hasTurnoAbierto: boolean;
+}
+
+export const obtenerResumenVentas = async (): Promise<ResumenVentas> => {
+  try {
+    console.log('🔵 ventasWebService: Obteniendo resumen de ventas del turno actual');
+    const response = await apiClient.get<{ success: boolean; data: ResumenVentas }>(
+      `${API_BASE}/resumen/turno-actual`
+    );
+    console.log('🔵 ventasWebService: Resumen de ventas obtenido:', response.data.data);
+    return response.data.data;
+  } catch (error) {
+    console.error('🔴 ventasWebService: Error al obtener resumen de ventas:', error);
+    // Return empty data on error
+    return {
+      totalCobrado: 0,
+      totalOrdenado: 0,
+      metaTurno: 0,
+      hasTurnoAbierto: false
+    };
+  }
+};
