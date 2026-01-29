@@ -1137,6 +1137,7 @@ const PageVentas: React.FC = () => {
           {showUserMenu && (
             <div className="user-dropdown-ventas">
               <button 
+                className="btn-lock-screen"
                 onClick={() => {
                   setIsScreenLocked(true);
                   setShowUserMenu(false);

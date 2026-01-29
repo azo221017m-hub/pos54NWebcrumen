@@ -882,6 +882,9 @@
   gap: 0.500rem; /* 8px */
   font-size: 0.875rem; /* 14px */
   transition: background-color 0.2s;
+}
+
+.user-dropdown-ventas button.btn-lock-screen {
   color: #e67e22; /* Orange color for lock button */
 }
 
