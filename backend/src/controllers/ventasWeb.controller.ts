@@ -854,19 +854,19 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const claveturno = turnoActual.claveturno;
     const metaturno = Number(turnoActual.metaturno) || 0;
 
-    // Sumar importedepago de ventas con estatusdepago = 'COBRADO' del turno actual
+    // Sumar importedepago de ventas con estadodeventa = 'COBRADO' del turno actual
     const [cobradoRows] = await pool.execute<RowDataPacket[]>(
       `SELECT COALESCE(SUM(importedepago), 0) as totalCobrado
        FROM tblposcrumenwebventas 
-       WHERE claveturno = ? AND estatusdepago = 'COBRADO' AND idnegocio = ?`,
+       WHERE claveturno = ? AND estadodeventa = 'COBRADO' AND idnegocio = ?`,
       [claveturno, idnegocio]
     );
 
-    // Sumar totaldeventa de ventas con estatusdepago = 'ORDENADO' del turno actual
+    // Sumar totaldeventa de ventas con estadodeventa = 'ORDENADO' del turno actual
     const [ordenadoRows] = await pool.execute<RowDataPacket[]>(
       `SELECT COALESCE(SUM(totaldeventa), 0) as totalOrdenado
        FROM tblposcrumenwebventas 
-       WHERE claveturno = ? AND estatusdepago = 'ORDENADO' AND idnegocio = ?`,
+       WHERE claveturno = ? AND estadodeventa = 'ORDENADO' AND idnegocio = ?`,
       [claveturno, idnegocio]
     );
 
