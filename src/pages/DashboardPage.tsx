@@ -7,6 +7,7 @@ import { SessionTimer } from '../components/common/SessionTimer';
 import { clearSession } from '../services/sessionService';
 import { obtenerModeradores } from '../services/moderadoresService';
 import type { Moderador } from '../types/moderador.types';
+import { obtenerDetallesPagos } from '../services/pagosService';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -113,6 +114,7 @@ export const DashboardPage = () => {
   const [ventasSolicitadas, setVentasSolicitadas] = useState<VentaWebWithDetails[]>([]);
   const [tipoVentaFilter, setTipoVentaFilter] = useState<TipoVentaFilterOption>(TIPO_VENTA_FILTER_ALL);
   const [moderadores, setModeradores] = useState<Moderador[]>([]);
+  const [pagosRegistrados, setPagosRegistrados] = useState<Record<string, number>>({});
 
   const handleLogout = useCallback(() => {
     // Limpiar completamente la sesión
@@ -131,6 +133,22 @@ export const DashboardPage = () => {
         venta.estadodeventa === 'ORDENADO' || venta.estadodeventa === 'ESPERAR'
       );
       setVentasSolicitadas(ventasFiltradas);
+      
+      // Fetch registered payments for MIXTO sales
+      const pagosMap: Record<string, number> = {};
+      for (const venta of ventasFiltradas) {
+        if (venta.formadepago === 'MIXTO') {
+          try {
+            const detallesPagos = await obtenerDetallesPagos(venta.folioventa);
+            const sumaPagos = detallesPagos.reduce((sum, pago) => sum + Number(pago.totaldepago || 0), 0);
+            pagosMap[venta.folioventa] = sumaPagos;
+          } catch (error) {
+            console.error(`Error al cargar pagos para folio ${venta.folioventa}:`, error);
+            pagosMap[venta.folioventa] = 0;
+          }
+        }
+      }
+      setPagosRegistrados(pagosMap);
     } catch (error) {
       console.error('Error al cargar comandas del día:', error);
     }
@@ -929,7 +947,16 @@ export const DashboardPage = () => {
                       )}
                     </div>
                     <div className="venta-card-footer">
-                      <span className="venta-total">${(Number(venta.totaldeventa) || 0).toFixed(2)}</span>
+                      <span className="venta-total">
+                        ${(() => {
+                          const total = Number(venta.totaldeventa) || 0;
+                          if (venta.formadepago === 'MIXTO') {
+                            const pagos = pagosRegistrados[venta.folioventa] || 0;
+                            return Math.max(0, total - pagos).toFixed(2);
+                          }
+                          return total.toFixed(2);
+                        })()}
+                      </span>
                       <div className="venta-card-actions">
                         <button 
                           className="btn-comanda"
@@ -963,15 +990,17 @@ export const DashboardPage = () => {
                             Pagar
                           </button>
                         )}
-                        <button 
-                          className="btn-ver-detalle"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleVerDetalle(venta);
-                          }}
-                        >
-                          Ver detalle
-                        </button>
+                        {venta.formadepago !== 'MIXTO' && (
+                          <button 
+                            className="btn-ver-detalle"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleVerDetalle(venta);
+                            }}
+                          >
+                            Ver detalle
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
