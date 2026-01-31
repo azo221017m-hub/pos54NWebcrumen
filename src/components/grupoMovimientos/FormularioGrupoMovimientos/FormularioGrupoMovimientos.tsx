@@ -10,10 +10,70 @@ interface Props {
   onCancel: () => void;
 }
 
+// Definición de tipos de grupo con nuevos nombres y descripciones
+interface TipoGrupoOption {
+  value: string;
+  label: string;
+  helpText: string;
+}
+
 // Opciones dinámicas según la naturaleza
-const opcionesTipoGrupo: Record<NaturalezaGrupoMovimientos, string[]> = {
-  COMPRA: ['Inventario', 'Activo Fijo', 'Servicios', 'Administrativo', 'Extraordinaria'],
-  GASTO: ['Operación', 'Financiero', 'Extraordinario', 'Fiscal']
+const opcionesTipoGrupo: Record<NaturalezaGrupoMovimientos, TipoGrupoOption[]> = {
+  COMPRA: [
+    { 
+      value: 'Productos para Venta', 
+      label: 'Productos para Venta', 
+      helpText: 'Insumos y mercancía que se venden o se usan para producir' 
+    },
+    { 
+      value: 'Equipo y Mobiliario', 
+      label: 'Equipo y Mobiliario', 
+      helpText: 'Bienes duraderos del negocio' 
+    },
+    { 
+      value: 'Servicios para el Negocio', 
+      label: 'Servicios para el Negocio', 
+      helpText: 'Servicios contratados para operar' 
+    },
+    { 
+      value: 'Gestión y Administración', 
+      label: 'Gestión y Administración', 
+      helpText: 'Compras administrativas y de control' 
+    },
+    { 
+      value: 'Compra No Habitual', 
+      label: 'Compra No Habitual', 
+      helpText: 'Compras fuera de lo normal' 
+    }
+  ],
+  GASTO: [
+    { 
+      value: 'Gastos de Operación Diaria', 
+      label: 'Gastos de Operación Diaria', 
+      helpText: 'Gastos necesarios para vender y operar' 
+    },
+    { 
+      value: 'Costos Financieros', 
+      label: 'Costos Financieros', 
+      helpText: 'Intereses y comisiones' 
+    },
+    { 
+      value: 'Gasto No Recurrente', 
+      label: 'Gasto No Recurrente', 
+      helpText: 'Gastos inesperados o excepcionales' 
+    },
+    { 
+      value: 'Impuestos y Obligaciones', 
+      label: 'Impuestos y Obligaciones', 
+      helpText: 'Pagos al SAT u otras autoridades' 
+    }
+  ]
+};
+
+// Texto de ayuda para naturaleza del grupo
+const naturalezaHelpText: Record<NaturalezaGrupoMovimientos, string> = {
+  COMPRA: 'Adquisiciones que se quedan en el negocio o generan valor.',
+  GASTO: 'Dinero ya consumido para operar.'
 };
 
 const FormularioGrupoMovimientos: React.FC<Props> = ({ grupo, idnegocio, onSave, onCancel }) => {
@@ -99,9 +159,14 @@ const FormularioGrupoMovimientos: React.FC<Props> = ({ grupo, idnegocio, onSave,
           <div className="scroll-container">
             {/* Naturaleza de Grupo */}
             <div className="form-group">
-              <label htmlFor="naturalezacuentacontable">
-                Naturaleza del Grupo <span className="required">*</span>
-              </label>
+              <div className="label-with-help">
+                <label htmlFor="naturalezacuentacontable">
+                  Naturaleza del Grupo <span className="required">*</span>
+                </label>
+                <span className="help-label">
+                  {naturalezaHelpText[formData.naturalezacuentacontable]}
+                </span>
+              </div>
               <select
                 id="naturalezacuentacontable"
                 name="naturalezacuentacontable"
@@ -117,9 +182,18 @@ const FormularioGrupoMovimientos: React.FC<Props> = ({ grupo, idnegocio, onSave,
 
             {/* Tipo de Grupo */}
             <div className="form-group">
-              <label htmlFor="tipocuentacontable">
-                Tipo de Grupo <span className="required">*</span>
-              </label>
+              <div className="label-with-help">
+                <label htmlFor="tipocuentacontable">
+                  Tipo de Grupo <span className="required">*</span>
+                </label>
+                {formData.tipocuentacontable && (
+                  <span className="help-label">
+                    {opcionesTipoGrupo[formData.naturalezacuentacontable].find(
+                      opt => opt.value === formData.tipocuentacontable
+                    )?.helpText}
+                  </span>
+                )}
+              </div>
               <select
                 id="tipocuentacontable"
                 name="tipocuentacontable"
@@ -130,7 +204,7 @@ const FormularioGrupoMovimientos: React.FC<Props> = ({ grupo, idnegocio, onSave,
               >
                 <option value="">Seleccione un tipo</option>
                 {opcionesTipoGrupo[formData.naturalezacuentacontable].map(tipo => (
-                  <option key={tipo} value={tipo}>{tipo}</option>
+                  <option key={tipo.value} value={tipo.value}>{tipo.label}</option>
                 ))}
               </select>
               {errores.tipocuentacontable && (
