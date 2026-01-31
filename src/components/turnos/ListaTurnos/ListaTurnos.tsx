@@ -7,7 +7,6 @@ import './ListaTurnos.css';
 interface ListaTurnosProps {
   turnos: Turno[];
   onEdit: (turno: Turno) => void;
-  onDelete?: (idturno: number) => void;
 }
 
 const ListaTurnos: React.FC<ListaTurnosProps> = ({ turnos, onEdit }) => {
@@ -54,6 +53,12 @@ const ListaTurnos: React.FC<ListaTurnosProps> = ({ turnos, onEdit }) => {
     const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
     
     return `${hours}h ${minutes}m`;
+  };
+
+  const calcularPorcentajeMeta = (totalventas: number | undefined, metaturno: number | null | undefined): string => {
+    if (!metaturno || metaturno <= 0) return '0%';
+    const porcentaje = ((totalventas || 0) / metaturno * 100).toFixed(1);
+    return `${porcentaje}%`;
   };
 
   const turnosArray = Array.isArray(turnos) ? turnos : [];
@@ -145,10 +150,7 @@ const ListaTurnos: React.FC<ListaTurnosProps> = ({ turnos, onEdit }) => {
                     <span className="detalle-line">Meta: ${(turno.metaturno || 0).toFixed(2)}</span>
                     <span className="detalle-line">
                       <Target size={12} style={{ display: 'inline', marginRight: '2px' }} />
-                      {turno.metaturno && turno.metaturno > 0 
-                        ? `${((turno.totalventas || 0) / turno.metaturno * 100).toFixed(1)}%`
-                        : '0%'
-                      } alcanzado
+                      {calcularPorcentajeMeta(turno.totalventas, turno.metaturno)} alcanzado
                     </span>
                   </div>
                 </div>

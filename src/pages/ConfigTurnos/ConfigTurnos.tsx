@@ -5,14 +5,14 @@ import type { Turno, TurnoUpdate } from '../../types/turno.types';
 import { EstatusTurno } from '../../types/turno.types';
 import {
   obtenerTurnos,
-  actualizarTurno,
-  eliminarTurno
+  actualizarTurno
 } from '../../services/turnosService';
 import CierreTurno from '../../components/turnos/CierreTurno/CierreTurno';
 import ListaTurnos from '../../components/turnos/ListaTurnos/ListaTurnos';
 import './ConfigTurnos.css';
 
-// Types imported from CierreTurno
+// Types from CierreTurno component - duplicated here to avoid circular dependencies
+// TODO: Consider moving to a shared types file if these types are needed elsewhere
 interface Denominaciones {
   billete1000: number;
   billete500: number;
@@ -92,21 +92,6 @@ const ConfigTurnos: React.FC = () => {
     }
   };
 
-  const handleEliminarTurno = async (idturno: number) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este turno?')) {
-      return;
-    }
-
-    try {
-      const idEliminado = await eliminarTurno(idturno);
-      mostrarMensaje('success', 'Turno eliminado exitosamente');
-      setTurnos(prev => prev.filter(t => t.idturno !== idEliminado));
-    } catch (error) {
-      console.error('Error al eliminar turno:', error);
-      mostrarMensaje('error', 'Error al eliminar el turno');
-    }
-  };
-
   const handleEditarTurno = (turno: Turno) => {
     if (turno.estatusturno === EstatusTurno.CERRADO) {
       mostrarMensaje('error', 'No se pueden editar turnos cerrados');
@@ -168,7 +153,6 @@ const ConfigTurnos: React.FC = () => {
           <ListaTurnos
             turnos={turnos}
             onEdit={handleEditarTurno}
-            onDelete={handleEliminarTurno}
           />
         )}
       </div>
