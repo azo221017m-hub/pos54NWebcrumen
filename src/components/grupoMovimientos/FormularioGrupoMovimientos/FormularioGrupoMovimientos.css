@@ -130,6 +130,22 @@
   color: #1e293b;
 }
 
+.label-with-help {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.help-label {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #64748b;
+  font-style: italic;
+  line-height: 1.4;
+  margin-top: 0.25rem;
+}
+
 .required {
   color: #ef4444;
 }
