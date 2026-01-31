@@ -46,8 +46,8 @@ interface CierreTurnoProps {
 }
 
 const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) => {
-  // ID de turno desde props
-  const idTurno = turno.claveturno;
+  // Clave de turno desde props
+  const claveTurno = turno.claveturno;
 
   // Estado para el retiro de fondo
   const [retiroFondo, setRetiroFondo] = useState<string>('');
@@ -99,7 +99,7 @@ const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) 
     e.preventDefault();
     
     const datosFormulario = {
-      idTurno,
+      idTurno: claveTurno,
       retiroFondo: parseFloat(retiroFondo) || 0,
       totalArqueo,
       detalleDenominaciones: denominaciones,
@@ -163,7 +163,7 @@ const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) 
           </div>
           <div className="header-id">
             <span className="id-label">ID:</span>
-            <span className="id-value">{idTurno}</span>
+            <span className="id-value">{claveTurno}</span>
           </div>
         </div>
 

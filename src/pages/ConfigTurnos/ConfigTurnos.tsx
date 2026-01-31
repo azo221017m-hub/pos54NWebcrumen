@@ -62,11 +62,21 @@ const ConfigTurnos: React.FC = () => {
     }
   };
 
-  const handleCerrarTurno = async () => {
+  const handleCerrarTurno = async (datosFormulario: {
+    idTurno: string;
+    retiroFondo: number;
+    totalArqueo: number;
+    detalleDenominaciones: any;
+    estatusCierre: string;
+  }) => {
     if (!turnoEditar) return;
     
     try {
+      // Log the closure data for future backend integration
+      console.log('Datos del cierre de turno:', datosFormulario);
+      
       // Actualizar el turno con estatus cerrado
+      // TODO: En el futuro, enviar datosFormulario al backend para persistir la información del cierre
       const turnoUpdate: TurnoUpdate = {
         estatusturno: EstatusTurno.CERRADO
       };
