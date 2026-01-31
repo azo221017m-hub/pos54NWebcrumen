@@ -1,16 +1,16 @@
 import React from 'react';
 import type { Turno } from '../../../types/turno.types';
 import { EstatusTurno } from '../../../types/turno.types';
-import { Clock, Calendar, User, Building2, Edit2, CheckCircle, XCircle, DollarSign, Target, TrendingUp } from 'lucide-react';
+import { Clock, Calendar, User, Building2, Edit2, CheckCircle, XCircle, DollarSign, Target } from 'lucide-react';
 import './ListaTurnos.css';
 
 interface ListaTurnosProps {
   turnos: Turno[];
   onEdit: (turno: Turno) => void;
-  onDelete: (idturno: number) => void;
+  onDelete?: (idturno: number) => void;
 }
 
-const ListaTurnos: React.FC<ListaTurnosProps> = ({ turnos, onEdit, onDelete }) => {
+const ListaTurnos: React.FC<ListaTurnosProps> = ({ turnos, onEdit }) => {
   const getEstatusClass = (estatus: EstatusTurno): string => {
     switch (estatus) {
       case EstatusTurno.ABIERTO:
