@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './ModuloPagos.css';
 import { obtenerDescuentos } from '../../services/descuentosService';
 import { procesarPagoSimple, procesarPagoMixto, obtenerDetallesPagos } from '../../services/pagosService';
@@ -21,6 +21,10 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     { formaPago: 'Efectivo', importe: '', referencia: '' }
   ]);
   
+  // Refs for setting focus
+  const montoEfectivoRef = useRef<HTMLInputElement>(null);
+  const numeroReferenciaRef = useRef<HTMLInputElement>(null);
+  
   // Estados para descuentos
   const [descuentos, setDescuentos] = useState<Descuento[]>([]);
   const [descuentoSeleccionado, setDescuentoSeleccionado] = useState<Descuento | null>(null);
@@ -41,6 +45,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     if (!ventaId) {
       console.warn('⚠️ ModuloPagos abierto sin ventaId. El usuario debe usar PRODUCIR primero.');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ventaId]);
 
   // Set default payment method to mixto if sale has MIXTO payment
@@ -65,12 +70,28 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     }
   }, [folioventa]);
 
+  // Load registered payments on mount to check if discounts should be disabled
+  useEffect(() => {
+    if (folioventa) {
+      cargarPagosRegistrados();
+    }
+  }, [folioventa, cargarPagosRegistrados]);
+
   // Cargar pagos registrados cuando cambia el método de pago a MIXTO o cuando cambia folioventa
   useEffect(() => {
     if (metodoPagoSeleccionado === 'mixto' && folioventa) {
       cargarPagosRegistrados();
     }
   }, [metodoPagoSeleccionado, folioventa, cargarPagosRegistrados]);
+
+  // Set focus when payment method changes
+  useEffect(() => {
+    if (metodoPagoSeleccionado === 'efectivo' && montoEfectivoRef.current) {
+      montoEfectivoRef.current.focus();
+    } else if (metodoPagoSeleccionado === 'transferencia' && numeroReferenciaRef.current) {
+      numeroReferenciaRef.current.focus();
+    }
+  }, [metodoPagoSeleccionado]);
 
   const cargarDescuentos = async () => {
     try {
@@ -146,6 +167,15 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
 
   const handleAgregarPagoMixto = () => {
     setPagosMixtos([...pagosMixtos, { formaPago: 'Efectivo', importe: '', referencia: '' }]);
+  };
+
+  const handleEliminarPagoMixto = (index: number) => {
+    if (pagosMixtos.length > 1) {
+      const nuevos = pagosMixtos.filter((_, i) => i !== index);
+      setPagosMixtos(nuevos);
+    } else {
+      alert('Debe mantener al menos una forma de pago');
+    }
   };
 
   const handleCobrar = async () => {
@@ -337,7 +367,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
                 className="pagos-select-descuento"
                 value={descuentoSeleccionado?.id_descuento.toString() || ''}
                 onChange={(e) => handleSeleccionarDescuento(e.target.value)}
-                disabled={cargandoDescuentos}
+                disabled={cargandoDescuentos || pagosRegistrados.length > 0}
               >
                 <option value="">
                   {cargandoDescuentos ? 'Cargando...' : 'Seleccionar descuento'}
@@ -404,10 +434,6 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
                         )}
                       </div>
                     ))}
-                    <div className="pago-registrado-total">
-                      <span>Total Pagado:</span>
-                      <span className="pago-total-monto">${sumaPagosRegistrados.toFixed(2)}</span>
-                    </div>
                   </div>
                 ) : (
                   <p className="pagos-vacio">No hay pagos registrados</p>
@@ -439,6 +465,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
                 </div>
                 <label className="pagos-label-monto">Total recibido</label>
                 <input 
+                  ref={montoEfectivoRef}
                   type="number" 
                   className="pagos-input-monto" 
                   placeholder="Ingrese el monto recibido"
@@ -465,6 +492,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
                 </div>
                 <label className="pagos-label-referencia">Número de referencia</label>
                 <input 
+                  ref={numeroReferenciaRef}
                   type="text" 
                   className="pagos-input-referencia" 
                   placeholder="Ingrese número de referencia"
@@ -504,6 +532,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
                         <th>Forma de Pago</th>
                         <th>Importe</th>
                         <th>Referencia</th>
+                        <th>Acción</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -527,6 +556,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
                           <td>
                             <input 
                               type="number" 
+                              className="pagos-input-importe-mixto"
                               placeholder="Importe"
                               value={pago.importe}
                               onChange={(e) => {
@@ -548,6 +578,15 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
                                 setPagosMixtos(nuevos);
                               }}
                             />
+                          </td>
+                          <td>
+                            <button 
+                              className="btn-eliminar-pago"
+                              onClick={() => handleEliminarPagoMixto(index)}
+                              title="Eliminar forma de pago"
+                            >
+                              ✕
+                            </button>
                           </td>
                         </tr>
                       ))}
