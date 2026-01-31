@@ -16,7 +16,7 @@ export interface Turno {
   claveturno: string;
   usuarioturno: string;
   idnegocio: number;
-  metaturno?: number | null;
+  metaturno?: number | string | null;
   totalventas?: number | string; // Total de ventas del turno (puede venir como string del backend)
 }
 

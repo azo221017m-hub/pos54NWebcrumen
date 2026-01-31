@@ -55,10 +55,11 @@ const ListaTurnos: React.FC<ListaTurnosProps> = ({ turnos, onEdit }) => {
     return `${hours}h ${minutes}m`;
   };
 
-  const calcularPorcentajeMeta = (totalventas: number | string | undefined, metaturno: number | null | undefined): string => {
-    if (!metaturno || metaturno <= 0) return '0%';
+  const calcularPorcentajeMeta = (totalventas: number | string | undefined, metaturno: number | string | null | undefined): string => {
+    const metaTurnoNum = Number(metaturno) || 0;
+    if (metaTurnoNum <= 0) return '0%';
     const totalVentasNum = Number(totalventas) || 0;
-    const porcentaje = (totalVentasNum / metaturno * 100).toFixed(1);
+    const porcentaje = (totalVentasNum / metaTurnoNum * 100).toFixed(1);
     return `${porcentaje}%`;
   };
 
@@ -148,7 +149,7 @@ const ListaTurnos: React.FC<ListaTurnosProps> = ({ turnos, onEdit }) => {
                   <span className="stat-label">Detalle</span>
                   <div className="stat-value-detalle">
                     <span className="detalle-line">Ventas: ${(Number(turno.totalventas) || 0).toFixed(2)}</span>
-                    <span className="detalle-line">Meta: ${(turno.metaturno || 0).toFixed(2)}</span>
+                    <span className="detalle-line">Meta: ${(Number(turno.metaturno) || 0).toFixed(2)}</span>
                     <span className="detalle-line">
                       <Target size={12} style={{ display: 'inline', marginRight: '2px' }} />
                       {calcularPorcentajeMeta(turno.totalventas, turno.metaturno)} alcanzado
