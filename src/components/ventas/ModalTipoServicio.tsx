@@ -169,7 +169,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
         alert('Por favor seleccione la fecha y hora de entrega');
         return;
       }
-      // If cliente is empty or null, default to 'mostrador'
+      // If cliente is empty, default to 'mostrador'
       const clienteNombre = llevarFormData.cliente.trim() || 'mostrador';
       onSave({
         ...llevarFormData,
@@ -188,7 +188,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
         alert('Por favor ingrese el teléfono de contacto');
         return;
       }
-      // If cliente is empty or null, default to 'mostrador'
+      // If cliente is empty, default to 'mostrador'
       const clienteNombre = domicilioFormData.cliente.trim() || 'mostrador';
       onSave({
         ...domicilioFormData,

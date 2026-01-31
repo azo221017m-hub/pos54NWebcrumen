@@ -1012,14 +1012,12 @@ const PageVentas: React.FC = () => {
   };
 
   const handleEliminarEspera = async () => {
-    // Update the venta status to ELIMINADA
     if (!currentVentaId) {
       alert('No hay una venta activa para eliminar');
       return;
     }
 
     try {
-      // Update the venta status to ELIMINADA
       const resultado = await actualizarVentaWeb(currentVentaId, {
         estadodeventa: 'ELIMINADA'
       });
