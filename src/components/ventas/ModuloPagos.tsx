@@ -37,6 +37,20 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   const [pagosRegistrados, setPagosRegistrados] = useState<DetallePago[]>([]);
   const [cargandoPagosRegistrados, setCargandoPagosRegistrados] = useState(false);
 
+  const cargarDescuentos = useCallback(async () => {
+    try {
+      setCargandoDescuentos(true);
+      const descuentosData = await obtenerDescuentos();
+      // Filtrar solo descuentos activos (case-insensitive)
+      const descuentosActivos = descuentosData.filter(d => d.estatusdescuento.toLowerCase() === 'activo');
+      setDescuentos(descuentosActivos);
+    } catch (error) {
+      console.error('Error al cargar descuentos:', error);
+    } finally {
+      setCargandoDescuentos(false);
+    }
+  }, []);
+
   // Cargar descuentos al montar el componente
   useEffect(() => {
     cargarDescuentos();
@@ -45,8 +59,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     if (!ventaId) {
       console.warn('⚠️ ModuloPagos abierto sin ventaId. El usuario debe usar PRODUCIR primero.');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ventaId]);
+  }, [ventaId, cargarDescuentos]);
 
   // Set default payment method to mixto if sale has MIXTO payment
   useEffect(() => {
@@ -92,20 +105,6 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
       numeroReferenciaRef.current.focus();
     }
   }, [metodoPagoSeleccionado]);
-
-  const cargarDescuentos = async () => {
-    try {
-      setCargandoDescuentos(true);
-      const descuentosData = await obtenerDescuentos();
-      // Filtrar solo descuentos activos (case-insensitive)
-      const descuentosActivos = descuentosData.filter(d => d.estatusdescuento.toLowerCase() === 'activo');
-      setDescuentos(descuentosActivos);
-    } catch (error) {
-      console.error('Error al cargar descuentos:', error);
-    } finally {
-      setCargandoDescuentos(false);
-    }
-  };
 
   // Helper para verificar si es descuento de tipo porcentaje
   const esTipoPorcentaje = (tipodescuento: string): boolean => {
