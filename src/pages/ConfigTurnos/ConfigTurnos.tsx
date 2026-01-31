@@ -9,7 +9,7 @@ import {
   actualizarTurno,
   eliminarTurno
 } from '../../services/turnosService';
-import FormularioTurno from '../../components/turnos/FormularioTurno/FormularioTurno';
+import CierreTurno from '../../components/turnos/CierreTurno/CierreTurno';
 import ListaTurnos from '../../components/turnos/ListaTurnos/ListaTurnos';
 import './ConfigTurnos.css';
 
@@ -62,11 +62,26 @@ const ConfigTurnos: React.FC = () => {
     }
   };
 
-  const handleCerrarTurno = async (turno: TurnoUpdate) => {
+  const handleCerrarTurno = async (datosFormulario: {
+    idTurno: string;
+    retiroFondo: number;
+    totalArqueo: number;
+    detalleDenominaciones: any;
+    estatusCierre: string;
+  }) => {
     if (!turnoEditar) return;
     
     try {
-      const turnoActualizado = await actualizarTurno(turnoEditar.idturno, turno);
+      // Log the closure data for future backend integration
+      console.log('Datos del cierre de turno:', datosFormulario);
+      
+      // Actualizar el turno con estatus cerrado
+      // TODO: En el futuro, enviar datosFormulario al backend para persistir la información del cierre
+      const turnoUpdate: TurnoUpdate = {
+        estatusturno: EstatusTurno.CERRADO
+      };
+      
+      const turnoActualizado = await actualizarTurno(turnoEditar.idturno, turnoUpdate);
       mostrarMensaje('success', 'Turno cerrado exitosamente');
       setMostrarFormulario(false);
       setTurnoEditar(undefined);
@@ -167,9 +182,9 @@ const ConfigTurnos: React.FC = () => {
       </div>
 
       {/* Formulario Modal */}
-      {mostrarFormulario && (
-        <FormularioTurno
-          turnoInicial={turnoEditar}
+      {mostrarFormulario && turnoEditar && (
+        <CierreTurno
+          turno={turnoEditar}
           onSubmit={handleCerrarTurno}
           onCancel={handleCancelar}
         />
