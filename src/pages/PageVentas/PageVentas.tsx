@@ -743,6 +743,8 @@ const PageVentas: React.FC = () => {
 
   const handleEsperar = async () => {
     await crearVenta('ESPERAR', 'ESPERAR', 'ESPERAR');
+    // Navigate to dashboard after creating ESPERAR venta
+    navigate('/dashboard');
   };
 
   const handleModeradorSelection = (selectedModeradores: number[]) => {
@@ -1009,21 +1011,27 @@ const PageVentas: React.FC = () => {
     return moderadores.filter(m => uniqueModeradorIds.includes(m.idmoderador));
   };
 
-  const handleListadoPagos = async () => {
-    const total = calcularTotal();
-    
-    // Check if there are no products or total is 0
-    if (comanda.length === 0 || total === 0) {
-      alert('No hay productos por cobrar');
+  const handleEliminarEspera = async () => {
+    if (!currentVentaId) {
+      alert('No hay una venta activa para eliminar');
       return;
     }
-    
-    // Show payment module directly without calling Producir
-    // Note: The crearVenta (Producir) call was removed as per requirement.
-    // The payment list should only display the payment module (ModuloPagos)
-    // without creating a new sale or changing item status to ORDENADO.
-    // Users should use the separate "Producir" button for that operation.
-    setShowModuloPagos(true);
+
+    try {
+      const resultado = await actualizarVentaWeb(currentVentaId, {
+        estadodeventa: 'ELIMINADA'
+      });
+
+      if (resultado.success) {
+        alert('Venta eliminada exitosamente');
+        navigate('/dashboard');
+      } else {
+        alert(`Error al eliminar la venta: ${resultado.message || 'Error desconocido'}`);
+      }
+    } catch (error) {
+      console.error('Error al eliminar venta:', error);
+      alert('Error al eliminar la venta');
+    }
   };
 
   const handleCategoriaClick = (idCategoria: number) => {
@@ -1140,6 +1148,8 @@ const PageVentas: React.FC = () => {
           <ArrowLeft size={20} />
           Cancelar
         </button>
+
+        <img src="/logowebposcrumen.svg" alt="Logo POS Crumen" className="header-logo-ventas" />
 
         <FichaDeComanda
           tipoServicio={tipoServicio}
@@ -1357,12 +1367,12 @@ const PageVentas: React.FC = () => {
             <button 
               className="btn-esperar" 
               onClick={handleEsperar} 
-              disabled={!isServiceConfigured || comanda.length === 0 || hasOrdenadoItems(comanda)}
+              disabled={!isServiceConfigured || comanda.length === 0 || hasOrdenadoItems(comanda) || currentEstadoDeVenta === 'ESPERAR'}
             >
               Esperar
             </button>
-            {isLoadedFromDashboard && !hasOrdenadoItems(comanda) && (
-              <button className="btn-listado" onClick={handleListadoPagos} disabled={!isServiceConfigured}>listado de pagos</button>
+            {currentEstadoDeVenta === 'ESPERAR' && (
+              <button className="btn-eliminar-espera" onClick={handleEliminarEspera} disabled={!isServiceConfigured}>ELIMINAR ESPERA</button>
             )}
           </div>
 

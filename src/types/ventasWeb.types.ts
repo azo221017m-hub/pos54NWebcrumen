@@ -1,7 +1,7 @@
 // Tipos para tblposcrumenwebventas y tblposcrumenwebdetalleventas - Frontend
 
 export type TipoDeVenta = 'DOMICILIO' | 'LLEVAR' | 'MESA' | 'ONLINE' | 'MOVIMIENTO';
-export type EstadoDeVenta = 'SOLICITADO' | 'LEIDO' | 'PREPARANDO' | 'EN_CAMINO' | 'ENTREGADO' | 'CANCELADO' | 'DEVUELTO' | 'COBRADO' | 'ESPERAR' | 'ORDENADO';
+export type EstadoDeVenta = 'SOLICITADO' | 'LEIDO' | 'PREPARANDO' | 'EN_CAMINO' | 'ENTREGADO' | 'CANCELADO' | 'DEVUELTO' | 'COBRADO' | 'ESPERAR' | 'ORDENADO' | 'ELIMINADA';
 export type FormaDePago = 'EFECTIVO' | 'TARJETA' | 'TRANSFERENCIA' | 'MIXTO' | 'sinFP';
 export type EstatusDePago = 'PENDIENTE' | 'PAGADO' | 'ESPERAR';
 export type TipoAfectacion = 'DIRECTO' | 'INVENTARIO' | 'RECETA';
