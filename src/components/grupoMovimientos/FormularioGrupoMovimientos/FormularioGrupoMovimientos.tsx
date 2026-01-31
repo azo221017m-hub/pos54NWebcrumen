@@ -11,6 +11,12 @@ interface Props {
 }
 
 // Definición de tipos de grupo con nuevos nombres y descripciones
+/**
+ * Interface que define la estructura de las opciones de tipo de grupo
+ * @property value - El valor que se guarda en la base de datos
+ * @property label - El texto mostrado al usuario en el dropdown
+ * @property helpText - Texto de ayuda que explica el propósito del tipo de grupo
+ */
 interface TipoGrupoOption {
   value: string;
   label: string;
@@ -94,6 +100,14 @@ const FormularioGrupoMovimientos: React.FC<Props> = ({ grupo, idnegocio, onSave,
 
   const [formData, setFormData] = useState(initialState);
   const [errores, setErrores] = useState<Record<string, string>>({});
+
+  // Memoizar el texto de ayuda del tipo de grupo seleccionado
+  const selectedTipoHelpText = useMemo(() => {
+    if (!formData.tipocuentacontable) return null;
+    return opcionesTipoGrupo[formData.naturalezacuentacontable].find(
+      opt => opt.value === formData.tipocuentacontable
+    )?.helpText;
+  }, [formData.tipocuentacontable, formData.naturalezacuentacontable]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -186,11 +200,9 @@ const FormularioGrupoMovimientos: React.FC<Props> = ({ grupo, idnegocio, onSave,
                 <label htmlFor="tipocuentacontable">
                   Tipo de Grupo <span className="required">*</span>
                 </label>
-                {formData.tipocuentacontable && (
+                {selectedTipoHelpText && (
                   <span className="help-label">
-                    {opcionesTipoGrupo[formData.naturalezacuentacontable].find(
-                      opt => opt.value === formData.tipocuentacontable
-                    )?.helpText}
+                    {selectedTipoHelpText}
                   </span>
                 )}
               </div>
