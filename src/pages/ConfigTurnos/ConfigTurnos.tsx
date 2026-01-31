@@ -9,7 +9,7 @@ import {
   actualizarTurno,
   eliminarTurno
 } from '../../services/turnosService';
-import FormularioTurno from '../../components/turnos/FormularioTurno/FormularioTurno';
+import CierreTurno from '../../components/turnos/CierreTurno/CierreTurno';
 import ListaTurnos from '../../components/turnos/ListaTurnos/ListaTurnos';
 import './ConfigTurnos.css';
 
@@ -62,11 +62,16 @@ const ConfigTurnos: React.FC = () => {
     }
   };
 
-  const handleCerrarTurno = async (turno: TurnoUpdate) => {
+  const handleCerrarTurno = async () => {
     if (!turnoEditar) return;
     
     try {
-      const turnoActualizado = await actualizarTurno(turnoEditar.idturno, turno);
+      // Actualizar el turno con estatus cerrado
+      const turnoUpdate: TurnoUpdate = {
+        estatusturno: EstatusTurno.CERRADO
+      };
+      
+      const turnoActualizado = await actualizarTurno(turnoEditar.idturno, turnoUpdate);
       mostrarMensaje('success', 'Turno cerrado exitosamente');
       setMostrarFormulario(false);
       setTurnoEditar(undefined);
@@ -167,9 +172,9 @@ const ConfigTurnos: React.FC = () => {
       </div>
 
       {/* Formulario Modal */}
-      {mostrarFormulario && (
-        <FormularioTurno
-          turnoInicial={turnoEditar}
+      {mostrarFormulario && turnoEditar && (
+        <CierreTurno
+          turno={turnoEditar}
           onSubmit={handleCerrarTurno}
           onCancel={handleCancelar}
         />

@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import type { Turno } from '../../../types/turno.types';
+import { X } from 'lucide-react';
 import './CierreTurno.css';
 
 // Tipos para las denominaciones
@@ -31,9 +33,21 @@ const valoresDenominaciones = {
   moneda050: 0.50
 } as const;
 
-const CierreTurno: React.FC = () => {
-  // ID de turno (en producción, esto debería generarse dinámicamente o recibirse como prop)
-  const idTurno = '202601230737451234567890';
+interface CierreTurnoProps {
+  turno: Turno;
+  onCancel: () => void;
+  onSubmit?: (datosFormulario: {
+    idTurno: string;
+    retiroFondo: number;
+    totalArqueo: number;
+    detalleDenominaciones: Denominaciones;
+    estatusCierre: EstatusCierre;
+  }) => void;
+}
+
+const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) => {
+  // ID de turno desde props
+  const idTurno = turno.claveturno;
 
   // Estado para el retiro de fondo
   const [retiroFondo, setRetiroFondo] = useState<string>('');
@@ -93,23 +107,16 @@ const CierreTurno: React.FC = () => {
     };
     
     console.log('Datos del cierre de turno:', datosFormulario);
+    
+    // Llamar a onSubmit si está definido
+    if (onSubmit) {
+      onSubmit(datosFormulario);
+    }
   };
 
   // Manejador para cancelar
   const handleCancelar = () => {
-    setRetiroFondo('');
-    setDenominaciones({
-      billete1000: 0,
-      billete500: 0,
-      billete200: 0,
-      billete100: 0,
-      billete50: 0,
-      billete20: 0,
-      moneda10: 0,
-      moneda5: 0,
-      moneda1: 0,
-      moneda050: 0
-    });
+    onCancel();
   };
 
   // Renderizar una fila de denominación
@@ -137,8 +144,18 @@ const CierreTurno: React.FC = () => {
   );
 
   return (
-    <div className="cierre-turno-container">
-      <div className="cierre-turno-card">
+    <div className="modal-overlay" onClick={onCancel}>
+      <div className="modal-content-cierre" onClick={(e) => e.stopPropagation()}>
+        {/* Botón de cerrar modal */}
+        <button
+          type="button"
+          onClick={onCancel}
+          className="btn-cerrar-modal-cierre"
+          aria-label="Cerrar"
+        >
+          <X size={24} />
+        </button>
+
         {/* Encabezado */}
         <div className="turno-header">
           <div className="header-text">
