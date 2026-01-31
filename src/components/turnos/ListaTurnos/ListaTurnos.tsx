@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Turno } from '../../../types/turno.types';
 import { EstatusTurno } from '../../../types/turno.types';
-import { Clock, Calendar, Key, User, Building2, Edit2, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { Clock, Calendar, User, Building2, Edit2, CheckCircle, XCircle, DollarSign, Target, TrendingUp } from 'lucide-react';
 import './ListaTurnos.css';
 
 interface ListaTurnosProps {
@@ -136,11 +136,21 @@ const ListaTurnos: React.FC<ListaTurnosProps> = ({ turnos, onEdit, onDelete }) =
                 </div>
               </div>
 
-              <div className="stat-item clave">
-                <Key size={18} />
+              <div className="stat-item detalle">
+                <DollarSign size={18} />
                 <div className="stat-info">
-                  <span className="stat-label">Clave</span>
-                  <span className="stat-value stat-value-mono">{turno.claveturno}</span>
+                  <span className="stat-label">Detalle</span>
+                  <div className="stat-value-detalle">
+                    <span className="detalle-line">Ventas: ${(turno.totalventas || 0).toFixed(2)}</span>
+                    <span className="detalle-line">Meta: ${(turno.metaturno || 0).toFixed(2)}</span>
+                    <span className="detalle-line">
+                      <Target size={12} style={{ display: 'inline', marginRight: '2px' }} />
+                      {turno.metaturno && turno.metaturno > 0 
+                        ? `${((turno.totalventas || 0) / turno.metaturno * 100).toFixed(1)}%`
+                        : '0%'
+                      } alcanzado
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -155,13 +165,6 @@ const ListaTurnos: React.FC<ListaTurnosProps> = ({ turnos, onEdit, onDelete }) =
             >
               <Edit2 size={16} />
               Cerrar Turno
-            </button>
-            <button
-              onClick={() => onDelete(turno.idturno)}
-              className="btn-eliminar"
-            >
-              <Trash2 size={16} />
-              Eliminar
             </button>
           </div>
         </div>

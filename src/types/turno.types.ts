@@ -17,6 +17,8 @@ export interface Turno {
   usuarioturno: string;
   idnegocio: number;
   metaturno?: number | null;
+  totalventas?: number; // Total de ventas del turno
+  porcentajemeta?: number; // Porcentaje de meta alcanzado
 }
 
 // Interface para crear un nuevo turno (iniciar turno)

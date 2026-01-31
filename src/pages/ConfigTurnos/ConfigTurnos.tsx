@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Clock, Loader } from 'lucide-react';
+import { ArrowLeft, Clock, Loader } from 'lucide-react';
 import type { Turno, TurnoUpdate } from '../../types/turno.types';
 import { EstatusTurno } from '../../types/turno.types';
 import {
@@ -158,10 +158,6 @@ const ConfigTurnos: React.FC = () => {
               <p>Administra los turnos de trabajo del negocio</p>
             </div>
           </div>
-          <button onClick={handleIniciarTurno} className="btn-nuevo">
-            <Plus size={20} />
-            Iniciar Turno
-          </button>
         </div>
       </div>
 

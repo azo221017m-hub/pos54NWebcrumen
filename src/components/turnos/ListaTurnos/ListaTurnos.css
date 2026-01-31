@@ -146,6 +146,20 @@
   font-size: 0.45rem;
 }
 
+/* Detalle stats styling */
+.stat-value-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.detalle-line {
+  font-size: 0.48rem;
+  color: #1e293b;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
 /* Footer del Card */
 .turno-card-footer {
   display: flex;
