@@ -165,20 +165,17 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
         alert('Error al configurar la mesa. Por favor intente nuevamente.');
       }
     } else if (tipoServicio === 'Llevar') {
-      if (!llevarFormData.cliente.trim()) {
-        alert('Por favor ingrese el nombre del cliente');
-        return;
-      }
       if (!llevarFormData.fechaprogramadaventa) {
         alert('Por favor seleccione la fecha y hora de entrega');
         return;
       }
-      onSave(llevarFormData);
+      // If cliente is empty or null, default to 'mostrador'
+      const clienteNombre = llevarFormData.cliente.trim() || 'mostrador';
+      onSave({
+        ...llevarFormData,
+        cliente: clienteNombre
+      });
     } else if (tipoServicio === 'Domicilio') {
-      if (!domicilioFormData.cliente.trim()) {
-        alert('Por favor ingrese el nombre del cliente');
-        return;
-      }
       if (!domicilioFormData.fechaprogramadaventa) {
         alert('Por favor seleccione la fecha y hora de entrega');
         return;
@@ -191,7 +188,12 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
         alert('Por favor ingrese el teléfono de contacto');
         return;
       }
-      onSave(domicilioFormData);
+      // If cliente is empty or null, default to 'mostrador'
+      const clienteNombre = domicilioFormData.cliente.trim() || 'mostrador';
+      onSave({
+        ...domicilioFormData,
+        cliente: clienteNombre
+      });
     }
   };
 
@@ -220,8 +222,8 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay-servicio" onClick={handleCancel}>
-      <div className="modal-content-servicio" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay-servicio">
+      <div className="modal-content-servicio">
         <div className="modal-header-servicio">
           <h2>Configurar Servicio: {tipoServicio}</h2>
           <button className="btn-close-modal" onClick={handleCancel}>
