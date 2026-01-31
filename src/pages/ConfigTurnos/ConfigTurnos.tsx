@@ -1,17 +1,32 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Clock, Loader } from 'lucide-react';
+import { ArrowLeft, Clock, Loader } from 'lucide-react';
 import type { Turno, TurnoUpdate } from '../../types/turno.types';
 import { EstatusTurno } from '../../types/turno.types';
 import {
   obtenerTurnos,
-  crearTurno,
-  actualizarTurno,
-  eliminarTurno
+  actualizarTurno
 } from '../../services/turnosService';
 import CierreTurno from '../../components/turnos/CierreTurno/CierreTurno';
 import ListaTurnos from '../../components/turnos/ListaTurnos/ListaTurnos';
 import './ConfigTurnos.css';
+
+// Types from CierreTurno component - duplicated here to avoid circular dependencies
+// TODO: Consider moving to a shared types file if these types are needed elsewhere
+interface Denominaciones {
+  billete1000: number;
+  billete500: number;
+  billete200: number;
+  billete100: number;
+  billete50: number;
+  billete20: number;
+  moneda10: number;
+  moneda5: number;
+  moneda1: number;
+  moneda050: number;
+}
+
+type EstatusCierre = 'sin_novedades' | 'cuentas_pendientes';
 
 const ConfigTurnos: React.FC = () => {
   const navigate = useNavigate();
@@ -43,31 +58,12 @@ const ConfigTurnos: React.FC = () => {
     cargarTurnos();
   }, [cargarTurnos]);
 
-  const handleIniciarTurno = async () => {
-    try {
-      // Verificar si ya existe un turno abierto
-      const turnoAbierto = turnos.find(t => t.estatusturno === EstatusTurno.ABIERTO);
-      if (turnoAbierto) {
-        mostrarMensaje('error', 'Ya existe un turno abierto. Cierra el turno actual antes de iniciar uno nuevo.');
-        return;
-      }
-
-      const nuevoTurno = await crearTurno();
-      mostrarMensaje('success', 'Turno iniciado exitosamente');
-      setTurnos(prev => [...prev, nuevoTurno]);
-    } catch (error: any) {
-      console.error('Error al iniciar turno:', error);
-      const errorMsg = error.response?.data?.message || 'Error al iniciar el turno';
-      mostrarMensaje('error', errorMsg);
-    }
-  };
-
   const handleCerrarTurno = async (datosFormulario: {
     idTurno: string;
     retiroFondo: number;
     totalArqueo: number;
-    detalleDenominaciones: any;
-    estatusCierre: string;
+    detalleDenominaciones: Denominaciones;
+    estatusCierre: EstatusCierre;
   }) => {
     if (!turnoEditar) return;
     
@@ -93,21 +89,6 @@ const ConfigTurnos: React.FC = () => {
     } catch (error) {
       console.error('Error al cerrar turno:', error);
       mostrarMensaje('error', 'Error al cerrar el turno');
-    }
-  };
-
-  const handleEliminarTurno = async (idturno: number) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este turno?')) {
-      return;
-    }
-
-    try {
-      const idEliminado = await eliminarTurno(idturno);
-      mostrarMensaje('success', 'Turno eliminado exitosamente');
-      setTurnos(prev => prev.filter(t => t.idturno !== idEliminado));
-    } catch (error) {
-      console.error('Error al eliminar turno:', error);
-      mostrarMensaje('error', 'Error al eliminar el turno');
     }
   };
 
@@ -158,10 +139,6 @@ const ConfigTurnos: React.FC = () => {
               <p>Administra los turnos de trabajo del negocio</p>
             </div>
           </div>
-          <button onClick={handleIniciarTurno} className="btn-nuevo">
-            <Plus size={20} />
-            Iniciar Turno
-          </button>
         </div>
       </div>
 
@@ -176,7 +153,6 @@ const ConfigTurnos: React.FC = () => {
           <ListaTurnos
             turnos={turnos}
             onEdit={handleEditarTurno}
-            onDelete={handleEliminarTurno}
           />
         )}
       </div>

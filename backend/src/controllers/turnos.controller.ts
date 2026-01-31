@@ -15,6 +15,7 @@ interface Turno extends RowDataPacket {
   usuarioturno: string;
   idnegocio: number;
   metaturno?: number | null;
+  totalventas?: number;
 }
 
 // Función auxiliar para generar claveturno
@@ -49,18 +50,25 @@ export const obtenerTurnos = async (req: AuthRequest, res: Response): Promise<vo
     
     const [rows] = await pool.query<Turno[]>(
       `SELECT 
-        idturno,
-        numeroturno,
-        fechainicioturno,
-        fechafinturno,
-        estatusturno,
-        claveturno,
-        usuarioturno,
-        idnegocio,
-        metaturno
-      FROM tblposcrumenwebturnos
-      WHERE idnegocio = ?
-      ORDER BY idturno DESC`,
+        t.idturno,
+        t.numeroturno,
+        t.fechainicioturno,
+        t.fechafinturno,
+        t.estatusturno,
+        t.claveturno,
+        t.usuarioturno,
+        t.idnegocio,
+        t.metaturno,
+        COALESCE(SUM(CASE 
+          WHEN v.estatuspago = 'cobrado' THEN v.totaldeventa 
+          ELSE 0 
+        END), 0) as totalventas
+      FROM tblposcrumenwebturnos t
+      LEFT JOIN tblposcrumenwebventas v ON t.claveturno = v.claveturno
+      WHERE t.idnegocio = ?
+      GROUP BY t.idturno, t.numeroturno, t.fechainicioturno, t.fechafinturno, 
+               t.estatusturno, t.claveturno, t.usuarioturno, t.idnegocio, t.metaturno
+      ORDER BY t.idturno DESC`,
       [idnegocio]
     );
 
