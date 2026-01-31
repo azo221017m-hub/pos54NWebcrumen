@@ -60,7 +60,7 @@ export const obtenerTurnos = async (req: AuthRequest, res: Response): Promise<vo
         t.idnegocio,
         t.metaturno,
         COALESCE(SUM(CASE 
-          WHEN v.estatuspago = 'cobrado' THEN v.totaldeventa 
+          WHEN v.estatusdepago = 'PAGADO' THEN v.totaldeventa 
           ELSE 0 
         END), 0) as totalventas
       FROM tblposcrumenwebturnos t
