@@ -57,7 +57,7 @@ const ListaTurnos: React.FC<ListaTurnosProps> = ({ turnos, onEdit }) => {
 
   const calcularPorcentajeMeta = (totalventas: number | string | undefined, metaturno: number | string | null | undefined): string => {
     const metaTurnoNum = Number(metaturno) || 0;
-    if (!metaTurnoNum || metaTurnoNum <= 0) return '0%';
+    if (metaTurnoNum <= 0) return '0%';
     const totalVentasNum = Number(totalventas) || 0;
     const porcentaje = (totalVentasNum / metaTurnoNum * 100).toFixed(1);
     return `${porcentaje}%`;
