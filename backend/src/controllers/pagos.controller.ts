@@ -8,6 +8,18 @@ import type {
   VentaWeb
 } from '../types/ventasWeb.types';
 
+/**
+ * Helper function to extract table name from cliente field for MESA sales
+ * The cliente field stores the table name in format "Mesa: {nombremesa}"
+ * This function extracts just the table name, handling case variations
+ * @param cliente The cliente field value
+ * @returns The extracted table name or empty string if not found
+ */
+const extractTableName = (cliente: string): string => {
+  // Use case-insensitive regex to remove "Mesa:" prefix with optional whitespace
+  return cliente.replace(/^mesa:\s*/i, '').trim();
+};
+
 // Process simple payment (EFECTIVO or TRANSFERENCIA)
 export const procesarPagoSimple = async (req: AuthRequest, res: Response): Promise<void> => {
   const connection = await pool.getConnection();
@@ -124,10 +136,7 @@ export const procesarPagoSimple = async (req: AuthRequest, res: Response): Promi
 
     // If it's a MESA sale, update table status to DISPONIBLE
     if (venta.tipodeventa === 'MESA' && venta.cliente) {
-      // Extract table name from cliente field
-      // The cliente field stores the table name in format "Mesa: {nombremesa}"
-      // We need to extract just the table name to update the mesas table
-      const nombreMesa = venta.cliente.replace('Mesa: ', '').trim();
+      const nombreMesa = extractTableName(venta.cliente);
       
       // Only update if we have a valid table name after extraction
       if (nombreMesa) {
@@ -356,10 +365,7 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
 
       // If it's a MESA sale, update table status to DISPONIBLE
       if (venta.tipodeventa === 'MESA' && venta.cliente) {
-        // Extract table name from cliente field
-        // The cliente field stores the table name in format "Mesa: {nombremesa}"
-        // We need to extract just the table name to update the mesas table
-        const nombreMesa = venta.cliente.replace('Mesa: ', '').trim();
+        const nombreMesa = extractTableName(venta.cliente);
         
         // Only update if we have a valid table name after extraction
         if (nombreMesa) {
