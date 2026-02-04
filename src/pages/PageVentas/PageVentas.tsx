@@ -49,6 +49,20 @@ const hasOrdenadoItems = (comanda: ItemComanda[]): boolean => {
   return comanda.some(item => item.estadodetalle === ESTADO_ORDENADO);
 };
 
+// Helper function to map TipoServicio to TipoDeVenta
+const getTipoDeVentaFromTipoServicio = (tipoServicio: TipoServicio): TipoDeVenta => {
+  switch (tipoServicio) {
+    case 'Mesa':
+      return 'MESA';
+    case 'Llevar':
+      return 'LLEVAR';
+    case 'Domicilio':
+      return 'DOMICILIO';
+    default:
+      return 'MESA'; // Default fallback
+  }
+};
+
 const PageVentas: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -1716,6 +1730,12 @@ const PageVentas: React.FC = () => {
           ventaId={currentVentaId}
           folioventa={currentFolioVenta || undefined}
           formadepago={currentFormaDePago || undefined}
+          tipodeventa={getTipoDeVentaFromTipoServicio(tipoServicio)}
+          detallesVenta={comanda.map(item => ({
+            comensal: item.comensal,
+            precio: Number(item.producto.precio) || 0,
+            cantidad: item.cantidad
+          }))}
         />
       )}
     </div>
