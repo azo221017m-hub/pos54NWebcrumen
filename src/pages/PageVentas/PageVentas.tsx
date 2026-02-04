@@ -745,7 +745,36 @@ const PageVentas: React.FC = () => {
     // Check if current venta has ESPERAR status - if so, UPDATE instead of creating new record
     if (currentVentaId && currentEstadoDeVenta === 'ESPERAR') {
       try {
-        // Update existing venta: estadodeventa = 'ORDENADO', estatusdepago = 'PENDIENTE'
+        // First, check if there are new products to add (items without ORDENADO or ESPERAR status)
+        const newItemsToOrder = comanda.filter(item => !item.estadodetalle || item.estadodetalle === 'ESPERAR');
+        
+        if (newItemsToOrder.length > 0) {
+          // Add new products to existing venta with ORDENADO status
+          const detallesData = newItemsToOrder.map(item => ({
+            idproducto: item.producto.idProducto,
+            nombreproducto: item.producto.nombre,
+            idreceta: item.producto.tipoproducto === 'Receta' && item.producto.idreferencia 
+              ? item.producto.idreferencia 
+              : null,
+            tipoproducto: item.producto.tipoproducto,
+            cantidad: item.cantidad,
+            preciounitario: Number(item.producto.precio),
+            costounitario: Number(item.producto.costoproducto),
+            observaciones: item.notas || null,
+            moderadores: item.moderadores || null,
+            comensal: item.comensal || null
+          }));
+          
+          console.log('Agregando nuevos productos a venta ESPERAR:', currentVentaId);
+          const resultadoDetalles = await agregarDetallesAVenta(currentVentaId, detallesData, ESTADO_ORDENADO);
+          
+          if (!resultadoDetalles.success) {
+            alert(`Error al agregar productos: ${resultadoDetalles.message || 'Error desconocido'}`);
+            return;
+          }
+        }
+        
+        // Then, update existing venta: estadodeventa = 'ORDENADO', estatusdepago = 'PENDIENTE'
         const resultado = await actualizarVentaWeb(currentVentaId, {
           estadodeventa: 'ORDENADO',
           estatusdepago: 'PENDIENTE'
@@ -1630,6 +1659,10 @@ const PageVentas: React.FC = () => {
       <ModalIniciaTurno
         isOpen={showIniciaTurnoModal}
         onTurnoIniciado={handleTurnoIniciado}
+        onCancelar={() => {
+          setShowIniciaTurnoModal(false);
+          navigate('/dashboard');
+        }}
         usuarioAlias={usuario?.alias}
       />
 
