@@ -122,6 +122,21 @@ export const procesarPagoSimple = async (req: AuthRequest, res: Response): Promi
       [usuarioauditoria, pagoData.idventa, idnegocio]
     );
 
+    // If it's a MESA sale, update table status to DISPONIBLE
+    if (venta.tipodeventa === 'MESA' && venta.cliente) {
+      // Extract table name from cliente field (format: "Mesa: {nombremesa}")
+      const nombreMesa = venta.cliente.replace('Mesa: ', '');
+      
+      await connection.execute(
+        `UPDATE tblposcrumenwebmesas 
+         SET estatusmesa = 'DISPONIBLE',
+             usuarioauditoria = ?,
+             fechamodificacionauditoria = NOW()
+         WHERE nombremesa = ? AND idnegocio = ?`,
+        [usuarioauditoria, nombreMesa, idnegocio]
+      );
+    }
+
     await connection.commit();
 
     // Calculate change for EFECTIVO
@@ -333,6 +348,21 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
          WHERE idventa = ? AND idnegocio = ? AND estadodetalle != 'CANCELADO'`,
         [usuarioauditoria, pagoData.idventa, idnegocio]
       );
+
+      // If it's a MESA sale, update table status to DISPONIBLE
+      if (venta.tipodeventa === 'MESA' && venta.cliente) {
+        // Extract table name from cliente field (format: "Mesa: {nombremesa}")
+        const nombreMesa = venta.cliente.replace('Mesa: ', '');
+        
+        await connection.execute(
+          `UPDATE tblposcrumenwebmesas 
+           SET estatusmesa = 'DISPONIBLE',
+               usuarioauditoria = ?,
+               fechamodificacionauditoria = NOW()
+           WHERE nombremesa = ? AND idnegocio = ?`,
+          [usuarioauditoria, nombreMesa, idnegocio]
+        );
+      }
     }
 
     await connection.commit();

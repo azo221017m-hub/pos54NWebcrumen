@@ -1225,34 +1225,6 @@ const PageVentas: React.FC = () => {
           isServiceConfigured={isServiceConfigured}
         />
 
-        {/* Seat Selector - Only shown for Mesa service type and when configured */}
-        {tipoServicio === 'Mesa' && isServiceConfigured && (
-          <div className="seat-selector-container">
-            <button
-              className="btn-seat-selector"
-              onClick={(e) => {
-                e.preventDefault();
-                // Left-click: increment seat with maximum limit
-                const currentNum = parseInt(currentSeatAssignment.substring(1), 10);
-                const newNum = (isNaN(currentNum) ? 1 : currentNum) + 1;
-                // Validate against maximum seat number
-                if (newNum <= MAX_SEAT_NUMBER) {
-                  setCurrentSeatAssignment(`A${newNum}`);
-                }
-              }}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                // Right-click: reset to default
-                setCurrentSeatAssignment(DEFAULT_SEAT_ASSIGNMENT);
-              }}
-              title="Asiento actual para nuevos productos (Click izquierdo: incrementar, Click derecho: resetear)"
-            >
-              <Utensils size={18} />
-              <span className="seat-label">{currentSeatAssignment}</span>
-            </button>
-          </div>
-        )}
-
         <div className="user-info-header">
           <div 
             className="user-avatar-ventas" 
@@ -1367,7 +1339,7 @@ const PageVentas: React.FC = () => {
             </button>
           </div>
 
-          {/* Ver Menu Día Button */}
+          {/* Ver Menu Día Button and Seat Selector */}
           <div className={`menu-dia-container ${!isServiceConfigured ? 'hidden' : ''}`}>
             <button 
               className={`btn-menu-dia ${showMenuDia ? 'active' : ''}`}
@@ -1376,6 +1348,32 @@ const PageVentas: React.FC = () => {
               <Utensils size={20} />
               {showMenuDia ? 'Ver Todos los Productos' : 'Ver Menú del Día'}
             </button>
+            
+            {/* Seat Selector - Only shown for Mesa service type and when configured */}
+            {tipoServicio === 'Mesa' && (
+              <button
+                className="btn-seat-selector"
+                onClick={(e) => {
+                  e.preventDefault();
+                  // Left-click: increment seat with maximum limit
+                  const currentNum = parseInt(currentSeatAssignment.substring(1), 10);
+                  const newNum = (isNaN(currentNum) ? 1 : currentNum) + 1;
+                  // Validate against maximum seat number
+                  if (newNum <= MAX_SEAT_NUMBER) {
+                    setCurrentSeatAssignment(`A${newNum}`);
+                  }
+                }}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  // Right-click: reset to default
+                  setCurrentSeatAssignment(DEFAULT_SEAT_ASSIGNMENT);
+                }}
+                title="Asiento actual para nuevos productos (Click izquierdo: incrementar, Click derecho: resetear)"
+              >
+                <Utensils size={18} />
+                <span className="seat-label">{currentSeatAssignment}</span>
+              </button>
+            )}
           </div>
 
           {/* Grid de productos - Show when service is configured */}

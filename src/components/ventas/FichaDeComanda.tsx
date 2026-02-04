@@ -74,7 +74,6 @@ const FichaDeComanda: React.FC<FichaDeComandaProps> = ({
     if (tipoServicio === 'Mesa' && mesaData) {
       return (
         <>
-          <span className="ficha-label">Mesa:</span>
           <span className="ficha-value">{mesaData.nombremesa}</span>
         </>
       );
