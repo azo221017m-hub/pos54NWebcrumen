@@ -172,14 +172,12 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
       return {};
     }
 
-    const subtotales: Record<string, number> = {};
-    detallesVenta.forEach(detalle => {
+    return detallesVenta.reduce((acc, detalle) => {
       const asiento = detalle.comensal || DEFAULT_SEAT;
       const subtotal = detalle.precio * detalle.cantidad;
-      subtotales[asiento] = (subtotales[asiento] || 0) + subtotal;
-    });
-
-    return subtotales;
+      acc[asiento] = (acc[asiento] || 0) + subtotal;
+      return acc;
+    }, {} as Record<string, number>);
   }, [tipodeventa, detallesVenta]);
 
   const handleSeleccionarDescuento = (id_descuento: string) => {
