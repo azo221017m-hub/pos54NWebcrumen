@@ -21,9 +21,10 @@ interface ModuloPagosProps {
   detallesVenta?: DetalleVentaSimple[];
 }
 
+// Constants
+const DEFAULT_SEAT = 'A1'; // Default seat identifier when no seat is assigned
+
 const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId, folioventa, formadepago, tipodeventa, detallesVenta }) => {
-  const DEFAULT_SEAT = 'A1'; // Default seat identifier when no seat is assigned
-  
   const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState<'efectivo' | 'transferencia' | 'mixto'>('efectivo');
   const [montoEfectivo, setMontoEfectivo] = useState<string>('');
   const [numeroReferencia, setNumeroReferencia] = useState<string>('');
