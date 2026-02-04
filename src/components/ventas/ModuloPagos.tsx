@@ -24,6 +24,11 @@ interface ModuloPagosProps {
 // Constants
 const DEFAULT_SEAT = 'A1'; // Default seat identifier when no seat is assigned
 
+// Natural sort function for alphanumeric seat identifiers (e.g., A1, A2, A10)
+const naturalSort = (a: string, b: string): number => {
+  return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+};
+
 const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId, folioventa, formadepago, tipodeventa, detallesVenta }) => {
   const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState<'efectivo' | 'transferencia' | 'mixto'>('efectivo');
   const [montoEfectivo, setMontoEfectivo] = useState<string>('');
@@ -387,7 +392,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
                     Subtotal por Asiento:
                   </div>
                   {Object.entries(subtotalesPorAsiento)
-                    .sort(([a], [b]) => a.localeCompare(b)) // Sort by seat name
+                    .sort(([a], [b]) => naturalSort(a, b)) // Natural sort for alphanumeric seat identifiers
                     .map(([asiento, subtotal]) => (
                       <div 
                         key={asiento}
