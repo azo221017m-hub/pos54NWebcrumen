@@ -8,6 +8,18 @@ import type {
   VentaWeb
 } from '../types/ventasWeb.types';
 
+/**
+ * Helper function to extract table name from cliente field for MESA sales
+ * The cliente field stores the table name in format "Mesa: {nombremesa}"
+ * This function extracts just the table name, handling case variations
+ * @param cliente The cliente field value
+ * @returns The extracted table name or empty string if not found
+ */
+const extractTableName = (cliente: string): string => {
+  // Use case-insensitive regex to remove "Mesa:" prefix with optional whitespace
+  return cliente.replace(/^mesa:\s*/i, '').trim();
+};
+
 // Process simple payment (EFECTIVO or TRANSFERENCIA)
 export const procesarPagoSimple = async (req: AuthRequest, res: Response): Promise<void> => {
   const connection = await pool.getConnection();
@@ -121,6 +133,23 @@ export const procesarPagoSimple = async (req: AuthRequest, res: Response): Promi
        WHERE idventa = ? AND idnegocio = ? AND estadodetalle != 'CANCELADO'`,
       [usuarioauditoria, pagoData.idventa, idnegocio]
     );
+
+    // If it's a MESA sale, update table status to DISPONIBLE
+    if (venta.tipodeventa === 'MESA' && venta.cliente) {
+      const nombreMesa = extractTableName(venta.cliente);
+      
+      // Only update if we have a valid table name after extraction
+      if (nombreMesa) {
+        await connection.execute(
+          `UPDATE tblposcrumenwebmesas 
+           SET estatusmesa = 'DISPONIBLE',
+               usuarioauditoria = ?,
+               fechamodificacionauditoria = NOW()
+           WHERE nombremesa = ? AND idnegocio = ?`,
+          [usuarioauditoria, nombreMesa, idnegocio]
+        );
+      }
+    }
 
     await connection.commit();
 
@@ -333,6 +362,23 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
          WHERE idventa = ? AND idnegocio = ? AND estadodetalle != 'CANCELADO'`,
         [usuarioauditoria, pagoData.idventa, idnegocio]
       );
+
+      // If it's a MESA sale, update table status to DISPONIBLE
+      if (venta.tipodeventa === 'MESA' && venta.cliente) {
+        const nombreMesa = extractTableName(venta.cliente);
+        
+        // Only update if we have a valid table name after extraction
+        if (nombreMesa) {
+          await connection.execute(
+            `UPDATE tblposcrumenwebmesas 
+             SET estatusmesa = 'DISPONIBLE',
+                 usuarioauditoria = ?,
+                 fechamodificacionauditoria = NOW()
+             WHERE nombremesa = ? AND idnegocio = ?`,
+            [usuarioauditoria, nombreMesa, idnegocio]
+          );
+        }
+      }
     }
 
     await connection.commit();
