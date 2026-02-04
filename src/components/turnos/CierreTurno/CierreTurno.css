@@ -361,6 +361,11 @@
   color: #991b1b;
 }
 
+.estatus-loading {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1e40af;
+}
+
 /* Botones de acción */
 .form-actions {
   display: flex;

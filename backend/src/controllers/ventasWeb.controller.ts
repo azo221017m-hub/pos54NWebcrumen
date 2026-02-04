@@ -325,7 +325,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
           detalle.moderadores || null,
           idnegocio,
           usuarioauditoria,
-          null // comensal = null
+          detalle.comensal || null // Use comensal from detalle
         ]
       );
     }
@@ -769,7 +769,7 @@ export const addDetallesToVenta = async (req: AuthRequest, res: Response): Promi
           detalle.moderadores || null,
           idnegocio,
           usuarioauditoria,
-          null // comensal = null
+          detalle.comensal || null // Use comensal from detalle
         ]
       );
     }

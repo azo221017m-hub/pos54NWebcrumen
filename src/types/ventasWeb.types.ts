@@ -59,6 +59,7 @@ export interface DetalleVentaWeb {
   idnegocio: number;
   usuarioauditoria: string;
   fechamodificacionauditoria: Date | string;
+  comensal: string | null;
 }
 
 export interface VentaWebCreate {
@@ -85,6 +86,7 @@ export interface DetalleVentaWebCreate {
   costounitario: number;
   observaciones?: string | null;
   moderadores?: string | null;
+  comensal?: string | null;
 }
 
 export interface VentaWebUpdate {

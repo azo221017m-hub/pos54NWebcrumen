@@ -32,6 +32,7 @@ interface ItemComanda {
   moderadores?: string; // Comma-separated IDs
   moderadoresNames?: string[]; // Array of names for display
   estadodetalle?: EstadoDetalle; // Track the detail status to prevent re-insertion of ORDENADO items
+  comensal?: string; // Seat assignment (e.g., 'A1', 'A2', etc.)
 }
 
 // Constants
@@ -279,7 +280,8 @@ const PageVentas: React.FC = () => {
           notas: detalle.observaciones || undefined,
           moderadores: detalle.moderadores || undefined,
           moderadoresNames,
-          estadodetalle: detalle.estadodetalle // Track the detail status
+          estadodetalle: detalle.estadodetalle, // Track the detail status
+          comensal: detalle.comensal || undefined // Load seat assignment
         };
       });
       
@@ -632,7 +634,8 @@ const PageVentas: React.FC = () => {
         preciounitario: Number(item.producto.precio),
         costounitario: Number(item.producto.costoproducto),
         observaciones: item.notas || (tipoServicio === 'Domicilio' && domicilioData?.observaciones) || null,
-        moderadores: item.moderadores || null
+        moderadores: item.moderadores || null,
+        comensal: item.comensal || null // Include seat assignment
       }));
 
       let resultado: { success: boolean; idventa?: number; folioventa?: string; message?: string };
@@ -865,6 +868,29 @@ const PageVentas: React.FC = () => {
   const handleNotaCancel = () => {
     setEditingNotaIndex(null);
     setTempNotaText('');
+  };
+
+  // Handle seat assignment: left-click increments, right-click resets to A1
+  const handleAsientoClick = (index: number, isRightClick: boolean = false) => {
+    setComanda(comanda.map((item, idx) => {
+      if (idx !== index) return item;
+      
+      if (isRightClick) {
+        // Right-click: reset to A1
+        return { ...item, comensal: 'A1' };
+      } else {
+        // Left-click: increment number
+        const current = item.comensal || 'A1';
+        const number = parseInt(current.substring(1), 10);
+        // Validate the parsed number
+        if (isNaN(number) || number < 1) {
+          // If invalid, reset to A1 and then increment to A2
+          return { ...item, comensal: 'A2' };
+        }
+        const newNumber = number + 1;
+        return { ...item, comensal: `A${newNumber}` };
+      }
+    }));
   };
 
   const getCategoryName = (idCategoria: number): string => {
@@ -1485,6 +1511,24 @@ const PageVentas: React.FC = () => {
                   >
                     <StickyNote size={14} />
                   </button>
+                  {tipoServicio === 'Mesa' && (
+                    <button 
+                      className="btn-comanda-accion btn-asiento"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleAsientoClick(index, false);
+                      }}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        handleAsientoClick(index, true);
+                      }}
+                      title="Asignar asiento (Click izquierdo: incrementar, Click derecho: resetear)"
+                      disabled={isOrdenado}
+                    >
+                      <Utensils size={14} />
+                      <span className="asiento-label">{item.comensal || 'A1'}</span>
+                    </button>
+                  )}
                 </div>
               </div>
             );

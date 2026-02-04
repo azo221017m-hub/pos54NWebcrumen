@@ -440,3 +440,53 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
     });
   }
 };
+
+// Verificar si hay comandas abiertas en un turno
+export const verificarComandasAbiertas = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { claveturno } = req.params;
+    const idnegocio = req.user?.idNegocio;
+    
+    if (!idnegocio) {
+      res.status(401).json({ 
+        message: 'Usuario no autenticado o sin negocio asignado'
+      });
+      return;
+    }
+    
+    if (!claveturno) {
+      res.status(400).json({ 
+        message: 'Clave de turno es requerida'
+      });
+      return;
+    }
+    
+    console.log('Verificando comandas abiertas para turno:', claveturno);
+    
+    // Count comandas with estadodeventa = 'ORDENADO' or 'EN_CAMINO'
+    const [rows] = await pool.query<RowDataPacket[]>(
+      `SELECT COUNT(*) as comandasAbiertas
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? 
+       AND idnegocio = ?
+       AND estadodeventa IN ('ORDENADO', 'EN_CAMINO')`,
+      [claveturno, idnegocio]
+    );
+    
+    const comandasAbiertas = rows[0]?.comandasAbiertas || 0;
+    
+    console.log(`Comandas abiertas encontradas: ${comandasAbiertas}`);
+    
+    res.json({
+      success: true,
+      comandasAbiertas: comandasAbiertas,
+      puedeCerrar: comandasAbiertas === 0
+    });
+  } catch (error) {
+    console.error('Error al verificar comandas abiertas:', error);
+    res.status(500).json({ 
+      message: 'Error al verificar comandas abiertas',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+};
