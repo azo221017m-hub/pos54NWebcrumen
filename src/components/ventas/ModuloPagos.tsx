@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import './ModuloPagos.css';
 import { obtenerDescuentos } from '../../services/descuentosService';
 import { procesarPagoSimple, procesarPagoMixto, obtenerDetallesPagos } from '../../services/pagosService';
@@ -160,8 +160,8 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   // Calculate amount to charge for MIXTO (nuevo total - suma de pagos registrados)
   const montoACobrar = metodoPagoSeleccionado === 'mixto' ? Math.max(0, nuevoTotal - sumaPagosRegistrados) : nuevoTotal;
 
-  // Calculate subtotals per seat for MESA sales
-  const calcularSubtotalesPorAsiento = (): Record<string, number> => {
+  // Calculate subtotals per seat for MESA sales - memoized to avoid recalculation on every render
+  const subtotalesPorAsiento = useMemo(() => {
     if (tipodeventa !== 'MESA' || !detallesVenta || detallesVenta.length === 0) {
       return {};
     }
@@ -174,9 +174,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     });
 
     return subtotales;
-  };
-
-  const subtotalesPorAsiento = calcularSubtotalesPorAsiento();
+  }, [tipodeventa, detallesVenta]);
 
   const handleSeleccionarDescuento = (id_descuento: string) => {
     if (id_descuento === '') {
