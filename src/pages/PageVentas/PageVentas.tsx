@@ -746,11 +746,11 @@ const PageVentas: React.FC = () => {
     if (currentVentaId && currentEstadoDeVenta === 'ESPERAR') {
       try {
         // First, check if there are new products to add (items without ORDENADO or ESPERAR status)
-        const itemsToInsert = comanda.filter(item => !item.estadodetalle || item.estadodetalle === 'ESPERAR');
+        const newItemsToOrder = comanda.filter(item => !item.estadodetalle || item.estadodetalle === 'ESPERAR');
         
-        if (itemsToInsert.length > 0) {
+        if (newItemsToOrder.length > 0) {
           // Add new products to existing venta with ORDENADO status
-          const detallesData = itemsToInsert.map(item => ({
+          const detallesData = newItemsToOrder.map(item => ({
             idproducto: item.producto.idProducto,
             nombreproducto: item.producto.nombre,
             idreceta: item.producto.tipoproducto === 'Receta' && item.producto.idreferencia 

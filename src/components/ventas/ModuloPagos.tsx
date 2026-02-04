@@ -328,7 +328,10 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
         }
 
         // Validate sum of new payments does not exceed amount to charge
-        const sumaNuevosPagos = pagosMixtos.reduce((sum, pago) => sum + parseFloat(pago.importe || '0'), 0);
+        const sumaNuevosPagos = pagosMixtos.reduce((sum, pago) => {
+          const importe = Number(pago.importe);
+          return sum + (isNaN(importe) ? 0 : importe);
+        }, 0);
         if (sumaNuevosPagos > montoACobrar) {
           alert(`La suma de los pagos ($${sumaNuevosPagos.toFixed(2)}) no puede ser mayor al monto a cobrar ($${montoACobrar.toFixed(2)})`);
           setProcesandoPago(false);
