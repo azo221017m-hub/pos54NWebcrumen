@@ -6,12 +6,14 @@ import './ModalIniciaTurno.css';
 interface ModalIniciaTurnoProps {
   isOpen: boolean;
   onTurnoIniciado: (turnoId: number, claveturno: string) => void;
+  onCancelar?: () => void;
   usuarioAlias?: string;
 }
 
 const ModalIniciaTurno: React.FC<ModalIniciaTurnoProps> = ({ 
   isOpen, 
   onTurnoIniciado,
+  onCancelar,
   usuarioAlias = 'Usuario'
 }) => {
   // Estado para los valores del formulario
@@ -183,6 +185,16 @@ const ModalIniciaTurno: React.FC<ModalIniciaTurnoProps> = ({
               >
                 {isLoading ? 'Iniciando...' : 'Iniciar TURNO'}
               </button>
+              {onCancelar && (
+                <button 
+                  type="button" 
+                  className="btn btn-secondary"
+                  onClick={onCancelar}
+                  disabled={isLoading}
+                >
+                  Ir a Dashboard
+                </button>
+              )}
             </div>
           </form>
         </div>
