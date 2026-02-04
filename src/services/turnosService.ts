@@ -111,11 +111,11 @@ export const verificarTurnoAbierto = async (): Promise<Turno | null> => {
 export const verificarComandasAbiertas = async (claveturno: string): Promise<{ comandasAbiertas: number; puedeCerrar: boolean }> => {
   try {
     console.log('Servicio: Verificando comandas abiertas para turno:', claveturno);
-    const response = await apiClient.get<{ success: boolean; comandasAbiertas: number; puedeCrear: boolean }>(`${API_BASE}/verificar-comandas/${claveturno}`);
+    const response = await apiClient.get<{ success: boolean; comandasAbiertas: number; puedeCerrar: boolean }>(`${API_BASE}/verificar-comandas/${claveturno}`);
     console.log('Servicio: Comandas abiertas:', response.data.comandasAbiertas);
     return {
       comandasAbiertas: response.data.comandasAbiertas,
-      puedeCerrar: response.data.puedeCrear
+      puedeCerrar: response.data.puedeCerrar
     };
   } catch (error) {
     console.error('Error en servicio verificarComandasAbiertas:', error);

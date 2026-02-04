@@ -480,7 +480,7 @@ export const verificarComandasAbiertas = async (req: AuthRequest, res: Response)
     res.json({
       success: true,
       comandasAbiertas: comandasAbiertas,
-      puedeCrear: comandasAbiertas === 0
+      puedeCerrar: comandasAbiertas === 0
     });
   } catch (error) {
     console.error('Error al verificar comandas abiertas:', error);

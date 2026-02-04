@@ -882,6 +882,11 @@ const PageVentas: React.FC = () => {
         // Left-click: increment number
         const current = item.comensal || 'A1';
         const number = parseInt(current.substring(1), 10);
+        // Validate the parsed number
+        if (isNaN(number) || number < 1) {
+          // If invalid, reset to A1 and then increment to A2
+          return { ...item, comensal: 'A2' };
+        }
         const newNumber = number + 1;
         return { ...item, comensal: `A${newNumber}` };
       }
