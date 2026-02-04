@@ -3,7 +3,13 @@ import './ModuloPagos.css';
 import { obtenerDescuentos } from '../../services/descuentosService';
 import { procesarPagoSimple, procesarPagoMixto, obtenerDetallesPagos } from '../../services/pagosService';
 import type { Descuento } from '../../types/descuento.types';
-import type { DetallePago } from '../../types/ventasWeb.types';
+import type { DetallePago, TipoDeVenta } from '../../types/ventasWeb.types';
+
+interface DetalleVentaSimple {
+  comensal?: string;
+  precio: number;
+  cantidad: number;
+}
 
 interface ModuloPagosProps {
   onClose: () => void;
@@ -11,9 +17,11 @@ interface ModuloPagosProps {
   ventaId: number | null;
   folioventa?: string;
   formadepago?: string;
+  tipodeventa?: TipoDeVenta;
+  detallesVenta?: DetalleVentaSimple[];
 }
 
-const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId, folioventa, formadepago }) => {
+const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId, folioventa, formadepago, tipodeventa, detallesVenta }) => {
   const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState<'efectivo' | 'transferencia' | 'mixto'>('efectivo');
   const [montoEfectivo, setMontoEfectivo] = useState<string>('');
   const [numeroReferencia, setNumeroReferencia] = useState<string>('');
@@ -149,6 +157,24 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   
   // Calculate amount to charge for MIXTO (nuevo total - suma de pagos registrados)
   const montoACobrar = metodoPagoSeleccionado === 'mixto' ? Math.max(0, nuevoTotal - sumaPagosRegistrados) : nuevoTotal;
+
+  // Calculate subtotals per seat for MESA sales
+  const calcularSubtotalesPorAsiento = (): Record<string, number> => {
+    if (tipodeventa !== 'MESA' || !detallesVenta || detallesVenta.length === 0) {
+      return {};
+    }
+
+    const subtotales: Record<string, number> = {};
+    detallesVenta.forEach(detalle => {
+      const asiento = detalle.comensal || 'A1'; // Default to A1 if no seat assigned
+      const subtotal = detalle.precio * detalle.cantidad;
+      subtotales[asiento] = (subtotales[asiento] || 0) + subtotal;
+    });
+
+    return subtotales;
+  };
+
+  const subtotalesPorAsiento = calcularSubtotalesPorAsiento();
 
   const handleSeleccionarDescuento = (id_descuento: string) => {
     if (id_descuento === '') {
@@ -341,6 +367,43 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
                 <span className="pagos-label">Total de Cuenta</span>
                 <span className="pagos-monto-grande">${totalCuenta.toFixed(2)}</span>
               </div>
+
+              {/* Subtotales por Asiento - Only for MESA sales */}
+              {tipodeventa === 'MESA' && Object.keys(subtotalesPorAsiento).length > 0 && (
+                <div style={{ 
+                  marginTop: '15px', 
+                  padding: '10px',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '4px',
+                  border: '1px solid #dee2e6'
+                }}>
+                  <div style={{ 
+                    fontSize: '14px', 
+                    fontWeight: 'bold', 
+                    marginBottom: '8px',
+                    color: '#495057'
+                  }}>
+                    Subtotal por Asiento:
+                  </div>
+                  {Object.entries(subtotalesPorAsiento)
+                    .sort(([a], [b]) => a.localeCompare(b)) // Sort by seat name
+                    .map(([asiento, subtotal]) => (
+                      <div 
+                        key={asiento}
+                        style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between',
+                          padding: '4px 0',
+                          fontSize: '13px',
+                          color: '#212529'
+                        }}
+                      >
+                        <span>Asiento {asiento}:</span>
+                        <span style={{ fontWeight: '600' }}>${subtotal.toFixed(2)}</span>
+                      </div>
+                    ))}
+                </div>
+              )}
               
               {/* Warning if no ventaId */}
               {!ventaId && (

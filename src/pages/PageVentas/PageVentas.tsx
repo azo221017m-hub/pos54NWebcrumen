@@ -1716,6 +1716,12 @@ const PageVentas: React.FC = () => {
           ventaId={currentVentaId}
           folioventa={currentFolioVenta || undefined}
           formadepago={currentFormaDePago || undefined}
+          tipodeventa={tipoServicio === 'Mesa' ? 'MESA' : tipoServicio === 'Llevar' ? 'LLEVAR' : 'DOMICILIO'}
+          detallesVenta={comanda.map(item => ({
+            comensal: item.comensal,
+            precio: Number(item.producto.precio) || 0,
+            cantidad: item.cantidad
+          }))}
         />
       )}
     </div>
