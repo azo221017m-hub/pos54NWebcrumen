@@ -5,7 +5,8 @@ import {
   crearTurno,
   actualizarTurno,
   eliminarTurno,
-  cerrarTurnoActual
+  cerrarTurnoActual,
+  verificarComandasAbiertas
 } from '../controllers/turnos.controller';
 import { authMiddleware } from '../middlewares/auth';
 
@@ -23,5 +24,8 @@ router.delete('/:idturno', eliminarTurno);
 
 // Ruta adicional para cerrar turno actual
 router.post('/cerrar-actual', cerrarTurnoActual);
+
+// Ruta para verificar comandas abiertas en un turno
+router.get('/verificar-comandas/:claveturno', verificarComandasAbiertas);
 
 export default router;

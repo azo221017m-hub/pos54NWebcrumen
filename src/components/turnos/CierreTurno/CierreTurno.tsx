@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { Turno } from '../../../types/turno.types';
 import { X } from 'lucide-react';
+import { verificarComandasAbiertas } from '../../../services/turnosService';
 import './CierreTurno.css';
 
 // Tipos para las denominaciones
@@ -52,6 +53,10 @@ const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) 
   // Estado para el retiro de fondo
   const [retiroFondo, setRetiroFondo] = useState<string>('');
 
+  // Estado para comandas abiertas
+  const [comandasAbiertas, setComandasAbiertas] = useState<number>(0);
+  const [loadingComandas, setLoadingComandas] = useState<boolean>(true);
+
   // Estado para las denominaciones
   const [denominaciones, setDenominaciones] = useState<Denominaciones>({
     billete1000: 0,
@@ -66,6 +71,25 @@ const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) 
     moneda050: 0
   });
 
+  // Efecto para verificar comandas abiertas al montar
+  useEffect(() => {
+    const verificarComandas = async () => {
+      try {
+        setLoadingComandas(true);
+        const resultado = await verificarComandasAbiertas(claveTurno);
+        setComandasAbiertas(resultado.comandasAbiertas);
+      } catch (error) {
+        console.error('Error al verificar comandas abiertas:', error);
+        // En caso de error, asumir 0 comandas abiertas
+        setComandasAbiertas(0);
+      } finally {
+        setLoadingComandas(false);
+      }
+    };
+
+    verificarComandas();
+  }, [claveTurno]);
+
   // Calcular el total del arqueo cada vez que cambian las denominaciones (usando useMemo)
   const totalArqueo = useMemo(() => {
     return (Object.keys(denominaciones) as Array<keyof Denominaciones>).reduce((acc, key) => {
@@ -73,16 +97,15 @@ const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) 
     }, 0);
   }, [denominaciones]);
 
-  // Calcular el estatus del cierre basado en el total (usando useMemo)
+  // Calcular el estatus del cierre basado en comandas abiertas (usando useMemo)
   const estatusCierre = useMemo<EstatusCierre>(() => {
-    // Ejemplo: si el total del arqueo es menor a 100, hay cuentas pendientes
-    if (totalArqueo > 0 && totalArqueo < 100) {
+    // Si hay comandas abiertas, no puede cerrar turno
+    if (comandasAbiertas > 0) {
       return 'cuentas_pendientes';
-    } else if (totalArqueo >= 100) {
-      return 'sin_novedades';
     }
+    // Si no hay comandas abiertas, puede cerrar sin novedades
     return 'sin_novedades';
-  }, [totalArqueo]);
+  }, [comandasAbiertas]);
 
   // Manejador para sumar/restar denominaciones
   const handleDenominacionChange = (tipo: keyof Denominaciones, operacion: 'sumar' | 'restar') => {
@@ -222,14 +245,26 @@ const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) 
           {/* Estatus del cierre */}
           <div className="estatus-cierre">
             <span className="estatus-label">Estatus del cierre:</span>
-            <span className={`estatus-mensaje ${estatusCierre === 'sin_novedades' ? 'estatus-ok' : 'estatus-error'}`}>
-              {estatusCierre === 'sin_novedades' ? 'Cierre sin novedades' : 'Existen Cuentas Pendientes'}
-            </span>
+            {loadingComandas ? (
+              <span className="estatus-mensaje estatus-loading">Verificando comandas...</span>
+            ) : comandasAbiertas > 0 ? (
+              <span className="estatus-mensaje estatus-error">
+                NO PUEDE CERRAR TURNO, Existen comandas abiertas
+              </span>
+            ) : (
+              <span className="estatus-mensaje estatus-ok">
+                Cierre sin novedades
+              </span>
+            )}
           </div>
 
           {/* Botones de acción */}
           <div className="form-actions">
-            <button type="submit" className="btn btn-primary">
+            <button 
+              type="submit" 
+              className="btn btn-primary"
+              disabled={comandasAbiertas > 0 || loadingComandas}
+            >
               Cerrar TURNO
             </button>
             <button type="button" className="btn btn-secondary" onClick={handleCancelar}>

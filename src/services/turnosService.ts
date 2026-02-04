@@ -106,3 +106,19 @@ export const verificarTurnoAbierto = async (): Promise<Turno | null> => {
     throw error;
   }
 };
+
+// Verificar si hay comandas abiertas en un turno
+export const verificarComandasAbiertas = async (claveturno: string): Promise<{ comandasAbiertas: number; puedeCerrar: boolean }> => {
+  try {
+    console.log('Servicio: Verificando comandas abiertas para turno:', claveturno);
+    const response = await apiClient.get<{ success: boolean; comandasAbiertas: number; puedeCrear: boolean }>(`${API_BASE}/verificar-comandas/${claveturno}`);
+    console.log('Servicio: Comandas abiertas:', response.data.comandasAbiertas);
+    return {
+      comandasAbiertas: response.data.comandasAbiertas,
+      puedeCerrar: response.data.puedeCrear
+    };
+  } catch (error) {
+    console.error('Error en servicio verificarComandasAbiertas:', error);
+    throw error;
+  }
+};
