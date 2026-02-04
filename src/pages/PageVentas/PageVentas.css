@@ -1090,6 +1090,47 @@
   opacity: 0.6;
 }
 
+/* Seat Selector in Header */
+.seat-selector-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.625rem;
+}
+
+.btn-seat-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.438rem; /* 7px */
+  padding: 0.625rem 1rem; /* 10px 16px */
+  background: #9b59b6;
+  color: white;
+  border: none;
+  border-radius: 0.5rem; /* 8px */
+  font-size: 1rem; /* 16px */
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-seat-selector:hover {
+  background: #8e44ad;
+  transform: translateY(-0.093rem); /* -1.5px */
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.btn-seat-selector:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.btn-seat-selector .seat-label {
+  font-size: 1.125rem; /* 18px */
+  font-weight: 700;
+  letter-spacing: 0.031rem; /* 0.5px */
+}
+
 /* Modal for moderadores selection */
 .modal-overlay {
   position: fixed;

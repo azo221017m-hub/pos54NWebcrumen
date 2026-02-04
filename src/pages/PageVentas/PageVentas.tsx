@@ -41,6 +41,8 @@ const SERVICE_CONFIG_MODAL_DELAY_MS = 300;
 const SELECTION_MODAL_DISPLAY_DELAY_MS = 500;
 const MODERADORES_PLACEHOLDER = 'Moderadores';
 const ESTADO_ORDENADO: EstadoDetalle = 'ORDENADO';
+const DEFAULT_SEAT_ASSIGNMENT = 'A1';
+const MAX_SEAT_NUMBER = 20; // Maximum seat number to prevent unrealistic values
 
 // Helper function to check if any item in comanda has ORDENADO status
 const hasOrdenadoItems = (comanda: ItemComanda[]): boolean => {
@@ -112,6 +114,8 @@ const PageVentas: React.FC = () => {
   // Módulo de pagos state
   const [showModuloPagos, setShowModuloPagos] = useState(false);
 
+  // Seat assignment state for MESA sales - tracks current seat for new products
+  const [currentSeatAssignment, setCurrentSeatAssignment] = useState<string>(DEFAULT_SEAT_ASSIGNMENT);
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -467,12 +471,21 @@ const PageVentas: React.FC = () => {
 
   const agregarAComanda = (producto: ProductoWeb, moderadores?: string, moderadoresNames?: string[]) => {
     // Find existing item with same product AND same moderadores that is NOT ORDENADO
+    // For MESA sales, also match by current seat assignment (comensal)
     // Skip items with ORDENADO status as they cannot be modified
-    const itemExistente = comanda.find(item => 
-      item.producto.idProducto === producto.idProducto && 
-      hasSameModeradores(item.moderadores, moderadores) &&
-      item.estadodetalle !== ESTADO_ORDENADO
-    );
+    const itemExistente = comanda.find(item => {
+      const sameProduct = item.producto.idProducto === producto.idProducto;
+      const sameModerators = hasSameModeradores(item.moderadores, moderadores);
+      const notOrdered = item.estadodetalle !== ESTADO_ORDENADO;
+      
+      // For MESA sales, also check if seat assignment matches
+      if (tipoServicio === 'Mesa') {
+        const sameSeat = (item.comensal || DEFAULT_SEAT_ASSIGNMENT) === currentSeatAssignment;
+        return sameProduct && sameModerators && notOrdered && sameSeat;
+      }
+      
+      return sameProduct && sameModerators && notOrdered;
+    });
     
     // If groupable record exists (same product and moderadores, not ORDENADO), increment quantity
     if (itemExistente) {
@@ -484,7 +497,15 @@ const PageVentas: React.FC = () => {
       ));
     } else {
       // Si no existe registro agrupable, crear nuevo registro
-      setComanda([...comanda, { producto, cantidad: 1, moderadores, moderadoresNames }]);
+      // For MESA sales, assign the current seat to the new item
+      const newItem: ItemComanda = {
+        producto,
+        cantidad: 1,
+        moderadores,
+        moderadoresNames,
+        ...(tipoServicio === 'Mesa' && { comensal: currentSeatAssignment })
+      };
+      setComanda([...comanda, newItem]);
     }
   };
 
@@ -870,25 +891,30 @@ const PageVentas: React.FC = () => {
     setTempNotaText('');
   };
 
-  // Handle seat assignment: left-click increments, right-click resets to A1
+  // Handle seat assignment: left-click increments, right-click resets to default
   const handleAsientoClick = (index: number, isRightClick: boolean = false) => {
     setComanda(comanda.map((item, idx) => {
       if (idx !== index) return item;
       
       if (isRightClick) {
-        // Right-click: reset to A1
-        return { ...item, comensal: 'A1' };
+        // Right-click: reset to default
+        return { ...item, comensal: DEFAULT_SEAT_ASSIGNMENT };
       } else {
-        // Left-click: increment number
-        const current = item.comensal || 'A1';
+        // Left-click: increment number with maximum limit
+        const current = item.comensal || DEFAULT_SEAT_ASSIGNMENT;
         const number = parseInt(current.substring(1), 10);
         // Validate the parsed number
         if (isNaN(number) || number < 1) {
-          // If invalid, reset to A1 and then increment to A2
+          // If invalid, reset to default and then increment to A2
           return { ...item, comensal: 'A2' };
         }
         const newNumber = number + 1;
-        return { ...item, comensal: `A${newNumber}` };
+        // Validate against maximum seat number
+        if (newNumber <= MAX_SEAT_NUMBER) {
+          return { ...item, comensal: `A${newNumber}` };
+        }
+        // If at max, don't change
+        return item;
       }
     }));
   };
@@ -1184,6 +1210,34 @@ const PageVentas: React.FC = () => {
           domicilioData={domicilioData}
           isServiceConfigured={isServiceConfigured}
         />
+
+        {/* Seat Selector - Only shown for Mesa service type and when configured */}
+        {tipoServicio === 'Mesa' && isServiceConfigured && (
+          <div className="seat-selector-container">
+            <button
+              className="btn-seat-selector"
+              onClick={(e) => {
+                e.preventDefault();
+                // Left-click: increment seat with maximum limit
+                const currentNum = parseInt(currentSeatAssignment.substring(1), 10);
+                const newNum = (isNaN(currentNum) ? 1 : currentNum) + 1;
+                // Validate against maximum seat number
+                if (newNum <= MAX_SEAT_NUMBER) {
+                  setCurrentSeatAssignment(`A${newNum}`);
+                }
+              }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                // Right-click: reset to default
+                setCurrentSeatAssignment(DEFAULT_SEAT_ASSIGNMENT);
+              }}
+              title="Asiento actual para nuevos productos (Click izquierdo: incrementar, Click derecho: resetear)"
+            >
+              <Utensils size={18} />
+              <span className="seat-label">{currentSeatAssignment}</span>
+            </button>
+          </div>
+        )}
 
         <div className="user-info-header">
           <div 
@@ -1526,7 +1580,7 @@ const PageVentas: React.FC = () => {
                       disabled={isOrdenado}
                     >
                       <Utensils size={14} />
-                      <span className="asiento-label">{item.comensal || 'A1'}</span>
+                      <span className="asiento-label">{item.comensal || DEFAULT_SEAT_ASSIGNMENT}</span>
                     </button>
                   )}
                 </div>
