@@ -112,6 +112,8 @@ const PageVentas: React.FC = () => {
   // Módulo de pagos state
   const [showModuloPagos, setShowModuloPagos] = useState(false);
 
+  // Seat assignment state for MESA sales - tracks current seat for new products
+  const [currentSeatAssignment, setCurrentSeatAssignment] = useState<string>('A1');
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -467,12 +469,21 @@ const PageVentas: React.FC = () => {
 
   const agregarAComanda = (producto: ProductoWeb, moderadores?: string, moderadoresNames?: string[]) => {
     // Find existing item with same product AND same moderadores that is NOT ORDENADO
+    // For MESA sales, also match by current seat assignment (comensal)
     // Skip items with ORDENADO status as they cannot be modified
-    const itemExistente = comanda.find(item => 
-      item.producto.idProducto === producto.idProducto && 
-      hasSameModeradores(item.moderadores, moderadores) &&
-      item.estadodetalle !== ESTADO_ORDENADO
-    );
+    const itemExistente = comanda.find(item => {
+      const sameProduct = item.producto.idProducto === producto.idProducto;
+      const sameModerators = hasSameModeradores(item.moderadores, moderadores);
+      const notOrdered = item.estadodetalle !== ESTADO_ORDENADO;
+      
+      // For MESA sales, also check if seat assignment matches
+      if (tipoServicio === 'Mesa') {
+        const sameSeat = (item.comensal || 'A1') === currentSeatAssignment;
+        return sameProduct && sameModerators && notOrdered && sameSeat;
+      }
+      
+      return sameProduct && sameModerators && notOrdered;
+    });
     
     // If groupable record exists (same product and moderadores, not ORDENADO), increment quantity
     if (itemExistente) {
@@ -484,7 +495,15 @@ const PageVentas: React.FC = () => {
       ));
     } else {
       // Si no existe registro agrupable, crear nuevo registro
-      setComanda([...comanda, { producto, cantidad: 1, moderadores, moderadoresNames }]);
+      // For MESA sales, assign the current seat to the new item
+      const newItem: ItemComanda = {
+        producto,
+        cantidad: 1,
+        moderadores,
+        moderadoresNames,
+        ...(tipoServicio === 'Mesa' && { comensal: currentSeatAssignment })
+      };
+      setComanda([...comanda, newItem]);
     }
   };
 
@@ -1184,6 +1203,31 @@ const PageVentas: React.FC = () => {
           domicilioData={domicilioData}
           isServiceConfigured={isServiceConfigured}
         />
+
+        {/* Seat Selector - Only shown for Mesa service type and when configured */}
+        {tipoServicio === 'Mesa' && isServiceConfigured && (
+          <div className="seat-selector-container">
+            <button
+              className="btn-seat-selector"
+              onClick={(e) => {
+                e.preventDefault();
+                // Left-click: increment seat
+                const currentNum = parseInt(currentSeatAssignment.substring(1), 10);
+                const newNum = (isNaN(currentNum) ? 1 : currentNum) + 1;
+                setCurrentSeatAssignment(`A${newNum}`);
+              }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                // Right-click: reset to A1
+                setCurrentSeatAssignment('A1');
+              }}
+              title="Asiento actual para nuevos productos (Click izquierdo: incrementar, Click derecho: resetear)"
+            >
+              <Utensils size={18} />
+              <span className="seat-label">{currentSeatAssignment}</span>
+            </button>
+          </div>
+        )}
 
         <div className="user-info-header">
           <div 
