@@ -124,17 +124,22 @@ export const procesarPagoSimple = async (req: AuthRequest, res: Response): Promi
 
     // If it's a MESA sale, update table status to DISPONIBLE
     if (venta.tipodeventa === 'MESA' && venta.cliente) {
-      // Extract table name from cliente field (format: "Mesa: {nombremesa}")
-      const nombreMesa = venta.cliente.replace('Mesa: ', '');
+      // Extract table name from cliente field
+      // The cliente field stores the table name in format "Mesa: {nombremesa}"
+      // We need to extract just the table name to update the mesas table
+      const nombreMesa = venta.cliente.replace('Mesa: ', '').trim();
       
-      await connection.execute(
-        `UPDATE tblposcrumenwebmesas 
-         SET estatusmesa = 'DISPONIBLE',
-             usuarioauditoria = ?,
-             fechamodificacionauditoria = NOW()
-         WHERE nombremesa = ? AND idnegocio = ?`,
-        [usuarioauditoria, nombreMesa, idnegocio]
-      );
+      // Only update if we have a valid table name after extraction
+      if (nombreMesa) {
+        await connection.execute(
+          `UPDATE tblposcrumenwebmesas 
+           SET estatusmesa = 'DISPONIBLE',
+               usuarioauditoria = ?,
+               fechamodificacionauditoria = NOW()
+           WHERE nombremesa = ? AND idnegocio = ?`,
+          [usuarioauditoria, nombreMesa, idnegocio]
+        );
+      }
     }
 
     await connection.commit();
@@ -351,17 +356,22 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
 
       // If it's a MESA sale, update table status to DISPONIBLE
       if (venta.tipodeventa === 'MESA' && venta.cliente) {
-        // Extract table name from cliente field (format: "Mesa: {nombremesa}")
-        const nombreMesa = venta.cliente.replace('Mesa: ', '');
+        // Extract table name from cliente field
+        // The cliente field stores the table name in format "Mesa: {nombremesa}"
+        // We need to extract just the table name to update the mesas table
+        const nombreMesa = venta.cliente.replace('Mesa: ', '').trim();
         
-        await connection.execute(
-          `UPDATE tblposcrumenwebmesas 
-           SET estatusmesa = 'DISPONIBLE',
-               usuarioauditoria = ?,
-               fechamodificacionauditoria = NOW()
-           WHERE nombremesa = ? AND idnegocio = ?`,
-          [usuarioauditoria, nombreMesa, idnegocio]
-        );
+        // Only update if we have a valid table name after extraction
+        if (nombreMesa) {
+          await connection.execute(
+            `UPDATE tblposcrumenwebmesas 
+             SET estatusmesa = 'DISPONIBLE',
+                 usuarioauditoria = ?,
+                 fechamodificacionauditoria = NOW()
+             WHERE nombremesa = ? AND idnegocio = ?`,
+            [usuarioauditoria, nombreMesa, idnegocio]
+          );
+        }
       }
     }
 
