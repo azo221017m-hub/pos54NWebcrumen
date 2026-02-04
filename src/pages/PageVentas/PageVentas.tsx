@@ -568,6 +568,20 @@ const PageVentas: React.FC = () => {
     }, 0);
   };
 
+  // Helper function to map TipoServicio to TipoDeVenta
+  const getTipoDeVenta = (): TipoDeVenta => {
+    switch (tipoServicio) {
+      case 'Mesa':
+        return 'MESA';
+      case 'Llevar':
+        return 'LLEVAR';
+      case 'Domicilio':
+        return 'DOMICILIO';
+      default:
+        return 'MESA'; // Default fallback
+    }
+  };
+
   const crearVenta = async (estadodeventa: EstadoDeVenta = 'SOLICITADO', estadodetalle: EstadoDetalle = 'ORDENADO', estatusdepago: EstatusDePago = 'PENDIENTE'): Promise<boolean> => {
     // Lógica común para crear ventas
     if (comanda.length === 0) {
@@ -1716,7 +1730,7 @@ const PageVentas: React.FC = () => {
           ventaId={currentVentaId}
           folioventa={currentFolioVenta || undefined}
           formadepago={currentFormaDePago || undefined}
-          tipodeventa={tipoServicio === 'Mesa' ? 'MESA' : tipoServicio === 'Llevar' ? 'LLEVAR' : 'DOMICILIO'}
+          tipodeventa={getTipoDeVenta()}
           detallesVenta={comanda.map(item => ({
             comensal: item.comensal,
             precio: Number(item.producto.precio) || 0,

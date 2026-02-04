@@ -22,6 +22,8 @@ interface ModuloPagosProps {
 }
 
 const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId, folioventa, formadepago, tipodeventa, detallesVenta }) => {
+  const DEFAULT_SEAT = 'A1'; // Default seat identifier when no seat is assigned
+  
   const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState<'efectivo' | 'transferencia' | 'mixto'>('efectivo');
   const [montoEfectivo, setMontoEfectivo] = useState<string>('');
   const [numeroReferencia, setNumeroReferencia] = useState<string>('');
@@ -166,7 +168,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
 
     const subtotales: Record<string, number> = {};
     detallesVenta.forEach(detalle => {
-      const asiento = detalle.comensal || 'A1'; // Default to A1 if no seat assigned
+      const asiento = detalle.comensal || DEFAULT_SEAT;
       const subtotal = detalle.precio * detalle.cantidad;
       subtotales[asiento] = (subtotales[asiento] || 0) + subtotal;
     });
