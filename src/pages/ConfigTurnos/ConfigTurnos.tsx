@@ -5,7 +5,8 @@ import type { Turno, TurnoUpdate } from '../../types/turno.types';
 import { EstatusTurno } from '../../types/turno.types';
 import {
   obtenerTurnos,
-  actualizarTurno
+  actualizarTurno,
+  cerrarTurnoActual
 } from '../../services/turnosService';
 import CierreTurno from '../../components/turnos/CierreTurno/CierreTurno';
 import ListaTurnos from '../../components/turnos/ListaTurnos/ListaTurnos';
@@ -68,24 +69,18 @@ const ConfigTurnos: React.FC = () => {
     if (!turnoEditar) return;
     
     try {
-      // Log the closure data for future backend integration
+      // Log the closure data for debugging
       console.log('Datos del cierre de turno:', datosFormulario);
       
-      // Actualizar el turno con estatus cerrado
-      // TODO: En el futuro, enviar datosFormulario al backend para persistir la información del cierre
-      const turnoUpdate: TurnoUpdate = {
-        estatusturno: EstatusTurno.CERRADO
-      };
+      // Call the backend endpoint with the closure data
+      await cerrarTurnoActual(datosFormulario);
       
-      const turnoActualizado = await actualizarTurno(turnoEditar.idturno, turnoUpdate);
       mostrarMensaje('success', 'Turno cerrado exitosamente');
       setMostrarFormulario(false);
       setTurnoEditar(undefined);
-      setTurnos(prev =>
-        prev.map(t =>
-          t.idturno === turnoActualizado.idturno ? turnoActualizado : t
-        )
-      );
+      
+      // Reload shifts to get updated data
+      await cargarTurnos();
     } catch (error) {
       console.error('Error al cerrar turno:', error);
       mostrarMensaje('error', 'Error al cerrar el turno');

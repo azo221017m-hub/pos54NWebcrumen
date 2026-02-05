@@ -76,10 +76,16 @@ export const eliminarTurno = async (idturno: number): Promise<number> => {
 };
 
 // Cerrar turno actual
-export const cerrarTurnoActual = async (): Promise<{ message: string; idturno: number }> => {
+export const cerrarTurnoActual = async (datosFormulario?: {
+  idTurno: string;
+  retiroFondo: number;
+  totalArqueo: number;
+  detalleDenominaciones: any;
+  estatusCierre: 'sin_novedades' | 'cuentas_pendientes';
+}): Promise<{ message: string; idturno: number }> => {
   try {
     console.log('Servicio: Cerrando turno actual');
-    const response = await apiClient.post<{ message: string; idturno: number }>(`${API_BASE}/cerrar-actual`, {});
+    const response = await apiClient.post<{ message: string; idturno: number }>(`${API_BASE}/cerrar-actual`, datosFormulario || {});
     console.log('Servicio: Turno actual cerrado');
     return response.data;
   } catch (error) {
