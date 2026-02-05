@@ -1,4 +1,4 @@
-import mysql from 'mysql2/promise';
+import { createPool } from 'mysql2/promise';
 import dotenv from 'dotenv';
 import { MEXICO_TIMEZONE_OFFSET } from '../utils/dateTime';
 
@@ -21,7 +21,7 @@ const dbConfig = {
 };
 
 // Pool de conexiones
-export const pool = mysql.createPool(dbConfig);
+export const pool = createPool(dbConfig);
 
 // Verificar conexión
 export const testConnection = async () => {
