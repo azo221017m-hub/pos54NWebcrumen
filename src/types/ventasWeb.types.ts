@@ -30,11 +30,11 @@ export interface VentaWeb {
   importedepago: number;
   estatusdepago: EstatusDePago;
   tiempototaldeventa: number | null;
-  claveturno?: string | null;
+  claveturno: string | null;
   idnegocio: number;
   usuarioauditoria: string;
   fechamodificacionauditoria: Date | string;
-  detalledescuento?: string | null;
+  detalledescuento: string | null;
 }
 
 export interface DetalleVentaWeb {

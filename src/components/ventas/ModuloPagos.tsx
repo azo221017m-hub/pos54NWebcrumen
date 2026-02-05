@@ -204,9 +204,9 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   // Handle click on "Monto a cobrar" label to copy amount to input
   const handleCopiarMonto = () => {
     if (metodoPagoSeleccionado === 'efectivo') {
-      // Copy the amount without $ sign to the input
-      const montoSinSigno = (descuentoSeleccionado ? nuevoTotal : totalCuenta).toFixed(2);
-      setMontoEfectivo(montoSinSigno);
+      // Copy the amount to the input (already without $ sign in the value)
+      const montoACopiar = (descuentoSeleccionado ? nuevoTotal : totalCuenta).toFixed(2);
+      setMontoEfectivo(montoACopiar);
       
       // Trigger flash effect on COBRAR button
       setFlashCobrar(true);
@@ -564,7 +564,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
                   className="pagos-label-monto clickable" 
                   onClick={handleCopiarMonto}
                   style={{ cursor: 'pointer' }}
-                  title="Click para copiar el monto al campo de Total recibido"
+                  title="Haz clic para copiar el monto al campo de Total recibido"
                 >
                   Monto a cobrar
                 </label>
