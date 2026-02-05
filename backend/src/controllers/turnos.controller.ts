@@ -392,7 +392,7 @@ export const eliminarTurno = async (req: Request, res: Response): Promise<void> 
 
 // Cerrar turno actual
 export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promise<void> => {
-  const connection = await pool.getConnection();
+  let connection;
   
   try {
     const idnegocio = req.user?.idNegocio;
@@ -414,6 +414,8 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
     console.log('Cerrando turno actual del negocio:', idnegocio);
     console.log('Estatus de cierre:', estatusCierre);
 
+    // Acquire database connection
+    connection = await pool.getConnection();
     await connection.beginTransaction();
 
     // Buscar turno abierto
@@ -439,6 +441,7 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
       console.log('Insertando venta MOVIMIENTO por retiro de fondo:', retiroFondo);
 
       // Insertar venta con folioventa vacío (se actualizará después)
+      // Nota: importedepago se establece en 0 según especificación, aunque el pago es efectivo
       const [ventaResult] = await connection.execute<ResultSetHeader>(
         `INSERT INTO tblposcrumenwebventas (
           tipodeventa, folioventa, estadodeventa, fechadeventa, 
@@ -457,7 +460,7 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
           0,                 // impuestos
           retiroFondo,       // totaldeventa
           'EFECTIVO',        // formadepago
-          0,                 // importedepago
+          0,                 // importedepago (per specification)
           'PAGADO',          // estatusdepago
           claveturno,        // claveturno
           idnegocio,         // idnegocio
@@ -500,14 +503,18 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
       idturno
     });
   } catch (error) {
-    await connection.rollback();
+    if (connection) {
+      await connection.rollback();
+    }
     console.error('Error al cerrar turno:', error);
     res.status(500).json({ 
       message: 'Error al cerrar el turno',
       error: error instanceof Error ? error.message : 'Error desconocido'
     });
   } finally {
-    connection.release();
+    if (connection) {
+      connection.release();
+    }
   }
 };
 
