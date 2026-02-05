@@ -128,3 +128,21 @@ export const verificarComandasAbiertas = async (claveturno: string): Promise<{ c
     throw error;
   }
 };
+
+/**
+ * Obtener fondo de caja de un turno
+ */
+export const obtenerFondoCaja = async (claveturno: string): Promise<{ fondoCaja: number }> => {
+  try {
+    console.log('🔵 turnosService: Obteniendo fondo de caja para turno:', claveturno);
+    const response = await apiClient.get<{ success: boolean; fondoCaja: number }>(
+      `${API_BASE}/fondo-caja/${claveturno}`
+    );
+    console.log('🔵 turnosService: Fondo de caja obtenido:', response.data.fondoCaja);
+    return { fondoCaja: response.data.fondoCaja };
+  } catch (error) {
+    console.error('🔴 turnosService: Error al obtener fondo de caja:', error);
+    // Return 0 on error
+    return { fondoCaja: 0 };
+  }
+};

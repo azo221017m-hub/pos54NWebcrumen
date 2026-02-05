@@ -574,3 +574,55 @@ export const verificarComandasAbiertas = async (req: AuthRequest, res: Response)
     });
   }
 };
+
+// Obtener fondo de caja de un turno
+export const obtenerFondoCaja = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const idnegocio = req.user?.idNegocio;
+    const { claveturno } = req.params;
+    
+    if (!idnegocio) {
+      res.status(401).json({ 
+        message: 'Usuario no autenticado o sin negocio asignado'
+      });
+      return;
+    }
+    
+    if (!claveturno) {
+      res.status(400).json({ 
+        message: 'Clave de turno es requerida'
+      });
+      return;
+    }
+    
+    console.log('Obteniendo fondo de caja para turno:', claveturno);
+    
+    // Get fondo de caja from tblposcrumenwebventas
+    // WHERE tipodeventa='MOVIMIENTO' AND referencia='FONDO de CAJA'
+    const [rows] = await pool.query<RowDataPacket[]>(
+      `SELECT totaldeventa as fondoCaja
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? 
+       AND idnegocio = ?
+       AND tipodeventa = 'MOVIMIENTO'
+       AND referencia = 'FONDO de CAJA'
+       LIMIT 1`,
+      [claveturno, idnegocio]
+    );
+    
+    const fondoCaja = rows[0]?.fondoCaja || 0;
+    
+    console.log(`Fondo de caja encontrado: ${fondoCaja}`);
+    
+    res.json({
+      success: true,
+      fondoCaja: fondoCaja
+    });
+  } catch (error) {
+    console.error('Error al obtener fondo de caja:', error);
+    res.status(500).json({ 
+      message: 'Error al obtener fondo de caja',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+};

@@ -226,7 +226,7 @@ async function testAuthMiddleware(): Promise<void> {
         idRol: user.idRol
       },
       JWT_SECRET,
-      { expiresIn: '10m' }
+      { expiresIn: '1h' }
     );
 
     // Verificar token

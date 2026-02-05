@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import type { Turno } from '../../../types/turno.types';
 import { X } from 'lucide-react';
-import { verificarComandasAbiertas } from '../../../services/turnosService';
+import { verificarComandasAbiertas, obtenerFondoCaja } from '../../../services/turnosService';
 import './CierreTurno.css';
 
 // Tipos para las denominaciones
@@ -57,6 +57,9 @@ const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) 
   const [comandasAbiertas, setComandasAbiertas] = useState<number>(0);
   const [loadingComandas, setLoadingComandas] = useState<boolean>(true);
 
+  // Estado para fondo de caja
+  const [loadingFondoCaja, setLoadingFondoCaja] = useState<boolean>(true);
+
   // Estado para las denominaciones
   const [denominaciones, setDenominaciones] = useState<Denominaciones>({
     billete1000: 0,
@@ -88,6 +91,26 @@ const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) 
     };
 
     verificarComandas();
+  }, [claveTurno]);
+
+  // Efecto para obtener fondo de caja al montar
+  useEffect(() => {
+    const obtenerFondoDeCaja = async () => {
+      try {
+        setLoadingFondoCaja(true);
+        const resultado = await obtenerFondoCaja(claveTurno);
+        // Set the retiroFondo with the fondoCaja value
+        setRetiroFondo(resultado.fondoCaja.toString());
+      } catch (error) {
+        console.error('Error al obtener fondo de caja:', error);
+        // En caso de error, dejar el campo en blanco
+        setRetiroFondo('');
+      } finally {
+        setLoadingFondoCaja(false);
+      }
+    };
+
+    obtenerFondoDeCaja();
   }, [claveTurno]);
 
   // Calcular el total del arqueo cada vez que cambian las denominaciones (usando useMemo)
@@ -191,6 +214,22 @@ const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) 
         </div>
 
         <form onSubmit={handleCerrarTurno}>
+          {/* Estatus del cierre */}
+          <div className="estatus-cierre">
+            <span className="estatus-label">Estatus del cierre:</span>
+            {loadingComandas ? (
+              <span className="estatus-mensaje estatus-loading">Verificando comandas...</span>
+            ) : comandasAbiertas > 0 ? (
+              <span className="estatus-mensaje estatus-error">
+                NO PUEDE CERRAR TURNO, Existen comandas abiertas
+              </span>
+            ) : (
+              <span className="estatus-mensaje estatus-ok">
+                Cierre sin novedades
+              </span>
+            )}
+          </div>
+
           {/* Retiro de fondo de caja */}
           <div className="form-group">
             <label htmlFor="retiroFondo" className="form-label">
@@ -240,22 +279,6 @@ const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) 
                 {renderDenominacionRow('moneda050', 'Monedas de 0.50')}
               </div>
             </div>
-          </div>
-
-          {/* Estatus del cierre */}
-          <div className="estatus-cierre">
-            <span className="estatus-label">Estatus del cierre:</span>
-            {loadingComandas ? (
-              <span className="estatus-mensaje estatus-loading">Verificando comandas...</span>
-            ) : comandasAbiertas > 0 ? (
-              <span className="estatus-mensaje estatus-error">
-                NO PUEDE CERRAR TURNO, Existen comandas abiertas
-              </span>
-            ) : (
-              <span className="estatus-mensaje estatus-ok">
-                Cierre sin novedades
-              </span>
-            )}
           </div>
 
           {/* Botones de acción */}

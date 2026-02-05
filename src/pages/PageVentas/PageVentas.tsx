@@ -1606,24 +1606,6 @@ const PageVentas: React.FC = () => {
                   >
                     <StickyNote size={14} />
                   </button>
-                  {tipoServicio === 'Mesa' && (
-                    <button 
-                      className="btn-comanda-accion btn-asiento"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleAsientoClick(index, false);
-                      }}
-                      onContextMenu={(e) => {
-                        e.preventDefault();
-                        handleAsientoClick(index, true);
-                      }}
-                      title="Asignar asiento (Click izquierdo: incrementar, Click derecho: resetear)"
-                      disabled={isOrdenado}
-                    >
-                      <Utensils size={14} />
-                      <span className="asiento-label">{item.comensal || DEFAULT_SEAT_ASSIGNMENT}</span>
-                    </button>
-                  )}
                 </div>
               </div>
             );
