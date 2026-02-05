@@ -47,15 +47,25 @@ El build genera la carpeta `dist/` que se debe subir a Render.
 
 ## Configuración del Backend
 
-### Archivo `.env` (Backend)
+### Variables de Entorno en Producción
 
-El archivo `backend/.env` debe contener:
+**⚠️ IMPORTANTE**: En producción, NO se debe usar el archivo `.env`. Las variables de entorno deben configurarse directamente en la plataforma de hosting (Render, Vercel, etc.).
 
-```env
+El sistema ahora está configurado para:
+- **Desarrollo** (`NODE_ENV !== 'production'`): Lee variables del archivo `.env`
+- **Producción** (`NODE_ENV === 'production'`): Lee variables directamente del sistema operativo
+
+### Variables Requeridas en Producción
+
+⚠️ **NOTA DE SEGURIDAD**: Los valores mostrados a continuación son ejemplos de la estructura de producción existente. En un entorno real, estas credenciales deben ser rotadas y gestionadas de forma segura. Nunca commits credenciales reales en el repositorio.
+
+Configurar estas variables en el panel de Render.com:
+
+```
 # Configuración de la base de datos MySQL Azure
 DB_HOST=crumenprod01.mysql.database.azure.com
 DB_USER=azavala
-DB_PASSWORD=Z4vaLA$Ant
+DB_PASSWORD=Z4vaLA$Ant  # ⚠️ NOTA: Cambiar por credenciales seguras
 DB_NAME=bdcdttx
 DB_PORT=3306
 
@@ -63,9 +73,9 @@ DB_PORT=3306
 PORT=3000
 
 # JWT Secret
-JWT_SECRET=crumen_pos_secret_key_2024_secure_token
+JWT_SECRET=crumen_pos_secret_key_2024_secure_token  # ⚠️ NOTA: Cambiar por secret seguro
 
-# Entorno
+# Entorno (CRÍTICO: debe ser 'production')
 NODE_ENV=production
 
 # URL del Frontend (para CORS)
@@ -73,6 +83,36 @@ FRONTEND_URL=https://pos54nwebcrumen.onrender.com
 
 # URL del Backend (para referencia)
 BACKEND_URL=https://pos54nwebcrumenbackend.onrender.com
+```
+
+### Archivo `.env` para Desarrollo Local
+
+⚠️ **NOTA DE SEGURIDAD**: El archivo `.env` nunca debe ser commiteado al repositorio. Está incluido en `.gitignore`. Los valores mostrados son ejemplos - usar credenciales de desarrollo o prueba localmente.
+
+El archivo `backend/.env` solo se usa en desarrollo local:
+
+```env
+# Configuración de la base de datos MySQL Azure
+DB_HOST=crumenprod01.mysql.database.azure.com
+DB_USER=azavala
+DB_PASSWORD=Z4vaLA$Ant  # ⚠️ NOTA: Usar credenciales de desarrollo
+DB_NAME=bdcdttx
+DB_PORT=3306
+
+# Puerto del servidor
+PORT=3000
+
+# JWT Secret
+JWT_SECRET=crumen_pos_secret_key_2024_secure_token  # ⚠️ NOTA: Usar secret de desarrollo
+
+# Entorno
+NODE_ENV=development
+
+# URL del Frontend (para CORS)
+FRONTEND_URL=http://localhost:5173
+
+# URL del Backend (para referencia)
+BACKEND_URL=http://localhost:3000
 ```
 
 ### Build del Backend
@@ -105,6 +145,8 @@ const allowedOrigins = [
 
 ## Variables de Entorno en Render
 
+**⚠️ CRÍTICO**: Las variables de entorno DEBEN configurarse en el panel de Render. NO subir archivos `.env` al repositorio ni confiar en ellos en producción.
+
 ### Frontend (Render.com)
 1. Ir a Dashboard → Web Service (Frontend)
 2. **IMPORTANTE**: Configurar Root Directory = `frontend`
@@ -114,9 +156,24 @@ const allowedOrigins = [
    - `VITE_API_TIMEOUT` = `30000`
 
 ### Backend (Render.com)
+
+⚠️ **NOTA DE SEGURIDAD**: Los valores de DB_PASSWORD y JWT_SECRET mostrados son ejemplos. En producción, usar credenciales seguras generadas específicamente para el entorno.
+
 1. Ir a Dashboard → Web Service (Backend)
 2. **IMPORTANTE**: Configurar Root Directory = `backend`
-3. Environment → Agregar todas las variables del archivo `.env`
+3. Environment → Agregar TODAS las variables requeridas:
+   - `NODE_ENV` = `production` ⚠️ **CRÍTICO**
+   - `DB_HOST` = `crumenprod01.mysql.database.azure.com`
+   - `DB_USER` = `azavala`
+   - `DB_PASSWORD` = `Z4vaLA$Ant` ⚠️ **Cambiar en producción**
+   - `DB_NAME` = `bdcdttx`
+   - `DB_PORT` = `3306`
+   - `PORT` = `3000`
+   - `JWT_SECRET` = `crumen_pos_secret_key_2024_secure_token` ⚠️ **Cambiar en producción**
+   - `FRONTEND_URL` = `https://pos54nwebcrumen.onrender.com`
+   - `BACKEND_URL` = `https://pos54nwebcrumenbackend.onrender.com`
+
+**Nota**: El sistema verificará que `NODE_ENV=production` para evitar buscar archivos `.env` en producción.
 
 ---
 

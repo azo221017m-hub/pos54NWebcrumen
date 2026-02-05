@@ -1,9 +1,12 @@
 import { pool } from '../config/db';
 import bcrypt from 'bcrypt';
 import type { RowDataPacket, ResultSetHeader } from 'mysql2';
-import dotenv from 'dotenv';
 
-dotenv.config();
+// Solo cargar dotenv en desarrollo, en producción usar variables de entorno del sistema
+if (process.env.NODE_ENV !== 'production') {
+  const dotenv = require('dotenv');
+  dotenv.config();
+}
 
 interface Usuario extends RowDataPacket {
   idUsuario: number;

@@ -1,8 +1,11 @@
 import { createPool } from 'mysql2/promise';
-import dotenv from 'dotenv';
 import { MEXICO_TIMEZONE_OFFSET } from '../utils/dateTime';
 
-dotenv.config();
+// Solo cargar dotenv en desarrollo, en producción usar variables de entorno del sistema
+if (process.env.NODE_ENV !== 'production') {
+  const dotenv = require('dotenv');
+  dotenv.config();
+}
 
 // Configuración de conexión a MySQL
 // Pool optimizado para manejar múltiples conexiones concurrentes
