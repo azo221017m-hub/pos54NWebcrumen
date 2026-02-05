@@ -29,6 +29,7 @@ export interface VentaWeb {
   formadepago: FormaDePago;
   importedepago: number;
   estatusdepago: EstatusDePago;
+  referencia: string | null;
   tiempototaldeventa: number | null;
   claveturno: string | null;
   idnegocio: number;
