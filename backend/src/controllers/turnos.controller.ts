@@ -425,7 +425,7 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
 
     // Buscar turno abierto
     const [turnosAbiertos] = await connection.query<Turno[]>(
-      `SELECT idturno, claveturno FROM tblposcrumenwebturnos 
+      `SELECT idturno, claveturno, metaturno FROM tblposcrumenwebturnos 
        WHERE idnegocio = ? AND estatusturno = 'abierto'
        LIMIT 1`,
       [idnegocio]
@@ -440,6 +440,7 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
     const turno = turnosAbiertos[0];
     const idturno = turno.idturno;
     const claveturno = turno.claveturno;
+    const metaturno = turno.metaturno;
 
     // Si el estatus de cierre es 'sin_novedades', insertar registro MOVIMIENTO
     if (estatusCierre === 'sin_novedades' && retiroFondo && retiroFondo > 0) {
@@ -497,12 +498,36 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
       console.log('Venta MOVIMIENTO creada con folio:', folioFinal);
     }
 
+    // Calculate logrometa if metaturno is not null or zero
+    let logrometa = null;
+    if (metaturno !== null && metaturno !== undefined && metaturno > 0) {
+      // Get total sales for this shift
+      const [salesResult] = await connection.query<RowDataPacket[]>(
+        `SELECT COALESCE(SUM(totaldeventa), 0) as totalventas 
+         FROM tblposcrumenwebventas 
+         WHERE claveturno = ? AND estatusdepago = 'PAGADO'`,
+        [claveturno]
+      );
+
+      const totalventas = Number(salesResult[0]?.totalventas) || 0;
+      
+      // Calculate achievement percentage: (totalventas / metaturno) * 100
+      // Round to 2 decimal places for consistent storage
+      logrometa = Math.round((totalventas / metaturno) * 100 * 100) / 100;
+      
+      console.log('Calculando logrometa:', {
+        totalventas,
+        metaturno,
+        logrometa: logrometa.toFixed(2) + '%'
+      });
+    }
+
     // Cerrar el turno
     await connection.query(
       `UPDATE tblposcrumenwebturnos 
-       SET estatusturno = 'cerrado', fechafinturno = NOW()
+       SET estatusturno = 'cerrado', fechafinturno = NOW(), logrometa = ?
        WHERE idturno = ?`,
-      [idturno]
+      [logrometa, idturno]
     );
 
     await connection.commit();
