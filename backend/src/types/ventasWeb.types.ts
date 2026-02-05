@@ -34,6 +34,7 @@ export interface VentaWeb {
   idnegocio: number;
   usuarioauditoria: string;
   fechamodificacionauditoria: Date | string;
+  detalledescuento: string | null;
 }
 
 export interface DetalleVentaWeb {
@@ -136,10 +137,12 @@ export interface PagoSimpleRequest {
   montorecibido?: number; // For EFECTIVO to calculate change
   referencia?: string; // For TRANSFERENCIA
   descuento?: number;
+  detalledescuento?: string | null;
 }
 
 export interface PagoMixtoRequest {
   idventa: number;
   detallesPagos: DetallePagoCreate[];
   descuento?: number;
+  detalledescuento?: string | null;
 }

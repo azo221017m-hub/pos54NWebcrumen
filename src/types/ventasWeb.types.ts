@@ -30,10 +30,11 @@ export interface VentaWeb {
   importedepago: number;
   estatusdepago: EstatusDePago;
   tiempototaldeventa: number | null;
-  claveturno?: string | null;
+  claveturno: string | null;
   idnegocio: number;
   usuarioauditoria: string;
   fechamodificacionauditoria: Date | string;
+  detalledescuento: string | null;
 }
 
 export interface DetalleVentaWeb {
@@ -136,10 +137,12 @@ export interface PagoSimpleRequest {
   montorecibido?: number;
   referencia?: string;
   descuento?: number;
+  detalledescuento?: string | null;
 }
 
 export interface PagoMixtoRequest {
   idventa: number;
   detallesPagos: DetallePagoCreate[];
   descuento?: number;
+  detalledescuento?: string | null;
 }
