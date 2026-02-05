@@ -75,7 +75,7 @@ const requiredEnvVars = {
 
 const missingVars: string[] = [];
 for (const [key, value] of Object.entries(requiredEnvVars)) {
-  if (!value) {
+  if (!value || value.trim() === '') {
     missingVars.push(key);
   }
 }
