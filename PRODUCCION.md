@@ -49,17 +49,21 @@ El build genera la carpeta `dist/` que se debe subir a Render.
 
 ### Variables de Entorno en Producción
 
-**⚠️ IMPORTANTE**: En producción, NO se debe usar el archivo `.env`. Las variables de entorno deben configurarse directamente en la plataforma de hosting (Render, Vercel, etc.).
+**⚠️ IMPORTANTE**: El sistema está configurado para cargar el archivo `.env` desde diferentes ubicaciones según el ambiente:
 
 El sistema ahora está configurado para:
-- **Desarrollo** (`NODE_ENV !== 'production'`): Lee variables del archivo `.env`
-- **Producción** (`NODE_ENV === 'production'`): Lee variables directamente del sistema operativo
+- **Desarrollo** (`NODE_ENV !== 'production'`): Lee variables del archivo `.env` desde el directorio del proyecto
+- **Producción** (`NODE_ENV === 'production'`): Lee variables del archivo `.env` desde `/etc/secrets/.env`
+
+**Ubicación del archivo .env en producción**: `/etc/secrets/.env`
+
+Este archivo debe ser creado en el servidor de producción con las credenciales correctas. Asegúrate de que el directorio `/etc/secrets/` existe y que el archivo tiene los permisos adecuados.
 
 ### Variables Requeridas en Producción
 
 ⚠️ **NOTA DE SEGURIDAD**: Los valores mostrados a continuación son ejemplos de la estructura de producción existente. En un entorno real, estas credenciales deben ser rotadas y gestionadas de forma segura. Nunca commits credenciales reales en el repositorio.
 
-Configurar estas variables en el panel de Render.com:
+El archivo `/etc/secrets/.env` debe contener las siguientes variables:
 
 ```
 # Configuración de la base de datos MySQL Azure
@@ -84,6 +88,31 @@ FRONTEND_URL=https://pos54nwebcrumen.onrender.com
 # URL del Backend (para referencia)
 BACKEND_URL=https://pos54nwebcrumenbackend.onrender.com
 ```
+
+### Configuración del Servidor de Producción
+
+Para configurar el archivo `.env` en producción:
+
+1. **Crear el directorio de secrets** (si no existe):
+   ```bash
+   sudo mkdir -p /etc/secrets
+   ```
+
+2. **Crear el archivo `.env`**:
+   ```bash
+   sudo nano /etc/secrets/.env
+   ```
+
+3. **Copiar el contenido** de las variables de entorno mostradas arriba.
+
+4. **Establecer permisos adecuados**:
+   ```bash
+   sudo chmod 600 /etc/secrets/.env
+   sudo chown <usuario_app>:<grupo_app> /etc/secrets/.env
+   ```
+   Donde `<usuario_app>` es el usuario bajo el cual se ejecuta la aplicación.
+
+**NOTA**: Si estás usando Render.com u otro servicio de hosting, consulta con el proveedor sobre la mejor forma de configurar el directorio `/etc/secrets/` o monta un volumen persistente para almacenar el archivo `.env`.
 
 ### Archivo `.env` para Desarrollo Local
 
@@ -173,7 +202,7 @@ const allowedOrigins = [
    - `FRONTEND_URL` = `https://pos54nwebcrumen.onrender.com`
    - `BACKEND_URL` = `https://pos54nwebcrumenbackend.onrender.com`
 
-**Nota**: El sistema verificará que `NODE_ENV=production` para evitar buscar archivos `.env` en producción.
+**Nota**: El sistema ahora carga el archivo `.env` desde `/etc/secrets/.env` cuando `NODE_ENV=production`.
 
 ---
 
@@ -232,6 +261,12 @@ fetch('https://pos54nwebcrumenbackend.onrender.com/api/health')
 ### Error: 502 Bad Gateway
 - El backend puede estar iniciando (esperar 30-60 segundos)
 - Verificar logs en Render Dashboard
+
+### Error: No se pueden cargar las variables de entorno en producción
+- Verificar que el directorio `/etc/secrets/` existe
+- Verificar que el archivo `/etc/secrets/.env` existe y tiene el contenido correcto
+- Verificar los permisos del archivo (debe ser legible por el usuario que ejecuta la aplicación)
+- Verificar en los logs del servidor que se muestra el mensaje: "📁 Cargando variables de entorno desde: /etc/secrets/.env"
 
 ---
 

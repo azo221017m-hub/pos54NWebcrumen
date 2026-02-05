@@ -30,10 +30,20 @@ import ventasWebRoutes from './routes/ventasWeb.routes';
 import turnosRoutes from './routes/turnos.routes';
 import pagosRoutes from './routes/pagos.routes';
 
-// Solo cargar dotenv en desarrollo, en producción usar variables de entorno del sistema
-if (process.env.NODE_ENV !== 'production') {
-  const dotenv = require('dotenv');
+// Cargar dotenv según el ambiente
+// En desarrollo: desde el directorio del proyecto
+// En producción: desde /etc/secrets/
+const dotenv = require('dotenv');
+
+if (process.env.NODE_ENV === 'production') {
+  // En producción, cargar desde /etc/secrets/
+  const envPath = path.join('/etc/secrets', '.env');
+  dotenv.config({ path: envPath });
+  console.log(`📁 Cargando variables de entorno desde: ${envPath}`);
+} else {
+  // En desarrollo, cargar desde el directorio del proyecto
   dotenv.config();
+  console.log('📁 Cargando variables de entorno desde el directorio del proyecto');
 }
 
 // Validación de variables de entorno críticas
