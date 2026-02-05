@@ -709,14 +709,27 @@ export const addDetallesToVenta = async (req: AuthRequest, res: Response): Promi
     let descuentosNuevo = Number(ventaActual.descuentos) || 0;
     let impuestosNuevo = Number(ventaActual.impuestos) || 0;
 
-    // Insertar nuevos detalles de la venta
-    for (const detalle of detalles) {
-      const detalleSubtotal = detalle.cantidad * detalle.preciounitario;
-      const detalleDescuento = 0; // 0 al hacer insert desde botón ESPERAR o PRODUCIR
-      const detalleImpuesto = 0; // 0 al hacer insert desde botón ESPERAR o PRODUCIR
-      const detalleTotal = detalleSubtotal - detalleDescuento + detalleImpuesto;
+    // Get existing ESPERAR detalles for this venta to check for updates
+    const [existingDetalles] = await connection.execute<RowDataPacket[]>(
+      `SELECT iddetalleventa, idproducto, cantidad, preciounitario, costounitario, 
+              moderadores, observaciones, comensal, subtotal
+       FROM tblposcrumenwebdetalleventas 
+       WHERE idventa = ? AND idnegocio = ? AND estadodetalle = 'ESPERAR'`,
+      [id, idnegocio]
+    );
 
-      subtotalNuevo += detalleSubtotal;
+    // Create a map of existing ESPERAR items for quick lookup
+    // Key: idproducto|moderadores|observaciones|comensal
+    const existingMap = new Map<string, RowDataPacket>();
+    for (const existing of existingDetalles) {
+      const key = `${existing.idproducto}|${existing.moderadores || ''}|${existing.observaciones || ''}|${existing.comensal || ''}`;
+      existingMap.set(key, existing);
+    }
+
+    // Process each detalle: update if exists, insert if new
+    for (const detalle of detalles) {
+      const detalleKey = `${detalle.idproducto}|${detalle.moderadores || ''}|${detalle.observaciones || ''}|${detalle.comensal || ''}`;
+      const existingDetalle = existingMap.get(detalleKey);
 
       // Determinar tipo de afectación y afectainventario basado en tipoproducto
       let tipoafectacion: 'DIRECTO' | 'INVENTARIO' | 'RECETA' = 'DIRECTO';
@@ -741,37 +754,86 @@ export const addDetallesToVenta = async (req: AuthRequest, res: Response): Promi
         inventarioprocesado = -1; // Siempre -1 para DIRECTO
       }
 
-      await connection.execute(
-        `INSERT INTO tblposcrumenwebdetalleventas (
-          idventa, idproducto, nombreproducto, idreceta,
-          cantidad, preciounitario, costounitario, subtotal, descuento,
-          impuesto, total, afectainventario, tipoafectacion, 
-          inventarioprocesado, fechadetalleventa, estadodetalle, 
-          observaciones, moderadores, idnegocio, usuarioauditoria, fechamodificacionauditoria, comensal
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, NOW(), ?)`,
-        [
-          id,
-          detalle.idproducto,
-          detalle.nombreproducto,
-          detalle.idreceta || null,
-          detalle.cantidad,
-          detalle.preciounitario,
-          detalle.costounitario,
-          detalleSubtotal,
-          detalleDescuento,
-          detalleImpuesto,
-          detalleTotal,
-          afectainventario,
-          tipoafectacion,
-          inventarioprocesado,
-          estadodetalle || ESTADO_ORDENADO, // Estado inicial o proporcionado
-          detalle.observaciones || null,
-          detalle.moderadores || null,
-          idnegocio,
-          usuarioauditoria,
-          detalle.comensal || null // Use comensal from detalle
-        ]
-      );
+      if (existingDetalle) {
+        // UPDATE existing ESPERAR item: add cantidad, recalculate subtotal/total, change estado to ORDENADO
+        const nuevaCantidad = Number(existingDetalle.cantidad) + Number(detalle.cantidad);
+        const nuevoSubtotal = nuevaCantidad * Number(detalle.preciounitario);
+        const detalleDescuento = 0;
+        const detalleImpuesto = 0;
+        const nuevoTotal = nuevoSubtotal - detalleDescuento + detalleImpuesto;
+
+        // Subtract old subtotal from venta total
+        subtotalNuevo -= Number(existingDetalle.subtotal);
+        // Add new subtotal to venta total
+        subtotalNuevo += nuevoSubtotal;
+
+        await connection.execute(
+          `UPDATE tblposcrumenwebdetalleventas 
+           SET cantidad = ?,
+               subtotal = ?,
+               total = ?,
+               estadodetalle = ?,
+               afectainventario = ?,
+               tipoafectacion = ?,
+               inventarioprocesado = ?,
+               usuarioauditoria = ?,
+               fechamodificacionauditoria = NOW()
+           WHERE iddetalleventa = ? AND idventa = ? AND idnegocio = ?`,
+          [
+            nuevaCantidad,
+            nuevoSubtotal,
+            nuevoTotal,
+            estadodetalle || ESTADO_ORDENADO,
+            afectainventario,
+            tipoafectacion,
+            inventarioprocesado,
+            usuarioauditoria,
+            existingDetalle.iddetalleventa,
+            id,
+            idnegocio
+          ]
+        );
+      } else {
+        // INSERT new detalle
+        const detalleSubtotal = detalle.cantidad * detalle.preciounitario;
+        const detalleDescuento = 0; // 0 al hacer insert desde botón ESPERAR o PRODUCIR
+        const detalleImpuesto = 0; // 0 al hacer insert desde botón ESPERAR o PRODUCIR
+        const detalleTotal = detalleSubtotal - detalleDescuento + detalleImpuesto;
+
+        subtotalNuevo += detalleSubtotal;
+
+        await connection.execute(
+          `INSERT INTO tblposcrumenwebdetalleventas (
+            idventa, idproducto, nombreproducto, idreceta,
+            cantidad, preciounitario, costounitario, subtotal, descuento,
+            impuesto, total, afectainventario, tipoafectacion, 
+            inventarioprocesado, fechadetalleventa, estadodetalle, 
+            observaciones, moderadores, idnegocio, usuarioauditoria, fechamodificacionauditoria, comensal
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, NOW(), ?)`,
+          [
+            id,
+            detalle.idproducto,
+            detalle.nombreproducto,
+            detalle.idreceta || null,
+            detalle.cantidad,
+            detalle.preciounitario,
+            detalle.costounitario,
+            detalleSubtotal,
+            detalleDescuento,
+            detalleImpuesto,
+            detalleTotal,
+            afectainventario,
+            tipoafectacion,
+            inventarioprocesado,
+            estadodetalle || ESTADO_ORDENADO, // Estado inicial o proporcionado
+            detalle.observaciones || null,
+            detalle.moderadores || null,
+            idnegocio,
+            usuarioauditoria,
+            detalle.comensal || null // Use comensal from detalle
+          ]
+        );
+      }
     }
 
     // Actualizar totales de la venta
