@@ -59,6 +59,17 @@ El sistema ahora está configurado para:
 
 Este archivo debe ser creado en el servidor de producción con las credenciales correctas. Asegúrate de que el directorio `/etc/secrets/` existe y que el archivo tiene los permisos adecuados.
 
+### ⚠️ Consideraciones para Servicios PaaS (Render.com, Vercel, etc.)
+
+**NOTA IMPORTANTE**: La mayoría de los servicios PaaS como Render.com no proporcionan acceso directo al sistema de archivos para crear directorios como `/etc/secrets/`. Esta configuración está diseñada para entornos de producción con servidores dedicados o VPS donde tienes acceso completo al sistema.
+
+**Alternativas para PaaS**:
+1. **Usar variables de entorno del sistema**: Configurar las variables directamente en el panel de control del servicio (recomendado para PaaS)
+2. **Usar volúmenes persistentes**: Si el servicio PaaS soporta volúmenes o discos persistentes, montar `/etc/secrets` como un volumen
+3. **Usar servicios de gestión de secretos**: Utilizar servicios como AWS Secrets Manager, Azure Key Vault, o HashiCorp Vault
+
+Si estás usando Render.com u otro servicio PaaS que no permite crear `/etc/secrets/`, considera revertir a usar variables de entorno del sistema operativo directamente, o usar un enfoque híbrido donde el código primero intente cargar desde `/etc/secrets/.env` y, si falla, use las variables de entorno del sistema.
+
 ### Variables Requeridas en Producción
 
 ⚠️ **NOTA DE SEGURIDAD**: Los valores mostrados a continuación son ejemplos de la estructura de producción existente. En un entorno real, estas credenciales deben ser rotadas y gestionadas de forma segura. Nunca commits credenciales reales en el repositorio.
