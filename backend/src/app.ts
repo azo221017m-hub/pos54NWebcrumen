@@ -2,7 +2,6 @@ import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
 import path from 'path';
 import { cacheMiddleware } from './middlewares/cache';
 
@@ -31,7 +30,11 @@ import ventasWebRoutes from './routes/ventasWeb.routes';
 import turnosRoutes from './routes/turnos.routes';
 import pagosRoutes from './routes/pagos.routes';
 
-dotenv.config();
+// Solo cargar dotenv en desarrollo, en producción usar variables de entorno del sistema
+if (process.env.NODE_ENV !== 'production') {
+  const dotenv = require('dotenv');
+  dotenv.config();
+}
 
 // Validación de variables de entorno críticas
 const JWT_SECRET = process.env.JWT_SECRET;
