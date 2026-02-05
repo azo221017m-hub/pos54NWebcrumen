@@ -712,23 +712,27 @@ export const addDetallesToVenta = async (req: AuthRequest, res: Response): Promi
     // Get existing ESPERAR detalles for this venta to check for updates
     const [existingDetalles] = await connection.execute<RowDataPacket[]>(
       `SELECT iddetalleventa, idproducto, cantidad, preciounitario, costounitario, 
-              moderadores, observaciones, comensal, subtotal
+              COALESCE(moderadores, '') as moderadores, 
+              COALESCE(observaciones, '') as observaciones, 
+              COALESCE(comensal, '') as comensal, 
+              subtotal
        FROM tblposcrumenwebdetalleventas 
        WHERE idventa = ? AND idnegocio = ? AND estadodetalle = 'ESPERAR'`,
       [id, idnegocio]
     );
 
     // Create a map of existing ESPERAR items for quick lookup
-    // Key: idproducto|moderadores|observaciones|comensal
+    // Key: idproducto|moderadores|observaciones|comensal (using COALESCE to handle nulls consistently)
     const existingMap = new Map<string, RowDataPacket>();
     for (const existing of existingDetalles) {
-      const key = `${existing.idproducto}|${existing.moderadores || ''}|${existing.observaciones || ''}|${existing.comensal || ''}`;
+      const key = `${existing.idproducto}|${existing.moderadores}|${existing.observaciones}|${existing.comensal}`;
       existingMap.set(key, existing);
     }
 
     // Process each detalle: update if exists, insert if new
     for (const detalle of detalles) {
-      const detalleKey = `${detalle.idproducto}|${detalle.moderadores || ''}|${detalle.observaciones || ''}|${detalle.comensal || ''}`;
+      // Use nullish coalescing to handle null/undefined consistently (0 and false are valid values)
+      const detalleKey = `${detalle.idproducto}|${detalle.moderadores ?? ''}|${detalle.observaciones ?? ''}|${detalle.comensal ?? ''}`;
       const existingDetalle = existingMap.get(detalleKey);
 
       // Determinar tipo de afectación y afectainventario basado en tipoproducto
@@ -756,15 +760,16 @@ export const addDetallesToVenta = async (req: AuthRequest, res: Response): Promi
 
       if (existingDetalle) {
         // UPDATE existing ESPERAR item: add cantidad, recalculate subtotal/total, change estado to ORDENADO
+        // Use existing price to maintain price consistency (prices shouldn't change mid-order)
+        const precioUnitarioExistente = Number(existingDetalle.preciounitario);
         const nuevaCantidad = Number(existingDetalle.cantidad) + Number(detalle.cantidad);
-        const nuevoSubtotal = nuevaCantidad * Number(detalle.preciounitario);
+        const nuevoSubtotal = nuevaCantidad * precioUnitarioExistente;
         const detalleDescuento = 0;
         const detalleImpuesto = 0;
         const nuevoTotal = nuevoSubtotal - detalleDescuento + detalleImpuesto;
 
-        // Subtract old subtotal from venta total
+        // Adjust venta total: subtract old subtotal and add new subtotal
         subtotalNuevo -= Number(existingDetalle.subtotal);
-        // Add new subtotal to venta total
         subtotalNuevo += nuevoSubtotal;
 
         await connection.execute(
@@ -794,12 +799,13 @@ export const addDetallesToVenta = async (req: AuthRequest, res: Response): Promi
           ]
         );
       } else {
-        // INSERT new detalle
+        // INSERT new detalle (no matching ESPERAR item found)
         const detalleSubtotal = detalle.cantidad * detalle.preciounitario;
         const detalleDescuento = 0; // 0 al hacer insert desde botón ESPERAR o PRODUCIR
         const detalleImpuesto = 0; // 0 al hacer insert desde botón ESPERAR o PRODUCIR
         const detalleTotal = detalleSubtotal - detalleDescuento + detalleImpuesto;
 
+        // Add new detalle subtotal to venta total
         subtotalNuevo += detalleSubtotal;
 
         await connection.execute(
