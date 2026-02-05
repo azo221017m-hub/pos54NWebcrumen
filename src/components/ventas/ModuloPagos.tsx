@@ -580,17 +580,16 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
             {metodoPagoSeleccionado === 'efectivo' && (
               <div className="pagos-panel-efectivo">
                 <h4>Pagos realizados EFECTIVO</h4>
-                <label 
-                  className="pagos-label-monto" 
+                <button 
+                  className="btn-monto-cobrar" 
                   onClick={handleCopiarMonto}
-                  style={{ cursor: 'pointer' }}
                   title="Haz clic para copiar el monto al campo de Total recibido"
                 >
-                  Monto a cobrar
-                </label>
-                <div className="pagos-monto-info">
-                  ${descuentoSeleccionado ? nuevoTotal.toFixed(2) : totalCuenta.toFixed(2)}
-                </div>
+                  <span className="btn-monto-cobrar-label">Monto a cobrar</span>
+                  <span className="btn-monto-cobrar-valor">
+                    ${descuentoSeleccionado ? nuevoTotal.toFixed(2) : totalCuenta.toFixed(2)}
+                  </span>
+                </button>
                 <label className="pagos-label-monto">Total recibido</label>
                 <input 
                   ref={montoEfectivoRef}
