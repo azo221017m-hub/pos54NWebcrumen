@@ -14,7 +14,7 @@ if (!process.env.DB_HOST) {
 
 // Configuración de conexión a MySQL
 // Pool optimizado para manejar múltiples conexiones concurrentes
-const dbConfig = {
+const dbConfig: any = {
   host: process.env.DB_HOST,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
@@ -25,11 +25,22 @@ const dbConfig = {
   queueLimit: 0,
   enableKeepAlive: true, // Mantener conexiones vivas
   keepAliveInitialDelay: 0,
-  timezone: MEXICO_TIMEZONE_OFFSET, // Configurar zona horaria de México (-06:00)
-  ssl: {
-    rejectUnauthorized: true
-  }
+  timezone: MEXICO_TIMEZONE_OFFSET // Configurar zona horaria de México (-06:00)
 };
+
+// Configuración SSL si está habilitada (por defecto en producción)
+// Se puede deshabilitar en desarrollo con DB_SSL=false
+const sslEnabled = process.env.DB_SSL !== 'false';
+if (sslEnabled) {
+  dbConfig.ssl = {
+    rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false'
+  };
+  
+  // Soporte para certificado CA personalizado
+  if (process.env.DB_SSL_CA) {
+    dbConfig.ssl.ca = process.env.DB_SSL_CA;
+  }
+}
 
 // Pool de conexiones
 export const pool = createPool(dbConfig);
