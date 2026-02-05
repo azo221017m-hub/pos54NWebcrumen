@@ -57,13 +57,15 @@ El sistema ahora está configurado para:
 
 ### Variables Requeridas en Producción
 
+⚠️ **NOTA DE SEGURIDAD**: Los valores mostrados a continuación son ejemplos de la estructura de producción existente. En un entorno real, estas credenciales deben ser rotadas y gestionadas de forma segura. Nunca commits credenciales reales en el repositorio.
+
 Configurar estas variables en el panel de Render.com:
 
 ```
 # Configuración de la base de datos MySQL Azure
 DB_HOST=crumenprod01.mysql.database.azure.com
 DB_USER=azavala
-DB_PASSWORD=Z4vaLA$Ant
+DB_PASSWORD=Z4vaLA$Ant  # ⚠️ NOTA: Cambiar por credenciales seguras
 DB_NAME=bdcdttx
 DB_PORT=3306
 
@@ -71,7 +73,7 @@ DB_PORT=3306
 PORT=3000
 
 # JWT Secret
-JWT_SECRET=crumen_pos_secret_key_2024_secure_token
+JWT_SECRET=crumen_pos_secret_key_2024_secure_token  # ⚠️ NOTA: Cambiar por secret seguro
 
 # Entorno (CRÍTICO: debe ser 'production')
 NODE_ENV=production
@@ -85,13 +87,15 @@ BACKEND_URL=https://pos54nwebcrumenbackend.onrender.com
 
 ### Archivo `.env` para Desarrollo Local
 
+⚠️ **NOTA DE SEGURIDAD**: El archivo `.env` nunca debe ser commiteado al repositorio. Está incluido en `.gitignore`. Los valores mostrados son ejemplos - usar credenciales de desarrollo o prueba localmente.
+
 El archivo `backend/.env` solo se usa en desarrollo local:
 
 ```env
 # Configuración de la base de datos MySQL Azure
 DB_HOST=crumenprod01.mysql.database.azure.com
 DB_USER=azavala
-DB_PASSWORD=Z4vaLA$Ant
+DB_PASSWORD=Z4vaLA$Ant  # ⚠️ NOTA: Usar credenciales de desarrollo
 DB_NAME=bdcdttx
 DB_PORT=3306
 
@@ -99,7 +103,7 @@ DB_PORT=3306
 PORT=3000
 
 # JWT Secret
-JWT_SECRET=crumen_pos_secret_key_2024_secure_token
+JWT_SECRET=crumen_pos_secret_key_2024_secure_token  # ⚠️ NOTA: Usar secret de desarrollo
 
 # Entorno
 NODE_ENV=development
@@ -152,17 +156,20 @@ const allowedOrigins = [
    - `VITE_API_TIMEOUT` = `30000`
 
 ### Backend (Render.com)
+
+⚠️ **NOTA DE SEGURIDAD**: Los valores de DB_PASSWORD y JWT_SECRET mostrados son ejemplos. En producción, usar credenciales seguras generadas específicamente para el entorno.
+
 1. Ir a Dashboard → Web Service (Backend)
 2. **IMPORTANTE**: Configurar Root Directory = `backend`
 3. Environment → Agregar TODAS las variables requeridas:
    - `NODE_ENV` = `production` ⚠️ **CRÍTICO**
    - `DB_HOST` = `crumenprod01.mysql.database.azure.com`
    - `DB_USER` = `azavala`
-   - `DB_PASSWORD` = `Z4vaLA$Ant`
+   - `DB_PASSWORD` = `Z4vaLA$Ant` ⚠️ **Cambiar en producción**
    - `DB_NAME` = `bdcdttx`
    - `DB_PORT` = `3306`
    - `PORT` = `3000`
-   - `JWT_SECRET` = `crumen_pos_secret_key_2024_secure_token`
+   - `JWT_SECRET` = `crumen_pos_secret_key_2024_secure_token` ⚠️ **Cambiar en producción**
    - `FRONTEND_URL` = `https://pos54nwebcrumen.onrender.com`
    - `BACKEND_URL` = `https://pos54nwebcrumenbackend.onrender.com`
 
