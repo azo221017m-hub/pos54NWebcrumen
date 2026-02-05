@@ -64,12 +64,43 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Validación de variables de entorno críticas
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  console.error('❌ ERROR FATAL: JWT_SECRET no está configurado en las variables de entorno');
-  console.error('Por favor, configure JWT_SECRET en el archivo .env antes de iniciar el servidor');
+const requiredEnvVars = {
+  JWT_SECRET: process.env.JWT_SECRET,
+  DB_HOST: process.env.DB_HOST,
+  DB_USER: process.env.DB_USER,
+  DB_PASSWORD: process.env.DB_PASSWORD,
+  DB_NAME: process.env.DB_NAME,
+  DB_PORT: process.env.DB_PORT
+};
+
+const missingVars: string[] = [];
+for (const [key, value] of Object.entries(requiredEnvVars)) {
+  if (!value) {
+    missingVars.push(key);
+  }
+}
+
+if (missingVars.length > 0) {
+  console.error('❌ ERROR FATAL: Las siguientes variables de entorno críticas no están configuradas:');
+  missingVars.forEach(varName => {
+    console.error(`   - ${varName}`);
+  });
+  console.error('\nPor favor, configure estas variables en el archivo .env antes de iniciar el servidor');
+  if (process.env.NODE_ENV === 'production') {
+    console.error('Ubicación esperada: /etc/secrets/.env');
+  }
   process.exit(1);
 }
+
+// Validación adicional del puerto de base de datos
+const dbPort = parseInt(requiredEnvVars.DB_PORT || '');
+if (isNaN(dbPort) || dbPort < 1 || dbPort > 65535) {
+  console.error('❌ ERROR FATAL: DB_PORT debe ser un número válido entre 1 y 65535');
+  console.error(`   Valor actual: ${process.env.DB_PORT}`);
+  process.exit(1);
+}
+
+console.log('✅ Variables de entorno validadas correctamente');
 
 const app: Application = express();
 
