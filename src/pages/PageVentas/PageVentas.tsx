@@ -934,34 +934,6 @@ const PageVentas: React.FC = () => {
     setTempNotaText('');
   };
 
-  // Handle seat assignment: left-click increments, right-click resets to default
-  const handleAsientoClick = (index: number, isRightClick: boolean = false) => {
-    setComanda(comanda.map((item, idx) => {
-      if (idx !== index) return item;
-      
-      if (isRightClick) {
-        // Right-click: reset to default
-        return { ...item, comensal: DEFAULT_SEAT_ASSIGNMENT };
-      } else {
-        // Left-click: increment number with maximum limit
-        const current = item.comensal || DEFAULT_SEAT_ASSIGNMENT;
-        const number = parseInt(current.substring(1), 10);
-        // Validate the parsed number
-        if (isNaN(number) || number < 1) {
-          // If invalid, reset to default and then increment to A2
-          return { ...item, comensal: 'A2' };
-        }
-        const newNumber = number + 1;
-        // Validate against maximum seat number
-        if (newNumber <= MAX_SEAT_NUMBER) {
-          return { ...item, comensal: `A${newNumber}` };
-        }
-        // If at max, don't change
-        return item;
-      }
-    }));
-  };
-
   const getCategoryName = (idCategoria: number): string => {
     const categoria = categorias.find(c => c.idCategoria === idCategoria);
     return categoria?.nombre || '';
@@ -1606,24 +1578,6 @@ const PageVentas: React.FC = () => {
                   >
                     <StickyNote size={14} />
                   </button>
-                  {tipoServicio === 'Mesa' && (
-                    <button 
-                      className="btn-comanda-accion btn-asiento"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleAsientoClick(index, false);
-                      }}
-                      onContextMenu={(e) => {
-                        e.preventDefault();
-                        handleAsientoClick(index, true);
-                      }}
-                      title="Asignar asiento (Click izquierdo: incrementar, Click derecho: resetear)"
-                      disabled={isOrdenado}
-                    >
-                      <Utensils size={14} />
-                      <span className="asiento-label">{item.comensal || DEFAULT_SEAT_ASSIGNMENT}</span>
-                    </button>
-                  )}
                 </div>
               </div>
             );

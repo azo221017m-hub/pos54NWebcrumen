@@ -4,6 +4,9 @@ import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
 import { getMexicoTimeComponents } from '../utils/dateTime';
 
+// Constantes
+const REFERENCIA_FONDO_CAJA = 'FONDO de CAJA';
+
 // Interface para Turno
 interface Turno extends RowDataPacket {
   idturno: number;
@@ -242,7 +245,7 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
         0,
         'EFECTIVO',
         'PAGADO',
-        'FONDO de CAJA',
+        REFERENCIA_FONDO_CAJA,
         NULL,
         ?,
         ?,
@@ -468,7 +471,7 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
           'EFECTIVO',            // formadepago
           0,                     // importedepago (per specification)
           'PAGADO',              // estatusdepago
-          'FONDO de CAJA',       // referencia
+          REFERENCIA_FONDO_CAJA,       // referencia
           claveturno,            // claveturno
           idnegocio,             // idnegocio
           usuarioauditoria       // usuarioauditoria
@@ -570,6 +573,58 @@ export const verificarComandasAbiertas = async (req: AuthRequest, res: Response)
     console.error('Error al verificar comandas abiertas:', error);
     res.status(500).json({ 
       message: 'Error al verificar comandas abiertas',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+};
+
+// Obtener fondo de caja de un turno
+export const obtenerFondoCaja = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const idnegocio = req.user?.idNegocio;
+    const { claveturno } = req.params;
+    
+    if (!idnegocio) {
+      res.status(401).json({ 
+        message: 'Usuario no autenticado o sin negocio asignado'
+      });
+      return;
+    }
+    
+    if (!claveturno) {
+      res.status(400).json({ 
+        message: 'Clave de turno es requerida'
+      });
+      return;
+    }
+    
+    console.log('Obteniendo fondo de caja para turno:', claveturno);
+    
+    // Get fondo de caja from tblposcrumenwebventas
+    // WHERE tipodeventa='MOVIMIENTO' AND referencia='FONDO de CAJA'
+    const [rows] = await pool.query<RowDataPacket[]>(
+      `SELECT totaldeventa as fondoCaja
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? 
+       AND idnegocio = ?
+       AND tipodeventa = 'MOVIMIENTO'
+       AND referencia = ?
+       LIMIT 1`,
+      [claveturno, idnegocio, REFERENCIA_FONDO_CAJA]
+    );
+    
+    const fondoCaja = rows[0]?.fondoCaja || 0;
+    
+    console.log(`Fondo de caja encontrado: ${fondoCaja}`);
+    
+    res.json({
+      success: true,
+      fondoCaja: fondoCaja
+    });
+  } catch (error) {
+    console.error('Error al obtener fondo de caja:', error);
+    res.status(500).json({ 
+      message: 'Error al obtener fondo de caja',
       error: error instanceof Error ? error.message : 'Error desconocido'
     });
   }

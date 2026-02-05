@@ -109,7 +109,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         idRol: usuario.idRol
       },
       JWT_SECRET,
-      { expiresIn: '10m' } // Token válido por 10 minutos
+      { expiresIn: '1h' } // Token válido por 1 hora
     );
 
     // AUDITORÍA: Registrar login exitoso
@@ -406,7 +406,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
         idRol: usuario.idRol
       },
       JWT_SECRET,
-      { expiresIn: '10m' } // Token válido por 10 minutos
+      { expiresIn: '1h' } // Token válido por 1 hora
     );
 
     res.json({
