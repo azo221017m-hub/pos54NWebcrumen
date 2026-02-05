@@ -245,14 +245,14 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
         0,
         'EFECTIVO',
         'PAGADO',
-        REFERENCIA_FONDO_CAJA,
+        ?,
         NULL,
         ?,
         ?,
         ?,
         NOW()
       )`,
-      [fondoCajaValue, fondoCajaValue, claveturno, idnegocio, usuarioturno]
+      [fondoCajaValue, fondoCajaValue, REFERENCIA_FONDO_CAJA, claveturno, idnegocio, usuarioturno]
     );
 
     const idventa = ventaResult.insertId;
@@ -471,7 +471,7 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
           'EFECTIVO',            // formadepago
           0,                     // importedepago (per specification)
           'PAGADO',              // estatusdepago
-          REFERENCIA_FONDO_CAJA,       // referencia
+          REFERENCIA_FONDO_CAJA, // referencia
           claveturno,            // claveturno
           idnegocio,             // idnegocio
           usuarioauditoria       // usuarioauditoria
