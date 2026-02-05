@@ -4,6 +4,9 @@ import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
 import { getMexicoTimeComponents } from '../utils/dateTime';
 
+// Constantes
+const REFERENCIA_FONDO_CAJA = 'FONDO de CAJA';
+
 // Interface para Turno
 interface Turno extends RowDataPacket {
   idturno: number;
@@ -242,7 +245,7 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
         0,
         'EFECTIVO',
         'PAGADO',
-        'FONDO de CAJA',
+        REFERENCIA_FONDO_CAJA,
         NULL,
         ?,
         ?,
@@ -468,7 +471,7 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
           'EFECTIVO',            // formadepago
           0,                     // importedepago (per specification)
           'PAGADO',              // estatusdepago
-          'FONDO de CAJA',       // referencia
+          REFERENCIA_FONDO_CAJA,       // referencia
           claveturno,            // claveturno
           idnegocio,             // idnegocio
           usuarioauditoria       // usuarioauditoria
@@ -605,9 +608,9 @@ export const obtenerFondoCaja = async (req: AuthRequest, res: Response): Promise
        WHERE claveturno = ? 
        AND idnegocio = ?
        AND tipodeventa = 'MOVIMIENTO'
-       AND referencia = 'FONDO de CAJA'
+       AND referencia = ?
        LIMIT 1`,
-      [claveturno, idnegocio]
+      [claveturno, idnegocio, REFERENCIA_FONDO_CAJA]
     );
     
     const fondoCaja = rows[0]?.fondoCaja || 0;
