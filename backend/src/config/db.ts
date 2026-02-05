@@ -7,10 +7,15 @@ if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
 }
 
+// Validación de variables de entorno críticas
+if (!process.env.DB_HOST) {
+  throw new Error('DB_HOST no definido');
+}
+
 // Configuración de conexión a MySQL
 // Pool optimizado para manejar múltiples conexiones concurrentes
 const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
+  host: process.env.DB_HOST,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'pos_crumen',
@@ -20,7 +25,10 @@ const dbConfig = {
   queueLimit: 0,
   enableKeepAlive: true, // Mantener conexiones vivas
   keepAliveInitialDelay: 0,
-  timezone: MEXICO_TIMEZONE_OFFSET // Configurar zona horaria de México (-06:00)
+  timezone: MEXICO_TIMEZONE_OFFSET, // Configurar zona horaria de México (-06:00)
+  ssl: {
+    rejectUnauthorized: true
+  }
 };
 
 // Pool de conexiones
