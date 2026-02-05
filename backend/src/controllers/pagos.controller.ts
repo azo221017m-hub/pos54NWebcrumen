@@ -88,6 +88,7 @@ export const procesarPagoSimple = async (req: AuthRequest, res: Response): Promi
     const subtotal = Number(venta.subtotal);
     const descuento = pagoData.descuento || 0;
     const totaldeventa = subtotal - descuento;
+    const detalledescuento = pagoData.detalledescuento || null;
 
     // Validate payment amount
     if (pagoData.importedepago < totaldeventa) {
@@ -108,6 +109,7 @@ export const procesarPagoSimple = async (req: AuthRequest, res: Response): Promi
            formadepago = ?,
            importedepago = ?,
            estatusdepago = 'PAGADO',
+           detalledescuento = ?,
            tiempototaldeventa = NOW(),
            usuarioauditoria = ?,
            fechamodificacionauditoria = NOW()
@@ -118,6 +120,7 @@ export const procesarPagoSimple = async (req: AuthRequest, res: Response): Promi
         totaldeventa,
         pagoData.formadepago,
         pagoData.importedepago,
+        detalledescuento,
         usuarioauditoria,
         pagoData.idventa,
         idnegocio
@@ -265,6 +268,7 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
     const subtotal = Number(venta.subtotal);
     const descuento = pagoData.descuento || 0;
     const totaldeventa = subtotal - descuento;
+    const detalledescuento = pagoData.detalledescuento || null;
 
     // Calculate total paid
     const totalPagado = pagoData.detallesPagos.reduce((sum, detalle) => sum + detalle.totaldepago, 0);
@@ -331,6 +335,7 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
            formadepago = 'MIXTO',
            importedepago = ?,
            estatusdepago = ?,
+           detalledescuento = ?,
            tiempototaldeventa = IF(? = 'COBRADO' AND tiempototaldeventa IS NULL, 
                                    ?, 
                                    tiempototaldeventa),
@@ -344,6 +349,7 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
         totaldeventa,
         totalPagadoAcumulado,
         estatusdepago,
+        detalledescuento,
         estadodeventa,
         ultimoPagoFecha,
         usuarioauditoria,

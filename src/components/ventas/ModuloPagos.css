@@ -384,6 +384,23 @@
   transform: translateY(-1px);
 }
 
+/* Flash animation for COBRAR button */
+.btn-cobrar.flash {
+  animation: flashEffect 0.6s ease-in-out;
+}
+
+@keyframes flashEffect {
+  0%, 100% {
+    background: #ffd54f;
+    box-shadow: 0 4px 12px rgba(255, 213, 79, 0.4);
+  }
+  50% {
+    background: #ffeb3b;
+    box-shadow: 0 0 25px rgba(255, 235, 59, 0.9), 0 0 50px rgba(255, 235, 59, 0.6);
+    transform: scale(1.05);
+  }
+}
+
 /* ============================================ */
 /* COLUMNA DERECHA - Detalle por tipo de pago */
 /* ============================================ */

@@ -53,6 +53,9 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   const [pagosRegistrados, setPagosRegistrados] = useState<DetallePago[]>([]);
   const [cargandoPagosRegistrados, setCargandoPagosRegistrados] = useState(false);
 
+  // Estado para el efecto de destello del botón cobrar
+  const [flashCobrar, setFlashCobrar] = useState(false);
+
   const cargarDescuentos = useCallback(async () => {
     try {
       setCargandoDescuentos(true);
@@ -198,6 +201,24 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     setPagosMixtos([...pagosMixtos, { formaPago: 'Efectivo', importe: '', referencia: '' }]);
   };
 
+  // Handle click on "Monto a cobrar" label to copy amount to input
+  const handleCopiarMonto = () => {
+    if (metodoPagoSeleccionado === 'efectivo') {
+      // Copy the amount without $ sign to the input
+      const montoSinSigno = (descuentoSeleccionado ? nuevoTotal : totalCuenta).toFixed(2);
+      setMontoEfectivo(montoSinSigno);
+      
+      // Trigger flash effect on COBRAR button
+      setFlashCobrar(true);
+      setTimeout(() => setFlashCobrar(false), 600);
+      
+      // Focus on the input
+      if (montoEfectivoRef.current) {
+        montoEfectivoRef.current.focus();
+      }
+    }
+  };
+
   const handleEliminarPagoMixto = (index: number) => {
     if (pagosMixtos.length > 1) {
       const nuevos = pagosMixtos.filter((_, i) => i !== index);
@@ -253,7 +274,8 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
           formadepago: 'EFECTIVO',
           importedepago: totalAPagar,
           montorecibido: montoRecibido,
-          descuento
+          descuento,
+          detalledescuento: descuentoSeleccionado?.nombre || null
         });
 
         if (!resultado.success) {
@@ -283,7 +305,8 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
           formadepago: 'TRANSFERENCIA',
           importedepago: totalAPagar,
           referencia: numeroReferencia,
-          descuento
+          descuento,
+          detalledescuento: descuentoSeleccionado?.nombre || null
         });
 
         if (!resultado.success) {
@@ -349,7 +372,8 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
         const resultado = await procesarPagoMixto({
           idventa: ventaId,
           detallesPagos,
-          descuento
+          descuento,
+          detalledescuento: descuentoSeleccionado?.nombre || null
         });
 
         if (!resultado.success) {
@@ -521,7 +545,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
             {/* Botón de acción - solo COBRAR */}
             <div className="pagos-botones-accion">
               <button 
-                className="btn-cobrar" 
+                className={`btn-cobrar ${flashCobrar ? 'flash' : ''}`}
                 onClick={handleCobrar}
                 disabled={procesandoPago || !ventaId}
               >
@@ -536,7 +560,14 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
             {metodoPagoSeleccionado === 'efectivo' && (
               <div className="pagos-panel-efectivo">
                 <h4>Pagos realizados EFECTIVO</h4>
-                <label className="pagos-label-monto">Monto a cobrar</label>
+                <label 
+                  className="pagos-label-monto clickable" 
+                  onClick={handleCopiarMonto}
+                  style={{ cursor: 'pointer' }}
+                  title="Click para copiar el monto al campo de Total recibido"
+                >
+                  Monto a cobrar
+                </label>
                 <div className="pagos-monto-info">
                   ${descuentoSeleccionado ? nuevoTotal.toFixed(2) : totalCuenta.toFixed(2)}
                 </div>
