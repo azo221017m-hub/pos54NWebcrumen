@@ -217,6 +217,7 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
         propinadeventa,
         formadepago,
         estatusdepago,
+        referencia,
         tiempototaldeventa,
         claveturno,
         idnegocio,
@@ -241,6 +242,7 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
         0,
         'EFECTIVO',
         'PAGADO',
+        'FONDO de CAJA',
         NULL,
         ?,
         ?,
@@ -440,8 +442,12 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
     if (estatusCierre === 'sin_novedades' && retiroFondo && retiroFondo > 0) {
       console.log('Insertando venta MOVIMIENTO por retiro de fondo:', retiroFondo);
 
+      // Calcular el valor negativo del retiro de fondo según requerimiento
+      const retiroFondoNegativo = -retiroFondo;
+
       // Insertar venta con folioventa vacío (se actualizará después)
       // Nota: importedepago se establece en 0 según especificación, aunque el pago es efectivo
+      // Nota: subtotal y totaldeventa deben ser NEGATIVOS para retiros de fondo
       const [ventaResult] = await connection.execute<ResultSetHeader>(
         `INSERT INTO tblposcrumenwebventas (
           tipodeventa, folioventa, estadodeventa, fechadeventa, 
@@ -449,22 +455,23 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
           subtotal, descuentos, impuestos, 
           totaldeventa, cliente, direcciondeentrega, contactodeentrega, 
           telefonodeentrega, propinadeventa, formadepago, importedepago, estatusdepago, 
-          tiempototaldeventa, claveturno, idnegocio, usuarioauditoria, fechamodificacionauditoria, detalledescuento
-        ) VALUES (?, ?, ?, NOW(), NULL, NULL, NULL, NULL, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, ?, ?, ?, NULL, ?, ?, ?, NOW(), NULL)`,
+          referencia, tiempototaldeventa, claveturno, idnegocio, usuarioauditoria, fechamodificacionauditoria, detalledescuento
+        ) VALUES (?, ?, ?, NOW(), NULL, NULL, NULL, NULL, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, ?, ?, ?, ?, NULL, ?, ?, ?, NOW(), NULL)`,
         [
-          'MOVIMIENTO',      // tipodeventa
-          '',                // folioventa (se actualiza después)
-          'COBRADO',         // estadodeventa
-          retiroFondo,       // subtotal
-          0,                 // descuentos
-          0,                 // impuestos
-          retiroFondo,       // totaldeventa
-          'EFECTIVO',        // formadepago
-          0,                 // importedepago (per specification)
-          'PAGADO',          // estatusdepago
-          claveturno,        // claveturno
-          idnegocio,         // idnegocio
-          usuarioauditoria   // usuarioauditoria
+          'MOVIMIENTO',          // tipodeventa
+          '',                    // folioventa (se actualiza después)
+          'COBRADO',             // estadodeventa
+          retiroFondoNegativo,   // subtotal (NEGATIVO)
+          0,                     // descuentos
+          0,                     // impuestos
+          retiroFondoNegativo,   // totaldeventa (NEGATIVO)
+          'EFECTIVO',            // formadepago
+          0,                     // importedepago (per specification)
+          'PAGADO',              // estatusdepago
+          'FONDO de CAJA',       // referencia
+          claveturno,            // claveturno
+          idnegocio,             // idnegocio
+          usuarioauditoria       // usuarioauditoria
         ]
       );
 
