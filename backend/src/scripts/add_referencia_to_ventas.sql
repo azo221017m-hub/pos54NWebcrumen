@@ -7,4 +7,8 @@ ADD COLUMN IF NOT EXISTS referencia VARCHAR(255) NULL
 AFTER estatusdepago;
 
 -- Verify the column was added
-SELECT 'Migration completed - referencia column added to tblposcrumenwebventas' as status;
+SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, COLUMN_DEFAULT
+FROM INFORMATION_SCHEMA.COLUMNS 
+WHERE TABLE_SCHEMA = DATABASE() 
+  AND TABLE_NAME = 'tblposcrumenwebventas' 
+  AND COLUMN_NAME = 'referencia';

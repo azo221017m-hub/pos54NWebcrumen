@@ -443,7 +443,7 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
       console.log('Insertando venta MOVIMIENTO por retiro de fondo:', retiroFondo);
 
       // Calcular el valor negativo del retiro de fondo según requerimiento
-      const retiroFondoNegativo = -Math.abs(retiroFondo);
+      const retiroFondoNegativo = -retiroFondo;
 
       // Insertar venta con folioventa vacío (se actualizará después)
       // Nota: importedepago se establece en 0 según especificación, aunque el pago es efectivo
