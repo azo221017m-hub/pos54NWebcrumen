@@ -100,6 +100,24 @@ if (isNaN(dbPort) || dbPort < 1 || dbPort > 65535) {
   process.exit(1);
 }
 
+// Validación adicional: advertir si se usa localhost en producción
+if (process.env.NODE_ENV === 'production') {
+  const dbHost = requiredEnvVars.DB_HOST || '';
+  if (dbHost === 'localhost' || dbHost === '127.0.0.1' || dbHost === '::1') {
+    console.error('\n⚠️  ADVERTENCIA CRÍTICA: DB_HOST configurado como localhost en PRODUCCIÓN');
+    console.error('═══════════════════════════════════════════════════════════');
+    console.error('Esto causará errores de conexión a la base de datos.');
+    console.error('En producción, DB_HOST debe apuntar al servidor MySQL real.');
+    console.error('');
+    console.error('Ejemplos de configuración correcta:');
+    console.error('  DB_HOST=crumenprod01.mysql.database.azure.com  (Azure MySQL)');
+    console.error('  DB_HOST=mysql.railway.app                      (Railway)');
+    console.error('  DB_HOST=dpg-xxxxx-a.oregon-postgres.render.com (Render)');
+    console.error('═══════════════════════════════════════════════════════════');
+    console.error('Por favor, actualiza /etc/secrets/.env con el host correcto.\n');
+  }
+}
+
 console.log('✅ Variables de entorno validadas correctamente');
 
 const app: Application = express();

@@ -26,17 +26,71 @@ const dbConfig = {
 // Pool de conexiones
 export const pool = createPool(dbConfig);
 
-// Verificar conexión
-export const testConnection = async () => {
-  try {
-    const connection = await pool.getConnection();
-    console.log('✅ Conexión exitosa a MySQL');
-    connection.release();
-    return true;
-  } catch (error) {
-    console.error('❌ Error al conectar a MySQL:', error);
-    return false;
+// Verificar conexión con reintentos
+export const testConnection = async (maxRetries = 3, retryDelay = 2000) => {
+  let lastError: any = null;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`🔄 Intento de conexión a MySQL (${attempt}/${maxRetries})...`);
+      console.log(`   📍 Host: ${dbConfig.host}:${dbConfig.port}`);
+      console.log(`   👤 Usuario: ${dbConfig.user}`);
+      console.log(`   🗄️  Base de datos: ${dbConfig.database}`);
+      
+      const connection = await pool.getConnection();
+      console.log('✅ Conexión exitosa a MySQL');
+      connection.release();
+      return true;
+    } catch (error: any) {
+      lastError = error;
+      console.error(`❌ Intento ${attempt} fallido:`, error.message);
+      
+      // Si no es el último intento, esperar antes de reintentar
+      if (attempt < maxRetries) {
+        console.log(`⏳ Esperando ${retryDelay / 1000}s antes de reintentar...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+      }
+    }
   }
+  
+  // Si llegamos aquí, todos los intentos fallaron
+  console.error('\n❌ ERROR DE CONEXIÓN A MYSQL');
+  console.error('═══════════════════════════════════════════════════════════');
+  console.error('Detalles de la configuración intentada:');
+  console.error(`  Host: ${dbConfig.host}`);
+  console.error(`  Puerto: ${dbConfig.port}`);
+  console.error(`  Usuario: ${dbConfig.user}`);
+  console.error(`  Base de datos: ${dbConfig.database}`);
+  console.error('═══════════════════════════════════════════════════════════');
+  console.error('Error recibido:', lastError.code || lastError.message);
+  console.error('═══════════════════════════════════════════════════════════');
+  
+  if (dbConfig.host === 'localhost' || dbConfig.host === '127.0.0.1') {
+    console.error('\n⚠️  ADVERTENCIA: Intentando conectar a "localhost"');
+    console.error('   Si estás en producción, verifica que DB_HOST esté configurado');
+    console.error('   con el host correcto del servidor MySQL.');
+    console.error('   Ejemplo: DB_HOST=crumenprod01.mysql.database.azure.com');
+  }
+  
+  if (lastError.code === 'ECONNREFUSED') {
+    console.error('\n💡 POSIBLES CAUSAS:');
+    console.error('   1. MySQL no está corriendo en el host especificado');
+    console.error('   2. El firewall está bloqueando la conexión');
+    console.error('   3. El host o puerto son incorrectos');
+    console.error('   4. En producción: verifica las variables de entorno en /etc/secrets/.env');
+  } else if (lastError.code === 'ER_ACCESS_DENIED_ERROR') {
+    console.error('\n💡 POSIBLES CAUSAS:');
+    console.error('   1. Usuario o contraseña incorrectos');
+    console.error('   2. El usuario no tiene permisos para acceder a la base de datos');
+  } else if (lastError.code === 'ENOTFOUND') {
+    console.error('\n💡 POSIBLES CAUSAS:');
+    console.error('   1. El nombre del host es incorrecto o no existe');
+    console.error('   2. Problemas de DNS o de red');
+  }
+  
+  console.error('═══════════════════════════════════════════════════════════\n');
+  
+  return false;
 };
 
 export default pool;
