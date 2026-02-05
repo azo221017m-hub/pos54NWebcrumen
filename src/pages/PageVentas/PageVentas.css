@@ -973,6 +973,27 @@
   font-style: italic;
 }
 
+/* Seat assignment in comanda items */
+.comanda-item-seat {
+  display: flex;
+  align-items: center;
+  gap: 0.312rem; /* 5px */
+  padding: 0.312rem; /* 5px */
+  background: rgba(46, 204, 113, 0.1);
+  border-radius: 0.250rem; /* 4px */
+  font-size: 0.531rem; /* 8.5px */
+}
+
+.seat-label {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.seat-value {
+  color: #27ae60;
+  font-weight: 600;
+}
+
 /* Notas in comanda items */
 .comanda-item-notas {
   display: flex;

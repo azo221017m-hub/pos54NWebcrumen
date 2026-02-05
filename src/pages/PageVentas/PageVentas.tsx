@@ -1523,6 +1523,12 @@ const PageVentas: React.FC = () => {
                     <span className="moderadores-list">{item.moderadoresNames.join(', ')}</span>
                   </div>
                 )}
+                {item.comensal && (
+                  <div className="comanda-item-seat">
+                    <span className="seat-label">Asiento:</span>
+                    <span className="seat-value">{item.comensal}</span>
+                  </div>
+                )}
                 {item.notas && editingNotaIndex !== index && (
                   <div className="comanda-item-notas">
                     <span className="notas-label">Nota:</span>
