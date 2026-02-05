@@ -500,7 +500,7 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
 
     // Calculate logrometa if metaturno is not null or zero
     let logrometa = null;
-    if (metaturno !== null && metaturno !== undefined && metaturno !== 0) {
+    if (metaturno !== null && metaturno !== undefined && metaturno > 0) {
       // Get total sales for this shift
       const [salesResult] = await connection.query<RowDataPacket[]>(
         `SELECT COALESCE(SUM(totaldeventa), 0) as totalventas 
@@ -512,7 +512,8 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
       const totalventas = Number(salesResult[0]?.totalventas) || 0;
       
       // Calculate achievement percentage: (totalventas / metaturno) * 100
-      logrometa = (totalventas / metaturno) * 100;
+      // Round to 2 decimal places for consistent storage
+      logrometa = Math.round((totalventas / metaturno) * 100 * 100) / 100;
       
       console.log('Calculando logrometa:', {
         totalventas,
