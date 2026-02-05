@@ -57,9 +57,6 @@ const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) 
   const [comandasAbiertas, setComandasAbiertas] = useState<number>(0);
   const [loadingComandas, setLoadingComandas] = useState<boolean>(true);
 
-  // Estado para fondo de caja
-  const [loadingFondoCaja, setLoadingFondoCaja] = useState<boolean>(true);
-
   // Estado para las denominaciones
   const [denominaciones, setDenominaciones] = useState<Denominaciones>({
     billete1000: 0,
@@ -97,7 +94,6 @@ const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) 
   useEffect(() => {
     const obtenerFondoDeCaja = async () => {
       try {
-        setLoadingFondoCaja(true);
         const resultado = await obtenerFondoCaja(claveTurno);
         // Set the retiroFondo with the fondoCaja value
         setRetiroFondo(resultado.fondoCaja.toString());
@@ -105,8 +101,6 @@ const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) 
         console.error('Error al obtener fondo de caja:', error);
         // En caso de error, dejar el campo en blanco
         setRetiroFondo('');
-      } finally {
-        setLoadingFondoCaja(false);
       }
     };
 
