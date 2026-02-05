@@ -408,8 +408,6 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
     // Extraer datos del cuerpo de la petición
     const { 
       retiroFondo, 
-      totalArqueo, 
-      detalleDenominaciones, 
       estatusCierre 
     } = req.body;
 
