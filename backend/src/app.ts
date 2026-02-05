@@ -30,10 +30,37 @@ import ventasWebRoutes from './routes/ventasWeb.routes';
 import turnosRoutes from './routes/turnos.routes';
 import pagosRoutes from './routes/pagos.routes';
 
-// Solo cargar dotenv en desarrollo, en producción usar variables de entorno del sistema
-if (process.env.NODE_ENV !== 'production') {
-  const dotenv = require('dotenv');
-  dotenv.config();
+// Cargar dotenv según el ambiente
+// En desarrollo: desde el directorio del proyecto
+// En producción: desde /etc/secrets/
+const dotenv = require('dotenv');
+const fs = require('fs');
+
+if (process.env.NODE_ENV === 'production') {
+  // En producción, cargar desde /etc/secrets/
+  const envPath = path.join('/etc/secrets', '.env');
+  
+  // Verificar que el archivo existe antes de intentar cargarlo
+  if (fs.existsSync(envPath)) {
+    const result = dotenv.config({ path: envPath });
+    if (result.error) {
+      console.error(`❌ Error al cargar variables de entorno desde ${envPath}:`, result.error);
+      process.exit(1);
+    }
+    console.log(`✅ Variables de entorno cargadas desde: ${envPath}`);
+  } else {
+    console.error(`❌ ERROR FATAL: No se encuentra el archivo .env en ${envPath}`);
+    console.error('Por favor, configure el archivo .env en /etc/secrets/ antes de iniciar el servidor');
+    process.exit(1);
+  }
+} else {
+  // En desarrollo, cargar desde el directorio del proyecto
+  const result = dotenv.config();
+  if (result.error) {
+    console.warn('⚠️  No se encontró archivo .env en el directorio del proyecto');
+  } else {
+    console.log('✅ Variables de entorno cargadas desde el directorio del proyecto');
+  }
 }
 
 // Validación de variables de entorno críticas
