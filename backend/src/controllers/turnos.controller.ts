@@ -392,40 +392,110 @@ export const eliminarTurno = async (req: Request, res: Response): Promise<void> 
 
 // Cerrar turno actual
 export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promise<void> => {
+  let connection;
+  
   try {
     const idnegocio = req.user?.idNegocio;
+    const usuarioauditoria = req.user?.alias;
 
-    if (!idnegocio) {
+    if (!idnegocio || !usuarioauditoria) {
       res.status(401).json({ 
         message: 'Usuario no autenticado o sin negocio asignado'
       });
       return;
     }
 
+    // Extraer datos del cuerpo de la petición
+    const { 
+      retiroFondo, 
+      estatusCierre 
+    } = req.body;
+
     console.log('Cerrando turno actual del negocio:', idnegocio);
+    console.log('Estatus de cierre:', estatusCierre);
+
+    // Acquire database connection
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
 
     // Buscar turno abierto
-    const [turnosAbiertos] = await pool.query<Turno[]>(
-      `SELECT idturno FROM tblposcrumenwebturnos 
+    const [turnosAbiertos] = await connection.query<Turno[]>(
+      `SELECT idturno, claveturno FROM tblposcrumenwebturnos 
        WHERE idnegocio = ? AND estatusturno = 'abierto'
        LIMIT 1`,
       [idnegocio]
     );
 
     if (turnosAbiertos.length === 0) {
+      await connection.rollback();
       res.status(404).json({ message: 'No hay turno abierto para cerrar' });
       return;
     }
 
-    const idturno = turnosAbiertos[0].idturno;
+    const turno = turnosAbiertos[0];
+    const idturno = turno.idturno;
+    const claveturno = turno.claveturno;
+
+    // Si el estatus de cierre es 'sin_novedades', insertar registro MOVIMIENTO
+    if (estatusCierre === 'sin_novedades' && retiroFondo && retiroFondo > 0) {
+      console.log('Insertando venta MOVIMIENTO por retiro de fondo:', retiroFondo);
+
+      // Insertar venta con folioventa vacío (se actualizará después)
+      // Nota: importedepago se establece en 0 según especificación, aunque el pago es efectivo
+      const [ventaResult] = await connection.execute<ResultSetHeader>(
+        `INSERT INTO tblposcrumenwebventas (
+          tipodeventa, folioventa, estadodeventa, fechadeventa, 
+          fechaprogramadaentrega, fechapreparacion, fechaenvio, fechaentrega,
+          subtotal, descuentos, impuestos, 
+          totaldeventa, cliente, direcciondeentrega, contactodeentrega, 
+          telefonodeentrega, propinadeventa, formadepago, importedepago, estatusdepago, 
+          tiempototaldeventa, claveturno, idnegocio, usuarioauditoria, fechamodificacionauditoria, detalledescuento
+        ) VALUES (?, ?, ?, NOW(), NULL, NULL, NULL, NULL, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, ?, ?, ?, NULL, ?, ?, ?, NOW(), NULL)`,
+        [
+          'MOVIMIENTO',      // tipodeventa
+          '',                // folioventa (se actualiza después)
+          'COBRADO',         // estadodeventa
+          retiroFondo,       // subtotal
+          0,                 // descuentos
+          0,                 // impuestos
+          retiroFondo,       // totaldeventa
+          'EFECTIVO',        // formadepago
+          0,                 // importedepago (per specification)
+          'PAGADO',          // estatusdepago
+          claveturno,        // claveturno
+          idnegocio,         // idnegocio
+          usuarioauditoria   // usuarioauditoria
+        ]
+      );
+
+      const ventaId = ventaResult.insertId;
+
+      // Generar HHMMSS para el folio usando hora del servidor en zona horaria de México
+      const time = getMexicoTimeComponents();
+      const HHMMSS = `${time.hours}${time.minutes}${time.seconds}`;
+
+      // Generar folioventa con formato: claveturno+HHMMSS+M+idventa
+      const folioFinal = `${claveturno}${HHMMSS}M${ventaId}`;
+      
+      await connection.execute(
+        `UPDATE tblposcrumenwebventas 
+         SET folioventa = ?
+         WHERE idventa = ?`,
+        [folioFinal, ventaId]
+      );
+
+      console.log('Venta MOVIMIENTO creada con folio:', folioFinal);
+    }
 
     // Cerrar el turno
-    await pool.query(
+    await connection.query(
       `UPDATE tblposcrumenwebturnos 
        SET estatusturno = 'cerrado', fechafinturno = NOW()
        WHERE idturno = ?`,
       [idturno]
     );
+
+    await connection.commit();
 
     console.log('Turno cerrado exitosamente');
     res.json({ 
@@ -433,11 +503,18 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
       idturno
     });
   } catch (error) {
+    if (connection) {
+      await connection.rollback();
+    }
     console.error('Error al cerrar turno:', error);
     res.status(500).json({ 
       message: 'Error al cerrar el turno',
       error: error instanceof Error ? error.message : 'Error desconocido'
     });
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 };
 
