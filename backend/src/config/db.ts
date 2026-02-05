@@ -1,4 +1,4 @@
-import { createPool } from 'mysql2/promise';
+import { createPool, PoolOptions } from 'mysql2/promise';
 import { MEXICO_TIMEZONE_OFFSET } from '../utils/dateTime';
 
 // Solo cargar dotenv en desarrollo, en producción usar variables de entorno del sistema
@@ -7,10 +7,15 @@ if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
 }
 
+// Validación de variables de entorno críticas
+if (!process.env.DB_HOST) {
+  throw new Error('DB_HOST no definido');
+}
+
 // Configuración de conexión a MySQL
 // Pool optimizado para manejar múltiples conexiones concurrentes
-const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
+const dbConfig: PoolOptions = {
+  host: process.env.DB_HOST,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'pos_crumen',
@@ -22,6 +27,20 @@ const dbConfig = {
   keepAliveInitialDelay: 0,
   timezone: MEXICO_TIMEZONE_OFFSET // Configurar zona horaria de México (-06:00)
 };
+
+// Configuración SSL si está habilitada (por defecto en producción)
+// Se puede deshabilitar en desarrollo con DB_SSL=false
+const sslEnabled = process.env.DB_SSL !== 'false';
+if (sslEnabled) {
+  dbConfig.ssl = {
+    rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false'
+  };
+  
+  // Soporte para certificado CA personalizado
+  if (process.env.DB_SSL_CA) {
+    (dbConfig.ssl as any).ca = process.env.DB_SSL_CA;
+  }
+}
 
 // Pool de conexiones
 export const pool = createPool(dbConfig);
