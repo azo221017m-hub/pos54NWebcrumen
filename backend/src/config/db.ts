@@ -1,4 +1,4 @@
-import { createPool } from 'mysql2/promise';
+import { createPool, PoolOptions } from 'mysql2/promise';
 import { MEXICO_TIMEZONE_OFFSET } from '../utils/dateTime';
 
 // Solo cargar dotenv en desarrollo, en producción usar variables de entorno del sistema
@@ -14,7 +14,7 @@ if (!process.env.DB_HOST) {
 
 // Configuración de conexión a MySQL
 // Pool optimizado para manejar múltiples conexiones concurrentes
-const dbConfig: any = {
+const dbConfig: PoolOptions = {
   host: process.env.DB_HOST,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
@@ -38,7 +38,7 @@ if (sslEnabled) {
   
   // Soporte para certificado CA personalizado
   if (process.env.DB_SSL_CA) {
-    dbConfig.ssl.ca = process.env.DB_SSL_CA;
+    (dbConfig.ssl as any).ca = process.env.DB_SSL_CA;
   }
 }
 
