@@ -55,6 +55,9 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
 
   // Estado para el efecto de destello del botón cobrar
   const [flashCobrar, setFlashCobrar] = useState(false);
+  
+  // Ref for the flash timeout to allow cleanup
+  const flashTimeoutRef = useRef<number | null>(null);
 
   const cargarDescuentos = useCallback(async () => {
     try {
@@ -208,9 +211,17 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
       const montoACopiar = (descuentoSeleccionado ? nuevoTotal : totalCuenta).toFixed(2);
       setMontoEfectivo(montoACopiar);
       
+      // Clear any existing timeout
+      if (flashTimeoutRef.current !== null) {
+        clearTimeout(flashTimeoutRef.current);
+      }
+      
       // Trigger flash effect on COBRAR button
       setFlashCobrar(true);
-      setTimeout(() => setFlashCobrar(false), 600);
+      flashTimeoutRef.current = window.setTimeout(() => {
+        setFlashCobrar(false);
+        flashTimeoutRef.current = null;
+      }, 600);
       
       // Focus on the input
       if (montoEfectivoRef.current) {
@@ -218,6 +229,15 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
       }
     }
   };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (flashTimeoutRef.current !== null) {
+        clearTimeout(flashTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleEliminarPagoMixto = (index: number) => {
     if (pagosMixtos.length > 1) {
@@ -561,7 +581,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
               <div className="pagos-panel-efectivo">
                 <h4>Pagos realizados EFECTIVO</h4>
                 <label 
-                  className="pagos-label-monto clickable" 
+                  className="pagos-label-monto" 
                   onClick={handleCopiarMonto}
                   style={{ cursor: 'pointer' }}
                   title="Haz clic para copiar el monto al campo de Total recibido"
