@@ -88,6 +88,7 @@ export const procesarPagoSimple = async (req: AuthRequest, res: Response): Promi
     const subtotal = Number(venta.subtotal);
     const descuento = pagoData.descuento || 0;
     const totaldeventa = subtotal - descuento;
+    // Store discount name for tracking purposes; null if no discount applied
     const detalledescuento = pagoData.detalledescuento || null;
 
     // Validate payment amount
@@ -268,6 +269,7 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
     const subtotal = Number(venta.subtotal);
     const descuento = pagoData.descuento || 0;
     const totaldeventa = subtotal - descuento;
+    // Store discount name for tracking purposes; null if no discount applied
     const detalledescuento = pagoData.detalledescuento || null;
 
     // Calculate total paid
