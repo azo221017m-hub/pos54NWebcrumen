@@ -28,7 +28,7 @@ export const pool = createPool(dbConfig);
 
 // Verificar conexión con reintentos
 export const testConnection = async (maxRetries = 3, retryDelay = 2000) => {
-  let lastError: any = null;
+  let lastError: Error | unknown = null;
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
@@ -41,9 +41,10 @@ export const testConnection = async (maxRetries = 3, retryDelay = 2000) => {
       console.log('✅ Conexión exitosa a MySQL');
       connection.release();
       return true;
-    } catch (error: any) {
+    } catch (error) {
       lastError = error;
-      console.error(`❌ Intento ${attempt} fallido:`, error.message);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`❌ Intento ${attempt} fallido:`, errorMessage);
       
       // Si no es el último intento, esperar antes de reintentar
       if (attempt < maxRetries) {
@@ -62,7 +63,9 @@ export const testConnection = async (maxRetries = 3, retryDelay = 2000) => {
   console.error(`  Usuario: ${dbConfig.user}`);
   console.error(`  Base de datos: ${dbConfig.database}`);
   console.error('═══════════════════════════════════════════════════════════');
-  console.error('Error recibido:', lastError.code || lastError.message);
+  const errorCode = (lastError as any)?.code;
+  const errorMessage = lastError instanceof Error ? lastError.message : String(lastError);
+  console.error('Error recibido:', errorCode || errorMessage);
   console.error('═══════════════════════════════════════════════════════════');
   
   if (dbConfig.host === 'localhost' || dbConfig.host === '127.0.0.1') {
@@ -72,17 +75,17 @@ export const testConnection = async (maxRetries = 3, retryDelay = 2000) => {
     console.error('   Ejemplo: DB_HOST=crumenprod01.mysql.database.azure.com');
   }
   
-  if (lastError.code === 'ECONNREFUSED') {
+  if (errorCode === 'ECONNREFUSED') {
     console.error('\n💡 POSIBLES CAUSAS:');
     console.error('   1. MySQL no está corriendo en el host especificado');
     console.error('   2. El firewall está bloqueando la conexión');
     console.error('   3. El host o puerto son incorrectos');
     console.error('   4. En producción: verifica las variables de entorno en /etc/secrets/.env');
-  } else if (lastError.code === 'ER_ACCESS_DENIED_ERROR') {
+  } else if (errorCode === 'ER_ACCESS_DENIED_ERROR') {
     console.error('\n💡 POSIBLES CAUSAS:');
     console.error('   1. Usuario o contraseña incorrectos');
     console.error('   2. El usuario no tiene permisos para acceder a la base de datos');
-  } else if (lastError.code === 'ENOTFOUND') {
+  } else if (errorCode === 'ENOTFOUND') {
     console.error('\n💡 POSIBLES CAUSAS:');
     console.error('   1. El nombre del host es incorrecto o no existe');
     console.error('   2. Problemas de DNS o de red');

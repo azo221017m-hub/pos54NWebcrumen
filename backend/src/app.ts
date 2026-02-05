@@ -112,7 +112,7 @@ if (process.env.NODE_ENV === 'production') {
     console.error('Ejemplos de configuración correcta:');
     console.error('  DB_HOST=crumenprod01.mysql.database.azure.com  (Azure MySQL)');
     console.error('  DB_HOST=mysql.railway.app                      (Railway)');
-    console.error('  DB_HOST=dpg-xxxxx-a.oregon-postgres.render.com (Render)');
+    console.error('  DB_HOST=dpg-xxxxx-a.render.com                 (Render MySQL)');
     console.error('═══════════════════════════════════════════════════════════');
     console.error('Por favor, actualiza /etc/secrets/.env con el host correcto.\n');
   }
