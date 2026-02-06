@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Insumo } from '../../../types/insumo.types';
-import { Edit, Trash2, Package, DollarSign, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Edit, Trash2, Package, DollarSign, TrendingUp, AlertTriangle, Minus } from 'lucide-react';
 import './ListaInsumos.css';
 
 interface Props {
@@ -83,7 +83,7 @@ const ListaInsumos: React.FC<Props> = ({ insumos, onEdit, onDelete }) => {
 
                 <div className="stat-item">
                   <div className="stat-icon">
-                    <AlertTriangle size={20} />
+                    <Minus size={20} />
                   </div>
                   <div className="stat-info">
                     <span className="stat-label">Stock Mínimo</span>
