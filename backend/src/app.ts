@@ -123,6 +123,10 @@ console.log('✅ Variables de entorno validadas correctamente');
 
 const app: Application = express();
 
+// Configurar Express para confiar en el proxy (necesario para Render y otros servicios de hosting)
+// Esto permite que rate limiting y otras funcionalidades basadas en IP funcionen correctamente
+app.set('trust proxy', 1);
+
 // Configuración de CORS para producción
 const allowedOrigins = [
   'http://localhost:5173', // Desarrollo local
