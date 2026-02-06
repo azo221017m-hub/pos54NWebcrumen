@@ -10,6 +10,7 @@ interface ToastMessage {
 // Custom event-based toast manager
 class ToastManager {
   private static listeners: Set<(message: ToastMessage) => void> = new Set();
+  private static idCounter = 0;
 
   static subscribe(callback: (message: ToastMessage) => void) {
     this.listeners.add(callback);
@@ -18,7 +19,7 @@ class ToastManager {
 
   static show(text: string, variant: 'success' | 'error' | 'info' = 'info') {
     const message: ToastMessage = {
-      id: Date.now() + Math.random(),
+      id: ++this.idCounter,
       text,
       variant
     };
@@ -35,17 +36,23 @@ const FeedbackToast: React.FC = () => {
   const [messages, setMessages] = useState<ToastMessage[]>([]);
 
   useEffect(() => {
+    const timeouts: number[] = [];
+    
     const unsubscribe = ToastManager.subscribe((message) => {
       setMessages(prev => [...prev, message]);
       
       // Auto-remove after 3 seconds
-      setTimeout(() => {
+      const timeoutId = window.setTimeout(() => {
         setMessages(prev => prev.filter(m => m.id !== message.id));
       }, 3000);
+      
+      timeouts.push(timeoutId);
     });
 
     return () => {
       unsubscribe();
+      // Clear all pending timeouts
+      timeouts.forEach(id => clearTimeout(id));
     };
   }, []);
 

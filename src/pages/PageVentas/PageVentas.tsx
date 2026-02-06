@@ -747,8 +747,8 @@ const PageVentas: React.FC = () => {
   };
 
   const handleProducir = async () => {
-    setIsProcessingVenta(true);
     try {
+      setIsProcessingVenta(true);
       // Check if current venta has ESPERAR status - if so, UPDATE instead of creating new record
       if (currentVentaId && currentEstadoDeVenta === 'ESPERAR') {
         try {
