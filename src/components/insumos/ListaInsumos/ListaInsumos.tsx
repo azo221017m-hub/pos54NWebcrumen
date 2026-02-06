@@ -33,8 +33,12 @@ const ListaInsumos: React.FC<Props> = ({ insumos, onEdit, onDelete }) => {
   };
 
   const getStockStatus = (actual: number, minimo: number) => {
-    if (actual <= minimo) return 'critico';
-    if (actual <= minimo * 1.5) return 'bajo';
+    // Ensure values are numbers to prevent string comparison issues
+    const actualNum = Number(actual);
+    const minimoNum = Number(minimo);
+    
+    if (actualNum <= minimoNum) return 'critico';
+    if (actualNum <= minimoNum * 1.5) return 'bajo';
     return 'normal';
   };
 
