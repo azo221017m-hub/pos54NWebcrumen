@@ -19,8 +19,8 @@ const ESTADO_ESPERAR = 'ESPERAR';
 const ESTADO_ORDENADO = 'ORDENADO';
 const TIPO_PRODUCTO_DEFAULT = 'Directo';
 
-// Helper function: Process recipe ingredient movements
-// This function creates inventory movement records for recipe-based sales
+// Helper function: Process inventory movements for recipe and inventory products
+// This function creates inventory movement records for recipe-based and inventory-based sales
 async function processRecipeInventoryMovements(
   connection: PoolConnection,
   idventa: number,
@@ -31,7 +31,7 @@ async function processRecipeInventoryMovements(
   try {
     // Get all sale details that need processing:
     // - afectainventario = 1 (affects inventory)
-    // - tipoafectacion = 'RECETA' (recipe-based)
+    // - tipoafectacion = 'RECETA' OR 'INVENTARIO'
     // - inventarioprocesado = 0 (not yet processed)
     const whereClause = iddetalleventa 
       ? 'iddetalleventa = ? AND idventa = ?' 
@@ -44,7 +44,7 @@ async function processRecipeInventoryMovements(
       `SELECT * FROM tblposcrumenwebdetalleventas 
        WHERE ${whereClause} 
          AND afectainventario = 1 
-         AND tipoafectacion = 'RECETA' 
+         AND (tipoafectacion = 'RECETA' OR tipoafectacion = 'INVENTARIO')
          AND inventarioprocesado = 0
          AND idnegocio = ?`,
       [...params, idnegocio]
@@ -57,34 +57,34 @@ async function processRecipeInventoryMovements(
     // Process each detail that needs inventory movement
     for (const detalle of detalleRows) {
       if (!detalle.idreceta) {
-        console.warn(`Sale detail ${detalle.iddetalleventa} has tipoafectacion='RECETA' but no idreceta`);
+        console.warn(`Sale detail ${detalle.iddetalleventa} has tipoafectacion='${detalle.tipoafectacion}' but no idreceta`);
         continue;
       }
 
-      // Get recipe ingredients from tblposcrumenwebdetallerecetas
-      const [recetaDetalles] = await connection.execute<RowDataPacket[]>(
-        `SELECT 
-           dr.idreferencia as idinsumo,
-           dr.nombreinsumo,
-           dr.umInsumo as unidadmedida,
-           dr.cantidadUso,
-           i.stock_actual,
-           i.precio_venta,
-           i.costo_promedio_ponderado
-         FROM tblposcrumenwebdetallerecetas dr
-         LEFT JOIN tblposcrumenwebinsumos i ON dr.idreferencia = i.id_insumo
-         WHERE dr.dtlRecetaId = ? AND dr.idnegocio = ?`,
-        [detalle.idreceta, idnegocio]
-      );
+      if (detalle.tipoafectacion === 'INVENTARIO') {
+        // For INVENTARIO products, create movement directly from insumo
+        // idreceta contains the id_insumo (from productos.idreferencia)
+        const [insumoRows] = await connection.execute<RowDataPacket[]>(
+          `SELECT 
+             id_insumo as idinsumo,
+             nombre as nombreinsumo,
+             unidad_medida as unidadmedida,
+             stock_actual,
+             precio_venta,
+             costo_promedio_ponderado
+           FROM tblposcrumenwebinsumos
+           WHERE id_insumo = ? AND idnegocio = ?`,
+          [detalle.idreceta, idnegocio]
+        );
 
-      // Create a movement record for each ingredient in the recipe
-      for (const ingrediente of recetaDetalles) {
-        // Calculate total quantity needed (recipe quantity * sale quantity)
-        const cantidadTotal = parseFloat(ingrediente.cantidadUso) * detalle.cantidad;
-        // Convert to negative for SALIDA movements
-        // Using -Math.abs() ensures the value is always negative, regardless of input
-        // This is critical for the stock update logic in updateInventoryStockFromMovements()
-        const cantidadNegativa = -Math.abs(cantidadTotal);
+        if (insumoRows.length === 0) {
+          console.warn(`Insumo ${detalle.idreceta} not found for sale detail ${detalle.iddetalleventa}`);
+          continue;
+        }
+
+        const insumo = insumoRows[0];
+        // Quantity sold (negative for SALIDA)
+        const cantidadNegativa = -Math.abs(detalle.cantidad);
 
         await connection.execute(
           `INSERT INTO tblposcrumenwebdetallemovimientos (
@@ -94,16 +94,16 @@ async function processRecipeInventoryMovements(
              idnegocio, estatusmovimiento, fecharegistro, fechaauditoria
            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, NOW(), NOW())`,
           [
-            ingrediente.idinsumo,
-            ingrediente.nombreinsumo,
-            'RECETA', // tipoinsumo
+            insumo.idinsumo,
+            insumo.nombreinsumo,
+            'INVENTARIO', // tipoinsumo
             'SALIDA', // tipomovimiento
             'VENTA', // motivomovimiento
             cantidadNegativa, // cantidad as negative value
-            ingrediente.stock_actual || null,
-            ingrediente.unidadmedida,
-            ingrediente.precio_venta || null,
-            ingrediente.costo_promedio_ponderado || null,
+            insumo.stock_actual || null,
+            insumo.unidadmedida,
+            insumo.precio_venta || null,
+            insumo.costo_promedio_ponderado || null,
             detalle.idventa, // idreferencia = sale ID
             null, // observaciones
             usuarioalias, // user alias instead of user ID
@@ -111,6 +111,58 @@ async function processRecipeInventoryMovements(
             'PENDIENTE' // estatusmovimiento
           ]
         );
+      } else if (detalle.tipoafectacion === 'RECETA') {
+        // For RECETA products, get ingredients from recipe details
+        const [recetaDetalles] = await connection.execute<RowDataPacket[]>(
+          `SELECT 
+             dr.idreferencia as idinsumo,
+             dr.nombreinsumo,
+             dr.umInsumo as unidadmedida,
+             dr.cantidadUso,
+             i.stock_actual,
+             i.precio_venta,
+             i.costo_promedio_ponderado
+           FROM tblposcrumenwebdetallerecetas dr
+           LEFT JOIN tblposcrumenwebinsumos i ON dr.idreferencia = i.id_insumo
+           WHERE dr.dtlRecetaId = ? AND dr.idnegocio = ?`,
+          [detalle.idreceta, idnegocio]
+        );
+
+        // Create a movement record for each ingredient in the recipe
+        for (const ingrediente of recetaDetalles) {
+          // Calculate total quantity needed (recipe quantity * sale quantity)
+          const cantidadTotal = parseFloat(ingrediente.cantidadUso) * detalle.cantidad;
+          // Convert to negative for SALIDA movements
+          // Using -Math.abs() ensures the value is always negative, regardless of input
+          // This is critical for the stock update logic in updateInventoryStockFromMovements()
+          const cantidadNegativa = -Math.abs(cantidadTotal);
+
+          await connection.execute(
+            `INSERT INTO tblposcrumenwebdetallemovimientos (
+               idinsumo, nombreinsumo, tipoinsumo, tipomovimiento, motivomovimiento,
+               cantidad, referenciastock, unidadmedida, precio, costo,
+               idreferencia, fechamovimiento, observaciones, usuarioauditoria, 
+               idnegocio, estatusmovimiento, fecharegistro, fechaauditoria
+             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, NOW(), NOW())`,
+            [
+              ingrediente.idinsumo,
+              ingrediente.nombreinsumo,
+              'RECETA', // tipoinsumo
+              'SALIDA', // tipomovimiento
+              'VENTA', // motivomovimiento
+              cantidadNegativa, // cantidad as negative value
+              ingrediente.stock_actual || null,
+              ingrediente.unidadmedida,
+              ingrediente.precio_venta || null,
+              ingrediente.costo_promedio_ponderado || null,
+              detalle.idventa, // idreferencia = sale ID
+              null, // observaciones
+              usuarioalias, // user alias instead of user ID
+              idnegocio,
+              'PENDIENTE' // estatusmovimiento
+            ]
+          );
+        }
       }
 
       // Mark this sale detail as processed

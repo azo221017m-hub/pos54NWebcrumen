@@ -660,8 +660,8 @@ const PageVentas: React.FC = () => {
       const detallesData = itemsToInsert.map(item => ({
         idproducto: item.producto.idProducto,
         nombreproducto: item.producto.nombre,
-        // Priorizar receta: solo asignar si existe y tipo es Receta
-        idreceta: item.producto.tipoproducto === 'Receta' && item.producto.idreferencia 
+        // Asignar idreceta si existe idreferencia y tipo es Receta o Inventario
+        idreceta: (item.producto.tipoproducto === 'Receta' || item.producto.tipoproducto === 'Inventario') && item.producto.idreferencia 
           ? item.producto.idreferencia 
           : null,
         tipoproducto: item.producto.tipoproducto,
@@ -753,7 +753,8 @@ const PageVentas: React.FC = () => {
           const detallesData = newItemsToOrder.map(item => ({
             idproducto: item.producto.idProducto,
             nombreproducto: item.producto.nombre,
-            idreceta: item.producto.tipoproducto === 'Receta' && item.producto.idreferencia 
+            // Asignar idreceta si existe idreferencia y tipo es Receta o Inventario
+            idreceta: (item.producto.tipoproducto === 'Receta' || item.producto.tipoproducto === 'Inventario') && item.producto.idreferencia 
               ? item.producto.idreferencia 
               : null,
             tipoproducto: item.producto.tipoproducto,
