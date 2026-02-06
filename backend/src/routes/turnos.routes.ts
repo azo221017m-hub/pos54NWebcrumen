@@ -10,11 +10,15 @@ import {
   obtenerFondoCaja
 } from '../controllers/turnos.controller';
 import { authMiddleware } from '../middlewares/auth';
+import { apiLimiter } from '../middlewares/rateLimit';
 
 const router = Router();
 
 // Todas las rutas requieren autenticación
 router.use(authMiddleware);
+
+// Aplicar rate limiting a todas las rutas (después de autenticación)
+router.use(apiLimiter);
 
 // Rutas CRUD
 router.get('/', obtenerTurnos);
