@@ -107,6 +107,9 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
     } else if (name === 'idproveedor') {
       // Handle idproveedor as nullable number
       valorFinal = value === '' ? null : Number(value);
+    } else if (name === 'id_cuentacontable') {
+      // Handle id_cuentacontable as nullable string (keeping as string since backend expects string)
+      valorFinal = value === '' ? null : value;
     }
 
     setFormData(prev => ({
@@ -316,7 +319,7 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
                 <select
                   id="id_cuentacontable"
                   name="id_cuentacontable"
-                  value={formData.id_cuentacontable}
+                  value={formData.id_cuentacontable || ''}
                   onChange={handleChange}
                   disabled={cargandoGrupos}
                 >
