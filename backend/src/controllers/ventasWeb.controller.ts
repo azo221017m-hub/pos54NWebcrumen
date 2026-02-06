@@ -26,7 +26,7 @@ async function processRecipeInventoryMovements(
   idventa: number,
   iddetalleventa: number | null,
   idnegocio: number,
-  usuarioauditoria: number
+  usuarioalias: string
 ): Promise<void> {
   try {
     // Get all sale details that need processing:
@@ -81,6 +81,8 @@ async function processRecipeInventoryMovements(
       for (const ingrediente of recetaDetalles) {
         // Calculate total quantity needed (recipe quantity * sale quantity)
         const cantidadTotal = parseFloat(ingrediente.cantidadUso) * detalle.cantidad;
+        // Convert to negative for SALIDA movements
+        const cantidadNegativa = -Math.abs(cantidadTotal);
 
         await connection.execute(
           `INSERT INTO tblposcrumenwebdetallemovimientos (
@@ -95,14 +97,14 @@ async function processRecipeInventoryMovements(
             'RECETA', // tipoinsumo
             'SALIDA', // tipomovimiento
             'VENTA', // motivomovimiento
-            cantidadTotal,
+            cantidadNegativa, // cantidad as negative value
             ingrediente.stock_actual || null,
             ingrediente.unidadmedida,
             ingrediente.precio_venta || null,
             ingrediente.costo_promedio_ponderado || null,
             detalle.idventa, // idreferencia = sale ID
             null, // observaciones
-            usuarioauditoria,
+            usuarioalias, // user alias instead of user ID
             idnegocio,
             'PENDIENTE' // estatusmovimiento
           ]
@@ -119,6 +121,56 @@ async function processRecipeInventoryMovements(
     }
   } catch (error) {
     console.error('Error processing recipe inventory movements:', error);
+    throw error; // Re-throw to trigger transaction rollback
+  }
+}
+
+// Helper function: Update inventory stock after pending movements
+// This function updates stock_actual in tblposcrumenwebinsumos based on pending movements
+async function updateInventoryStockFromMovements(
+  connection: PoolConnection,
+  idventa: number,
+  idnegocio: number,
+  usuarioalias: string
+): Promise<void> {
+  try {
+    // Get all pending movements for this sale
+    const [movementRows] = await connection.execute<RowDataPacket[]>(
+      `SELECT * FROM tblposcrumenwebdetallemovimientos 
+       WHERE idreferencia = ? 
+         AND idnegocio = ? 
+         AND estatusmovimiento = 'PENDIENTE'`,
+      [idventa, idnegocio]
+    );
+
+    if (movementRows.length === 0) {
+      return; // Nothing to process
+    }
+
+    // Update inventory stock for each movement
+    for (const movement of movementRows) {
+      // Calculate new stock: referenciastock + cantidad (cantidad is already negative for SALIDA)
+      const newStock = (movement.referenciastock || 0) + movement.cantidad;
+
+      await connection.execute(
+        `UPDATE tblposcrumenwebinsumos 
+         SET stock_actual = ?,
+             usuarioauditoria = ?,
+             fechamodificacionauditoria = NOW()
+         WHERE id_insumo = ? AND idnegocio = ?`,
+        [newStock, usuarioalias, movement.idinsumo, idnegocio]
+      );
+
+      // Mark the movement as PROCESADO
+      await connection.execute(
+        `UPDATE tblposcrumenwebdetallemovimientos 
+         SET estatusmovimiento = 'PROCESADO'
+         WHERE iddetallemovimiento = ?`,
+        [movement.iddetallemovimiento]
+      );
+    }
+  } catch (error) {
+    console.error('Error updating inventory stock from movements:', error);
     throw error; // Re-throw to trigger transaction rollback
   }
 }
@@ -436,9 +488,11 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     }
 
     // Process recipe inventory movements after all details are inserted
-    const usuarioId = req.user?.id;
-    if (usuarioId) {
-      await processRecipeInventoryMovements(connection, ventaId, null, idnegocio, usuarioId);
+    const usuarioAlias = req.user?.alias;
+    if (usuarioAlias) {
+      await processRecipeInventoryMovements(connection, ventaId, null, idnegocio, usuarioAlias);
+      // Update inventory stock after movements are registered
+      await updateInventoryStockFromMovements(connection, ventaId, idnegocio, usuarioAlias);
     }
 
     await connection.commit();
@@ -966,9 +1020,11 @@ export const addDetallesToVenta = async (req: AuthRequest, res: Response): Promi
     );
 
     // Process recipe inventory movements after all details are inserted/updated
-    const usuarioId = req.user?.id;
-    if (usuarioId) {
-      await processRecipeInventoryMovements(connection, Number(id), null, idnegocio, usuarioId);
+    const usuarioAlias = req.user?.alias;
+    if (usuarioAlias) {
+      await processRecipeInventoryMovements(connection, Number(id), null, idnegocio, usuarioAlias);
+      // Update inventory stock after movements are registered
+      await updateInventoryStockFromMovements(connection, Number(id), idnegocio, usuarioAlias);
     }
 
     await connection.commit();
