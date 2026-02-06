@@ -8,6 +8,9 @@ import { clearSession } from '../services/sessionService';
 import { obtenerModeradores } from '../services/moderadoresService';
 import type { Moderador } from '../types/moderador.types';
 import { obtenerDetallesPagos } from '../services/pagosService';
+import { verificarTurnoAbierto } from '../services/turnosService';
+import type { Turno } from '../types/turno.types';
+import CierreTurno from '../components/turnos/CierreTurno/CierreTurno';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -135,6 +138,8 @@ export const DashboardPage = () => {
     metaTurno: 0,
     hasTurnoAbierto: false
   });
+  const [turnoAbierto, setTurnoAbierto] = useState<Turno | null>(null);
+  const [showCierreTurnoModal, setShowCierreTurnoModal] = useState(false);
 
   const handleLogout = useCallback(() => {
     // Limpiar completamente la sesión
@@ -199,6 +204,16 @@ export const DashboardPage = () => {
     }
   }, []);
 
+  const verificarTurno = useCallback(async () => {
+    try {
+      const turno = await verificarTurnoAbierto();
+      setTurnoAbierto(turno);
+    } catch (error) {
+      console.error('Error al verificar turno abierto:', error);
+      setTurnoAbierto(null);
+    }
+  }, []);
+
   const handleStatusChange = async (ventaId: number, newStatus: EstadoDeVenta) => {
     try {
       const result = await actualizarVentaWeb(ventaId, { estadodeventa: newStatus });
@@ -212,6 +227,26 @@ export const DashboardPage = () => {
       console.error('Error al cambiar estado:', error);
       alert('Error al actualizar el estado de la venta');
     }
+  };
+
+  const handleFinalizaDiaClick = () => {
+    if (turnoAbierto) {
+      setShowCierreTurnoModal(true);
+      setShowMiOperacionSubmenu(false);
+    }
+  };
+
+  const handleCierreTurnoCancel = () => {
+    setShowCierreTurnoModal(false);
+  };
+
+  const handleCierreTurnoSubmit = async (datosFormulario: any) => {
+    console.log('Datos de cierre de turno:', datosFormulario);
+    // Here you would call the service to close the turno
+    // For now, just close the modal and refresh the turno status
+    setShowCierreTurnoModal(false);
+    await verificarTurno();
+    await cargarResumenVentas();
   };
 
   // Helper function to resolve moderador names from IDs
@@ -409,13 +444,17 @@ export const DashboardPage = () => {
     // Load sales summary for current shift
     cargarResumenVentas();
 
-    // Refresh sales summary periodically
+    // Verify open turno
+    verificarTurno();
+
+    // Refresh sales summary and turno status periodically
     const intervalId = setInterval(() => {
       cargarResumenVentas();
+      verificarTurno();
     }, SALES_SUMMARY_REFRESH_INTERVAL);
 
     return () => clearInterval(intervalId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas, cargarModeradores, and cargarResumenVentas omitted to prevent infinite refresh loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas, cargarModeradores, cargarResumenVentas, and verificarTurno omitted to prevent infinite refresh loop
   }, [navigate]);
 
   // Early return if not authenticated
@@ -927,8 +966,13 @@ export const DashboardPage = () => {
               </button>
               <button 
                 className="submenu-item" 
-                disabled 
-                title="Próximamente"
+                disabled={!turnoAbierto}
+                title={turnoAbierto ? "Finalizar día" : "No hay turno abierto"}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleFinalizaDiaClick();
+                }}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10"/>
@@ -1240,6 +1284,15 @@ export const DashboardPage = () => {
             <p className="lock-hint">Haz clic en cualquier lugar para desbloquear</p>
           </div>
         </div>
+      )}
+
+      {/* Modal de Cierre de Turno */}
+      {showCierreTurnoModal && turnoAbierto && (
+        <CierreTurno 
+          turno={turnoAbierto}
+          onCancel={handleCierreTurnoCancel}
+          onSubmit={handleCierreTurnoSubmit}
+        />
       )}
     </div>
   );
