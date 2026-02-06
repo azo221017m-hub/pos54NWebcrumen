@@ -134,7 +134,7 @@ const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, l
     }]);
   };
 
-  const actualizarDetalle = (index: number, campo: string, valor: any) => {
+  const actualizarDetalle = (index: number, campo: string, valor: string | number) => {
     setDetalles(prev => {
       const nuevos = [...prev];
       nuevos[index] = { ...nuevos[index], [campo]: valor };
