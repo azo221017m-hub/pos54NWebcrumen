@@ -115,6 +115,25 @@ export const obtenerInsumoPorId = async (req: Request, res: Response): Promise<v
   }
 };
 
+// Helper function to validate duplicate insumo names
+const validarNombreDuplicado = async (
+  nombre: string, 
+  idnegocio: number, 
+  id_insumo?: number
+): Promise<boolean> => {
+  let query = 'SELECT id_insumo FROM tblposcrumenwebinsumos WHERE nombre = ? AND idnegocio = ?';
+  const params: (string | number)[] = [nombre, idnegocio];
+
+  // Si se proporciona id_insumo, excluirlo de la búsqueda (para validación en edición)
+  if (id_insumo) {
+    query += ' AND id_insumo != ?';
+    params.push(id_insumo);
+  }
+
+  const [rows] = await pool.query<RowDataPacket[]>(query, params);
+  return rows.length > 0;
+};
+
 // Validar si existe un insumo con el mismo nombre
 export const validarNombreInsumo = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -129,18 +148,13 @@ export const validarNombreInsumo = async (req: AuthRequest, res: Response): Prom
       return;
     }
 
-    let query = 'SELECT id_insumo FROM tblposcrumenwebinsumos WHERE nombre = ? AND idnegocio = ?';
-    const params: (string | number)[] = [nombre, idnegocio];
-
-    // Si se proporciona id_insumo, excluirlo de la búsqueda (para validación en edición)
-    if (id_insumo) {
-      query += ' AND id_insumo != ?';
-      params.push(Number(id_insumo));
-    }
-
-    const [rows] = await pool.query<RowDataPacket[]>(query, params);
+    const existe = await validarNombreDuplicado(
+      nombre, 
+      idnegocio, 
+      id_insumo ? Number(id_insumo) : undefined
+    );
     
-    res.json({ existe: rows.length > 0 });
+    res.json({ existe });
   } catch (error) {
     console.error('Error al validar nombre de insumo:', error);
     res.status(500).json({ 
@@ -181,12 +195,9 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
     }
 
     // Validar que el nombre de insumo no exista para este negocio
-    const [existentes] = await pool.query<RowDataPacket[]>(
-      'SELECT id_insumo FROM tblposcrumenwebinsumos WHERE nombre = ? AND idnegocio = ?',
-      [nombre, idnegocio]
-    );
+    const existe = await validarNombreDuplicado(nombre, idnegocio);
 
-    if (existentes.length > 0) {
+    if (existe) {
       res.status(409).json({ message: 'Ya existe un insumo con ese nombre para este negocio' });
       return;
     }
@@ -277,12 +288,9 @@ export const actualizarInsumo = async (req: AuthRequest, res: Response): Promise
     }
 
     // Validar que el nombre de insumo no exista para este negocio (excluyendo el insumo actual)
-    const [existentes] = await pool.query<RowDataPacket[]>(
-      'SELECT id_insumo FROM tblposcrumenwebinsumos WHERE nombre = ? AND idnegocio = ? AND id_insumo != ?',
-      [nombre, idnegocio, id_insumo]
-    );
+    const existe = await validarNombreDuplicado(nombre, idnegocio, Number(id_insumo));
 
-    if (existentes.length > 0) {
+    if (existe) {
       res.status(409).json({ message: 'Ya existe un insumo con ese nombre para este negocio' });
       return;
     }

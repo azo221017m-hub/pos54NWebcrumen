@@ -437,7 +437,7 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
           <button
             type="submit"
             className="btn-guardar"
-            disabled={loading}
+            disabled={loading || validandoNombre}
           >
             <Save size={18} />
             {loading ? 'Guardando...' : insumoEditar ? 'Actualizar' : 'Guardar'}
