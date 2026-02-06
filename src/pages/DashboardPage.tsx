@@ -11,6 +11,7 @@ import { obtenerDetallesPagos } from '../services/pagosService';
 import { verificarTurnoAbierto, cerrarTurnoActual } from '../services/turnosService';
 import type { Turno } from '../types/turno.types';
 import CierreTurno from '../components/turnos/CierreTurno/CierreTurno';
+import { showSuccessToast, showErrorToast } from '../components/FeedbackToast';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -29,6 +30,25 @@ interface PedidoOnline {
   total: number;
   estado: 'pendiente' | 'preparando' | 'listo' | 'entregado';
   hora: string;
+}
+
+interface DatosCierreTurno {
+  idTurno: string;
+  retiroFondo: number;
+  totalArqueo: number;
+  detalleDenominaciones: {
+    billete1000: number;
+    billete500: number;
+    billete200: number;
+    billete100: number;
+    billete50: number;
+    billete20: number;
+    moneda10: number;
+    moneda5: number;
+    moneda1: number;
+    moneda050: number;
+  };
+  estatusCierre: 'sin_novedades' | 'cuentas_pendientes';
 }
 
 const getUsuarioFromStorage = (): Usuario | null => {
@@ -240,7 +260,7 @@ export const DashboardPage = () => {
     setShowCierreTurnoModal(false);
   };
 
-  const handleCierreTurnoSubmit = async (datosFormulario: any) => {
+  const handleCierreTurnoSubmit = async (datosFormulario: DatosCierreTurno) => {
     try {
       console.log('Datos de cierre de turno:', datosFormulario);
       // Call the service to close the turno
@@ -250,11 +270,11 @@ export const DashboardPage = () => {
       // Refresh the turno status and sales summary
       await verificarTurno();
       await cargarResumenVentas();
-      // Optionally show a success message
-      alert('Turno cerrado exitosamente');
+      // Show a success message
+      showSuccessToast('Turno cerrado exitosamente');
     } catch (error) {
       console.error('Error al cerrar turno:', error);
-      alert('Error al cerrar el turno. Por favor intente nuevamente.');
+      showErrorToast('Error al cerrar el turno. Por favor intente nuevamente.');
     }
   };
 
