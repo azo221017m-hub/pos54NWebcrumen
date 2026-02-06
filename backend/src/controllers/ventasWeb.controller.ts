@@ -1,6 +1,7 @@
 import type { Response } from 'express';
 import { pool } from '../config/db';
 import type { RowDataPacket, ResultSetHeader } from 'mysql2';
+import type { PoolConnection } from 'mysql2/promise';
 import type { AuthRequest } from '../middlewares/auth';
 import type { 
   VentaWeb, 
@@ -17,6 +18,110 @@ const FORMAS_DE_PAGO_VALIDAS: FormaDePago[] = ['EFECTIVO', 'TARJETA', 'TRANSFERE
 const ESTADO_ESPERAR = 'ESPERAR';
 const ESTADO_ORDENADO = 'ORDENADO';
 const TIPO_PRODUCTO_DEFAULT = 'Directo';
+
+// Helper function: Process recipe ingredient movements
+// This function creates inventory movement records for recipe-based sales
+async function processRecipeInventoryMovements(
+  connection: PoolConnection,
+  idventa: number,
+  iddetalleventa: number | null,
+  idnegocio: number,
+  usuarioauditoria: number
+): Promise<void> {
+  try {
+    // Get all sale details that need processing:
+    // - afectainventario = 1 (affects inventory)
+    // - tipoafectacion = 'RECETA' (recipe-based)
+    // - inventarioprocesado = 0 (not yet processed)
+    const whereClause = iddetalleventa 
+      ? 'iddetalleventa = ? AND idventa = ?' 
+      : 'idventa = ?';
+    const params = iddetalleventa 
+      ? [iddetalleventa, idventa] 
+      : [idventa];
+
+    const [detalleRows] = await connection.execute<(DetalleVentaWeb & RowDataPacket)[]>(
+      `SELECT * FROM tblposcrumenwebdetalleventas 
+       WHERE ${whereClause} 
+         AND afectainventario = 1 
+         AND tipoafectacion = 'RECETA' 
+         AND inventarioprocesado = 0
+         AND idnegocio = ?`,
+      [...params, idnegocio]
+    );
+
+    if (detalleRows.length === 0) {
+      return; // Nothing to process
+    }
+
+    // Process each detail that needs inventory movement
+    for (const detalle of detalleRows) {
+      if (!detalle.idreceta) {
+        console.warn(`Sale detail ${detalle.iddetalleventa} has tipoafectacion='RECETA' but no idreceta`);
+        continue;
+      }
+
+      // Get recipe ingredients from tblposcrumenwebdetallerecetas
+      const [recetaDetalles] = await connection.execute<RowDataPacket[]>(
+        `SELECT 
+           dr.idreferencia as idinsumo,
+           dr.nombreinsumo,
+           dr.umInsumo as unidadmedida,
+           dr.cantidadUso,
+           i.stock_actual,
+           i.precio_venta,
+           i.costo_promedio_ponderado
+         FROM tblposcrumenwebdetallerecetas dr
+         LEFT JOIN tblposcrumenwebinsumos i ON dr.idreferencia = i.id_insumo
+         WHERE dr.dtlRecetaId = ? AND dr.idnegocio = ?`,
+        [detalle.idreceta, idnegocio]
+      );
+
+      // Create a movement record for each ingredient in the recipe
+      for (const ingrediente of recetaDetalles) {
+        // Calculate total quantity needed (recipe quantity * sale quantity)
+        const cantidadTotal = parseFloat(ingrediente.cantidadUso) * detalle.cantidad;
+
+        await connection.execute(
+          `INSERT INTO tblposcrumenwebdetallemovimientos (
+             idinsumo, nombreinsumo, tipoinsumo, tipomovimiento, motivomovimiento,
+             cantidad, referenciastock, unidadmedida, precio, costo,
+             idreferencia, fechamovimiento, observaciones, usuarioauditoria, 
+             idnegocio, estatusmovimiento, fecharegistro, fechaauditoria
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, NOW(), NOW())`,
+          [
+            ingrediente.idinsumo,
+            ingrediente.nombreinsumo,
+            'RECETA', // tipoinsumo
+            'SALIDA', // tipomovimiento
+            'VENTA', // motivomovimiento
+            cantidadTotal,
+            ingrediente.stock_actual || null,
+            ingrediente.unidadmedida,
+            ingrediente.precio_venta || null,
+            ingrediente.costo_promedio_ponderado || null,
+            detalle.idventa, // idreferencia = sale ID
+            null, // observaciones
+            usuarioauditoria,
+            idnegocio,
+            'PENDIENTE' // estatusmovimiento
+          ]
+        );
+      }
+
+      // Mark this sale detail as processed
+      await connection.execute(
+        `UPDATE tblposcrumenwebdetalleventas 
+         SET inventarioprocesado = 1 
+         WHERE iddetalleventa = ? AND idnegocio = ?`,
+        [detalle.iddetalleventa, idnegocio]
+      );
+    }
+  } catch (error) {
+    console.error('Error processing recipe inventory movements:', error);
+    throw error; // Re-throw to trigger transaction rollback
+  }
+}
 
 // Obtener todas las ventas web del negocio con sus detalles
 export const getVentasWeb = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -328,6 +433,12 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
           detalle.comensal || null // Use comensal from detalle
         ]
       );
+    }
+
+    // Process recipe inventory movements after all details are inserted
+    const usuarioId = req.user?.id;
+    if (usuarioId) {
+      await processRecipeInventoryMovements(connection, ventaId, null, idnegocio, usuarioId);
     }
 
     await connection.commit();
@@ -853,6 +964,12 @@ export const addDetallesToVenta = async (req: AuthRequest, res: Response): Promi
        WHERE idventa = ? AND idnegocio = ?`,
       [subtotalNuevo, totaldeventaNuevo, usuarioauditoria, id, idnegocio]
     );
+
+    // Process recipe inventory movements after all details are inserted/updated
+    const usuarioId = req.user?.id;
+    if (usuarioId) {
+      await processRecipeInventoryMovements(connection, Number(id), null, idnegocio, usuarioId);
+    }
 
     await connection.commit();
 
