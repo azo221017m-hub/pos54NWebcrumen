@@ -20,7 +20,7 @@ export interface DetalleMovimiento {
   idreferencia: number;
   fechamovimiento: Date | string;
   observaciones: string | null;
-  usuarioauditoria: number;
+  usuarioauditoria: string;
   idnegocio: number;
   estatusmovimiento: EstatusMovimiento;
   fecharegistro: Date | string;
@@ -40,7 +40,7 @@ export interface DetalleMovimientoCreate {
   costo?: number | null;
   idreferencia: number;
   observaciones?: string | null;
-  usuarioauditoria: number;
+  usuarioauditoria: string;
   idnegocio: number;
   estatusmovimiento?: EstatusMovimiento;
 }
