@@ -47,20 +47,6 @@ curl -X POST https://pos54nwebcrumenbackend.onrender.com/api/auth/ensure-superus
 }
 ```
 
-### 2. Página Web Utilitaria
-
-Se ha creado una página HTML en `/public/init-superuser.html` que proporciona una interfaz gráfica para inicializar el superusuario.
-
-**Acceso:**
-- Desarrollo: http://localhost:3000/public/init-superuser.html
-- Producción: https://pos54nwebcrumenbackend.onrender.com/public/init-superuser.html
-
-**Características:**
-- ✅ Interfaz visual amigable
-- ✅ Botón para ejecutar la inicialización
-- ✅ Muestra el resultado de la operación
-- ✅ Muestra las credenciales del superusuario
-
 ## Pasos para Resolver el Problema
 
 ### Opción 1: Usar el Endpoint API directamente
@@ -73,16 +59,7 @@ Se ha creado una página HTML en `/public/init-superuser.html` que proporciona u
 3. Verificar que la respuesta sea exitosa
 4. Intentar login con las credenciales
 
-### Opción 2: Usar la Página Web
-
-1. Abrir en el navegador: https://pos54nwebcrumenbackend.onrender.com/public/init-superuser.html
-2. Hacer clic en "Inicializar Superusuario"
-3. Esperar la confirmación exitosa
-4. Ir a la página de login e ingresar con:
-   - Usuario: `Crumen`
-   - Contraseña: `Crumen.*`
-
-### Opción 3: Usar el Script CLI (requiere acceso al servidor)
+### Opción 2: Usar el Script CLI (requiere acceso al servidor)
 
 ```bash
 cd backend
@@ -175,7 +152,6 @@ export const ensureSuperuser = async (req: Request, res: Response): Promise<void
 1. `backend/src/controllers/auth.controller.ts` - Nuevo método `ensureSuperuser`
 2. `backend/src/routes/auth.routes.ts` - Nueva ruta POST `/api/auth/ensure-superuser`
 3. `backend/src/app.ts` - Soporte para archivos estáticos en carpeta `public`
-4. `backend/public/init-superuser.html` - Página web utilitaria (NUEVO)
 
 ## Conclusión
 
