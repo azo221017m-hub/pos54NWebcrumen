@@ -20,7 +20,7 @@ interface Insumo extends RowDataPacket {
   usuarioauditoria: string | null;
   fechamodificacionauditoria: Date | null;
   idnegocio: number;
-  idproveedor: number | null;
+  idproveedor: string | null; // Stores provider name instead of ID
 }
 
 // Obtener todos los insumos por negocio
@@ -202,6 +202,30 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
       return;
     }
 
+    // Buscar el nombre de la cuenta contable si se proporciona id_cuentacontable
+    let nombreCuentaContable: string | null = null;
+    if (id_cuentacontable) {
+      const [cuentas] = await pool.query<RowDataPacket[]>(
+        'SELECT nombrecuentacontable FROM tblposcrumenwebcuentacontable WHERE id_cuentacontable = ?',
+        [id_cuentacontable]
+      );
+      if (cuentas.length > 0) {
+        nombreCuentaContable = cuentas[0].nombrecuentacontable;
+      }
+    }
+
+    // Buscar el nombre del proveedor si se proporciona idproveedor
+    let nombreProveedor: string | null = null;
+    if (idproveedor) {
+      const [proveedores] = await pool.query<RowDataPacket[]>(
+        'SELECT nombre FROM tblposcrumenwebproveedores WHERE id_proveedor = ?',
+        [idproveedor]
+      );
+      if (proveedores.length > 0) {
+        nombreProveedor = proveedores[0].nombre;
+      }
+    }
+
     const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebinsumos (
         nombre,
@@ -227,12 +251,12 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
         costo_promedio_ponderado,
         precio_venta,
         idinocuidad || null,
-        id_cuentacontable || null,
+        nombreCuentaContable || null,
         activo,
         inventariable,
         usuarioauditoria,
         idnegocio,
-        idproveedor || null
+        nombreProveedor || null
       ]
     );
 
@@ -295,6 +319,30 @@ export const actualizarInsumo = async (req: AuthRequest, res: Response): Promise
       return;
     }
 
+    // Buscar el nombre de la cuenta contable si se proporciona id_cuentacontable
+    let nombreCuentaContable: string | null = null;
+    if (id_cuentacontable) {
+      const [cuentas] = await pool.query<RowDataPacket[]>(
+        'SELECT nombrecuentacontable FROM tblposcrumenwebcuentacontable WHERE id_cuentacontable = ?',
+        [id_cuentacontable]
+      );
+      if (cuentas.length > 0) {
+        nombreCuentaContable = cuentas[0].nombrecuentacontable;
+      }
+    }
+
+    // Buscar el nombre del proveedor si se proporciona idproveedor
+    let nombreProveedor: string | null = null;
+    if (idproveedor) {
+      const [proveedores] = await pool.query<RowDataPacket[]>(
+        'SELECT nombre FROM tblposcrumenwebproveedores WHERE id_proveedor = ?',
+        [idproveedor]
+      );
+      if (proveedores.length > 0) {
+        nombreProveedor = proveedores[0].nombre;
+      }
+    }
+
     const [result] = await pool.query<ResultSetHeader>(
       `UPDATE tblposcrumenwebinsumos SET
         nombre = ?,
@@ -319,11 +367,11 @@ export const actualizarInsumo = async (req: AuthRequest, res: Response): Promise
         costo_promedio_ponderado,
         precio_venta,
         idinocuidad || null,
-        id_cuentacontable || null,
+        nombreCuentaContable || null,
         activo,
         inventariable,
         usuarioauditoria || null,
-        idproveedor || null,
+        nombreProveedor || null,
         id_insumo
       ]
     );

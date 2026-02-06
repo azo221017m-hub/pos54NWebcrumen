@@ -17,7 +17,7 @@ export interface Insumo {
   usuarioauditoria?: string | null;
   fechamodificacionauditoria?: Date | null;
   idnegocio: number;
-  idproveedor?: number | null;
+  idproveedor?: string | null; // Stores provider name instead of ID
 }
 
 export interface InsumoCreate {

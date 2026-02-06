@@ -18,6 +18,18 @@ interface Props {
 const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, loading }) => {
   const datosIniciales = useMemo(() => {
     if (insumoEditar) {
+      // When editing, we need to convert names back to IDs for the form dropdowns
+      // Find the provider ID by name if idproveedor contains a name (string)
+      let proveedorId: number | null = null;
+      if (insumoEditar.idproveedor) {
+        // Check if it's already a number (old data) or a string (new data with name)
+        if (typeof insumoEditar.idproveedor === 'number') {
+          proveedorId = insumoEditar.idproveedor;
+        }
+        // If it's a string, we'll need to look it up once providers are loaded
+      }
+      
+      // id_cuentacontable should remain as-is since it's being compared as string
       return {
         nombre: insumoEditar.nombre,
         unidad_medida: insumoEditar.unidad_medida,
@@ -31,7 +43,7 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
         inventariable: insumoEditar.inventariable,
         usuarioauditoria: insumoEditar.usuarioauditoria || '',
         idnegocio: insumoEditar.idnegocio,
-        idproveedor: insumoEditar.idproveedor || null
+        idproveedor: proveedorId
       };
     }
     return {
@@ -53,7 +65,7 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
     };
   }, [insumoEditar]);
 
-  const [formData, setFormData] = useState(datosIniciales);
+  const [formData, setFormData] = useState<InsumoCreate>(datosIniciales);
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [gruposMovimiento, setGruposMovimiento] = useState<GrupoMovimientos[]>([]);
   const [cargandoGrupos, setCargandoGrupos] = useState(false);
@@ -96,6 +108,28 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
 
     cargarProveedores();
   }, []);
+
+  // Effect to lookup IDs from names when editing and after data is loaded
+  useEffect(() => {
+    if (insumoEditar && proveedores.length > 0 && gruposMovimiento.length > 0) {
+      // Find provider ID by name if idproveedor is a string
+      if (insumoEditar.idproveedor && typeof insumoEditar.idproveedor === 'string') {
+        const proveedor = proveedores.find(p => p.nombre === insumoEditar.idproveedor);
+        if (proveedor) {
+          setFormData(prev => ({ ...prev, idproveedor: proveedor.id_proveedor }));
+        }
+      }
+      
+      // Find account ID by name if id_cuentacontable is a string name (not an ID)
+      if (insumoEditar.id_cuentacontable) {
+        // Check if it's a name by trying to find it in the groups list
+        const grupo = gruposMovimiento.find(g => g.nombrecuentacontable === insumoEditar.id_cuentacontable);
+        if (grupo) {
+          setFormData(prev => ({ ...prev, id_cuentacontable: String(grupo.id_cuentacontable) }));
+        }
+      }
+    }
+  }, [insumoEditar, proveedores, gruposMovimiento]);
 
   const handleNombreBlur = async () => {
     // Solo validar si hay un nombre ingresado
@@ -344,7 +378,7 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
                   type="text"
                   id="idinocuidad"
                   name="idinocuidad"
-                  value={formData.idinocuidad}
+                  value={formData.idinocuidad || ''}
                   onChange={handleChange}
                   placeholder="Ej: Refrigerado"
                   maxLength={50}
