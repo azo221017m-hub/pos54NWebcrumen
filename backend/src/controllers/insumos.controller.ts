@@ -20,7 +20,7 @@ interface Insumo extends RowDataPacket {
   usuarioauditoria: string | null;
   fechamodificacionauditoria: Date | null;
   idnegocio: number;
-  idproveedor: number | null;
+  idproveedor: string | null; // Stores provider name instead of ID
 }
 
 // Obtener todos los insumos por negocio
@@ -115,6 +115,24 @@ export const obtenerInsumoPorId = async (req: Request, res: Response): Promise<v
   }
 };
 
+// Helper function to get account name from ID
+const obtenerNombreCuentaContable = async (id_cuentacontable: string): Promise<string | null> => {
+  const [cuentas] = await pool.query<RowDataPacket[]>(
+    'SELECT nombrecuentacontable FROM tblposcrumenwebcuentacontable WHERE id_cuentacontable = ?',
+    [id_cuentacontable]
+  );
+  return cuentas.length > 0 ? cuentas[0].nombrecuentacontable : null;
+};
+
+// Helper function to get provider name from ID
+const obtenerNombreProveedor = async (idproveedor: number): Promise<string | null> => {
+  const [proveedores] = await pool.query<RowDataPacket[]>(
+    'SELECT nombre FROM tblposcrumenwebproveedores WHERE id_proveedor = ?',
+    [idproveedor]
+  );
+  return proveedores.length > 0 ? proveedores[0].nombre : null;
+};
+
 // Helper function to validate duplicate insumo names
 const validarNombreDuplicado = async (
   nombre: string, 
@@ -202,6 +220,26 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
       return;
     }
 
+    // Buscar el nombre de la cuenta contable si se proporciona id_cuentacontable
+    let nombreCuentaContable: string | null = null;
+    if (id_cuentacontable) {
+      nombreCuentaContable = await obtenerNombreCuentaContable(id_cuentacontable);
+      if (!nombreCuentaContable) {
+        res.status(400).json({ message: `Cuenta contable con ID ${id_cuentacontable} no encontrada` });
+        return;
+      }
+    }
+
+    // Buscar el nombre del proveedor si se proporciona idproveedor
+    let nombreProveedor: string | null = null;
+    if (idproveedor) {
+      nombreProveedor = await obtenerNombreProveedor(idproveedor);
+      if (!nombreProveedor) {
+        res.status(400).json({ message: `Proveedor con ID ${idproveedor} no encontrado` });
+        return;
+      }
+    }
+
     const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebinsumos (
         nombre,
@@ -227,12 +265,12 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
         costo_promedio_ponderado,
         precio_venta,
         idinocuidad || null,
-        id_cuentacontable || null,
+        nombreCuentaContable || null,
         activo,
         inventariable,
         usuarioauditoria,
         idnegocio,
-        idproveedor || null
+        nombreProveedor || null
       ]
     );
 
@@ -295,6 +333,26 @@ export const actualizarInsumo = async (req: AuthRequest, res: Response): Promise
       return;
     }
 
+    // Buscar el nombre de la cuenta contable si se proporciona id_cuentacontable
+    let nombreCuentaContable: string | null = null;
+    if (id_cuentacontable) {
+      nombreCuentaContable = await obtenerNombreCuentaContable(id_cuentacontable);
+      if (!nombreCuentaContable) {
+        res.status(400).json({ message: `Cuenta contable con ID ${id_cuentacontable} no encontrada` });
+        return;
+      }
+    }
+
+    // Buscar el nombre del proveedor si se proporciona idproveedor
+    let nombreProveedor: string | null = null;
+    if (idproveedor) {
+      nombreProveedor = await obtenerNombreProveedor(idproveedor);
+      if (!nombreProveedor) {
+        res.status(400).json({ message: `Proveedor con ID ${idproveedor} no encontrado` });
+        return;
+      }
+    }
+
     const [result] = await pool.query<ResultSetHeader>(
       `UPDATE tblposcrumenwebinsumos SET
         nombre = ?,
@@ -319,11 +377,11 @@ export const actualizarInsumo = async (req: AuthRequest, res: Response): Promise
         costo_promedio_ponderado,
         precio_venta,
         idinocuidad || null,
-        id_cuentacontable || null,
+        nombreCuentaContable || null,
         activo,
         inventariable,
         usuarioauditoria || null,
-        idproveedor || null,
+        nombreProveedor || null,
         id_insumo
       ]
     );
