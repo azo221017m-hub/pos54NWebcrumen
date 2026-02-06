@@ -117,6 +117,10 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
         const proveedor = proveedores.find(p => p.nombre === insumoEditar.idproveedor);
         if (proveedor) {
           setFormData(prev => ({ ...prev, idproveedor: proveedor.id_proveedor }));
+        } else {
+          // If provider name not found, log warning and leave as null
+          console.warn(`Provider with name "${insumoEditar.idproveedor}" not found. It may have been deleted or renamed.`);
+          setFormData(prev => ({ ...prev, idproveedor: null }));
         }
       }
       
@@ -126,6 +130,10 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
         const grupo = gruposMovimiento.find(g => g.nombrecuentacontable === insumoEditar.id_cuentacontable);
         if (grupo) {
           setFormData(prev => ({ ...prev, id_cuentacontable: String(grupo.id_cuentacontable) }));
+        } else {
+          // If account name not found, log warning and leave as empty
+          console.warn(`Account with name "${insumoEditar.id_cuentacontable}" not found. It may have been deleted or renamed.`);
+          setFormData(prev => ({ ...prev, id_cuentacontable: '' }));
         }
       }
     }
