@@ -31,6 +31,18 @@ export const obtenerInsumo = async (id_insumo: number): Promise<Insumo> => {
   return response.data;
 };
 
+// Validar si existe un nombre de insumo
+export const validarNombreInsumo = async (nombre: string, id_insumo?: number): Promise<boolean> => {
+  try {
+    const params = id_insumo ? `?id_insumo=${id_insumo}` : '';
+    const response = await apiClient.get<{ existe: boolean }>(`${API_BASE}/validar-nombre/${encodeURIComponent(nombre)}${params}`);
+    return response.data.existe;
+  } catch (error) {
+    console.error('❌ insumosService - Error al validar nombre:', error);
+    return false;
+  }
+};
+
 // Crear un nuevo insumo
 export const crearInsumo = async (insumo: InsumoCreate): Promise<Insumo> => {
   const response = await apiClient.post<Insumo>(API_BASE, insumo);

@@ -72,9 +72,12 @@ const ConfigInsumos: React.FC = () => {
       mostrarMensaje('success', 'Insumo creado exitosamente');
       setMostrarFormulario(false);
       setInsumos(prev => [...prev, nuevoInsumo]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al crear insumo:', error);
-      mostrarMensaje('error', 'Error al crear el insumo');
+      // Mostrar mensaje específico si es error de duplicado
+      const mensaje = error?.response?.data?.message || 'Error al crear el insumo';
+      mostrarMensaje('error', mensaje);
+      throw error; // Re-lanzar para que el formulario no se cierre automáticamente
     }
   };
 
@@ -91,9 +94,12 @@ const ConfigInsumos: React.FC = () => {
           ins.id_insumo === insumoActualizado.id_insumo ? insumoActualizado : ins
         )
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al actualizar insumo:', error);
-      mostrarMensaje('error', 'Error al actualizar el insumo');
+      // Mostrar mensaje específico si es error de duplicado
+      const mensaje = error?.response?.data?.message || 'Error al actualizar el insumo';
+      mostrarMensaje('error', mensaje);
+      throw error; // Re-lanzar para que el formulario no se cierre automáticamente
     }
   };
 
