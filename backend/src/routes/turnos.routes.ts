@@ -14,11 +14,11 @@ import { apiLimiter } from '../middlewares/rateLimit';
 
 const router = Router();
 
-// Aplicar rate limiting a todas las rutas
-router.use(apiLimiter);
-
 // Todas las rutas requieren autenticación
 router.use(authMiddleware);
+
+// Aplicar rate limiting a todas las rutas (después de autenticación)
+router.use(apiLimiter);
 
 // Rutas CRUD
 router.get('/', obtenerTurnos);
