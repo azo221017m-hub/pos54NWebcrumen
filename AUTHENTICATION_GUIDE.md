@@ -77,10 +77,6 @@ curl -X POST https://pos54nwebcrumenbackend.onrender.com/api/auth/ensure-superus
 curl -X POST http://localhost:3000/api/auth/ensure-superuser
 ```
 
-O abrir en el navegador la página utilitaria:
-- **Producción:** https://pos54nwebcrumenbackend.onrender.com/public/init-superuser.html
-- **Desarrollo:** http://localhost:3000/public/init-superuser.html
-
 #### Opción B: Script CLI (Requiere acceso al servidor)
 
 ```bash
@@ -293,16 +289,12 @@ Este endpoint:
 ## 🐛 Troubleshooting
 
 ### Error: "No puedo iniciar sesión con usuario Crumen"
-**Solución más rápida:**
-1. Abrir en el navegador: https://pos54nwebcrumenbackend.onrender.com/public/init-superuser.html
-2. Hacer clic en "Inicializar Superusuario"
-3. Esperar confirmación
-4. Intentar login con Usuario: `Crumen` / Contraseña: `Crumen.*`
-
-O usar el endpoint API:
+**Solución:**
+Usar el endpoint API:
 ```bash
 curl -X POST https://pos54nwebcrumenbackend.onrender.com/api/auth/ensure-superuser
 ```
+Luego intentar login con Usuario: `Crumen` / Contraseña: `Crumen.*`
 
 **Ver:** `SOLUCION_LOGIN_CRUMEN.md` para documentación completa de esta solución.
 
