@@ -8,18 +8,19 @@ import type {
 
 const API_BASE = '/compras';
 
+// Helper function to ensure detalles is always an array
+const ensureDetalles = <T extends { detalles?: any }>(item: T): T => ({
+  ...item,
+  detalles: item.detalles || []
+});
+
 // Obtener todas las compras del negocio
 export const obtenerCompras = async (): Promise<CompraWithDetails[]> => {
   try {
     console.log('🔵 comprasService: Obteniendo compras del negocio autenticado');
     const response = await apiClient.get<{ success: boolean; data: CompraWithDetails[] }>(API_BASE);
     console.log('🔵 comprasService: Compras obtenidas:', response.data.data.length);
-    // Ensure detalles is always an array
-    const comprasConDetalles = response.data.data.map(compra => ({
-      ...compra,
-      detalles: compra.detalles || []
-    }));
-    return comprasConDetalles;
+    return response.data.data.map(ensureDetalles);
   } catch (error) {
     console.error('🔴 comprasService: Error al obtener compras:', error);
     return [];
@@ -32,11 +33,7 @@ export const obtenerCompraPorId = async (id: number): Promise<CompraWithDetails 
     console.log('🔵 comprasService: Obteniendo compra ID:', id);
     const response = await apiClient.get<{ success: boolean; data: CompraWithDetails }>(`${API_BASE}/${id}`);
     console.log('🔵 comprasService: Compra obtenida:', response.data.data);
-    // Ensure detalles is always an array
-    return {
-      ...response.data.data,
-      detalles: response.data.data.detalles || []
-    };
+    return ensureDetalles(response.data.data);
   } catch (error) {
     console.error('🔴 comprasService: Error al obtener compra:', error);
     return null;

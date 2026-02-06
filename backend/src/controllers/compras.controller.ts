@@ -141,7 +141,6 @@ export const crearCompra = async (req: AuthRequest, res: Response): Promise<void
   try {
     const compraData: CompraCreate = req.body;
     const { idNegocio, alias } = req.user!;
-    const idnegocio = idNegocio; // Database expects lowercase
     
     // Validaciones
     if (!compraData.detalles || compraData.detalles.length === 0) {
@@ -202,7 +201,7 @@ export const crearCompra = async (req: AuthRequest, res: Response): Promise<void
         compraData.estatusdepago || 'PENDIENTE',
         compraData.referencia || null,
         compraData.detalledescuento || null,
-        idnegocio,
+        idNegocio,
         alias
       ]
     );
@@ -236,7 +235,7 @@ export const crearCompra = async (req: AuthRequest, res: Response): Promise<void
           0, // inventarioprocesado
           compraData.estadodecompra || 'ESPERAR',
           detalle.observaciones || null,
-          idnegocio,
+          idNegocio,
           alias
         ]
       );

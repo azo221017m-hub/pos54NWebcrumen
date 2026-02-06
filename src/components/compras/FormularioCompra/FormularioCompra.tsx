@@ -13,13 +13,12 @@ import './FormularioCompra.css';
 
 interface Props {
   compraEditar: Compra | null;
-  idnegocio: number;
   onSubmit: (data: CompraCreate | CompraUpdate) => void;
   onCancel: () => void;
   loading: boolean;
 }
 
-const FormularioCompra: React.FC<Props> = ({ compraEditar, idnegocio: _idnegocio, onSubmit, onCancel, loading }) => {
+const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, loading }) => {
   const datosIniciales = useMemo(() => {
     if (compraEditar) {
       return {

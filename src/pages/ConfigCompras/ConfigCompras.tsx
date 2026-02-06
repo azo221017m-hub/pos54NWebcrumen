@@ -24,9 +24,6 @@ const ConfigCompras: React.FC = () => {
     texto: string;
   } | null>(null);
 
-  // Obtener idnegocio del localStorage
-  const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
-
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
     setTimeout(() => setMensaje(null), 4000);
@@ -183,7 +180,6 @@ const ConfigCompras: React.FC = () => {
       {mostrarFormulario && (
         <FormularioCompra
           compraEditar={compraSeleccionada}
-          idnegocio={idnegocio}
           onSubmit={handleSubmit}
           onCancel={handleCancelar}
           loading={guardando}
