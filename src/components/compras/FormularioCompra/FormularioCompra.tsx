@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { X, Save, ShoppingCart, Plus, Trash2 } from 'lucide-react';
 import type { 
   Compra, 
@@ -9,6 +9,10 @@ import type {
   EstadoDeCompra,
   EstatusDePago
 } from '../../../types/compras.types';
+import type { CuentaContable } from '../../../types/cuentaContable.types';
+import type { Insumo } from '../../../types/insumo.types';
+import { obtenerCuentasContables } from '../../../services/cuentasContablesService';
+import { obtenerInsumos } from '../../../services/insumosService';
 import './FormularioCompra.css';
 
 interface Props {
@@ -19,6 +23,10 @@ interface Props {
 }
 
 const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, loading }) => {
+  const [cuentasContables, setCuentasContables] = useState<CuentaContable[]>([]);
+  const [insumos, setInsumos] = useState<Insumo[]>([]);
+  const [cargandoDatos, setCargandoDatos] = useState(true);
+
   const datosIniciales = useMemo(() => {
     if (compraEditar) {
       return {
@@ -36,7 +44,7 @@ const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, l
       };
     }
     return {
-      tipodecompra: 'DOMICILIO' as TipoDeCompra,
+      tipodecompra: '' as TipoDeCompra,
       estadodecompra: 'ESPERAR' as EstadoDeCompra,
       estatusdepago: 'PENDIENTE' as EstatusDePago,
       fechaprogramadacompra: '',
@@ -51,6 +59,52 @@ const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, l
   const [formData, setFormData] = useState(datosIniciales);
   const [detalles, setDetalles] = useState<DetalleCompraCreate[]>([]);
   const [errores, setErrores] = useState<Record<string, string>>({});
+
+  // Cargar cuentas contables de tipo COMPRA e insumos
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        setCargandoDatos(true);
+        
+        // Obtener cuentas contables
+        const cuentas = await obtenerCuentasContables();
+        // Filtrar solo las de naturaleza COMPRA
+        const cuentasCompra = cuentas.filter(c => c.naturalezacuentacontable === 'COMPRA');
+        setCuentasContables(cuentasCompra);
+        
+        // Obtener usuario del localStorage para idnegocio
+        const usuarioStr = localStorage.getItem('usuario');
+        if (usuarioStr) {
+          const usuario = JSON.parse(usuarioStr);
+          const insumosData = await obtenerInsumos(usuario.idNegocio);
+          setInsumos(insumosData);
+        }
+      } catch (error) {
+        console.error('Error al cargar datos:', error);
+      } finally {
+        setCargandoDatos(false);
+      }
+    };
+    
+    cargarDatos();
+  }, []);
+
+  // Filtrar insumos según el tipo de compra seleccionado
+  const insumosFiltrados = useMemo(() => {
+    if (!formData.tipodecompra) return [];
+    
+    // Buscar la cuenta contable que corresponde al tipo de compra seleccionado
+    const cuentaSeleccionada = cuentasContables.find(
+      c => c.tipocuentacontable === formData.tipodecompra
+    );
+    
+    if (!cuentaSeleccionada) return [];
+    
+    // Filtrar insumos que tienen esta cuenta contable
+    return insumos.filter(
+      i => i.id_cuentacontable === cuentaSeleccionada.id_cuentacontable
+    );
+  }, [formData.tipodecompra, cuentasContables, insumos]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -97,7 +151,7 @@ const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, l
 
     // Si es una nueva compra, validar que tenga detalles
     if (!compraEditar && detalles.length === 0) {
-      nuevosErrores.detalles = 'Debe agregar al menos un producto';
+      nuevosErrores.detalles = 'Debe agregar al menos un artículo';
     }
 
     // Validar que los detalles tengan datos mínimos
@@ -105,7 +159,7 @@ const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, l
       let hayErrorDetalle = false;
       detalles.forEach((detalle, index) => {
         if (!detalle.nombreproducto.trim()) {
-          nuevosErrores[`detalle_${index}_nombre`] = 'El nombre del producto es requerido';
+          nuevosErrores[`detalle_${index}_nombre`] = 'El nombre del artículo es requerido';
           hayErrorDetalle = true;
         }
         if (detalle.cantidad <= 0) {
@@ -176,12 +230,14 @@ const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, l
                     value={formData.tipodecompra}
                     onChange={handleChange}
                     className="form-input"
+                    disabled={cargandoDatos}
                   >
-                    <option value="DOMICILIO">Domicilio</option>
-                    <option value="LLEVAR">Llevar</option>
-                    <option value="MESA">Mesa</option>
-                    <option value="ONLINE">Online</option>
-                    <option value="MOVIMIENTO">Movimiento</option>
+                    <option value="">Seleccione un tipo</option>
+                    {cuentasContables.map(cuenta => (
+                      <option key={cuenta.id_cuentacontable} value={cuenta.tipocuentacontable}>
+                        {cuenta.tipocuentacontable}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -244,65 +300,18 @@ const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, l
               </div>
             </div>
 
-            {/* Información de Entrega */}
-            <div className="form-section">
-              <h3 className="section-title">Información de Entrega</h3>
-              
-              <div className="form-row">
-                <div className="form-group full-width">
-                  <label className="form-label">Dirección de Entrega</label>
-                  <textarea
-                    name="direcciondeentrega"
-                    value={formData.direcciondeentrega}
-                    onChange={handleChange}
-                    placeholder="Dirección completa"
-                    className="form-input"
-                    rows={2}
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">Contacto</label>
-                  <input
-                    type="text"
-                    name="contactodeentrega"
-                    value={formData.contactodeentrega}
-                    onChange={handleChange}
-                    placeholder="Nombre del contacto"
-                    className="form-input"
-                    maxLength={150}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Teléfono</label>
-                  <input
-                    type="tel"
-                    name="telefonodeentrega"
-                    value={formData.telefonodeentrega}
-                    onChange={handleChange}
-                    placeholder="Teléfono de contacto"
-                    className="form-input"
-                    maxLength={20}
-                  />
-                </div>
-              </div>
-            </div>
-
             {/* Detalles de Compra - Solo para nuevas compras */}
             {!compraEditar && (
               <div className="form-section">
                 <div className="section-header">
-                  <h3 className="section-title">Productos</h3>
+                  <h3 className="section-title">Artículos</h3>
                   <button
                     type="button"
                     onClick={agregarDetalle}
                     className="btn-add-detalle"
                   >
                     <Plus size={16} />
-                    Agregar Producto
+                    Agregar Artículo
                   </button>
                 </div>
 
@@ -313,7 +322,7 @@ const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, l
                 {detalles.map((detalle, index) => (
                   <div key={index} className="detalle-item">
                     <div className="detalle-header">
-                      <span className="detalle-numero">Producto #{index + 1}</span>
+                      <span className="detalle-numero">Artículo #{index + 1}</span>
                       <button
                         type="button"
                         onClick={() => eliminarDetalle(index)}
@@ -325,16 +334,35 @@ const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, l
 
                     <div className="detalle-fields">
                       <div className="form-group">
-                        <label className="form-label">Nombre del Producto</label>
-                        <input
-                          type="text"
+                        <label className="form-label">Nombre de Artículo</label>
+                        <select
                           value={detalle.nombreproducto}
-                          onChange={(e) => actualizarDetalle(index, 'nombreproducto', e.target.value)}
-                          placeholder="Nombre del producto"
+                          onChange={(e) => {
+                            const insumoSeleccionado = insumosFiltrados.find(
+                              i => i.nombre === e.target.value
+                            );
+                            actualizarDetalle(index, 'nombreproducto', e.target.value);
+                            if (insumoSeleccionado) {
+                              actualizarDetalle(index, 'idproducto', insumoSeleccionado.id_insumo);
+                              actualizarDetalle(index, 'preciounitario', insumoSeleccionado.precio_venta);
+                              actualizarDetalle(index, 'costounitario', insumoSeleccionado.costo_promedio_ponderado);
+                            }
+                          }}
                           className={`form-input ${errores[`detalle_${index}_nombre`] ? 'error' : ''}`}
-                        />
+                          disabled={!formData.tipodecompra || cargandoDatos}
+                        >
+                          <option value="">Seleccione un artículo</option>
+                          {insumosFiltrados.map(insumo => (
+                            <option key={insumo.id_insumo} value={insumo.nombre}>
+                              {insumo.nombre}
+                            </option>
+                          ))}
+                        </select>
                         {errores[`detalle_${index}_nombre`] && (
                           <span className="error-message">{errores[`detalle_${index}_nombre`]}</span>
+                        )}
+                        {!formData.tipodecompra && (
+                          <span className="info-message">Seleccione primero un tipo de compra</span>
                         )}
                       </div>
 
