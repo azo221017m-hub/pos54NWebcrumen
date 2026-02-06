@@ -122,6 +122,7 @@ export const DashboardPage = () => {
   const [showConfigSubmenu, setShowConfigSubmenu] = useState(false);
   const [showConfigNegocioSubmenu, setShowConfigNegocioSubmenu] = useState(false);
   const [showDashboardSubmenu, setShowDashboardSubmenu] = useState(false);
+  const [showMiOperacionSubmenu, setShowMiOperacionSubmenu] = useState(false);
   const [isScreenLocked, setIsScreenLocked] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [ventasSolicitadas, setVentasSolicitadas] = useState<VentaWebWithDetails[]>([]);
@@ -550,6 +551,7 @@ export const DashboardPage = () => {
               setShowDashboardSubmenu(!showDashboardSubmenu);
               setShowConfigSubmenu(false);
               setShowConfigNegocioSubmenu(false);
+              setShowMiOperacionSubmenu(false);
             }}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -583,6 +585,7 @@ export const DashboardPage = () => {
                   e.stopPropagation();
                   setIsScreenLocked(true);
                   setShowDashboardSubmenu(false);
+                  setShowMiOperacionSubmenu(false);
                   setMobileMenuOpen(false);
                 }}
               >
@@ -607,6 +610,7 @@ export const DashboardPage = () => {
               setShowConfigSubmenu(!showConfigSubmenu);
               setShowDashboardSubmenu(false);
               setShowConfigNegocioSubmenu(false);
+              setShowMiOperacionSubmenu(false);
             }}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -680,6 +684,7 @@ export const DashboardPage = () => {
               setShowConfigNegocioSubmenu(!showConfigNegocioSubmenu);
               setShowDashboardSubmenu(false);
               setShowConfigSubmenu(false);
+              setShowMiOperacionSubmenu(false);
             }}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -839,14 +844,101 @@ export const DashboardPage = () => {
           )}
         </div>
 
-        <button className="nav-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/ventas'); setMobileMenuOpen(false); }}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="9" cy="21" r="1"/>
-            <circle cx="20" cy="21" r="1"/>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-          </svg>
-          Inicia Venta
-        </button>
+        {/* Menú Mi Operación con Submenú */}
+        <div className="nav-item-container">
+          <button 
+            className={`nav-item ${showMiOperacionSubmenu ? 'active' : ''}`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowMiOperacionSubmenu(!showMiOperacionSubmenu);
+              setShowDashboardSubmenu(false);
+              setShowConfigSubmenu(false);
+              setShowConfigNegocioSubmenu(false);
+            }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="9" cy="21" r="1"/>
+              <circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+            Mi Operación
+            <svg 
+              className={`chevron-submenu ${showMiOperacionSubmenu ? 'rotate' : ''}`}
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2"
+              style={{ 
+                width: '14px', 
+                height: '14px', 
+                marginLeft: 'auto',
+                transform: showMiOperacionSubmenu ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s'
+              }}
+            >
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+
+          {/* Submenú Mi Operación */}
+          {showMiOperacionSubmenu && (
+            <div className="submenu">
+              <button 
+                className="submenu-item" 
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  e.stopPropagation(); 
+                  navigate('/ventas'); 
+                  setMobileMenuOpen(false); 
+                  setShowMiOperacionSubmenu(false);
+                }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="9" cy="21" r="1"/>
+                  <circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+                Inicia Venta
+              </button>
+              <button 
+                className="submenu-item" 
+                disabled 
+                title="Próximamente"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                  <polyline points="17 21 17 13 7 13 7 21"/>
+                  <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                Gastos
+              </button>
+              <button 
+                className="submenu-item" 
+                disabled 
+                title="Próximamente"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                  <line x1="3" y1="6" x2="21" y2="6"/>
+                  <path d="M16 10a4 4 0 0 1-8 0"/>
+                </svg>
+                Compras
+              </button>
+              <button 
+                className="submenu-item" 
+                disabled 
+                title="Próximamente"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                Finaliza Día
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* TODO: Implementar página de Inventario
             1. Crear componente PageInventario o ConfigInventario en src/pages/

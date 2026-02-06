@@ -186,8 +186,14 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
 
     const idturno = result.insertId;
 
-    // Actualizar numeroturno = idturno (consecutivo según requerimientos)
-    const numeroturno = idturno;
+    // Calcular numeroturno como el conteo de registros con el mismo idnegocio
+    // (incluyendo el registro recién insertado)
+    const [countResult] = await connection.query<RowDataPacket[]>(
+      `SELECT COUNT(*) as count FROM tblposcrumenwebturnos WHERE idnegocio = ?`,
+      [idnegocio]
+    );
+    const numeroturno = countResult[0]?.count || 1;
+    
     await connection.query(
       `UPDATE tblposcrumenwebturnos 
        SET numeroturno = ?
