@@ -4,7 +4,8 @@ import {
   obtenerInsumoPorId,
   crearInsumo,
   actualizarInsumo,
-  eliminarInsumo
+  eliminarInsumo,
+  validarNombreInsumo
 } from '../controllers/insumos.controller';
 import { authMiddleware } from '../middlewares/auth';
 
@@ -15,6 +16,7 @@ router.use(authMiddleware);
 
 // Rutas CRUD
 router.get('/negocio/:idnegocio', obtenerInsumos);
+router.get('/validar-nombre/:nombre', validarNombreInsumo);
 router.get('/:id_insumo', obtenerInsumoPorId);
 router.post('/', crearInsumo);
 router.put('/:id_insumo', actualizarInsumo);

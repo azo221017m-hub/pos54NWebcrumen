@@ -4,6 +4,7 @@ import type { GrupoMovimientos } from '../../../types/grupoMovimientos.types';
 import type { Proveedor } from '../../../types/proveedor.types';
 import { obtenerGrupoMovimientos } from '../../../services/grupoMovimientosService';
 import { obtenerProveedores } from '../../../services/proveedoresService';
+import { validarNombreInsumo } from '../../../services/insumosService';
 import { Save, X, Package } from 'lucide-react';
 import './FormularioInsumo.css';
 
@@ -58,6 +59,7 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
   const [cargandoGrupos, setCargandoGrupos] = useState(false);
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [cargandoProveedores, setCargandoProveedores] = useState(false);
+  const [validandoNombre, setValidandoNombre] = useState(false);
 
   // Cargar grupos de movimiento al montar el componente
   useEffect(() => {
@@ -94,6 +96,38 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
 
     cargarProveedores();
   }, []);
+
+  const handleNombreBlur = async () => {
+    // Solo validar si hay un nombre ingresado
+    if (!formData.nombre.trim()) {
+      return;
+    }
+
+    setValidandoNombre(true);
+    try {
+      // Si estamos editando, pasar el id_insumo para excluirlo de la validación
+      const id_insumo = insumoEditar?.id_insumo;
+      const existe = await validarNombreInsumo(formData.nombre.trim(), id_insumo);
+      
+      if (existe) {
+        setErrores(prev => ({
+          ...prev,
+          nombre: 'Ya existe un insumo con ese nombre'
+        }));
+      } else {
+        // Limpiar error de nombre si no existe
+        setErrores(prev => {
+          const nuevos = { ...prev };
+          delete nuevos.nombre;
+          return nuevos;
+        });
+      }
+    } catch (error) {
+      console.error('Error al validar nombre:', error);
+    } finally {
+      setValidandoNombre(false);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -198,10 +232,13 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
                   name="nombre"
                   value={formData.nombre}
                   onChange={handleChange}
+                  onBlur={handleNombreBlur}
                   className={errores.nombre ? 'error' : ''}
                   placeholder="Ej: Harina de trigo"
                   maxLength={100}
+                  disabled={validandoNombre}
                 />
+                {validandoNombre && <span className="loading-message" aria-live="polite">Validando nombre...</span>}
                 {errores.nombre && <span className="error-message">{errores.nombre}</span>}
               </div>
 
@@ -400,7 +437,7 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
           <button
             type="submit"
             className="btn-guardar"
-            disabled={loading}
+            disabled={loading || validandoNombre}
           >
             <Save size={18} />
             {loading ? 'Guardando...' : insumoEditar ? 'Actualizar' : 'Guardar'}

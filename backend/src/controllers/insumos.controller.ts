@@ -115,6 +115,55 @@ export const obtenerInsumoPorId = async (req: Request, res: Response): Promise<v
   }
 };
 
+// Helper function to validate duplicate insumo names
+const validarNombreDuplicado = async (
+  nombre: string, 
+  idnegocio: number, 
+  id_insumo?: number
+): Promise<boolean> => {
+  let query = 'SELECT id_insumo FROM tblposcrumenwebinsumos WHERE LOWER(nombre) = LOWER(?) AND idnegocio = ?';
+  const params: (string | number)[] = [nombre, idnegocio];
+
+  // Si se proporciona id_insumo, excluirlo de la búsqueda (para validación en edición)
+  if (id_insumo) {
+    query += ' AND id_insumo != ?';
+    params.push(id_insumo);
+  }
+
+  const [rows] = await pool.query<RowDataPacket[]>(query, params);
+  return rows.length > 0;
+};
+
+// Validar si existe un insumo con el mismo nombre
+export const validarNombreInsumo = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { nombre } = req.params;
+    const { id_insumo } = req.query; // Opcional: para excluir un insumo específico al editar
+    
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+    
+    if (!idnegocio) {
+      res.status(401).json({ message: 'Usuario no autenticado o sin negocio asignado' });
+      return;
+    }
+
+    const existe = await validarNombreDuplicado(
+      nombre, 
+      idnegocio, 
+      id_insumo ? Number(id_insumo) : undefined
+    );
+    
+    res.json({ existe });
+  } catch (error) {
+    console.error('Error al validar nombre de insumo:', error);
+    res.status(500).json({ 
+      message: 'Error al validar nombre de insumo', 
+      error: error instanceof Error ? error.message : 'Error desconocido' 
+    });
+  }
+};
+
 // Crear nuevo insumo
 export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -142,6 +191,14 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
         precio_venta === undefined || activo === undefined || 
         inventariable === undefined || !idnegocio || !usuarioauditoria) {
       res.status(400).json({ message: 'Faltan campos requeridos o el usuario no está autenticado' });
+      return;
+    }
+
+    // Validar que el nombre de insumo no exista para este negocio
+    const existe = await validarNombreDuplicado(nombre, idnegocio);
+
+    if (existe) {
+      res.status(409).json({ message: 'Ya existe un insumo con ese nombre para este negocio' });
       return;
     }
 
@@ -193,7 +250,7 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
 };
 
 // Actualizar insumo
-export const actualizarInsumo = async (req: Request, res: Response): Promise<void> => {
+export const actualizarInsumo = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id_insumo } = req.params;
     const {
@@ -211,6 +268,14 @@ export const actualizarInsumo = async (req: Request, res: Response): Promise<voi
       idproveedor
     } = req.body;
 
+    // Obtener idnegocio del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({ message: 'Usuario no autenticado o sin negocio asignado' });
+      return;
+    }
+
     // Verificar si existe el insumo
     const [exist] = await pool.query<RowDataPacket[]>(
       'SELECT id_insumo FROM tblposcrumenwebinsumos WHERE id_insumo = ?',
@@ -219,6 +284,14 @@ export const actualizarInsumo = async (req: Request, res: Response): Promise<voi
     
     if (exist.length === 0) {
       res.status(404).json({ message: 'Insumo no encontrado' });
+      return;
+    }
+
+    // Validar que el nombre de insumo no exista para este negocio (excluyendo el insumo actual)
+    const existe = await validarNombreDuplicado(nombre, idnegocio, Number(id_insumo));
+
+    if (existe) {
+      res.status(409).json({ message: 'Ya existe un insumo con ese nombre para este negocio' });
       return;
     }
 

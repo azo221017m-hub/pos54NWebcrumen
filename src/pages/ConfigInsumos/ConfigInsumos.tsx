@@ -26,6 +26,11 @@ const ConfigInsumos: React.FC = () => {
   // Obtener idnegocio del localStorage
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
 
+  // Helper para extraer mensaje de error
+  const extraerMensajeError = (error: unknown, mensajePorDefecto: string): string => {
+    return (error as { response?: { data?: { message?: string } } })?.response?.data?.message || mensajePorDefecto;
+  };
+
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
     setTimeout(() => setMensaje(null), 4000);
@@ -72,9 +77,11 @@ const ConfigInsumos: React.FC = () => {
       mostrarMensaje('success', 'Insumo creado exitosamente');
       setMostrarFormulario(false);
       setInsumos(prev => [...prev, nuevoInsumo]);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error al crear insumo:', error);
-      mostrarMensaje('error', 'Error al crear el insumo');
+      const mensaje = extraerMensajeError(error, 'Error al crear el insumo');
+      mostrarMensaje('error', mensaje);
+      throw error; // Re-lanzar para que el formulario no se cierre automáticamente
     }
   };
 
@@ -91,9 +98,11 @@ const ConfigInsumos: React.FC = () => {
           ins.id_insumo === insumoActualizado.id_insumo ? insumoActualizado : ins
         )
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error al actualizar insumo:', error);
-      mostrarMensaje('error', 'Error al actualizar el insumo');
+      const mensaje = extraerMensajeError(error, 'Error al actualizar el insumo');
+      mostrarMensaje('error', mensaje);
+      throw error; // Re-lanzar para que el formulario no se cierre automáticamente
     }
   };
 
