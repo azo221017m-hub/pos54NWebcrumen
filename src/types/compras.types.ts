@@ -76,6 +76,7 @@ export interface DetalleCompraCreate {
   preciounitario: number;
   costounitario: number;
   observaciones?: string | null;
+  umcompra?: string | null;
 }
 
 export interface CompraUpdate {
