@@ -221,10 +221,24 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
     }
 
     // Buscar el nombre de la cuenta contable si se proporciona id_cuentacontable
-    const nombreCuentaContable = id_cuentacontable ? await obtenerNombreCuentaContable(id_cuentacontable) : null;
+    let nombreCuentaContable: string | null = null;
+    if (id_cuentacontable) {
+      nombreCuentaContable = await obtenerNombreCuentaContable(id_cuentacontable);
+      if (!nombreCuentaContable) {
+        res.status(400).json({ message: `Cuenta contable con ID ${id_cuentacontable} no encontrada` });
+        return;
+      }
+    }
 
     // Buscar el nombre del proveedor si se proporciona idproveedor
-    const nombreProveedor = idproveedor ? await obtenerNombreProveedor(idproveedor) : null;
+    let nombreProveedor: string | null = null;
+    if (idproveedor) {
+      nombreProveedor = await obtenerNombreProveedor(idproveedor);
+      if (!nombreProveedor) {
+        res.status(400).json({ message: `Proveedor con ID ${idproveedor} no encontrado` });
+        return;
+      }
+    }
 
     const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebinsumos (
@@ -320,10 +334,24 @@ export const actualizarInsumo = async (req: AuthRequest, res: Response): Promise
     }
 
     // Buscar el nombre de la cuenta contable si se proporciona id_cuentacontable
-    const nombreCuentaContable = id_cuentacontable ? await obtenerNombreCuentaContable(id_cuentacontable) : null;
+    let nombreCuentaContable: string | null = null;
+    if (id_cuentacontable) {
+      nombreCuentaContable = await obtenerNombreCuentaContable(id_cuentacontable);
+      if (!nombreCuentaContable) {
+        res.status(400).json({ message: `Cuenta contable con ID ${id_cuentacontable} no encontrada` });
+        return;
+      }
+    }
 
     // Buscar el nombre del proveedor si se proporciona idproveedor
-    const nombreProveedor = idproveedor ? await obtenerNombreProveedor(idproveedor) : null;
+    let nombreProveedor: string | null = null;
+    if (idproveedor) {
+      nombreProveedor = await obtenerNombreProveedor(idproveedor);
+      if (!nombreProveedor) {
+        res.status(400).json({ message: `Proveedor con ID ${idproveedor} no encontrado` });
+        return;
+      }
+    }
 
     const [result] = await pool.query<ResultSetHeader>(
       `UPDATE tblposcrumenwebinsumos SET
