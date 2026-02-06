@@ -9,6 +9,7 @@ import { obtenerModeradores } from '../../services/moderadoresService';
 import { obtenerModeradoresRef } from '../../services/moderadoresRefService';
 import { verificarTurnoAbierto } from '../../services/turnosService';
 import { cambiarEstatusMesa } from '../../services/mesasService';
+import { showSuccessToast, showErrorToast } from '../../components/FeedbackToast';
 import ModalTipoServicio from '../../components/ventas/ModalTipoServicio';
 import ModalSeleccionVentaPageVentas from '../../components/ventas/ModalSeleccionVentaPageVentas';
 import ModalIniciaTurno from '../../components/turnos/ModalIniciaTurno';
@@ -585,35 +586,35 @@ const PageVentas: React.FC = () => {
   const crearVenta = async (estadodeventa: EstadoDeVenta = 'SOLICITADO', estadodetalle: EstadoDetalle = 'ORDENADO', estatusdepago: EstatusDePago = 'PENDIENTE'): Promise<boolean> => {
     // Lógica común para crear ventas
     if (comanda.length === 0) {
-      alert('No hay productos en la comanda');
+      showErrorToast('No hay productos en la comanda');
       return false;
     }
 
     if (!usuario) {
-      alert('Usuario no autenticado');
+      showErrorToast('Usuario no autenticado');
       return false;
     }
 
     // Validar que el servicio esté configurado
     if (!isServiceConfigured) {
-      alert('Por favor configure el tipo de servicio antes de continuar');
+      showErrorToast('Por favor configure el tipo de servicio antes de continuar');
       setModalOpen(true);
       return false;
     }
 
     // Validar que se hayan configurado los datos del tipo de servicio
     if (tipoServicio === 'Mesa' && !mesaData) {
-      alert('Por favor configure los datos de la mesa antes de continuar');
+      showErrorToast('Por favor configure los datos de la mesa antes de continuar');
       setModalOpen(true);
       return false;
     }
     if (tipoServicio === 'Llevar' && !llevarData) {
-      alert('Por favor configure los datos de entrega antes de continuar');
+      showErrorToast('Por favor configure los datos de entrega antes de continuar');
       setModalOpen(true);
       return false;
     }
     if (tipoServicio === 'Domicilio' && !domicilioData) {
-      alert('Por favor configure los datos de domicilio antes de continuar');
+      showErrorToast('Por favor configure los datos de domicilio antes de continuar');
       setModalOpen(true);
       return false;
     }
@@ -622,7 +623,7 @@ const PageVentas: React.FC = () => {
     const itemsToInsert = comanda.filter(item => item.estadodetalle !== ESTADO_ORDENADO);
     
     if (itemsToInsert.length === 0) {
-      alert('Todos los productos en la comanda ya han sido ordenados');
+      showErrorToast('Todos los productos en la comanda ya han sido ordenados');
       return false;
     }
 
@@ -708,7 +709,7 @@ const PageVentas: React.FC = () => {
       }
 
       if (resultado.success) {
-        alert(`¡Venta registrada exitosamente!\nFolio: ${resultado.folioventa}`);
+        showSuccessToast(`Venta registrada - Folio: ${resultado.folioventa}`);
         
         // Mark newly inserted items as ORDENADO
         setComanda(comanda.map(item => 
@@ -720,13 +721,13 @@ const PageVentas: React.FC = () => {
       } else {
         const errorMsg = resultado.message || 'Error desconocido';
         console.error('Error al registrar venta:', errorMsg);
-        alert(`Error al registrar la venta:\n${errorMsg}\n\nPor favor, verifique que todos los datos estén correctos e intente nuevamente.`);
+        showErrorToast(`Error: ${errorMsg}`);
         return false;
       }
     } catch (error) {
       console.error('Error al crear venta:', error);
-      const errorMsg = (error instanceof Error) ? error.message : 'Error de conexión con el servidor';
-      alert(`Error al registrar la venta:\n${errorMsg}\n\nPor favor, intente nuevamente.`);
+      const errorMsg = (error instanceof Error) ? error.message : 'Error de conexión';
+      showErrorToast(`Error: ${errorMsg}`);
       return false;
     }
   };
@@ -770,7 +771,7 @@ const PageVentas: React.FC = () => {
           const resultadoDetalles = await agregarDetallesAVenta(currentVentaId, detallesData, ESTADO_ORDENADO);
           
           if (!resultadoDetalles.success) {
-            alert(`Error al agregar productos: ${resultadoDetalles.message || 'Error desconocido'}`);
+            showErrorToast(`Error al agregar productos: ${resultadoDetalles.message || 'Error desconocido'}`);
             return;
           }
         }
@@ -782,7 +783,7 @@ const PageVentas: React.FC = () => {
         });
 
         if (resultado.success) {
-          alert(`¡Venta actualizada exitosamente!\nFolio: ${currentFolioVenta}`);
+          showSuccessToast(`Venta actualizada - Folio: ${currentFolioVenta}`);
           // Update local state
           setCurrentEstadoDeVenta('ORDENADO');
           
@@ -792,12 +793,12 @@ const PageVentas: React.FC = () => {
           navigate('/dashboard');
           return;
         } else {
-          alert(`Error al actualizar la venta: ${resultado.message || 'Error desconocido'}`);
+          showErrorToast(`Error: ${resultado.message || 'Error desconocido'}`);
           return;
         }
       } catch (error) {
         console.error('Error al actualizar venta ESPERAR:', error);
-        alert('Error al actualizar la venta');
+        showErrorToast('Error al actualizar la venta');
         return;
       }
     }
