@@ -250,10 +250,8 @@ export const DashboardPage = () => {
   };
 
   const handleFinalizaDiaClick = () => {
-    if (turnoAbierto) {
-      setShowCierreTurnoModal(true);
-      setShowMiOperacionSubmenu(false);
-    }
+    setShowCierreTurnoModal(true);
+    setShowMiOperacionSubmenu(false);
   };
 
   const handleCierreTurnoCancel = () => {
