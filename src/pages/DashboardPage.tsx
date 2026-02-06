@@ -8,7 +8,7 @@ import { clearSession } from '../services/sessionService';
 import { obtenerModeradores } from '../services/moderadoresService';
 import type { Moderador } from '../types/moderador.types';
 import { obtenerDetallesPagos } from '../services/pagosService';
-import { verificarTurnoAbierto } from '../services/turnosService';
+import { verificarTurnoAbierto, cerrarTurnoActual } from '../services/turnosService';
 import type { Turno } from '../types/turno.types';
 import CierreTurno from '../components/turnos/CierreTurno/CierreTurno';
 import './DashboardPage.css';
@@ -241,12 +241,21 @@ export const DashboardPage = () => {
   };
 
   const handleCierreTurnoSubmit = async (datosFormulario: any) => {
-    console.log('Datos de cierre de turno:', datosFormulario);
-    // Here you would call the service to close the turno
-    // For now, just close the modal and refresh the turno status
-    setShowCierreTurnoModal(false);
-    await verificarTurno();
-    await cargarResumenVentas();
+    try {
+      console.log('Datos de cierre de turno:', datosFormulario);
+      // Call the service to close the turno
+      await cerrarTurnoActual(datosFormulario);
+      console.log('Turno cerrado exitosamente');
+      setShowCierreTurnoModal(false);
+      // Refresh the turno status and sales summary
+      await verificarTurno();
+      await cargarResumenVentas();
+      // Optionally show a success message
+      alert('Turno cerrado exitosamente');
+    } catch (error) {
+      console.error('Error al cerrar turno:', error);
+      alert('Error al cerrar el turno. Por favor intente nuevamente.');
+    }
   };
 
   // Helper function to resolve moderador names from IDs
