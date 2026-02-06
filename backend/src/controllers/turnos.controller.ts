@@ -165,11 +165,18 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
     // Iniciar transacción
     await connection.beginTransaction();
 
+    // Calcular numeroturno ANTES de insertar para evitar race condition
+    // Usamos SELECT FOR UPDATE para bloquear las filas y prevenir lecturas concurrentes
+    const [countResult] = await connection.query<RowDataPacket[]>(
+      `SELECT COUNT(*) as count FROM tblposcrumenwebturnos WHERE idnegocio = ? FOR UPDATE`,
+      [idnegocio]
+    );
+    const numeroturno = (countResult[0]?.count || 0) + 1;
+
     // Generar claveturno antes de insertar
     const claveturno = generarClaveTurno(idusuario, idnegocio);
 
-    // Insertar el nuevo turno en tblposcrumenwebturnos
-    // Nota: numeroturno se actualiza después porque debe ser igual a idturno (auto-increment)
+    // Insertar el nuevo turno en tblposcrumenwebturnos con numeroturno calculado
     const [result] = await connection.query<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebturnos (
         numeroturno,
@@ -180,26 +187,11 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
         usuarioturno,
         idnegocio,
         metaturno
-      ) VALUES (0, NOW(), NULL, 'abierto', ?, ?, ?, ?)`,
-      [claveturno, usuarioturno, idnegocio, metaturno || null]
+      ) VALUES (?, NOW(), NULL, 'abierto', ?, ?, ?, ?)`,
+      [numeroturno, claveturno, usuarioturno, idnegocio, metaturno || null]
     );
 
     const idturno = result.insertId;
-
-    // Calcular numeroturno como el conteo de registros con el mismo idnegocio
-    // (incluyendo el registro recién insertado)
-    const [countResult] = await connection.query<RowDataPacket[]>(
-      `SELECT COUNT(*) as count FROM tblposcrumenwebturnos WHERE idnegocio = ?`,
-      [idnegocio]
-    );
-    const numeroturno = countResult[0]?.count || 1;
-    
-    await connection.query(
-      `UPDATE tblposcrumenwebturnos 
-       SET numeroturno = ?
-       WHERE idturno = ?`,
-      [numeroturno, idturno]
-    );
 
     // Crear registro en tblposcrumenwebventas como MOVIMIENTO inicial del turno
     // Nota: folioventa se actualiza después porque depende de idventa (auto-increment)
