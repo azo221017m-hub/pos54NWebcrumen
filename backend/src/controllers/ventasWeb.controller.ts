@@ -84,7 +84,8 @@ async function processRecipeInventoryMovements(
 
         const insumo = insumoRows[0];
         // Quantity sold (negative for SALIDA)
-        const cantidadNegativa = -Math.abs(detalle.cantidad);
+        // Using -Math.abs() ensures the value is always negative, regardless of input
+        const cantidadMovimiento = -Math.abs(detalle.cantidad);
 
         await connection.execute(
           `INSERT INTO tblposcrumenwebdetallemovimientos (
@@ -99,7 +100,7 @@ async function processRecipeInventoryMovements(
             'INVENTARIO', // tipoinsumo
             'SALIDA', // tipomovimiento
             'VENTA', // motivomovimiento
-            cantidadNegativa, // cantidad as negative value
+            cantidadMovimiento, // cantidad as negative value
             insumo.stock_actual || null,
             insumo.unidadmedida,
             insumo.precio_venta || null,
@@ -135,7 +136,7 @@ async function processRecipeInventoryMovements(
           // Convert to negative for SALIDA movements
           // Using -Math.abs() ensures the value is always negative, regardless of input
           // This is critical for the stock update logic in updateInventoryStockFromMovements()
-          const cantidadNegativa = -Math.abs(cantidadTotal);
+          const cantidadMovimiento = -Math.abs(cantidadTotal);
 
           await connection.execute(
             `INSERT INTO tblposcrumenwebdetallemovimientos (
@@ -150,7 +151,7 @@ async function processRecipeInventoryMovements(
               'RECETA', // tipoinsumo
               'SALIDA', // tipomovimiento
               'VENTA', // motivomovimiento
-              cantidadNegativa, // cantidad as negative value
+              cantidadMovimiento, // cantidad as negative value
               ingrediente.stock_actual || null,
               ingrediente.unidadmedida,
               ingrediente.precio_venta || null,
@@ -163,6 +164,13 @@ async function processRecipeInventoryMovements(
             ]
           );
         }
+      } else {
+        // Unexpected tipoafectacion value - log warning for debugging
+        console.warn(
+          `Sale detail ${detalle.iddetalleventa} has unexpected tipoafectacion='${detalle.tipoafectacion}' ` +
+          `(expected 'INVENTARIO' or 'RECETA'). Skipping inventory movement processing.`
+        );
+        continue;
       }
 
       // Mark this sale detail as processed
