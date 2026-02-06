@@ -238,7 +238,7 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
                   maxLength={100}
                   disabled={validandoNombre}
                 />
-                {validandoNombre && <span className="loading-message">Validando nombre...</span>}
+                {validandoNombre && <span className="loading-message" aria-live="polite">Validando nombre...</span>}
                 {errores.nombre && <span className="error-message">{errores.nombre}</span>}
               </div>
 

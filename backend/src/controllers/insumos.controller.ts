@@ -121,7 +121,7 @@ const validarNombreDuplicado = async (
   idnegocio: number, 
   id_insumo?: number
 ): Promise<boolean> => {
-  let query = 'SELECT id_insumo FROM tblposcrumenwebinsumos WHERE nombre = ? AND idnegocio = ?';
+  let query = 'SELECT id_insumo FROM tblposcrumenwebinsumos WHERE LOWER(nombre) = LOWER(?) AND idnegocio = ?';
   const params: (string | number)[] = [nombre, idnegocio];
 
   // Si se proporciona id_insumo, excluirlo de la búsqueda (para validación en edición)
