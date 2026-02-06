@@ -162,7 +162,8 @@ async function updateInventoryStockFromMovements(
       
       // Calculate new stock: current_stock + cantidad
       // Note: cantidad is negative for SALIDA movements (ensured in processRecipeInventoryMovements)
-      const newStock = currentStock + movement.cantidad;
+      // Convert to Number to ensure arithmetic operation instead of string concatenation
+      const newStock = Number(currentStock) + Number(movement.cantidad);
       
       // Prevent negative stock (log warning but continue to maintain data consistency)
       if (newStock < 0) {
