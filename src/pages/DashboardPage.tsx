@@ -981,8 +981,13 @@ export const DashboardPage = () => {
               </button>
               <button 
                 className="submenu-item" 
-                disabled 
-                title="Próximamente"
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  e.stopPropagation(); 
+                  navigate('/config-compras'); 
+                  setMobileMenuOpen(false); 
+                  setShowMiOperacionSubmenu(false);
+                }}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
