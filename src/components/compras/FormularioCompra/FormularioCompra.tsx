@@ -138,7 +138,8 @@ const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, l
       cantidad: 1,
       preciounitario: 0,
       costounitario: 0,
-      observaciones: ''
+      observaciones: '',
+      umcompra: ''
     }]);
   };
 
@@ -419,7 +420,7 @@ const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, l
                       <div className="form-group">
                         <label className="form-label">UM Compra</label>
                         <select
-                          value={(detalle as any).umcompra || ''}
+                          value={detalle.umcompra || ''}
                           onChange={(e) => actualizarDetalle(index, 'umcompra', e.target.value)}
                           className="form-input"
                           disabled={!detalle.nombreproducto || cargandoDatos}
