@@ -11,8 +11,10 @@ import type {
 } from '../../../types/compras.types';
 import type { CuentaContable } from '../../../types/cuentaContable.types';
 import type { Insumo } from '../../../types/insumo.types';
+import type { UMCompra } from '../../../types/umcompra.types';
 import { obtenerCuentasContables } from '../../../services/cuentasContablesService';
 import { obtenerInsumos } from '../../../services/insumosService';
+import { obtenerUMCompras } from '../../../services/umcompraService';
 import './FormularioCompra.css';
 
 interface Props {
@@ -25,6 +27,7 @@ interface Props {
 const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, loading }) => {
   const [cuentasContables, setCuentasContables] = useState<CuentaContable[]>([]);
   const [insumos, setInsumos] = useState<Insumo[]>([]);
+  const [umcompras, setUmcompras] = useState<UMCompra[]>([]);
   const [cargandoDatos, setCargandoDatos] = useState(true);
 
   const datosIniciales = useMemo(() => {
@@ -60,7 +63,7 @@ const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, l
   const [detalles, setDetalles] = useState<DetalleCompraCreate[]>([]);
   const [errores, setErrores] = useState<Record<string, string>>({});
 
-  // Cargar cuentas contables de tipo COMPRA e insumos
+  // Cargar cuentas contables de tipo COMPRA, insumos y umcompras
   useEffect(() => {
     const cargarDatos = async () => {
       try {
@@ -79,6 +82,10 @@ const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, l
           const insumosData = await obtenerInsumos(usuario.idNegocio);
           setInsumos(insumosData);
         }
+        
+        // Obtener unidades de medida de compra
+        const umcomprasData = await obtenerUMCompras();
+        setUmcompras(umcomprasData);
       } catch (error) {
         console.error('Error al cargar datos:', error);
       } finally {
@@ -94,8 +101,9 @@ const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, l
     if (!formData.tipodecompra) return [];
     
     // Buscar la cuenta contable que corresponde al tipo de compra seleccionado
+    // Ahora buscamos por nombrecuentacontable que es lo que se muestra y almacena
     const cuentaSeleccionada = cuentasContables.find(
-      c => c.tipocuentacontable === formData.tipodecompra
+      c => c.nombrecuentacontable === formData.tipodecompra
     );
     
     if (!cuentaSeleccionada) return [];
@@ -234,8 +242,8 @@ const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, l
                   >
                     <option value="">Seleccione un tipo</option>
                     {cuentasContables.map(cuenta => (
-                      <option key={cuenta.id_cuentacontable} value={cuenta.tipocuentacontable}>
-                        {cuenta.tipocuentacontable}
+                      <option key={cuenta.id_cuentacontable} value={cuenta.nombrecuentacontable}>
+                        {cuenta.nombrecuentacontable}
                       </option>
                     ))}
                   </select>
@@ -406,6 +414,38 @@ const FormularioCompra: React.FC<Props> = ({ compraEditar, onSubmit, onCancel, l
                           step="0.01"
                           className="form-input"
                         />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="form-label">UM Compra</label>
+                        <select
+                          value={(detalle as any).umcompra || ''}
+                          onChange={(e) => actualizarDetalle(index, 'umcompra', e.target.value)}
+                          className="form-input"
+                          disabled={!detalle.nombreproducto || cargandoDatos}
+                        >
+                          <option value="">Seleccione una UM</option>
+                          {(() => {
+                            const insumoSeleccionado = insumosFiltrados.find(
+                              i => i.nombre === detalle.nombreproducto
+                            );
+                            if (!insumoSeleccionado) return null;
+                            
+                            // Filtrar umcompras donde umMatPrima = unidad_medida del insumo
+                            const umcomprasFiltradas = umcompras.filter(
+                              um => um.umMatPrima === insumoSeleccionado.unidad_medida
+                            );
+                            
+                            return umcomprasFiltradas.map(um => (
+                              <option key={um.idUmCompra} value={um.nombreUmCompra}>
+                                {um.nombreUmCompra}
+                              </option>
+                            ));
+                          })()}
+                        </select>
+                        {!detalle.nombreproducto && (
+                          <span className="info-message">Seleccione primero un artículo</span>
+                        )}
                       </div>
 
                       <div className="form-group full-width">
