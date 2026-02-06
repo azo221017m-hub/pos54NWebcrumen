@@ -149,8 +149,17 @@ async function updateInventoryStockFromMovements(
 
     // Update inventory stock for each movement
     for (const movement of movementRows) {
-      // Calculate new stock: referenciastock + cantidad (cantidad is already negative for SALIDA)
-      const newStock = (movement.referenciastock || 0) + movement.cantidad;
+      // Get current stock from inventory table
+      const [stockRows] = await connection.execute<RowDataPacket[]>(
+        `SELECT stock_actual FROM tblposcrumenwebinsumos 
+         WHERE id_insumo = ? AND idnegocio = ?`,
+        [movement.idinsumo, idnegocio]
+      );
+      
+      const currentStock = stockRows.length > 0 ? (stockRows[0].stock_actual || 0) : 0;
+      
+      // Calculate new stock: current_stock + cantidad (cantidad is already negative for SALIDA)
+      const newStock = currentStock + movement.cantidad;
 
       await connection.execute(
         `UPDATE tblposcrumenwebinsumos 
@@ -161,7 +170,7 @@ async function updateInventoryStockFromMovements(
         [newStock, usuarioalias, movement.idinsumo, idnegocio]
       );
 
-      // Mark the movement as PROCESADO
+      // Mark the movement as PROCESADO (within transaction - will rollback if inventory update fails)
       await connection.execute(
         `UPDATE tblposcrumenwebdetallemovimientos 
          SET estatusmovimiento = 'PROCESADO'
