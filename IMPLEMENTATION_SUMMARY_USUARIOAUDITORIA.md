@@ -71,10 +71,14 @@ Both `crearVentaWeb` and `agregarDetallesAVenta` functions now:
 
 ### ✅ Requirement 5: Update Inventory Stock After Movement Registration
 - **Requirement**: After registering movements, if `estatusmovimiento='PENDIENTE'`, update inventory:
-  - `stock_actual = referenciastock + cantidad`
+  - `stock_actual = referenciastock + cantidad` (per original requirement)
   - `usuarioauditoria = user alias`
   - `fechamodificacionauditoria = NOW()`
-- **Implementation**: Created `updateInventoryStockFromMovements` function that processes all PENDIENTE movements and updates inventory accordingly
+- **Implementation**: Created `updateInventoryStockFromMovements` function that:
+  - Retrieves current `stock_actual` from database (more reliable than using snapshot)
+  - Calculates new stock as `current_stock + cantidad`
+  - Logs warning if stock would become negative
+  - Updates inventory accordingly and marks movement as PROCESADO
 
 ## Workflow
 

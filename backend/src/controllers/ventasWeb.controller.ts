@@ -82,6 +82,8 @@ async function processRecipeInventoryMovements(
         // Calculate total quantity needed (recipe quantity * sale quantity)
         const cantidadTotal = parseFloat(ingrediente.cantidadUso) * detalle.cantidad;
         // Convert to negative for SALIDA movements
+        // Using -Math.abs() ensures the value is always negative, regardless of input
+        // This is critical for the stock update logic in updateInventoryStockFromMovements()
         const cantidadNegativa = -Math.abs(cantidadTotal);
 
         await connection.execute(
@@ -158,8 +160,17 @@ async function updateInventoryStockFromMovements(
       
       const currentStock = stockRows.length > 0 ? (stockRows[0].stock_actual || 0) : 0;
       
-      // Calculate new stock: current_stock + cantidad (cantidad is already negative for SALIDA)
+      // Calculate new stock: current_stock + cantidad
+      // Note: cantidad is negative for SALIDA movements (ensured in processRecipeInventoryMovements)
       const newStock = currentStock + movement.cantidad;
+      
+      // Prevent negative stock (log warning but continue to maintain data consistency)
+      if (newStock < 0) {
+        console.warn(
+          `Warning: Inventory for insumo ${movement.idinsumo} (${movement.nombreinsumo}) ` +
+          `would become negative (${newStock}). Current: ${currentStock}, Movement: ${movement.cantidad}`
+        );
+      }
 
       await connection.execute(
         `UPDATE tblposcrumenwebinsumos 
