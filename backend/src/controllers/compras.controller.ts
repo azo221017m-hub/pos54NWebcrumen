@@ -50,14 +50,14 @@ function calculateTotals(detalles: any[]) {
 // GET /api/compras - Obtener todas las compras
 export const obtenerCompras = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { idnegocio, idusuario } = req.user!;
+    const { idNegocio } = req.user!;
     
-    // Si es superusuario (idnegocio = 99999), obtener todas las compras
+    // Si es superusuario (idNegocio = 99999), obtener todas las compras
     // Si no, solo las del negocio del usuario
-    const whereClause = idnegocio === 99999 
+    const whereClause = idNegocio === 99999 
       ? 'WHERE 1=1' 
       : 'WHERE c.idnegocio = ?';
-    const params = idnegocio === 99999 ? [] : [idnegocio];
+    const params = idNegocio === 99999 ? [] : [idNegocio];
     
     const [rows] = await pool.execute<(Compra & RowDataPacket)[]>(
       `SELECT * FROM tblposcrumenwebcompras c
@@ -85,13 +85,13 @@ export const obtenerCompras = async (req: AuthRequest, res: Response): Promise<v
 export const obtenerCompraPorId = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { idnegocio } = req.user!;
+    const { idNegocio } = req.user!;
     
     // Obtener la compra
-    const whereClause = idnegocio === 99999 
+    const whereClause = idNegocio === 99999 
       ? 'WHERE idcompra = ?' 
       : 'WHERE idcompra = ? AND idnegocio = ?';
-    const params = idnegocio === 99999 ? [id] : [id, idnegocio];
+    const params = idNegocio === 99999 ? [id] : [id, idNegocio];
     
     const [compraRows] = await pool.execute<(Compra & RowDataPacket)[]>(
       `SELECT * FROM tblposcrumenwebcompras ${whereClause}`,
@@ -140,7 +140,8 @@ export const crearCompra = async (req: AuthRequest, res: Response): Promise<void
   
   try {
     const compraData: CompraCreate = req.body;
-    const { idnegocio, alias } = req.user!;
+    const { idNegocio, alias } = req.user!;
+    const idnegocio = idNegocio; // Database expects lowercase
     
     // Validaciones
     if (!compraData.detalles || compraData.detalles.length === 0) {
@@ -286,13 +287,13 @@ export const actualizarCompra = async (req: AuthRequest, res: Response): Promise
   try {
     const { id } = req.params;
     const compraData: CompraUpdate = req.body;
-    const { idnegocio, alias } = req.user!;
+    const { idNegocio, alias } = req.user!;
     
     // Verificar que la compra existe y pertenece al negocio
-    const whereClause = idnegocio === 99999 
+    const whereClause = idNegocio === 99999 
       ? 'WHERE idcompra = ?' 
       : 'WHERE idcompra = ? AND idnegocio = ?';
-    const params = idnegocio === 99999 ? [id] : [id, idnegocio];
+    const params = idNegocio === 99999 ? [id] : [id, idNegocio];
     
     const [existingRows] = await pool.execute<RowDataPacket[]>(
       `SELECT idcompra FROM tblposcrumenwebcompras ${whereClause}`,
@@ -362,8 +363,8 @@ export const actualizarCompra = async (req: AuthRequest, res: Response): Promise
     
     // Agregar ID al final
     updateValues.push(id);
-    if (idnegocio !== 99999) {
-      updateValues.push(idnegocio);
+    if (idNegocio !== 99999) {
+      updateValues.push(idNegocio);
     }
     
     await pool.execute(
@@ -400,13 +401,13 @@ export const eliminarCompra = async (req: AuthRequest, res: Response): Promise<v
   
   try {
     const { id } = req.params;
-    const { idnegocio, alias } = req.user!;
+    const { idNegocio, alias } = req.user!;
     
     // Verificar que la compra existe y pertenece al negocio
-    const whereClause = idnegocio === 99999 
+    const whereClause = idNegocio === 99999 
       ? 'WHERE idcompra = ?' 
       : 'WHERE idcompra = ? AND idnegocio = ?';
-    const params = idnegocio === 99999 ? [id] : [id, idnegocio];
+    const params = idNegocio === 99999 ? [id] : [id, idNegocio];
     
     const [existingRows] = await pool.execute<RowDataPacket[]>(
       `SELECT idcompra FROM tblposcrumenwebcompras ${whereClause}`,
@@ -472,15 +473,15 @@ export const actualizarDetalleCompra = async (req: AuthRequest, res: Response): 
   try {
     const { id, iddetalle } = req.params;
     const detalleData: DetalleCompraUpdate = req.body;
-    const { idnegocio, alias } = req.user!;
+    const { idNegocio, alias } = req.user!;
     
     // Verificar que el detalle existe y pertenece a la compra
-    const whereClause = idnegocio === 99999
+    const whereClause = idNegocio === 99999
       ? 'WHERE iddetallecompra = ? AND idcompra = ?'
       : 'WHERE iddetallecompra = ? AND idcompra = ? AND idnegocio = ?';
-    const params = idnegocio === 99999 
+    const params = idNegocio === 99999 
       ? [iddetalle, id] 
-      : [iddetalle, id, idnegocio];
+      : [iddetalle, id, idNegocio];
     
     const [existingRows] = await pool.execute<RowDataPacket[]>(
       `SELECT iddetallecompra FROM tblposcrumenwebdetallecompras ${whereClause}`,

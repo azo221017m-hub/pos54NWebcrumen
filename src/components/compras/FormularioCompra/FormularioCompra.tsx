@@ -19,7 +19,7 @@ interface Props {
   loading: boolean;
 }
 
-const FormularioCompra: React.FC<Props> = ({ compraEditar, idnegocio, onSubmit, onCancel, loading }) => {
+const FormularioCompra: React.FC<Props> = ({ compraEditar, idnegocio: _idnegocio, onSubmit, onCancel, loading }) => {
   const datosIniciales = useMemo(() => {
     if (compraEditar) {
       return {
