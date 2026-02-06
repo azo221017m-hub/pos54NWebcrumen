@@ -44,7 +44,9 @@ const FeedbackToast: React.FC = () => {
       }, 3000);
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const removeMessage = (id: number) => {
