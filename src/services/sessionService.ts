@@ -158,29 +158,56 @@ export const clearServiceWorkerCache = async (): Promise<void> => {
 /**
  * Configura el listener para limpiar la sesión cuando se recarga la página
  * Esta función debe llamarse una vez al iniciar la aplicación
+ * Maneja los siguientes escenarios:
+ * - Botón de cerrar ❌ (cerrar pestaña/ventana)
+ * - Ctrl+W (atajo para cerrar pestaña)
+ * - F5 (recargar página)
+ * - Cerrar pestaña
+ * - Cerrar navegador
  * @returns Función de limpieza para remover el listener
  */
 export const setupSessionClearOnReload = (): (() => void) => {
-  const handleBeforeUnload = () => {
+  const handleBeforeUnload = (event: BeforeUnloadEvent) => {
     // Obtener token y pathname de forma síncrona
-    // Solo limpiar si hay una sesión activa (no estamos en login)
+    // Solo mostrar confirmación si hay una sesión activa (no estamos en login)
     const currentPath = window.location.pathname;
     const token = localStorage.getItem(TOKEN_KEY);
     
     if (token && currentPath !== '/login') {
-      // Limpieza síncrona de localStorage
+      // Prevenir el comportamiento por defecto y mostrar confirmación
+      event.preventDefault();
+      
+      // Para navegadores modernos (Chrome 51+, Firefox, Safari, Edge)
+      // El mensaje personalizado será ignorado y se mostrará un mensaje genérico del navegador
+      const message = '¿Estás seguro de que deseas salir? Los cambios no guardados se perderán.';
+      event.returnValue = message; // Chrome, Edge
+      
+      return message; // Firefox, Safari (legacy)
+    }
+  };
+
+  const handleUnload = () => {
+    // Limpieza de sesión que solo se ejecuta si la página realmente se descarga
+    // Esto se ejecuta DESPUÉS de que el usuario confirme salir (si cancela, no se ejecuta)
+    const currentPath = window.location.pathname;
+    const token = localStorage.getItem(TOKEN_KEY);
+    
+    if (token && currentPath !== '/login') {
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USUARIO_KEY);
       localStorage.removeItem('idnegocio');
     }
   };
 
-  // Registrar listener para cuando se recarga o cierra la página
+  // Registrar listener para mostrar confirmación antes de salir
   window.addEventListener('beforeunload', handleBeforeUnload);
+  // Registrar listener para limpiar sesión cuando la página realmente se descarga
+  window.addEventListener('unload', handleUnload);
 
   // Retornar función de limpieza
   return () => {
     window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.removeEventListener('unload', handleUnload);
   };
 };
 
