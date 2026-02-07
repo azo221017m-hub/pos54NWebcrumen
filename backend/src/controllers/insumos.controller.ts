@@ -274,10 +274,33 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
       ]
     );
 
-    res.status(201).json({ 
-      message: 'Insumo creado exitosamente', 
-      id_insumo: result.insertId 
-    });
+    // Fetch the complete created insumo to return to frontend
+    const [createdInsumo] = await pool.query<Insumo[]>(
+      `SELECT 
+        i.id_insumo,
+        i.nombre,
+        i.unidad_medida,
+        i.stock_actual,
+        i.stock_minimo,
+        i.costo_promedio_ponderado,
+        i.precio_venta,
+        i.idinocuidad,
+        i.id_cuentacontable,
+        cc.nombrecuentacontable,
+        i.activo,
+        i.inventariable,
+        i.fechaRegistroauditoria,
+        i.usuarioauditoria,
+        i.fechamodificacionauditoria,
+        i.idnegocio,
+        i.idproveedor
+      FROM tblposcrumenwebinsumos i
+      LEFT JOIN tblposcrumenwebcuentacontable cc ON i.id_cuentacontable = cc.id_cuentacontable
+      WHERE i.id_insumo = ?`,
+      [result.insertId]
+    );
+
+    res.status(201).json(createdInsumo[0]);
   } catch (error) {
     console.error('Error al crear insumo:', error);
     res.status(500).json({ 
@@ -391,7 +414,33 @@ export const actualizarInsumo = async (req: AuthRequest, res: Response): Promise
       return;
     }
 
-    res.json({ message: 'Insumo actualizado exitosamente' });
+    // Fetch the complete updated insumo to return to frontend
+    const [updatedInsumo] = await pool.query<Insumo[]>(
+      `SELECT 
+        i.id_insumo,
+        i.nombre,
+        i.unidad_medida,
+        i.stock_actual,
+        i.stock_minimo,
+        i.costo_promedio_ponderado,
+        i.precio_venta,
+        i.idinocuidad,
+        i.id_cuentacontable,
+        cc.nombrecuentacontable,
+        i.activo,
+        i.inventariable,
+        i.fechaRegistroauditoria,
+        i.usuarioauditoria,
+        i.fechamodificacionauditoria,
+        i.idnegocio,
+        i.idproveedor
+      FROM tblposcrumenwebinsumos i
+      LEFT JOIN tblposcrumenwebcuentacontable cc ON i.id_cuentacontable = cc.id_cuentacontable
+      WHERE i.id_insumo = ?`,
+      [id_insumo]
+    );
+
+    res.json(updatedInsumo[0]);
   } catch (error) {
     console.error('Error al actualizar insumo:', error);
     res.status(500).json({ 
