@@ -4,8 +4,7 @@ import type {
   MovimientoConDetalles,
   MovimientoCreate,
   DetalleMovimientoCreate,
-  MotivoMovimiento,
-  TipoInsumo
+  MotivoMovimiento
 } from '../../../types/movimientos.types';
 import type { Insumo } from '../../../types/insumo.types';
 import { obtenerInsumos } from '../../../services/insumosService';
