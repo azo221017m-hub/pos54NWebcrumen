@@ -169,7 +169,7 @@ export const clearServiceWorkerCache = async (): Promise<void> => {
 export const setupSessionClearOnReload = (): (() => void) => {
   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
     // Obtener token y pathname de forma síncrona
-    // Solo mostrar confirmación y limpiar si hay una sesión activa (no estamos en login)
+    // Solo mostrar confirmación si hay una sesión activa (no estamos en login)
     const currentPath = window.location.pathname;
     const token = localStorage.getItem(TOKEN_KEY);
     
@@ -182,22 +182,32 @@ export const setupSessionClearOnReload = (): (() => void) => {
       const message = '¿Estás seguro de que deseas salir? Los cambios no guardados se perderán.';
       event.returnValue = message; // Chrome, Edge
       
-      // Limpieza síncrona de localStorage
-      // Esto se ejecuta independientemente de si el usuario confirma o cancela
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USUARIO_KEY);
-      localStorage.removeItem('idnegocio');
-      
       return message; // Firefox, Safari (legacy)
     }
   };
 
-  // Registrar listener para cuando se recarga o cierra la página
+  const handleUnload = () => {
+    // Limpieza de sesión que solo se ejecuta si la página realmente se descarga
+    // Esto se ejecuta DESPUÉS de que el usuario confirme salir (si cancela, no se ejecuta)
+    const currentPath = window.location.pathname;
+    const token = localStorage.getItem(TOKEN_KEY);
+    
+    if (token && currentPath !== '/login') {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USUARIO_KEY);
+      localStorage.removeItem('idnegocio');
+    }
+  };
+
+  // Registrar listener para mostrar confirmación antes de salir
   window.addEventListener('beforeunload', handleBeforeUnload);
+  // Registrar listener para limpiar sesión cuando la página realmente se descarga
+  window.addEventListener('unload', handleUnload);
 
   // Retornar función de limpieza
   return () => {
     window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.removeEventListener('unload', handleUnload);
   };
 };
 
