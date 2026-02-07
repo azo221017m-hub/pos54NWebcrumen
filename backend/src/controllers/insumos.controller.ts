@@ -308,6 +308,12 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
       ]
     );
 
+    // Verify the insert succeeded
+    if (result.affectedRows === 0) {
+      res.status(500).json({ message: 'No se pudo crear el insumo' });
+      return;
+    }
+
     // Fetch the complete created insumo to return to frontend
     const createdInsumo = await obtenerInsumoCompleto(result.insertId);
     
