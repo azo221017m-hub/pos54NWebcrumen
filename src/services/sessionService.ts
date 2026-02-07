@@ -158,20 +158,37 @@ export const clearServiceWorkerCache = async (): Promise<void> => {
 /**
  * Configura el listener para limpiar la sesión cuando se recarga la página
  * Esta función debe llamarse una vez al iniciar la aplicación
+ * Maneja los siguientes escenarios:
+ * - Botón de cerrar ❌ (cerrar pestaña/ventana)
+ * - Ctrl+W (atajo para cerrar pestaña)
+ * - F5 (recargar página)
+ * - Cerrar pestaña
+ * - Cerrar navegador
  * @returns Función de limpieza para remover el listener
  */
 export const setupSessionClearOnReload = (): (() => void) => {
-  const handleBeforeUnload = () => {
+  const handleBeforeUnload = (event: BeforeUnloadEvent) => {
     // Obtener token y pathname de forma síncrona
-    // Solo limpiar si hay una sesión activa (no estamos en login)
+    // Solo mostrar confirmación y limpiar si hay una sesión activa (no estamos en login)
     const currentPath = window.location.pathname;
     const token = localStorage.getItem(TOKEN_KEY);
     
     if (token && currentPath !== '/login') {
+      // Prevenir el comportamiento por defecto y mostrar confirmación
+      event.preventDefault();
+      
+      // Para navegadores modernos (Chrome 51+, Firefox, Safari, Edge)
+      // El mensaje personalizado será ignorado y se mostrará un mensaje genérico del navegador
+      const message = '¿Estás seguro de que deseas salir? Los cambios no guardados se perderán.';
+      event.returnValue = message; // Chrome, Edge
+      
       // Limpieza síncrona de localStorage
+      // Esto se ejecuta independientemente de si el usuario confirma o cancela
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USUARIO_KEY);
       localStorage.removeItem('idnegocio');
+      
+      return message; // Firefox, Safari (legacy)
     }
   };
 
