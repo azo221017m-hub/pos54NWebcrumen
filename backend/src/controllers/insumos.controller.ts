@@ -133,6 +133,35 @@ const obtenerNombreProveedor = async (idproveedor: number): Promise<string | nul
   return proveedores.length > 0 ? proveedores[0].nombre : null;
 };
 
+// Helper function to get full insumo details by ID
+const obtenerInsumoCompleto = async (id_insumo: number): Promise<Insumo | null> => {
+  const [rows] = await pool.query<Insumo[]>(
+    `SELECT 
+      i.id_insumo,
+      i.nombre,
+      i.unidad_medida,
+      i.stock_actual,
+      i.stock_minimo,
+      i.costo_promedio_ponderado,
+      i.precio_venta,
+      i.idinocuidad,
+      i.id_cuentacontable,
+      cc.nombrecuentacontable,
+      i.activo,
+      i.inventariable,
+      i.fechaRegistroauditoria,
+      i.usuarioauditoria,
+      i.fechamodificacionauditoria,
+      i.idnegocio,
+      i.idproveedor
+    FROM tblposcrumenwebinsumos i
+    LEFT JOIN tblposcrumenwebcuentacontable cc ON i.id_cuentacontable = cc.id_cuentacontable
+    WHERE i.id_insumo = ?`,
+    [id_insumo]
+  );
+  return rows.length > 0 ? rows[0] : null;
+};
+
 // Helper function to validate duplicate insumo names
 const validarNombreDuplicado = async (
   nombre: string, 
@@ -275,32 +304,14 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
     );
 
     // Fetch the complete created insumo to return to frontend
-    const [createdInsumo] = await pool.query<Insumo[]>(
-      `SELECT 
-        i.id_insumo,
-        i.nombre,
-        i.unidad_medida,
-        i.stock_actual,
-        i.stock_minimo,
-        i.costo_promedio_ponderado,
-        i.precio_venta,
-        i.idinocuidad,
-        i.id_cuentacontable,
-        cc.nombrecuentacontable,
-        i.activo,
-        i.inventariable,
-        i.fechaRegistroauditoria,
-        i.usuarioauditoria,
-        i.fechamodificacionauditoria,
-        i.idnegocio,
-        i.idproveedor
-      FROM tblposcrumenwebinsumos i
-      LEFT JOIN tblposcrumenwebcuentacontable cc ON i.id_cuentacontable = cc.id_cuentacontable
-      WHERE i.id_insumo = ?`,
-      [result.insertId]
-    );
+    const createdInsumo = await obtenerInsumoCompleto(result.insertId);
+    
+    if (!createdInsumo) {
+      res.status(500).json({ message: 'Error: No se pudo recuperar el insumo creado' });
+      return;
+    }
 
-    res.status(201).json(createdInsumo[0]);
+    res.status(201).json(createdInsumo);
   } catch (error) {
     console.error('Error al crear insumo:', error);
     res.status(500).json({ 
@@ -415,32 +426,14 @@ export const actualizarInsumo = async (req: AuthRequest, res: Response): Promise
     }
 
     // Fetch the complete updated insumo to return to frontend
-    const [updatedInsumo] = await pool.query<Insumo[]>(
-      `SELECT 
-        i.id_insumo,
-        i.nombre,
-        i.unidad_medida,
-        i.stock_actual,
-        i.stock_minimo,
-        i.costo_promedio_ponderado,
-        i.precio_venta,
-        i.idinocuidad,
-        i.id_cuentacontable,
-        cc.nombrecuentacontable,
-        i.activo,
-        i.inventariable,
-        i.fechaRegistroauditoria,
-        i.usuarioauditoria,
-        i.fechamodificacionauditoria,
-        i.idnegocio,
-        i.idproveedor
-      FROM tblposcrumenwebinsumos i
-      LEFT JOIN tblposcrumenwebcuentacontable cc ON i.id_cuentacontable = cc.id_cuentacontable
-      WHERE i.id_insumo = ?`,
-      [id_insumo]
-    );
+    const updatedInsumo = await obtenerInsumoCompleto(Number(id_insumo));
+    
+    if (!updatedInsumo) {
+      res.status(500).json({ message: 'Error: No se pudo recuperar el insumo actualizado' });
+      return;
+    }
 
-    res.json(updatedInsumo[0]);
+    res.json(updatedInsumo);
   } catch (error) {
     console.error('Error al actualizar insumo:', error);
     res.status(500).json({ 
