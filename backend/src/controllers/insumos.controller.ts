@@ -135,6 +135,11 @@ const obtenerNombreProveedor = async (idproveedor: number): Promise<string | nul
 
 // Helper function to get full insumo details by ID
 const obtenerInsumoCompleto = async (id_insumo: number): Promise<Insumo | null> => {
+  // Validate id_insumo
+  if (!id_insumo || id_insumo <= 0) {
+    return null;
+  }
+  
   const [rows] = await pool.query<Insumo[]>(
     `SELECT 
       i.id_insumo,
@@ -307,7 +312,9 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
     const createdInsumo = await obtenerInsumoCompleto(result.insertId);
     
     if (!createdInsumo) {
-      res.status(500).json({ message: 'Error: No se pudo recuperar el insumo creado' });
+      res.status(500).json({ 
+        message: `Error: No se pudo recuperar el insumo creado con ID ${result.insertId}` 
+      });
       return;
     }
 
@@ -429,7 +436,9 @@ export const actualizarInsumo = async (req: AuthRequest, res: Response): Promise
     const updatedInsumo = await obtenerInsumoCompleto(Number(id_insumo));
     
     if (!updatedInsumo) {
-      res.status(500).json({ message: 'Error: No se pudo recuperar el insumo actualizado' });
+      res.status(500).json({ 
+        message: `Error: No se pudo recuperar el insumo actualizado con ID ${id_insumo}` 
+      });
       return;
     }
 
