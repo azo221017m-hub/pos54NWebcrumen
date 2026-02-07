@@ -1,0 +1,144 @@
+.lista-movimientos-container {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tabla-wrapper {
+  overflow-x: auto;
+}
+
+.tabla-movimientos {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.tabla-movimientos thead {
+  background-color: #f5f5f5;
+}
+
+.tabla-movimientos th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #ddd;
+  white-space: nowrap;
+}
+
+.tabla-movimientos tbody tr {
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+}
+
+.tabla-movimientos tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.tabla-movimientos td {
+  padding: 1rem;
+  color: #555;
+}
+
+.sin-datos {
+  text-align: center !important;
+  padding: 3rem !important;
+  color: #999;
+  font-style: italic;
+}
+
+/* Badges */
+.badge-tipo,
+.badge-estatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tipo-entrada {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.tipo-salida {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.estatus-procesado {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.estatus-pendiente {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+.num-detalles {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Botones de acción */
+.acciones-btns {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-start;
+}
+
+.btn-accion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: white;
+}
+
+.btn-procesar {
+  background-color: #4CAF50;
+}
+
+.btn-procesar:hover {
+  background-color: #45a049;
+}
+
+.btn-editar {
+  background-color: #2196F3;
+}
+
+.btn-editar:hover {
+  background-color: #1976D2;
+}
+
+.btn-eliminar {
+  background-color: #f44336;
+}
+
+.btn-eliminar:hover {
+  background-color: #da190b;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tabla-movimientos th,
+  .tabla-movimientos td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .acciones-btns {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,452 @@
+import { Response } from 'express';
+import { AuthRequest } from '../middlewares/auth';
+import { executeQuery } from '../config/database';
+import {
+  Movimiento,
+  MovimientoConDetalles,
+  MovimientoCreate,
+  MovimientoUpdate,
+  DetalleMovimiento,
+  DetalleMovimientoCreateDTO
+} from '../types/movimientos.types';
+
+// GET /api/movimientos - Obtener todos los movimientos
+export const obtenerMovimientos = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const idNegocio = req.user?.idNegocio;
+
+    // Si es superusuario (idNegocio = 99999), obtener todos los movimientos
+    const isSuperuser = idNegocio === 99999;
+    const whereClause = isSuperuser
+      ? 'WHERE m.fecharegistro IS NOT NULL'
+      : 'WHERE m.idnegocio = ?';
+
+    const params = isSuperuser ? [] : [idNegocio];
+
+    const movimientos = await executeQuery<Movimiento[]>(
+      `SELECT * FROM tblposcrumenwebmovimientos m
+       ${whereClause}
+       ORDER BY m.fechamovimiento DESC, m.idmovimiento DESC`,
+      params
+    );
+
+    // Cargar detalles para cada movimiento
+    const movimientosConDetalles: MovimientoConDetalles[] = await Promise.all(
+      movimientos.map(async (mov) => {
+        const detalles = await executeQuery<DetalleMovimiento[]>(
+          'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ? ORDER BY iddetallemovimiento',
+          [mov.idmovimiento]
+        );
+        return { ...mov, detalles };
+      })
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Movimientos obtenidos exitosamente',
+      data: movimientosConDetalles
+    });
+  } catch (error) {
+    console.error('Error al obtener movimientos:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener los movimientos',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
+
+// GET /api/movimientos/:id - Obtener un movimiento por ID
+export const obtenerMovimientoPorId = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const idNegocio = req.user?.idNegocio;
+    const isSuperuser = idNegocio === 99999;
+
+    const whereClause = isSuperuser
+      ? 'WHERE idmovimiento = ?'
+      : 'WHERE idmovimiento = ? AND idnegocio = ?';
+
+    const params = isSuperuser ? [id] : [id, idNegocio];
+
+    const movimientos = await executeQuery<Movimiento[]>(
+      `SELECT * FROM tblposcrumenwebmovimientos ${whereClause}`,
+      params
+    );
+
+    if (movimientos.length === 0) {
+      res.status(404).json({
+        success: false,
+        message: 'Movimiento no encontrado'
+      });
+      return;
+    }
+
+    const movimiento = movimientos[0];
+
+    // Obtener detalles
+    const detalles = await executeQuery<DetalleMovimiento[]>(
+      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ? ORDER BY iddetallemovimiento',
+      [movimiento.idmovimiento]
+    );
+
+    const movimientoConDetalles: MovimientoConDetalles = {
+      ...movimiento,
+      detalles
+    };
+
+    res.status(200).json({
+      success: true,
+      data: movimientoConDetalles
+    });
+  } catch (error) {
+    console.error('Error al obtener movimiento:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener el movimiento',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
+
+// POST /api/movimientos - Crear un nuevo movimiento
+export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const idNegocio = req.user?.idNegocio;
+    const usuarioAuditoria = req.user?.nombre || 'Sistema';
+    const movimientoData: MovimientoCreate = req.body;
+
+    if (!movimientoData.detalles || movimientoData.detalles.length === 0) {
+      res.status(400).json({
+        success: false,
+        message: 'Debe incluir al menos un detalle de movimiento'
+      });
+      return;
+    }
+
+    // Insertar movimiento principal
+    const resultMovimiento = await executeQuery<any>(
+      `INSERT INTO tblposcrumenwebmovimientos (
+        tipomovimiento, motivomovimiento, fechamovimiento, observaciones,
+        usuarioauditoria, idnegocio, estatusmovimiento, fecharegistro, fechaauditoria
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [
+        movimientoData.tipomovimiento,
+        movimientoData.motivomovimiento,
+        movimientoData.fechamovimiento,
+        movimientoData.observaciones || null,
+        usuarioAuditoria,
+        idNegocio,
+        movimientoData.estatusmovimiento
+      ]
+    );
+
+    const idMovimiento = resultMovimiento.insertId;
+
+    // Obtener stock actual de cada insumo
+    for (const detalle of movimientoData.detalles) {
+      const stockResult = await executeQuery<any[]>(
+        'SELECT existencia FROM tblposcrumenwebinsumos WHERE idinsumo = ? AND idnegocio = ?',
+        [detalle.idinsumo, idNegocio]
+      );
+
+      const referenciaStock = stockResult.length > 0 ? stockResult[0].existencia : 0;
+
+      // Insertar detalle
+      await executeQuery<any>(
+        `INSERT INTO tblposcrumenwebdetallemovimientos (
+          idinsumo, nombreinsumo, tipoinsumo, tipomovimiento, motivomovimiento,
+          cantidad, referenciastock, unidadmedida, precio, costo, idreferencia,
+          fechamovimiento, observaciones, usuarioauditoria, idnegocio,
+          estatusmovimiento, fecharegistro, fechaauditoria
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        [
+          detalle.idinsumo,
+          detalle.nombreinsumo,
+          detalle.tipoinsumo,
+          movimientoData.tipomovimiento,
+          movimientoData.motivomovimiento,
+          detalle.cantidad,
+          referenciaStock,
+          detalle.unidadmedida,
+          detalle.precio || null,
+          detalle.costo || null,
+          idMovimiento,
+          movimientoData.fechamovimiento,
+          detalle.observaciones || null,
+          usuarioAuditoria,
+          idNegocio,
+          movimientoData.estatusmovimiento
+        ]
+      );
+    }
+
+    // Obtener el movimiento completo creado
+    const movimientoCreado = await executeQuery<Movimiento[]>(
+      'SELECT * FROM tblposcrumenwebmovimientos WHERE idmovimiento = ?',
+      [idMovimiento]
+    );
+
+    const detalles = await executeQuery<DetalleMovimiento[]>(
+      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
+      [idMovimiento]
+    );
+
+    const movimientoConDetalles: MovimientoConDetalles = {
+      ...movimientoCreado[0],
+      detalles
+    };
+
+    res.status(201).json({
+      success: true,
+      message: 'Movimiento creado exitosamente',
+      data: movimientoConDetalles
+    });
+  } catch (error) {
+    console.error('Error al crear movimiento:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al crear el movimiento',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
+
+// PUT /api/movimientos/:id - Actualizar un movimiento
+export const actualizarMovimiento = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const idNegocio = req.user?.idNegocio;
+    const isSuperuser = idNegocio === 99999;
+    const movimientoData: MovimientoUpdate = req.body;
+
+    // Verificar que el movimiento existe y pertenece al negocio
+    const whereClause = isSuperuser
+      ? 'WHERE idmovimiento = ?'
+      : 'WHERE idmovimiento = ? AND idnegocio = ?';
+
+    const params = isSuperuser ? [id] : [id, idNegocio];
+
+    const movimientos = await executeQuery<Movimiento[]>(
+      `SELECT * FROM tblposcrumenwebmovimientos ${whereClause}`,
+      params
+    );
+
+    if (movimientos.length === 0) {
+      res.status(404).json({
+        success: false,
+        message: 'Movimiento no encontrado'
+      });
+      return;
+    }
+
+    // Actualizar solo campos permitidos
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    if (movimientoData.motivomovimiento !== undefined) {
+      updates.push('motivomovimiento = ?');
+      values.push(movimientoData.motivomovimiento);
+    }
+
+    if (movimientoData.observaciones !== undefined) {
+      updates.push('observaciones = ?');
+      values.push(movimientoData.observaciones);
+    }
+
+    if (movimientoData.estatusmovimiento !== undefined) {
+      updates.push('estatusmovimiento = ?');
+      values.push(movimientoData.estatusmovimiento);
+    }
+
+    updates.push('fechaauditoria = NOW()');
+    values.push(id);
+
+    await executeQuery<any>(
+      `UPDATE tblposcrumenwebmovimientos SET ${updates.join(', ')} WHERE idmovimiento = ?`,
+      values
+    );
+
+    // Obtener el movimiento actualizado
+    const movimientoActualizado = await executeQuery<Movimiento[]>(
+      'SELECT * FROM tblposcrumenwebmovimientos WHERE idmovimiento = ?',
+      [id]
+    );
+
+    const detalles = await executeQuery<DetalleMovimiento[]>(
+      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
+      [id]
+    );
+
+    const movimientoConDetalles: MovimientoConDetalles = {
+      ...movimientoActualizado[0],
+      detalles
+    };
+
+    res.status(200).json({
+      success: true,
+      message: 'Movimiento actualizado exitosamente',
+      data: movimientoConDetalles
+    });
+  } catch (error) {
+    console.error('Error al actualizar movimiento:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al actualizar el movimiento',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
+
+// DELETE /api/movimientos/:id - Eliminar un movimiento (soft delete)
+export const eliminarMovimiento = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const idNegocio = req.user?.idNegocio;
+    const isSuperuser = idNegocio === 99999;
+
+    const whereClause = isSuperuser
+      ? 'WHERE idmovimiento = ?'
+      : 'WHERE idmovimiento = ? AND idnegocio = ?';
+
+    const params = isSuperuser ? [id] : [id, idNegocio];
+
+    const movimientos = await executeQuery<Movimiento[]>(
+      `SELECT * FROM tblposcrumenwebmovimientos ${whereClause}`,
+      params
+    );
+
+    if (movimientos.length === 0) {
+      res.status(404).json({
+        success: false,
+        message: 'Movimiento no encontrado'
+      });
+      return;
+    }
+
+    // Eliminar detalles
+    await executeQuery<any>(
+      'DELETE FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
+      [id]
+    );
+
+    // Eliminar movimiento
+    await executeQuery<any>(
+      'DELETE FROM tblposcrumenwebmovimientos WHERE idmovimiento = ?',
+      [id]
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Movimiento eliminado exitosamente'
+    });
+  } catch (error) {
+    console.error('Error al eliminar movimiento:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al eliminar el movimiento',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
+
+// PATCH /api/movimientos/:id/procesar - Procesar un movimiento pendiente
+export const procesarMovimiento = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const idNegocio = req.user?.idNegocio;
+    const isSuperuser = idNegocio === 99999;
+
+    const whereClause = isSuperuser
+      ? 'WHERE idmovimiento = ?'
+      : 'WHERE idmovimiento = ? AND idnegocio = ?';
+
+    const params = isSuperuser ? [id] : [id, idNegocio];
+
+    const movimientos = await executeQuery<Movimiento[]>(
+      `SELECT * FROM tblposcrumenwebmovimientos ${whereClause}`,
+      params
+    );
+
+    if (movimientos.length === 0) {
+      res.status(404).json({
+        success: false,
+        message: 'Movimiento no encontrado'
+      });
+      return;
+    }
+
+    const movimiento = movimientos[0];
+
+    if (movimiento.estatusmovimiento === 'PROCESADO') {
+      res.status(400).json({
+        success: false,
+        message: 'El movimiento ya ha sido procesado'
+      });
+      return;
+    }
+
+    // Obtener detalles del movimiento
+    const detalles = await executeQuery<DetalleMovimiento[]>(
+      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
+      [id]
+    );
+
+    // Actualizar inventario según tipo de movimiento
+    for (const detalle of detalles) {
+      if (movimiento.tipomovimiento === 'ENTRADA') {
+        // Incrementar existencia
+        await executeQuery<any>(
+          'UPDATE tblposcrumenwebinsumos SET existencia = existencia + ? WHERE idinsumo = ? AND idnegocio = ?',
+          [detalle.cantidad, detalle.idinsumo, idNegocio]
+        );
+      } else if (movimiento.tipomovimiento === 'SALIDA') {
+        // Decrementar existencia
+        await executeQuery<any>(
+          'UPDATE tblposcrumenwebinsumos SET existencia = existencia - ? WHERE idinsumo = ? AND idnegocio = ?',
+          [detalle.cantidad, detalle.idinsumo, idNegocio]
+        );
+      }
+    }
+
+    // Actualizar estatus del movimiento y detalles
+    await executeQuery<any>(
+      'UPDATE tblposcrumenwebmovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE idmovimiento = ?',
+      ['PROCESADO', id]
+    );
+
+    await executeQuery<any>(
+      'UPDATE tblposcrumenwebdetallemovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE idreferencia = ?',
+      ['PROCESADO', id]
+    );
+
+    // Obtener movimiento actualizado
+    const movimientoActualizado = await executeQuery<Movimiento[]>(
+      'SELECT * FROM tblposcrumenwebmovimientos WHERE idmovimiento = ?',
+      [id]
+    );
+
+    const detallesActualizados = await executeQuery<DetalleMovimiento[]>(
+      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
+      [id]
+    );
+
+    const movimientoConDetalles: MovimientoConDetalles = {
+      ...movimientoActualizado[0],
+      detalles: detallesActualizados
+    };
+
+    res.status(200).json({
+      success: true,
+      message: 'Movimiento procesado exitosamente',
+      data: movimientoConDetalles
+    });
+  } catch (error) {
+    console.error('Error al procesar movimiento:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al procesar el movimiento',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};

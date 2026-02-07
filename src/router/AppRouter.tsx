@@ -19,8 +19,8 @@ import ConfigCatModeradores from '../pages/ConfigCatModeradores/ConfigCatModerad
 import ConfigProductosWeb from '../pages/ConfigProductosWeb/ConfigProductosWeb';
 import ConfigProveedores from '../pages/ConfigProveedores/ConfigProveedores';
 import ConfigTurnos from '../pages/ConfigTurnos/ConfigTurnos';
-import ConfigCompras from '../pages/ConfigCompras/ConfigCompras';
 import PageVentas from '../pages/PageVentas/PageVentas';
+import MovimientosInventario from '../pages/MovimientosInventario/MovimientosInventario';
 
 const router = createBrowserRouter([
   {
@@ -104,12 +104,12 @@ const router = createBrowserRouter([
     element: <ConfigTurnos />,
   },
   {
-    path: '/config-compras',
-    element: <ConfigCompras />,
-  },
-  {
     path: '/ventas',
     element: <PageVentas />,
+  },
+  {
+    path: '/movimientos-inventario',
+    element: <MovimientosInventario />,
   },
 ]);
 

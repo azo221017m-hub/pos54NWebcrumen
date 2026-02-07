@@ -1,0 +1,276 @@
+.formulario-movimiento-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.formulario-movimiento-container {
+  background: white;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 1400px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.formulario-movimiento-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.formulario-movimiento-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.btn-cerrar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.btn-cerrar:hover {
+  background-color: #f0f0f0;
+}
+
+.formulario-movimiento {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Header Section con motivo y botones */
+.formulario-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+  gap: 2rem;
+}
+
+.motivo-section {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex: 1;
+}
+
+.motivo-section label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.motivo-section select {
+  padding: 0.75rem;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: #fffacd;
+  min-width: 200px;
+}
+
+.btn-add-insumo {
+  padding: 0.75rem 1.5rem;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.btn-add-insumo:hover {
+  background-color: #45a049;
+}
+
+.botones-accion {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-pendiente,
+.btn-procesar {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: opacity 0.2s;
+}
+
+.btn-pendiente {
+  background-color: #2196F3;
+  color: white;
+}
+
+.btn-pendiente:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-procesar {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.btn-procesar:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn-procesar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Tabla de Insumos */
+.tabla-insumos-container {
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabla-insumos {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1200px;
+}
+
+.tabla-insumos thead {
+  background-color: #f5f5f5;
+}
+
+.tabla-insumos th {
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #ddd;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.tabla-insumos tbody tr {
+  border-bottom: 1px solid #eee;
+}
+
+.tabla-insumos tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.tabla-insumos td {
+  padding: 0.5rem;
+}
+
+.tabla-insumos input[type="number"],
+.tabla-insumos input[type="text"],
+.tabla-insumos select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.tabla-insumos select {
+  background-color: #e3f2fd;
+}
+
+.tabla-insumos input[type="number"] {
+  background-color: #fff9e6;
+}
+
+.campo-solo-lectura {
+  background-color: #f5f5f5 !important;
+  cursor: not-allowed;
+}
+
+.btn-eliminar-detalle {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.btn-eliminar-detalle:hover:not(:disabled) {
+  background-color: #da190b;
+}
+
+.btn-eliminar-detalle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Observaciones */
+.observaciones-section {
+  margin-top: 1.5rem;
+}
+
+.observaciones-section label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.observaciones-section textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .formulario-header-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .motivo-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .botones-accion {
+    flex-direction: column;
+  }
+
+  .btn-pendiente,
+  .btn-procesar {
+    width: 100%;
+  }
+}

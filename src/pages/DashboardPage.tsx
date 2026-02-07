@@ -1044,7 +1044,7 @@ export const DashboardPage = () => {
                 onClick={(e) => { 
                   e.preventDefault(); 
                   e.stopPropagation(); 
-                  navigate('/config-compras'); 
+                  navigate('/movimientos-inventario'); 
                   setMobileMenuOpen(false); 
                   setShowInventarioSubmenu(false);
                 }}

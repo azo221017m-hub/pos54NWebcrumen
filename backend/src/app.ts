@@ -29,7 +29,7 @@ import proveedoresRoutes from './routes/proveedores.routes';
 import ventasWebRoutes from './routes/ventasWeb.routes';
 import turnosRoutes from './routes/turnos.routes';
 import pagosRoutes from './routes/pagos.routes';
-import comprasRoutes from './routes/compras.routes';
+import movimientosRoutes from './routes/movimientos.routes';
 
 // Cargar dotenv según el ambiente
 // En desarrollo: desde el directorio del proyecto
@@ -219,7 +219,7 @@ app.use('/api/proveedores', proveedoresRoutes);
 app.use('/api/ventas-web', ventasWebRoutes);
 app.use('/api/turnos', turnosRoutes);
 app.use('/api/pagos', pagosRoutes);
-app.use('/api/compras', comprasRoutes);
+app.use('/api/movimientos', movimientosRoutes);
 
 // Manejo de rutas no encontradas (404)
 app.use((_req: Request, res: Response) => {
