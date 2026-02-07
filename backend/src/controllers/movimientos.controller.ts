@@ -1,13 +1,13 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/auth';
-import { executeQuery } from '../config/database';
+import { pool } from '../config/db';
+import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import {
   Movimiento,
   MovimientoConDetalles,
   MovimientoCreate,
   MovimientoUpdate,
-  DetalleMovimiento,
-  DetalleMovimientoCreateDTO
+  DetalleMovimiento
 } from '../types/movimientos.types';
 
 // GET /api/movimientos - Obtener todos los movimientos
@@ -23,7 +23,7 @@ export const obtenerMovimientos = async (req: AuthRequest, res: Response): Promi
 
     const params = isSuperuser ? [] : [idNegocio];
 
-    const movimientos = await executeQuery<Movimiento[]>(
+    const [movimientos] = await pool.query<(Movimiento & RowDataPacket)[]>(
       `SELECT * FROM tblposcrumenwebmovimientos m
        ${whereClause}
        ORDER BY m.fechamovimiento DESC, m.idmovimiento DESC`,
@@ -32,8 +32,8 @@ export const obtenerMovimientos = async (req: AuthRequest, res: Response): Promi
 
     // Cargar detalles para cada movimiento
     const movimientosConDetalles: MovimientoConDetalles[] = await Promise.all(
-      movimientos.map(async (mov) => {
-        const detalles = await executeQuery<DetalleMovimiento[]>(
+      movimientos.map(async (mov: Movimiento & RowDataPacket) => {
+        const [detalles] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
           'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ? ORDER BY iddetallemovimiento',
           [mov.idmovimiento]
         );
@@ -69,7 +69,7 @@ export const obtenerMovimientoPorId = async (req: AuthRequest, res: Response): P
 
     const params = isSuperuser ? [id] : [id, idNegocio];
 
-    const movimientos = await executeQuery<Movimiento[]>(
+    const [movimientos] = await pool.query<(Movimiento & RowDataPacket)[]>(
       `SELECT * FROM tblposcrumenwebmovimientos ${whereClause}`,
       params
     );
@@ -85,7 +85,7 @@ export const obtenerMovimientoPorId = async (req: AuthRequest, res: Response): P
     const movimiento = movimientos[0];
 
     // Obtener detalles
-    const detalles = await executeQuery<DetalleMovimiento[]>(
+    const [detalles] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
       'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ? ORDER BY iddetallemovimiento',
       [movimiento.idmovimiento]
     );
@@ -125,7 +125,7 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
     }
 
     // Insertar movimiento principal
-    const resultMovimiento = await executeQuery<any>(
+    const [resultMovimiento] = await pool.execute<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebmovimientos (
         tipomovimiento, motivomovimiento, fechamovimiento, observaciones,
         usuarioauditoria, idnegocio, estatusmovimiento, fecharegistro, fechaauditoria
@@ -145,7 +145,7 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
 
     // Obtener stock actual de cada insumo
     for (const detalle of movimientoData.detalles) {
-      const stockResult = await executeQuery<any[]>(
+      const [stockResult] = await pool.query<RowDataPacket[]>(
         'SELECT existencia FROM tblposcrumenwebinsumos WHERE idinsumo = ? AND idnegocio = ?',
         [detalle.idinsumo, idNegocio]
       );
@@ -153,7 +153,7 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
       const referenciaStock = stockResult.length > 0 ? stockResult[0].existencia : 0;
 
       // Insertar detalle
-      await executeQuery<any>(
+      await pool.execute<ResultSetHeader>(
         `INSERT INTO tblposcrumenwebdetallemovimientos (
           idinsumo, nombreinsumo, tipoinsumo, tipomovimiento, motivomovimiento,
           cantidad, referenciastock, unidadmedida, precio, costo, idreferencia,
@@ -182,12 +182,12 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
     }
 
     // Obtener el movimiento completo creado
-    const movimientoCreado = await executeQuery<Movimiento[]>(
+    const [movimientoCreado] = await pool.query<(Movimiento & RowDataPacket)[]>(
       'SELECT * FROM tblposcrumenwebmovimientos WHERE idmovimiento = ?',
       [idMovimiento]
     );
 
-    const detalles = await executeQuery<DetalleMovimiento[]>(
+    const [detalles] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
       'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
       [idMovimiento]
     );
@@ -227,7 +227,7 @@ export const actualizarMovimiento = async (req: AuthRequest, res: Response): Pro
 
     const params = isSuperuser ? [id] : [id, idNegocio];
 
-    const movimientos = await executeQuery<Movimiento[]>(
+    const [movimientos] = await pool.query<(Movimiento & RowDataPacket)[]>(
       `SELECT * FROM tblposcrumenwebmovimientos ${whereClause}`,
       params
     );
@@ -262,18 +262,18 @@ export const actualizarMovimiento = async (req: AuthRequest, res: Response): Pro
     updates.push('fechaauditoria = NOW()');
     values.push(id);
 
-    await executeQuery<any>(
+    await pool.execute<ResultSetHeader>(
       `UPDATE tblposcrumenwebmovimientos SET ${updates.join(', ')} WHERE idmovimiento = ?`,
       values
     );
 
     // Obtener el movimiento actualizado
-    const movimientoActualizado = await executeQuery<Movimiento[]>(
+    const [movimientoActualizado] = await pool.query<(Movimiento & RowDataPacket)[]>(
       'SELECT * FROM tblposcrumenwebmovimientos WHERE idmovimiento = ?',
       [id]
     );
 
-    const detalles = await executeQuery<DetalleMovimiento[]>(
+    const [detalles] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
       'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
       [id]
     );
@@ -311,7 +311,7 @@ export const eliminarMovimiento = async (req: AuthRequest, res: Response): Promi
 
     const params = isSuperuser ? [id] : [id, idNegocio];
 
-    const movimientos = await executeQuery<Movimiento[]>(
+    const [movimientos] = await pool.query<(Movimiento & RowDataPacket)[]>(
       `SELECT * FROM tblposcrumenwebmovimientos ${whereClause}`,
       params
     );
@@ -325,13 +325,13 @@ export const eliminarMovimiento = async (req: AuthRequest, res: Response): Promi
     }
 
     // Eliminar detalles
-    await executeQuery<any>(
+    await pool.execute<ResultSetHeader>(
       'DELETE FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
       [id]
     );
 
     // Eliminar movimiento
-    await executeQuery<any>(
+    await pool.execute<ResultSetHeader>(
       'DELETE FROM tblposcrumenwebmovimientos WHERE idmovimiento = ?',
       [id]
     );
@@ -363,7 +363,7 @@ export const procesarMovimiento = async (req: AuthRequest, res: Response): Promi
 
     const params = isSuperuser ? [id] : [id, idNegocio];
 
-    const movimientos = await executeQuery<Movimiento[]>(
+    const [movimientos] = await pool.query<(Movimiento & RowDataPacket)[]>(
       `SELECT * FROM tblposcrumenwebmovimientos ${whereClause}`,
       params
     );
@@ -387,7 +387,7 @@ export const procesarMovimiento = async (req: AuthRequest, res: Response): Promi
     }
 
     // Obtener detalles del movimiento
-    const detalles = await executeQuery<DetalleMovimiento[]>(
+    const [detalles] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
       'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
       [id]
     );
@@ -396,13 +396,13 @@ export const procesarMovimiento = async (req: AuthRequest, res: Response): Promi
     for (const detalle of detalles) {
       if (movimiento.tipomovimiento === 'ENTRADA') {
         // Incrementar existencia
-        await executeQuery<any>(
+        await pool.execute<ResultSetHeader>(
           'UPDATE tblposcrumenwebinsumos SET existencia = existencia + ? WHERE idinsumo = ? AND idnegocio = ?',
           [detalle.cantidad, detalle.idinsumo, idNegocio]
         );
       } else if (movimiento.tipomovimiento === 'SALIDA') {
         // Decrementar existencia
-        await executeQuery<any>(
+        await pool.execute<ResultSetHeader>(
           'UPDATE tblposcrumenwebinsumos SET existencia = existencia - ? WHERE idinsumo = ? AND idnegocio = ?',
           [detalle.cantidad, detalle.idinsumo, idNegocio]
         );
@@ -410,23 +410,23 @@ export const procesarMovimiento = async (req: AuthRequest, res: Response): Promi
     }
 
     // Actualizar estatus del movimiento y detalles
-    await executeQuery<any>(
+    await pool.execute<ResultSetHeader>(
       'UPDATE tblposcrumenwebmovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE idmovimiento = ?',
       ['PROCESADO', id]
     );
 
-    await executeQuery<any>(
+    await pool.execute<ResultSetHeader>(
       'UPDATE tblposcrumenwebdetallemovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE idreferencia = ?',
       ['PROCESADO', id]
     );
 
     // Obtener movimiento actualizado
-    const movimientoActualizado = await executeQuery<Movimiento[]>(
+    const [movimientoActualizado] = await pool.query<(Movimiento & RowDataPacket)[]>(
       'SELECT * FROM tblposcrumenwebmovimientos WHERE idmovimiento = ?',
       [id]
     );
 
-    const detallesActualizados = await executeQuery<DetalleMovimiento[]>(
+    const [detallesActualizados] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
       'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
       [id]
     );

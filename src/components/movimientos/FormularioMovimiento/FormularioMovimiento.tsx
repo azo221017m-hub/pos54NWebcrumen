@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import type {
   MovimientoConDetalles,
   MovimientoCreate,
@@ -88,15 +88,15 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     const nuevosDetalles = [...detalles];
     
     if (campo === 'idinsumo') {
-      const insumoSeleccionado = insumos.find((i) => i.idinsumo === Number(valor));
+      const insumoSeleccionado = insumos.find((i) => i.id_insumo === Number(valor));
       if (insumoSeleccionado) {
         nuevosDetalles[index] = {
           ...nuevosDetalles[index],
-          idinsumo: insumoSeleccionado.idinsumo,
+          idinsumo: insumoSeleccionado.id_insumo,
           nombreinsumo: insumoSeleccionado.nombre,
           unidadmedida: insumoSeleccionado.unidad_medida,
-          tipoinsumo: insumoSeleccionado.tipo as TipoInsumo,
-          costo: insumoSeleccionado.costo || 0
+          tipoinsumo: 'INVENTARIO',
+          costo: insumoSeleccionado.costo_promedio_ponderado || 0
         };
       }
     } else {
@@ -204,7 +204,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                       >
                         <option value={0}>Seleccione...</option>
                         {insumos.map((insumo) => (
-                          <option key={insumo.idinsumo} value={insumo.idinsumo}>
+                          <option key={insumo.id_insumo} value={insumo.id_insumo}>
                             {insumo.nombre}
                           </option>
                         ))}
