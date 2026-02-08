@@ -191,7 +191,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
         <div className="formulario-movimiento-header">
           <h2>{movimiento ? 'Editar Movimiento' : 'SUMATORIA DE MOVIMIENTO de INVENTARIO'}</h2>
           <button className="btn-cerrar" onClick={onCancelar} disabled={guardando}>
-            <X size={24} />
+            <X size={28} />
           </button>
         </div>
 
