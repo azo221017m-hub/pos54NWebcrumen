@@ -247,15 +247,15 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
               <thead>
                 <tr>
                   <th>INSUMO</th>
-                  <th>CANTIDAD</th>
+                  <th>CANT.</th>
                   <th>COSTO</th>
                   <th>PROVEEDOR</th>
-                  <th>Unidad de Medida</th>
-                  <th>Existencia</th>
-                  <th>Costo Última Ponderado</th>
-                  <th>Cantidad Última Compra</th>
-                  <th>Proveedor Última Compra</th>
-                  <th>Costo Última Compra</th>
+                  <th>U.M.</th>
+                  <th>EXIST.</th>
+                  <th>COSTO POND.</th>
+                  <th>CANT. ÚLT.</th>
+                  <th>PROV. ÚLT.</th>
+                  <th>COSTO ÚLT.</th>
                   <th></th>
                 </tr>
               </thead>
