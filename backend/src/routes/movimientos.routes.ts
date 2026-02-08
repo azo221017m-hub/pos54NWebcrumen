@@ -5,7 +5,8 @@ import {
   crearMovimiento,
   actualizarMovimiento,
   eliminarMovimiento,
-  procesarMovimiento
+  procesarMovimiento,
+  obtenerUltimaCompra
 } from '../controllers/movimientos.controller';
 import { authMiddleware } from '../middlewares/auth';
 
@@ -23,5 +24,8 @@ router.delete('/:id', eliminarMovimiento);
 
 // Ruta especial para procesar movimientos
 router.patch('/:id/procesar', procesarMovimiento);
+
+// Ruta para obtener datos de última compra de un insumo
+router.get('/insumo/:idinsumo/ultima-compra', obtenerUltimaCompra);
 
 export default router;
