@@ -73,9 +73,10 @@
   align-items: flex-end;
   gap: 1rem;
   flex: 1;
+  flex-wrap: wrap;
 }
 
-.motivo-section label {
+.motivo-section > label {
   display: block;
   font-weight: 500;
   margin-bottom: 0.5rem;
@@ -104,6 +105,28 @@
 
 .btn-add-insumo:hover {
   background-color: #45a049;
+}
+
+.observaciones-inline {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 300px;
+}
+
+.observaciones-inline label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.observaciones-inline input {
+  padding: 0.75rem;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 100%;
 }
 
 .botones-accion {
@@ -229,28 +252,6 @@
 .btn-eliminar-detalle:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-/* Observaciones */
-.observaciones-section {
-  margin-top: 1.5rem;
-}
-
-.observaciones-section label {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  color: #333;
-}
-
-.observaciones-section textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-family: inherit;
-  resize: vertical;
 }
 
 /* Responsive */
