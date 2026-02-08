@@ -469,7 +469,7 @@ export const obtenerUltimaCompra = async (req: AuthRequest, res: Response): Prom
 
     // Get insumo data first
     const [insumos] = await pool.query<RowDataPacket[]>(
-      'SELECT stock_actual, costo_promedio_ponderado, unidad_medida FROM tblposcrumenwebinsumos WHERE idinsumo = ? AND idnegocio = ?',
+      'SELECT stock_actual, costo_promedio_ponderado, unidad_medida FROM tblposcrumenwebinsumos WHERE id_insumo = ? AND idnegocio = ?',
       [idinsumo, idNegocio]
     );
 

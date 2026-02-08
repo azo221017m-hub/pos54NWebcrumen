@@ -15,6 +15,9 @@ const router = Router();
 // Todas las rutas requieren autenticación
 router.use(authMiddleware);
 
+// Rutas específicas (deben ir antes de las rutas con :id)
+router.get('/insumo/:idinsumo/ultima-compra', obtenerUltimaCompra);
+
 // Rutas CRUD de movimientos
 router.get('/', obtenerMovimientos);
 router.get('/:id', obtenerMovimientoPorId);
@@ -24,8 +27,5 @@ router.delete('/:id', eliminarMovimiento);
 
 // Ruta especial para procesar movimientos
 router.patch('/:id/procesar', procesarMovimiento);
-
-// Ruta para obtener datos de última compra de un insumo
-router.get('/insumo/:idinsumo/ultima-compra', obtenerUltimaCompra);
 
 export default router;
