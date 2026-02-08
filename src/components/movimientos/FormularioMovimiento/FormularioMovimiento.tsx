@@ -142,10 +142,20 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
         // Fetch last purchase data
         try {
           const ultimaCompraData = await obtenerUltimaCompra(insumoSeleccionado.id_insumo);
-          nuevasUltimasCompras.set(index, {
+          console.log('📊 Datos de última compra recibidos:', ultimaCompraData);
+          console.log('📊 Existencia antes de merge:', nuevasUltimasCompras.get(index)?.existencia);
+          
+          // Merge data, but keep the existencia from insumo if API returns existencia
+          // This ensures we use the fresh stock_actual from the API call
+          const datosCompletos = {
             ...nuevasUltimasCompras.get(index)!,
-            ...ultimaCompraData
-          });
+            ...ultimaCompraData,
+            // Always use the existencia from API response since it's the most current
+            existencia: ultimaCompraData.existencia
+          };
+          
+          nuevasUltimasCompras.set(index, datosCompletos);
+          console.log('📊 Existencia después de merge:', nuevasUltimasCompras.get(index)?.existencia);
           setUltimasCompras(nuevasUltimasCompras);
         } catch (error) {
           console.error('Error al obtener última compra:', error);
@@ -267,6 +277,9 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
               <tbody>
                 {detalles.map((detalle, index) => {
                   const ultimaCompra = ultimasCompras.get(index);
+                  if (detalle.idinsumo) {
+                    console.log(`📋 Fila ${index} - Insumo: ${detalle.nombreinsumo}, Existencia: ${ultimaCompra?.existencia}`);
+                  }
                   return (
                   <tr key={index}>
                     <td>
