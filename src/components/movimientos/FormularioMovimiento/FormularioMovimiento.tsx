@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { X, Trash2 } from 'lucide-react';
 import type {
   MovimientoConDetalles,
@@ -257,13 +257,13 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     }
   };
 
-  // Calculate total sum of (cantidad * costo) for all items
-  const calcularTotalGeneral = () => {
+  // Memoized calculation: total sum of (cantidad * costo) for all items
+  const totalGeneral = useMemo(() => {
     return detalles.reduce((sum, d) => sum + ((d.cantidad || 0) * (d.costo || 0)), 0);
-  };
+  }, [detalles]);
 
-  // Calculate subtotals by supplier
-  const calcularSubtotalesPorProveedor = () => {
+  // Memoized calculation: subtotals by supplier
+  const subtotalesPorProveedor = useMemo(() => {
     return detalles.reduce((acc, d) => {
       const proveedor = d.proveedor || 'Sin proveedor';
       const subtotal = (d.cantidad || 0) * (d.costo || 0);
@@ -273,7 +273,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
       acc[proveedor] += subtotal;
       return acc;
     }, {} as Record<string, number>);
-  };
+  }, [detalles]);
 
   return (
     <div className="formulario-movimiento-overlay">
@@ -481,13 +481,13 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                 <div className="total-general">
                   <strong>Total General: </strong>
                   <span className="total-value">
-                    ${calcularTotalGeneral().toFixed(2)}
+                    ${totalGeneral.toFixed(2)}
                   </span>
                 </div>
                 
                 <div className="subtotales-proveedores">
                   <strong>Subtotales por proveedor:</strong>
-                  {Object.entries(calcularSubtotalesPorProveedor()).map(([proveedor, subtotal]) => (
+                  {Object.entries(subtotalesPorProveedor).map(([proveedor, subtotal]) => (
                     <div key={proveedor} className="subtotal-item">
                       <span className="proveedor-nombre">{proveedor}:</span>
                       <span className="subtotal-value">${subtotal.toFixed(2)}</span>
