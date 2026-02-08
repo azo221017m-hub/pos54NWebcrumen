@@ -127,6 +127,15 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
 
     // Get the claveturno from the open turno of the logged-in user
     const idreferencia = await obtenerClaveTurnoAbierto(usuarioAuditoria, idNegocio!);
+    
+    // Validate that there's an open turno - this is required for inventory movements
+    if (!idreferencia) {
+      res.status(400).json({
+        success: false,
+        message: 'No hay turno abierto. Por favor, abra un turno antes de crear un movimiento.'
+      });
+      return;
+    }
 
     // Insertar movimiento principal
     const [resultMovimiento] = await pool.execute<ResultSetHeader>(

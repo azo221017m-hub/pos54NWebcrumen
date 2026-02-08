@@ -36,7 +36,14 @@ const generarClaveTurno = (idusuario: number, idnegocio: number): string => {
   return `${aa}${mm}${dd}${idnegocio}${idusuario}${HH}${MM}${SS}`;
 };
 
-// Helper function to get claveturno from the open turno of a user
+/**
+ * Helper function to get claveturno from the open turno of a user.
+ * Exported for use in related controllers that need to reference open shifts.
+ * 
+ * @param usuarioturno - The username/alias of the user
+ * @param idnegocio - The business ID
+ * @returns The claveturno of the open shift, or null if none exists
+ */
 export const obtenerClaveTurnoAbierto = async (usuarioturno: string, idnegocio: number): Promise<string | null> => {
   const [turnosAbiertos] = await pool.query<RowDataPacket[]>(
     `SELECT claveturno FROM tblposcrumenwebturnos 
