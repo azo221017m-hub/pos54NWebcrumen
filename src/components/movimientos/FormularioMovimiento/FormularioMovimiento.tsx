@@ -12,6 +12,7 @@ import type { Proveedor } from '../../../types/proveedor.types';
 import { obtenerInsumos } from '../../../services/insumosService';
 import { obtenerProveedores } from '../../../services/proveedoresService';
 import { obtenerUltimaCompra } from '../../../services/movimientosService';
+import { showInfoToast } from '../../FeedbackToast';
 import './FormularioMovimiento.css';
 
 // Extended type to include stock_actual as a fallback field
@@ -162,6 +163,10 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           nuevasUltimasCompras.set(index, datosCompletos);
           setUltimasCompras(nuevasUltimasCompras);
           
+          // Display message to user with insumo information
+          const mensaje = `INSUMO: ${insumoSeleccionado.nombre} | CANT.: ${nuevosDetalles[index].cantidad} | COSTO: ${nuevosDetalles[index].costo} | PROVEEDOR: ${nuevosDetalles[index].proveedor || 'N/A'} | U.M.: ${datosCompletos.unidadMedida} | EXIST.: ${datosCompletos.existencia} | COSTO POND.: ${datosCompletos.costoUltimoPonderado} | CANT. ÚLT.: ${datosCompletos.cantidadUltimaCompra} | PROV. ÚLT.: ${datosCompletos.proveedorUltimaCompra || 'N/A'} | COSTO ÚLT.: ${datosCompletos.costoUltimaCompra}`;
+          showInfoToast(mensaje);
+          
           // DEBUG: Display selected insumo values
           if (import.meta.env.DEV) {
             console.log('=== DEBUG: Insumo Seleccionado ===');
@@ -181,6 +186,13 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           console.error('Error al obtener última compra:', error);
           // Still set state with basic insumo data even if ultima compra fails
           setUltimasCompras(nuevasUltimasCompras);
+          
+          // Display message to user with basic insumo information
+          const datosBasicos = nuevasUltimasCompras.get(index);
+          if (datosBasicos) {
+            const mensaje = `INSUMO: ${insumoSeleccionado.nombre} | CANT.: ${nuevosDetalles[index].cantidad} | COSTO: ${nuevosDetalles[index].costo} | PROVEEDOR: ${nuevosDetalles[index].proveedor || 'N/A'} | U.M.: ${datosBasicos.unidadMedida} | EXIST.: ${datosBasicos.existencia} | COSTO POND.: ${datosBasicos.costoUltimoPonderado} | CANT. ÚLT.: ${datosBasicos.cantidadUltimaCompra} | PROV. ÚLT.: ${datosBasicos.proveedorUltimaCompra || 'N/A'} | COSTO ÚLT.: ${datosBasicos.costoUltimaCompra}`;
+            showInfoToast(mensaje);
+          }
           
           // DEBUG: Display selected insumo values (with limited data when API fails)
           if (import.meta.env.DEV) {
