@@ -171,6 +171,9 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
       const referenciaStock = stockResult.length > 0 ? stockResult[0].stock_actual : 0;
 
       // Insertar detalle
+      // Fields not stored in FormularioMovimientos are filled with defaults based on type:
+      // - DECIMAL fields (precio, costo): default to 0
+      // - VARCHAR fields (observaciones, proveedor): default to null
       await pool.execute<ResultSetHeader>(
         `INSERT INTO tblposcrumenwebdetallemovimientos (
           idinsumo, nombreinsumo, tipoinsumo, tipomovimiento, motivomovimiento,
@@ -187,12 +190,12 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
           detalle.cantidad,
           referenciaStock,
           detalle.unidadmedida,
-          detalle.precio || null,
-          detalle.costo || null,
+          detalle.precio ?? 0,  // DECIMAL: default to 0 if not provided
+          detalle.costo ?? 0,   // DECIMAL: default to 0 if not provided
           idMovimiento,
           fechaMovimientoMySQL,
-          detalle.observaciones || null,
-          detalle.proveedor || null,
+          detalle.observaciones ?? null,  // TEXT: default to null if not provided
+          detalle.proveedor ?? null,      // VARCHAR: default to null if not provided
           usuarioAuditoria,
           idNegocio,
           movimientoData.estatusmovimiento
