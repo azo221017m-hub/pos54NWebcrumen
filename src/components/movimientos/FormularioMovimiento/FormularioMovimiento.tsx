@@ -455,6 +455,45 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
               </tbody>
             </table>
           </div>
+
+          {/* Sección de sumatorias */}
+          {detalles.length > 0 && (
+            <div className="sumatorias-section">
+              <div className="sumatorias-content">
+                <div className="total-general">
+                  <strong>Total General: </strong>
+                  <span className="total-value">
+                    ${detalles.reduce((sum, d) => sum + ((d.cantidad || 0) * (d.costo || 0)), 0).toFixed(2)}
+                  </span>
+                </div>
+                
+                {(() => {
+                  // Calculate subtotals by supplier
+                  const subtotalesPorProveedor = detalles.reduce((acc, d) => {
+                    const proveedor = d.proveedor || 'Sin proveedor';
+                    const subtotal = (d.cantidad || 0) * (d.costo || 0);
+                    if (!acc[proveedor]) {
+                      acc[proveedor] = 0;
+                    }
+                    acc[proveedor] += subtotal;
+                    return acc;
+                  }, {} as Record<string, number>);
+
+                  return (
+                    <div className="subtotales-proveedores">
+                      <strong>Subtotales por proveedor:</strong>
+                      {Object.entries(subtotalesPorProveedor).map(([proveedor, subtotal]) => (
+                        <div key={proveedor} className="subtotal-item">
+                          <span className="proveedor-nombre">{proveedor}:</span>
+                          <span className="subtotal-value">${subtotal.toFixed(2)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
         </form>
       </div>
     </div>
