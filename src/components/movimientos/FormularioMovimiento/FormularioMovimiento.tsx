@@ -14,6 +14,11 @@ import { obtenerProveedores } from '../../../services/proveedoresService';
 import { obtenerUltimaCompra } from '../../../services/movimientosService';
 import './FormularioMovimiento.css';
 
+// Extended type to include stock_actual as a fallback field
+interface DetalleMovimientoExtended extends DetalleMovimientoCreate {
+  stockActual?: number;
+}
+
 interface Props {
   movimiento: MovimientoConDetalles | null;
   onGuardar: (data: MovimientoCreate) => Promise<void>;
@@ -26,7 +31,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
   // Estado del formulario
   const [motivomovimiento, setMotivoMovimiento] = useState<MotivoMovimiento>('COMPRA');
   const [observaciones, setObservaciones] = useState('');
-  const [detalles, setDetalles] = useState<DetalleMovimientoCreate[]>([]);
+  const [detalles, setDetalles] = useState<DetalleMovimientoExtended[]>([]);
   const [guardando, setGuardando] = useState(false);
   
   // Estado para insumos
@@ -94,7 +99,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
   }, [movimiento]);
 
   const agregarDetalle = () => {
-    const nuevoDetalle: DetalleMovimientoCreate = {
+    const nuevoDetalle: DetalleMovimientoExtended = {
       idinsumo: 0,
       nombreinsumo: '',
       tipoinsumo: 'INVENTARIO',
@@ -112,7 +117,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     setDetalles(detalles.filter((_, i) => i !== index));
   };
 
-  const actualizarDetalle = async (index: number, campo: keyof DetalleMovimientoCreate, valor: any) => {
+  const actualizarDetalle = async (index: number, campo: keyof DetalleMovimientoExtended, valor: any) => {
     const nuevosDetalles = [...detalles];
     
     if (campo === 'idinsumo') {
@@ -125,7 +130,9 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           unidadmedida: insumoSeleccionado.unidad_medida,
           tipoinsumo: 'INVENTARIO',
           costo: insumoSeleccionado.costo_promedio_ponderado || 0,
-          proveedor: insumoSeleccionado.idproveedor || ''
+          proveedor: insumoSeleccionado.idproveedor || '',
+          // Store stock_actual as fallback in case ultimasCompras isn't populated
+          stockActual: insumoSeleccionado.stock_actual
         };
         
         // Populate with insumo data: Existencia, Costo Promedio Ponderado, and Proveedor
@@ -142,10 +149,17 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
         // Fetch last purchase data
         try {
           const ultimaCompraData = await obtenerUltimaCompra(insumoSeleccionado.id_insumo);
-          nuevasUltimasCompras.set(index, {
+          
+          // Merge API data with initial insumo data
+          // The API's existencia value takes priority as it's the most current from database
+          const datosCompletos = {
             ...nuevasUltimasCompras.get(index)!,
-            ...ultimaCompraData
-          });
+            ...ultimaCompraData,
+            // Explicitly use existencia from API to ensure we have the latest stock value
+            existencia: ultimaCompraData.existencia
+          };
+          
+          nuevasUltimasCompras.set(index, datosCompletos);
           setUltimasCompras(nuevasUltimasCompras);
         } catch (error) {
           console.error('Error al obtener última compra:', error);
@@ -174,7 +188,8 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
       fechamovimiento: new Date().toISOString(),
       observaciones,
       estatusmovimiento: 'PENDIENTE',
-      detalles
+      // Remove stockActual from detalles before submitting (it's only for UI display)
+      detalles: detalles.map(({ stockActual, ...detalle }) => detalle)
     };
 
     setGuardando(true);
@@ -329,7 +344,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                     <td>
                       <input 
                         type="text" 
-                        value={ultimaCompra?.existencia ?? ''} 
+                        value={ultimaCompra?.existencia ?? detalle.stockActual ?? ''} 
                         disabled 
                         className="campo-solo-lectura" 
                       />
