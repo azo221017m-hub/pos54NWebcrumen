@@ -38,19 +38,43 @@
 }
 
 .btn-cerrar {
-  background: none;
-  border: none;
+  background-color: #f44336;
+  border: 2px solid #d32f2f;
+  color: white;
   cursor: pointer;
-  padding: 0.5rem;
+  padding: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+  border-radius: 6px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .btn-cerrar:hover {
-  background-color: #f0f0f0;
+  background-color: #da190b;
+  border-color: #b71c1c;
+  transform: scale(1.05);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.btn-cerrar:active {
+  transform: scale(0.98);
+}
+
+/* Respect user's motion preferences for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .btn-cerrar {
+    transition: background-color 0.2s, border-color 0.2s;
+  }
+  
+  .btn-cerrar:hover {
+    transform: none;
+  }
+  
+  .btn-cerrar:active {
+    transform: none;
+  }
 }
 
 .formulario-movimiento {
