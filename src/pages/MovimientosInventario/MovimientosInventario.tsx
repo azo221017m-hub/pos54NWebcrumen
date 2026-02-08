@@ -179,6 +179,7 @@ const MovimientosInventario: React.FC = () => {
           movimiento={movimientoEditar}
           onGuardar={handleGuardar}
           onCancelar={handleCancelar}
+          mensaje={mensaje}
         />
       )}
     </div>

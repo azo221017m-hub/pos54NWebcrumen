@@ -25,9 +25,13 @@ interface Props {
   movimiento: MovimientoConDetalles | null;
   onGuardar: (data: MovimientoCreate) => Promise<void>;
   onCancelar: () => void;
+  mensaje?: {
+    tipo: 'success' | 'error' | 'info';
+    texto: string;
+  } | null;
 }
 
-const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancelar }) => {
+const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancelar, mensaje }) => {
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
   
   // Estado del formulario
@@ -289,6 +293,13 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
             <X size={28} />
           </button>
         </div>
+
+        {/* Mensajes dentro del modal */}
+        {mensaje && (
+          <div className={`formulario-mensaje formulario-mensaje-${mensaje.tipo}`}>
+            {mensaje.texto}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="formulario-movimiento">
           {/* Header con motivo y botones */}
