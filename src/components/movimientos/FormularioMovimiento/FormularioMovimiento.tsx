@@ -119,7 +119,8 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
   };
 
   // Helper function to format insumo information message
-  // Format matches requirements: INSUMO | CANT. | COSTO | PROVEEDOR | U.M. | EXIST. | COSTO POND. | CANT. ÚLT. | PROV. ÚLT. | COSTO ÚLT.
+  // Format matches requirements for fields: INSUMO, CANT., COSTO, PROVEEDOR, U.M., EXIST., COSTO POND., CANT. ÚLT., PROV. ÚLT., COSTO ÚLT.
+  // Message uses newlines to separate logical sections and pipes (|) to separate related fields within each line
   const formatInsumoMessage = (
     insumoNombre: string,
     cantidad: number,
@@ -127,7 +128,16 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     proveedor: string | undefined,
     datos: UltimaCompraData
   ): string => {
-    return `INSUMO: ${insumoNombre}\nCANT.: ${cantidad} | COSTO: ${costo ?? 0}\nPROVEEDOR: ${proveedor || 'N/A'}\nU.M.: ${datos.unidadMedida} | EXIST.: ${datos.existencia}\nCOSTO POND.: ${datos.costoUltimoPonderado}\nCANT. ÚLT.: ${datos.cantidadUltimaCompra} | PROV. ÚLT.: ${datos.proveedorUltimaCompra || 'N/A'}\nCOSTO ÚLT.: ${datos.costoUltimaCompra}`;
+    const lines = [
+      `INSUMO: ${insumoNombre}`,
+      `CANT.: ${cantidad} | COSTO: ${costo ?? 0}`,
+      `PROVEEDOR: ${proveedor || 'N/A'}`,
+      `U.M.: ${datos.unidadMedida} | EXIST.: ${datos.existencia}`,
+      `COSTO POND.: ${datos.costoUltimoPonderado}`,
+      `CANT. ÚLT.: ${datos.cantidadUltimaCompra} | PROV. ÚLT.: ${datos.proveedorUltimaCompra || 'N/A'}`,
+      `COSTO ÚLT.: ${datos.costoUltimaCompra}`
+    ];
+    return lines.join('\n');
   };
 
   const actualizarDetalle = async (index: number, campo: keyof DetalleMovimientoExtended, valor: any) => {
