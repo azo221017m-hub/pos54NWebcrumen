@@ -146,11 +146,12 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
             ...nuevasUltimasCompras.get(index)!,
             ...ultimaCompraData
           });
+          setUltimasCompras(nuevasUltimasCompras);
         } catch (error) {
           console.error('Error al obtener última compra:', error);
+          // Still set state with basic insumo data even if ultima compra fails
+          setUltimasCompras(nuevasUltimasCompras);
         }
-        
-        setUltimasCompras(nuevasUltimasCompras);
       }
     } else {
       (nuevosDetalles[index] as any)[campo] = valor;
