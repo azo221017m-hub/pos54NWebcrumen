@@ -10,6 +10,7 @@ import {
   DetalleMovimiento
 } from '../types/movimientos.types';
 import { obtenerClaveTurnoAbierto } from './turnos.controller';
+import { formatMySQLDateTime } from '../utils/dateTime';
 
 // GET /api/movimientos - Obtener todos los movimientos
 export const obtenerMovimientos = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -137,6 +138,9 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
       return;
     }
 
+    // Convert fechamovimiento from ISO format to MySQL datetime format
+    const fechaMovimientoMySQL = formatMySQLDateTime(new Date(movimientoData.fechamovimiento));
+
     // Insertar movimiento principal
     const [resultMovimiento] = await pool.execute<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebmovimientos (
@@ -147,7 +151,7 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
         movimientoData.tipomovimiento,
         movimientoData.motivomovimiento,
         idreferencia,
-        movimientoData.fechamovimiento,
+        fechaMovimientoMySQL,
         movimientoData.observaciones || null,
         usuarioAuditoria,
         idNegocio,
@@ -186,7 +190,7 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
           detalle.precio || null,
           detalle.costo || null,
           idMovimiento,
-          movimientoData.fechamovimiento,
+          fechaMovimientoMySQL,
           detalle.observaciones || null,
           detalle.proveedor || null,
           usuarioAuditoria,
