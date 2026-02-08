@@ -14,6 +14,11 @@ import { obtenerProveedores } from '../../../services/proveedoresService';
 import { obtenerUltimaCompra } from '../../../services/movimientosService';
 import './FormularioMovimiento.css';
 
+// Extended type to include stock_actual as a fallback field
+interface DetalleMovimientoExtended extends DetalleMovimientoCreate {
+  stockActual?: number;
+}
+
 interface Props {
   movimiento: MovimientoConDetalles | null;
   onGuardar: (data: MovimientoCreate) => Promise<void>;
@@ -26,7 +31,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
   // Estado del formulario
   const [motivomovimiento, setMotivoMovimiento] = useState<MotivoMovimiento>('COMPRA');
   const [observaciones, setObservaciones] = useState('');
-  const [detalles, setDetalles] = useState<DetalleMovimientoCreate[]>([]);
+  const [detalles, setDetalles] = useState<DetalleMovimientoExtended[]>([]);
   const [guardando, setGuardando] = useState(false);
   
   // Estado para insumos
@@ -94,7 +99,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
   }, [movimiento]);
 
   const agregarDetalle = () => {
-    const nuevoDetalle: DetalleMovimientoCreate = {
+    const nuevoDetalle: DetalleMovimientoExtended = {
       idinsumo: 0,
       nombreinsumo: '',
       tipoinsumo: 'INVENTARIO',
@@ -112,7 +117,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     setDetalles(detalles.filter((_, i) => i !== index));
   };
 
-  const actualizarDetalle = async (index: number, campo: keyof DetalleMovimientoCreate, valor: any) => {
+  const actualizarDetalle = async (index: number, campo: keyof DetalleMovimientoExtended, valor: any) => {
     const nuevosDetalles = [...detalles];
     
     if (campo === 'idinsumo') {
@@ -126,9 +131,9 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           tipoinsumo: 'INVENTARIO',
           costo: insumoSeleccionado.costo_promedio_ponderado || 0,
           proveedor: insumoSeleccionado.idproveedor || '',
-          // Temporary field to hold stock_actual as fallback
+          // Store stock_actual as fallback in case ultimasCompras isn't populated
           stockActual: insumoSeleccionado.stock_actual
-        } as any;
+        };
         
         // Populate with insumo data: Existencia, Costo Promedio Ponderado, and Proveedor
         const nuevasUltimasCompras = new Map(ultimasCompras);
@@ -145,12 +150,12 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
         try {
           const ultimaCompraData = await obtenerUltimaCompra(insumoSeleccionado.id_insumo);
           
-          // Merge data, but keep the existencia from insumo if API returns existencia
-          // This ensures we use the fresh stock_actual from the API call
+          // Merge API data with initial insumo data
+          // The API's existencia value takes priority as it's the most current from database
           const datosCompletos = {
             ...nuevasUltimasCompras.get(index)!,
             ...ultimaCompraData,
-            // Always use the existencia from API response since it's the most current
+            // Explicitly use existencia from API to ensure we have the latest stock value
             existencia: ultimaCompraData.existencia
           };
           
@@ -183,7 +188,8 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
       fechamovimiento: new Date().toISOString(),
       observaciones,
       estatusmovimiento: 'PENDIENTE',
-      detalles
+      // Remove stockActual from detalles before submitting (it's only for UI display)
+      detalles: detalles.map(({ stockActual, ...detalle }) => detalle)
     };
 
     setGuardando(true);
@@ -338,7 +344,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                     <td>
                       <input 
                         type="text" 
-                        value={ultimaCompra?.existencia ?? (detalle as any).stockActual ?? ''} 
+                        value={ultimaCompra?.existencia ?? detalle.stockActual ?? ''} 
                         disabled 
                         className="campo-solo-lectura" 
                       />
