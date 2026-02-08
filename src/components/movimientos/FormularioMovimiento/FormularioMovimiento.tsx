@@ -339,11 +339,11 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
             </div>
 
             <div className="botones-accion">
-              <button type="button" className="btn-pendiente" disabled>
-                PENDIENTE
+              <button type="submit" className="btn-solicitar" disabled={guardando}>
+                {guardando ? 'GUARDANDO...' : 'SOLICITAR'}
               </button>
-              <button type="submit" className="btn-procesar" disabled={guardando}>
-                {guardando ? 'GUARDANDO...' : 'PROCESAR'}
+              <button type="button" className="btn-aplicar" disabled>
+                APLICAR
               </button>
             </div>
           </div>

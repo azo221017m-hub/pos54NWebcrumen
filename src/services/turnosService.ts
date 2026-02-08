@@ -146,3 +146,28 @@ export const obtenerFondoCaja = async (claveturno: string): Promise<{ fondoCaja:
     return { fondoCaja: 0 };
   }
 };
+
+/**
+ * Obtener el turno abierto del usuario actual
+ * Returns the open shift (turno abierto) for the currently logged-in user
+ */
+export const obtenerTurnoAbiertoActual = async (): Promise<Turno | null> => {
+  try {
+    console.log('Servicio: Obteniendo turno abierto del usuario actual');
+    const response = await apiClient.get<{ success: boolean; data: Turno }>(`${API_BASE}/turno-abierto`);
+    if (response.data.success && response.data.data) {
+      console.log('Servicio: Turno abierto encontrado:', response.data.data.claveturno);
+      return response.data.data;
+    }
+    console.log('Servicio: No se encontró turno abierto');
+    return null;
+  } catch (error: any) {
+    // If 404, return null (no open shift found)
+    if (error.response?.status === 404) {
+      console.log('Servicio: No hay turno abierto (404)');
+      return null;
+    }
+    console.error('Error en servicio obtenerTurnoAbiertoActual:', error);
+    throw error;
+  }
+};

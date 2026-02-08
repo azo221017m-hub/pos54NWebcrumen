@@ -7,7 +7,8 @@ import {
   eliminarTurno,
   cerrarTurnoActual,
   verificarComandasAbiertas,
-  obtenerFondoCaja
+  obtenerFondoCaja,
+  obtenerTurnoAbierto
 } from '../controllers/turnos.controller';
 import { authMiddleware } from '../middlewares/auth';
 import { apiLimiter } from '../middlewares/rateLimit';
@@ -22,6 +23,7 @@ router.use(apiLimiter);
 
 // Rutas CRUD
 router.get('/', obtenerTurnos);
+router.get('/turno-abierto', obtenerTurnoAbierto); // Must be before /:idturno
 router.get('/:idturno', obtenerTurnoPorId);
 router.post('/', crearTurno);
 router.put('/:idturno', actualizarTurno);

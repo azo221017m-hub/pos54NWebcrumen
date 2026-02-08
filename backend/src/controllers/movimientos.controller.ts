@@ -113,7 +113,7 @@ export const obtenerMovimientoPorId = async (req: AuthRequest, res: Response): P
 export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idNegocio = req.user?.idNegocio;
-    const usuarioAuditoria = req.user?.nombre || 'Sistema';
+    const usuarioAuditoria = req.user?.alias || req.user?.nombre || 'Sistema';
     const movimientoData: MovimientoCreate = req.body;
 
     if (!movimientoData.detalles || movimientoData.detalles.length === 0) {
@@ -124,15 +124,29 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
       return;
     }
 
+    // Get the claveturno from the open turno of the logged-in user
+    const [turnosAbiertos] = await pool.query<RowDataPacket[]>(
+      `SELECT claveturno FROM tblposcrumenwebturnos 
+       WHERE usuarioturno = ? AND idnegocio = ? AND estatusturno = 'abierto'
+       LIMIT 1`,
+      [usuarioAuditoria, idNegocio]
+    );
+
+    let idreferencia: string | null = null;
+    if (turnosAbiertos.length > 0) {
+      idreferencia = turnosAbiertos[0].claveturno;
+    }
+
     // Insertar movimiento principal
     const [resultMovimiento] = await pool.execute<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebmovimientos (
-        tipomovimiento, motivomovimiento, fechamovimiento, observaciones,
+        tipomovimiento, motivomovimiento, idreferencia, fechamovimiento, observaciones,
         usuarioauditoria, idnegocio, estatusmovimiento, fecharegistro, fechaauditoria
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
       [
         movimientoData.tipomovimiento,
         movimientoData.motivomovimiento,
+        idreferencia,
         movimientoData.fechamovimiento,
         movimientoData.observaciones || null,
         usuarioAuditoria,
