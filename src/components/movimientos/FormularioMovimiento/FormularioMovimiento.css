@@ -62,6 +62,21 @@
   transform: scale(0.98);
 }
 
+/* Respect user's motion preferences for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .btn-cerrar {
+    transition: background-color 0.2s, border-color 0.2s;
+  }
+  
+  .btn-cerrar:hover {
+    transform: none;
+  }
+  
+  .btn-cerrar:active {
+    transform: none;
+  }
+}
+
 .formulario-movimiento {
   padding: 1.5rem;
   overflow-y: auto;
