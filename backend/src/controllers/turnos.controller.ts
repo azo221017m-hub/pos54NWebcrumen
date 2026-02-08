@@ -36,6 +36,18 @@ const generarClaveTurno = (idusuario: number, idnegocio: number): string => {
   return `${aa}${mm}${dd}${idnegocio}${idusuario}${HH}${MM}${SS}`;
 };
 
+// Helper function to get claveturno from the open turno of a user
+export const obtenerClaveTurnoAbierto = async (usuarioturno: string, idnegocio: number): Promise<string | null> => {
+  const [turnosAbiertos] = await pool.query<RowDataPacket[]>(
+    `SELECT claveturno FROM tblposcrumenwebturnos 
+     WHERE usuarioturno = ? AND idnegocio = ? AND estatusturno = 'abierto'
+     LIMIT 1`,
+    [usuarioturno, idnegocio]
+  );
+  
+  return turnosAbiertos.length > 0 ? turnosAbiertos[0].claveturno : null;
+};
+
 // Obtener todos los turnos de un negocio
 export const obtenerTurnos = async (req: AuthRequest, res: Response): Promise<void> => {
   try {

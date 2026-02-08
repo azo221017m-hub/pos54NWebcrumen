@@ -9,6 +9,7 @@ import {
   MovimientoUpdate,
   DetalleMovimiento
 } from '../types/movimientos.types';
+import { obtenerClaveTurnoAbierto } from './turnos.controller';
 
 // GET /api/movimientos - Obtener todos los movimientos
 export const obtenerMovimientos = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -125,17 +126,7 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
     }
 
     // Get the claveturno from the open turno of the logged-in user
-    const [turnosAbiertos] = await pool.query<RowDataPacket[]>(
-      `SELECT claveturno FROM tblposcrumenwebturnos 
-       WHERE usuarioturno = ? AND idnegocio = ? AND estatusturno = 'abierto'
-       LIMIT 1`,
-      [usuarioAuditoria, idNegocio]
-    );
-
-    let idreferencia: string | null = null;
-    if (turnosAbiertos.length > 0) {
-      idreferencia = turnosAbiertos[0].claveturno;
-    }
+    const idreferencia = await obtenerClaveTurnoAbierto(usuarioAuditoria, idNegocio!);
 
     // Insertar movimiento principal
     const [resultMovimiento] = await pool.execute<ResultSetHeader>(
