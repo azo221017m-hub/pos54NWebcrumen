@@ -118,6 +118,18 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     setDetalles(detalles.filter((_, i) => i !== index));
   };
 
+  // Helper function to format insumo information message
+  // Format matches requirements: INSUMO | CANT. | COSTO | PROVEEDOR | U.M. | EXIST. | COSTO POND. | CANT. ÚLT. | PROV. ÚLT. | COSTO ÚLT.
+  const formatInsumoMessage = (
+    insumoNombre: string,
+    cantidad: number,
+    costo: number | undefined,
+    proveedor: string | undefined,
+    datos: UltimaCompraData
+  ): string => {
+    return `INSUMO: ${insumoNombre}\nCANT.: ${cantidad} | COSTO: ${costo ?? 0}\nPROVEEDOR: ${proveedor || 'N/A'}\nU.M.: ${datos.unidadMedida} | EXIST.: ${datos.existencia}\nCOSTO POND.: ${datos.costoUltimoPonderado}\nCANT. ÚLT.: ${datos.cantidadUltimaCompra} | PROV. ÚLT.: ${datos.proveedorUltimaCompra || 'N/A'}\nCOSTO ÚLT.: ${datos.costoUltimaCompra}`;
+  };
+
   const actualizarDetalle = async (index: number, campo: keyof DetalleMovimientoExtended, valor: any) => {
     const nuevosDetalles = [...detalles];
     
@@ -164,7 +176,13 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           setUltimasCompras(nuevasUltimasCompras);
           
           // Display message to user with insumo information
-          const mensaje = `INSUMO: ${insumoSeleccionado.nombre}\nCANT.: ${nuevosDetalles[index].cantidad} | COSTO: ${nuevosDetalles[index].costo}\nPROVEEDOR: ${nuevosDetalles[index].proveedor || 'N/A'}\nU.M.: ${datosCompletos.unidadMedida} | EXIST.: ${datosCompletos.existencia}\nCOSTO POND.: ${datosCompletos.costoUltimoPonderado}\nCANT. ÚLT.: ${datosCompletos.cantidadUltimaCompra} | PROV. ÚLT.: ${datosCompletos.proveedorUltimaCompra || 'N/A'}\nCOSTO ÚLT.: ${datosCompletos.costoUltimaCompra}`;
+          const mensaje = formatInsumoMessage(
+            insumoSeleccionado.nombre,
+            nuevosDetalles[index].cantidad,
+            nuevosDetalles[index].costo,
+            nuevosDetalles[index].proveedor,
+            datosCompletos
+          );
           showInfoToast(mensaje);
           
           // DEBUG: Display selected insumo values
@@ -190,7 +208,13 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           // Display message to user with basic insumo information
           const datosBasicos = nuevasUltimasCompras.get(index);
           if (datosBasicos) {
-            const mensaje = `INSUMO: ${insumoSeleccionado.nombre}\nCANT.: ${nuevosDetalles[index].cantidad} | COSTO: ${nuevosDetalles[index].costo}\nPROVEEDOR: ${nuevosDetalles[index].proveedor || 'N/A'}\nU.M.: ${datosBasicos.unidadMedida} | EXIST.: ${datosBasicos.existencia}\nCOSTO POND.: ${datosBasicos.costoUltimoPonderado}\nCANT. ÚLT.: ${datosBasicos.cantidadUltimaCompra} | PROV. ÚLT.: ${datosBasicos.proveedorUltimaCompra || 'N/A'}\nCOSTO ÚLT.: ${datosBasicos.costoUltimaCompra}`;
+            const mensaje = formatInsumoMessage(
+              insumoSeleccionado.nombre,
+              nuevosDetalles[index].cantidad,
+              nuevosDetalles[index].costo,
+              nuevosDetalles[index].proveedor,
+              datosBasicos
+            );
             showInfoToast(mensaje);
           }
           
