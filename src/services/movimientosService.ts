@@ -132,14 +132,7 @@ export const obtenerUltimaCompra = async (idInsumo: number): Promise<UltimaCompr
     return response.data.data;
   } catch (error) {
     console.error('Error al obtener última compra:', error);
-    // Return default values on error
-    return {
-      existencia: 0,
-      costoUltimoPonderado: 0,
-      unidadMedida: '',
-      cantidadUltimaCompra: 0,
-      proveedorUltimaCompra: '',
-      costoUltimaCompra: 0
-    };
+    // Throw error to allow caller to handle it with fallback data from insumo
+    throw error;
   }
 };
