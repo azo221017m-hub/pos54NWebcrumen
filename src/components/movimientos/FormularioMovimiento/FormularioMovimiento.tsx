@@ -164,7 +164,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           setUltimasCompras(nuevasUltimasCompras);
           
           // Display message to user with insumo information
-          const mensaje = `INSUMO: ${insumoSeleccionado.nombre} | CANT.: ${nuevosDetalles[index].cantidad} | COSTO: ${nuevosDetalles[index].costo} | PROVEEDOR: ${nuevosDetalles[index].proveedor || 'N/A'} | U.M.: ${datosCompletos.unidadMedida} | EXIST.: ${datosCompletos.existencia} | COSTO POND.: ${datosCompletos.costoUltimoPonderado} | CANT. ÚLT.: ${datosCompletos.cantidadUltimaCompra} | PROV. ÚLT.: ${datosCompletos.proveedorUltimaCompra || 'N/A'} | COSTO ÚLT.: ${datosCompletos.costoUltimaCompra}`;
+          const mensaje = `INSUMO: ${insumoSeleccionado.nombre}\nCANT.: ${nuevosDetalles[index].cantidad} | COSTO: ${nuevosDetalles[index].costo}\nPROVEEDOR: ${nuevosDetalles[index].proveedor || 'N/A'}\nU.M.: ${datosCompletos.unidadMedida} | EXIST.: ${datosCompletos.existencia}\nCOSTO POND.: ${datosCompletos.costoUltimoPonderado}\nCANT. ÚLT.: ${datosCompletos.cantidadUltimaCompra} | PROV. ÚLT.: ${datosCompletos.proveedorUltimaCompra || 'N/A'}\nCOSTO ÚLT.: ${datosCompletos.costoUltimaCompra}`;
           showInfoToast(mensaje);
           
           // DEBUG: Display selected insumo values
@@ -190,7 +190,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           // Display message to user with basic insumo information
           const datosBasicos = nuevasUltimasCompras.get(index);
           if (datosBasicos) {
-            const mensaje = `INSUMO: ${insumoSeleccionado.nombre} | CANT.: ${nuevosDetalles[index].cantidad} | COSTO: ${nuevosDetalles[index].costo} | PROVEEDOR: ${nuevosDetalles[index].proveedor || 'N/A'} | U.M.: ${datosBasicos.unidadMedida} | EXIST.: ${datosBasicos.existencia} | COSTO POND.: ${datosBasicos.costoUltimoPonderado} | CANT. ÚLT.: ${datosBasicos.cantidadUltimaCompra} | PROV. ÚLT.: ${datosBasicos.proveedorUltimaCompra || 'N/A'} | COSTO ÚLT.: ${datosBasicos.costoUltimaCompra}`;
+            const mensaje = `INSUMO: ${insumoSeleccionado.nombre}\nCANT.: ${nuevosDetalles[index].cantidad} | COSTO: ${nuevosDetalles[index].costo}\nPROVEEDOR: ${nuevosDetalles[index].proveedor || 'N/A'}\nU.M.: ${datosBasicos.unidadMedida} | EXIST.: ${datosBasicos.existencia}\nCOSTO POND.: ${datosBasicos.costoUltimoPonderado}\nCANT. ÚLT.: ${datosBasicos.cantidadUltimaCompra} | PROV. ÚLT.: ${datosBasicos.proveedorUltimaCompra || 'N/A'}\nCOSTO ÚLT.: ${datosBasicos.costoUltimaCompra}`;
             showInfoToast(mensaje);
           }
           
