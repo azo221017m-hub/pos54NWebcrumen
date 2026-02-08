@@ -3,6 +3,3 @@
 
 ALTER TABLE tblposcrumenwebdetallemovimientos 
 ADD COLUMN proveedor VARCHAR(200) NULL COMMENT 'Supplier name' AFTER observaciones;
-
--- Add index for better query performance
-CREATE INDEX idx_proveedor ON tblposcrumenwebdetallemovimientos(proveedor);
