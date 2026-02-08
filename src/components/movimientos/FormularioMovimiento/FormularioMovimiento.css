@@ -16,7 +16,7 @@
   background: white;
   border-radius: 8px;
   width: 100%;
-  max-width: 1400px;
+  max-width: 95vw;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -180,7 +180,8 @@
 .tabla-insumos {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1200px;
+  min-width: 100%;
+  table-layout: fixed;
 }
 
 .tabla-insumos thead {
@@ -188,13 +189,84 @@
 }
 
 .tabla-insumos th {
-  padding: 0.75rem;
+  padding: 0.5rem 0.4rem;
   text-align: left;
   font-weight: 600;
   color: #333;
   border-bottom: 2px solid #ddd;
-  white-space: nowrap;
-  font-size: 0.9rem;
+  white-space: normal;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Column width optimization */
+.tabla-insumos th:nth-child(1), /* INSUMO */
+.tabla-insumos td:nth-child(1) {
+  width: 15%;
+  min-width: 120px;
+}
+
+.tabla-insumos th:nth-child(2), /* CANTIDAD */
+.tabla-insumos td:nth-child(2) {
+  width: 7%;
+  min-width: 70px;
+}
+
+.tabla-insumos th:nth-child(3), /* COSTO */
+.tabla-insumos td:nth-child(3) {
+  width: 7%;
+  min-width: 70px;
+}
+
+.tabla-insumos th:nth-child(4), /* PROVEEDOR */
+.tabla-insumos td:nth-child(4) {
+  width: 12%;
+  min-width: 100px;
+}
+
+.tabla-insumos th:nth-child(5), /* Unidad de Medida */
+.tabla-insumos td:nth-child(5) {
+  width: 7%;
+  min-width: 60px;
+}
+
+.tabla-insumos th:nth-child(6), /* Existencia */
+.tabla-insumos td:nth-child(6) {
+  width: 7%;
+  min-width: 70px;
+}
+
+.tabla-insumos th:nth-child(7), /* Costo Última Ponderado */
+.tabla-insumos td:nth-child(7) {
+  width: 8%;
+  min-width: 70px;
+}
+
+.tabla-insumos th:nth-child(8), /* Cantidad Última Compra */
+.tabla-insumos td:nth-child(8) {
+  width: 8%;
+  min-width: 70px;
+}
+
+.tabla-insumos th:nth-child(9), /* Proveedor Última Compra */
+.tabla-insumos td:nth-child(9) {
+  width: 12%;
+  min-width: 100px;
+}
+
+.tabla-insumos th:nth-child(10), /* Costo Última Compra */
+.tabla-insumos td:nth-child(10) {
+  width: 8%;
+  min-width: 70px;
+}
+
+.tabla-insumos th:nth-child(11), /* Delete button */
+.tabla-insumos td:nth-child(11) {
+  width: 5%;
+  min-width: 40px;
+  text-align: center;
 }
 
 .tabla-insumos tbody tr {
@@ -213,10 +285,11 @@
 .tabla-insumos input[type="text"],
 .tabla-insumos select {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.4rem 0.3rem;
   border: 1px solid #ddd;
   border-radius: 4px;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  box-sizing: border-box;
 }
 
 .tabla-insumos select {
