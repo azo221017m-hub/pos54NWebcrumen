@@ -180,12 +180,12 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
         const ultimaCompraData = await obtenerUltimaCompra(insumoSeleccionado.id_insumo);
         
         // Merge API data with initial insumo data
-        // The API's existencia value takes priority as it's the most current from database
+        // Keep existencia from insumo.stock_actual (not from ultima compra API)
         const datosCompletos = {
           ...nuevasUltimasCompras.get(rowId)!,
           ...ultimaCompraData,
-          // Explicitly use existencia from API to ensure we have the latest stock value
-          existencia: ultimaCompraData.existencia
+          // Preserve existencia from insumo.stock_actual - do NOT use ultima compra value
+          existencia: insumoSeleccionado.stock_actual
         };
         
         nuevasUltimasCompras.set(rowId, datosCompletos);
@@ -229,6 +229,13 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
 
     if (detalles.length === 0) {
       alert('Debe agregar al menos un insumo');
+      return;
+    }
+
+    // Validate all rows have required fields filled
+    const detallesIncompletos = detalles.filter(d => d.idinsumo === 0 || d.cantidad === 0);
+    if (detallesIncompletos.length > 0) {
+      alert('Todos los insumos deben tener seleccionado un producto y una cantidad mayor a cero');
       return;
     }
 
