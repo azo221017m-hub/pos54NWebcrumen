@@ -15,9 +15,10 @@ import { obtenerUltimaCompra } from '../../../services/movimientosService';
 import { showInfoToast } from '../../FeedbackToast';
 import './FormularioMovimiento.css';
 
-// Extended type to include stock_actual as a fallback field
+// Extended type to include stock_actual as a fallback field and unique row ID
 interface DetalleMovimientoExtended extends DetalleMovimientoCreate {
   stockActual?: number;
+  _rowId?: string; // Unique identifier for this row to maintain data mapping
 }
 
 interface Props {
@@ -43,8 +44,8 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [cargandoProveedores, setCargandoProveedores] = useState(false);
   
-  // Estado para datos de última compra por detalle
-  const [ultimasCompras, setUltimasCompras] = useState<Map<number, UltimaCompraData>>(new Map());
+  // Estado para datos de última compra por detalle (using rowId instead of index)
+  const [ultimasCompras, setUltimasCompras] = useState<Map<string, UltimaCompraData>>(new Map());
 
   // Cargar insumos disponibles
   useEffect(() => {
@@ -93,7 +94,8 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           costo: d.costo,
           precio: d.precio,
           observaciones: d.observaciones,
-          proveedor: d.proveedor
+          proveedor: d.proveedor,
+          _rowId: `row-${Date.now()}-${Math.random()}` // Generate unique ID for each row
         }))
       );
     }
@@ -109,7 +111,8 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
       costo: 0,
       precio: 0,
       observaciones: '',
-      proveedor: ''
+      proveedor: '',
+      _rowId: `row-${Date.now()}-${Math.random()}` // Generate unique ID for this row
     };
     setDetalles([...detalles, nuevoDetalle]);
   };
@@ -142,6 +145,8 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
 
   const actualizarDetalle = async (index: number, campo: keyof DetalleMovimientoExtended, valor: any) => {
     const nuevosDetalles = [...detalles];
+    const detalle = nuevosDetalles[index];
+    const rowId = detalle._rowId!; // Get the unique row ID
     
     if (campo === 'idinsumo') {
       const insumoSeleccionado = insumos.find((i) => i.id_insumo === Number(valor));
@@ -159,8 +164,9 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
         };
         
         // Populate with insumo data: Existencia, Costo Promedio Ponderado, and Proveedor
+        // Use rowId instead of index for the Map key
         const nuevasUltimasCompras = new Map(ultimasCompras);
-        nuevasUltimasCompras.set(index, {
+        nuevasUltimasCompras.set(rowId, {
           existencia: insumoSeleccionado.stock_actual,
           costoUltimoPonderado: insumoSeleccionado.costo_promedio_ponderado,
           unidadMedida: insumoSeleccionado.unidad_medida,
@@ -176,13 +182,13 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           // Merge API data with initial insumo data
           // The API's existencia value takes priority as it's the most current from database
           const datosCompletos = {
-            ...nuevasUltimasCompras.get(index)!,
+            ...nuevasUltimasCompras.get(rowId)!,
             ...ultimaCompraData,
             // Explicitly use existencia from API to ensure we have the latest stock value
             existencia: ultimaCompraData.existencia
           };
           
-          nuevasUltimasCompras.set(index, datosCompletos);
+          nuevasUltimasCompras.set(rowId, datosCompletos);
           setUltimasCompras(nuevasUltimasCompras);
           
           // Display message to user with insumo information
@@ -216,7 +222,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           setUltimasCompras(nuevasUltimasCompras);
           
           // Display message to user with basic insumo information
-          const datosBasicos = nuevasUltimasCompras.get(index);
+          const datosBasicos = nuevasUltimasCompras.get(rowId);
           if (datosBasicos) {
             const mensaje = formatInsumoMessage(
               insumoSeleccionado.nombre,
@@ -230,7 +236,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           
           // DEBUG: Display selected insumo values (with limited data when API fails)
           if (import.meta.env.DEV) {
-            const datosBasicos = nuevasUltimasCompras.get(index);
+            const datosBasicos = nuevasUltimasCompras.get(rowId);
             if (datosBasicos) {
               console.log('=== DEBUG: Insumo Seleccionado (datos básicos) ===');
               console.log(`INSUMO: ${insumoSeleccionado.nombre}`);
@@ -269,8 +275,8 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
       fechamovimiento: new Date().toISOString(),
       observaciones,
       estatusmovimiento: 'PENDIENTE',
-      // Remove stockActual from detalles before submitting (it's only for UI display)
-      detalles: detalles.map(({ stockActual, ...detalle }) => detalle)
+      // Remove stockActual and _rowId from detalles before submitting (they're only for UI)
+      detalles: detalles.map(({ stockActual, _rowId, ...detalle }) => detalle)
     };
 
     setGuardando(true);
@@ -362,9 +368,10 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
               </thead>
               <tbody>
                 {detalles.map((detalle, index) => {
-                  const ultimaCompra = ultimasCompras.get(index);
+                  // Use the unique row ID to look up data instead of index
+                  const ultimaCompra = detalle._rowId ? ultimasCompras.get(detalle._rowId) : undefined;
                   return (
-                  <tr key={index}>
+                  <tr key={detalle._rowId || index}>
                     <td>
                       <select
                         value={detalle.idinsumo}
