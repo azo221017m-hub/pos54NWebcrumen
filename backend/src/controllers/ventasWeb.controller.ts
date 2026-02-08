@@ -101,10 +101,10 @@ async function processRecipeInventoryMovements(
             'SALIDA', // tipomovimiento
             'VENTA', // motivomovimiento
             cantidadMovimiento, // cantidad as negative value
-            insumo.stock_actual || null,
+            insumo.stock_actual ?? 0, // DECIMAL: default to 0 if not provided
             insumo.unidadmedida,
-            insumo.precio_venta || null,
-            insumo.costo_promedio_ponderado || null,
+            insumo.precio_venta ?? 0, // DECIMAL: default to 0 if not provided
+            insumo.costo_promedio_ponderado ?? 0, // DECIMAL: default to 0 if not provided
             detalle.idventa, // idreferencia = sale ID
             null, // observaciones
             usuarioalias, // user alias instead of user ID
@@ -152,10 +152,10 @@ async function processRecipeInventoryMovements(
               'SALIDA', // tipomovimiento
               'VENTA', // motivomovimiento
               cantidadMovimiento, // cantidad as negative value
-              ingrediente.stock_actual || null,
+              ingrediente.stock_actual ?? 0, // DECIMAL: default to 0 if not provided
               ingrediente.unidadmedida,
-              ingrediente.precio_venta || null,
-              ingrediente.costo_promedio_ponderado || null,
+              ingrediente.precio_venta ?? 0, // DECIMAL: default to 0 if not provided
+              ingrediente.costo_promedio_ponderado ?? 0, // DECIMAL: default to 0 if not provided
               detalle.idventa, // idreferencia = sale ID
               null, // observaciones
               usuarioalias, // user alias instead of user ID
