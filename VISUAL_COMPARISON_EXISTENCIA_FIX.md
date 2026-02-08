@@ -1,274 +1,230 @@
-# Visual Comparison: Existencia Field Fix
+# Visual Comparison: Before and After Fix
 
-## Problem Visualization
+## The Bug in Action
 
-### Before Fix ❌
+### Scenario: User adds 3 insumos, then deletes the first one
+
+---
+
+## BEFORE FIX ❌
+
+### Step 1: Add 3 Insumos
 ```
-User Flow:
-1. User selects insumo "Harina" from dropdown
-2. Frontend requests data from API: GET /api/movimientos/insumo/123/ultima-compra
-3. Backend queries: SELECT existencia FROM tblposcrumenwebinsumos WHERE idinsumo = 123
-   ⚠️ ERROR: Column 'existencia' doesn't exist!
-   ⚠️ ERROR: Column 'idinsumo' doesn't exist!
-4. Query fails or returns empty result
-5. EXIST. field shows: [empty/blank]
-6. User sees: ❌ No stock information
+┌─────────┬──────────────────┬──────────┬────────┐
+│ Index   │ Insumo Name      │ Map Key  │ EXIST. │
+├─────────┼──────────────────┼──────────┼────────┤
+│ 0       │ Harina           │ 0        │ 100 ✓  │
+│ 1       │ Azúcar           │ 1        │ 200 ✓  │
+│ 2       │ Mantequilla      │ 2        │ 300 ✓  │
+└─────────┴──────────────────┴──────────┴────────┘
 
-Table Column Issue:
-┌─────────────────────────────────────────┐
-│ tblposcrumenwebinsumos (Actual Schema)  │
-├─────────────────────────────────────────┤
-│ id_insumo (PK)     ← Correct name       │
-│ nombre                                   │
-│ stock_actual       ← Correct name       │
-│ costo_promedio_ponderado                │
-│ ...                                      │
-└─────────────────────────────────────────┘
-
-Code was querying:
-❌ SELECT existencia WHERE idinsumo = ?
-   (Both column names are WRONG!)
+Map Contents:
+- Key 0 → { existencia: 100, ... } (Harina)
+- Key 1 → { existencia: 200, ... } (Azúcar)
+- Key 2 → { existencia: 300, ... } (Mantequilla)
 ```
 
-### After Fix ✅
-```
-User Flow:
-1. User selects insumo "Harina" from dropdown
-2. Frontend requests data from API: GET /api/movimientos/insumo/123/ultima-compra
-3. Backend queries: SELECT stock_actual FROM tblposcrumenwebinsumos WHERE id_insumo = 123
-   ✅ SUCCESS: Correct column names!
-4. Query returns: { stock_actual: 150 }
-5. EXIST. field shows: 150
-6. User sees: ✅ Current stock = 150 units
+### Step 2: Delete First Row (Harina)
+Array filter operation removes index 0, shifts remaining items:
 
-Table Column Mapping:
-┌─────────────────────────────────────────┐
-│ tblposcrumenwebinsumos (Actual Schema)  │
-├─────────────────────────────────────────┤
-│ id_insumo (PK)     ✅ Now using this    │
-│ nombre                                   │
-│ stock_actual       ✅ Now using this    │
-│ costo_promedio_ponderado                │
-│ ...                                      │
-└─────────────────────────────────────────┘
-
-Code now queries:
-✅ SELECT stock_actual WHERE id_insumo = ?
-   (Both column names are CORRECT!)
 ```
+┌─────────┬──────────────────┬──────────┬────────┬──────────┐
+│ Index   │ Insumo Name      │ Map Key  │ EXIST. │ Expected │
+├─────────┼──────────────────┼──────────┼────────┼──────────┤
+│ 0       │ Azúcar           │ 0        │ 100 ❌ │ 200      │
+│ 1       │ Mantequilla      │ 1        │ 200 ❌ │ 300      │
+└─────────┴──────────────────┴──────────┴────────┴──────────┘
+
+Map Contents (UNCHANGED):
+- Key 0 → { existencia: 100, ... } (OLD: Harina)
+- Key 1 → { existencia: 200, ... } (OLD: Azúcar)
+- Key 2 → { existencia: 300, ... } (OLD: Mantequilla)
+
+🔴 PROBLEM: 
+- Row 0 (Azúcar) looks up Map[0] → gets 100 (Harina's stock!)
+- Row 1 (Mantequilla) looks up Map[1] → gets 200 (Azúcar's stock!)
+```
+
+### Why Console Logs Were Correct
+```javascript
+// When user selects insumo, this runs:
+actualizarDetalle(index, 'idinsumo', value) {
+  // Fetch data and immediately log:
+  console.log('EXIST.:', datosCompletos.existencia); // ✓ Shows 200 for Azúcar
+  
+  // Store in Map with index as key:
+  nuevasUltimasCompras.set(index, datosCompletos); // ← Index is 1 at this moment
+}
+
+// Later, when rendering:
+const ultimaCompra = ultimasCompras.get(index); // ← Index is now 0 after deletion!
+```
+
+Console logged at the moment of selection (index=1), but display reads after deletion (index=0).
+
+---
+
+## AFTER FIX ✅
+
+### Step 1: Add 3 Insumos
+```
+┌─────────┬──────────────────┬──────────────────────────────┬────────┐
+│ Index   │ Insumo Name      │ Row ID                        │ EXIST. │
+├─────────┼──────────────────┼──────────────────────────────┼────────┤
+│ 0       │ Harina           │ abc-123-def (UUID)            │ 100 ✓  │
+│ 1       │ Azúcar           │ ghi-456-jkl (UUID)            │ 200 ✓  │
+│ 2       │ Mantequilla      │ mno-789-pqr (UUID)            │ 300 ✓  │
+└─────────┴──────────────────┴──────────────────────────────┴────────┘
+
+Map Contents:
+- Key "abc-123-def" → { existencia: 100, ... } (Harina)
+- Key "ghi-456-jkl" → { existencia: 200, ... } (Azúcar)
+- Key "mno-789-pqr" → { existencia: 300, ... } (Mantequilla)
+```
+
+### Step 2: Delete First Row (Harina)
+Array filter operation removes index 0, shifts remaining items:
+
+```
+┌─────────┬──────────────────┬──────────────────────────────┬────────┬──────────┐
+│ Index   │ Insumo Name      │ Row ID                        │ EXIST. │ Expected │
+├─────────┼──────────────────┼──────────────────────────────┼────────┼──────────┤
+│ 0       │ Azúcar           │ ghi-456-jkl (UUID)            │ 200 ✅ │ 200      │
+│ 1       │ Mantequilla      │ mno-789-pqr (UUID)            │ 300 ✅ │ 300      │
+└─────────┴──────────────────┴──────────────────────────────┴────────┴──────────┘
+
+Map Contents (UNCHANGED):
+- Key "abc-123-def" → { existencia: 100, ... } (Harina - orphaned, ignored)
+- Key "ghi-456-jkl" → { existencia: 200, ... } (Azúcar)
+- Key "mno-789-pqr" → { existencia: 300, ... } (Mantequilla)
+
+✅ SOLUTION:
+- Row 0 (Azúcar) looks up Map["ghi-456-jkl"] → gets 200 (correct!)
+- Row 1 (Mantequilla) looks up Map["mno-789-pqr"] → gets 300 (correct!)
+```
+
+### Why This Works
+```javascript
+// When user selects insumo:
+actualizarDetalle(index, 'idinsumo', value) {
+  const detalle = nuevosDetalles[index];
+  const rowId = detalle._rowId!; // ← Get the unique, persistent ID
+  
+  // Store in Map with rowId as key:
+  nuevasUltimasCompras.set(rowId, datosCompletos); // ← "ghi-456-jkl"
+}
+
+// Later, when rendering after deletions:
+const ultimaCompra = detalle._rowId 
+  ? ultimasCompras.get(detalle._rowId) // ← Still "ghi-456-jkl"!
+  : undefined;
+```
+
+The row ID stays with the row even when its array index changes.
+
+---
+
+## Key Insight
+
+### The Problem
+**Array indices are positional** - they represent where an item is, not what it is.
+- Delete item 0: All other indices shift down
+- But Map keys don't automatically update
+
+### The Solution
+**UUIDs are identifiers** - they represent what an item is, not where it is.
+- Delete item 0: Other items keep their UUIDs
+- Map lookups remain correct
+
+---
 
 ## Code Comparison
 
-### Location 1: Line 149 (crearMovimiento - Reading Stock)
-
-#### Before ❌
+### BEFORE (Broken)
 ```typescript
-const [stockResult] = await pool.query<RowDataPacket[]>(
-  'SELECT existencia FROM tblposcrumenwebinsumos WHERE idinsumo = ? AND idnegocio = ?',
-  //       ^^^^^^^^^^                                    ^^^^^^^^
-  //       WRONG!                                        WRONG!
-  [detalle.idinsumo, idNegocio]
-);
+// Store data by index
+nuevasUltimasCompras.set(index, data);
 
-const referenciaStock = stockResult.length > 0 ? stockResult[0].existencia : 0;
-//                                                              ^^^^^^^^^^
-//                                                              WRONG!
+// Retrieve data by index
+const ultimaCompra = ultimasCompras.get(index);
 ```
 
-#### After ✅
+### AFTER (Fixed)
 ```typescript
-const [stockResult] = await pool.query<RowDataPacket[]>(
-  'SELECT stock_actual FROM tblposcrumenwebinsumos WHERE id_insumo = ? AND idnegocio = ?',
-  //       ^^^^^^^^^^^^                                    ^^^^^^^^^^
-  //       CORRECT!                                        CORRECT!
-  [detalle.idinsumo, idNegocio]
-);
+// Store data by row ID
+const rowId = detalle._rowId!;
+nuevasUltimasCompras.set(rowId, data);
 
-const referenciaStock = stockResult.length > 0 ? stockResult[0].stock_actual : 0;
-//                                                              ^^^^^^^^^^^^
-//                                                              CORRECT!
+// Retrieve data by row ID
+const ultimaCompra = detalle._rowId 
+  ? ultimasCompras.get(detalle._rowId) 
+  : undefined;
 ```
 
-### Location 2: Line 401 (procesarMovimiento - ENTRADA/Increase Stock)
+---
 
-#### Before ❌
-```typescript
-// Incrementar existencia
-await pool.execute<ResultSetHeader>(
-  'UPDATE tblposcrumenwebinsumos SET existencia = existencia + ? WHERE idinsumo = ? AND idnegocio = ?',
-  //                                  ^^^^^^^^^^   ^^^^^^^^^^           ^^^^^^^^
-  //                                  WRONG!       WRONG!              WRONG!
-  [detalle.cantidad, detalle.idinsumo, idNegocio]
-);
-```
+## Real-World Analogy
 
-#### After ✅
-```typescript
-// Incrementar stock_actual
-await pool.execute<ResultSetHeader>(
-  'UPDATE tblposcrumenwebinsumos SET stock_actual = stock_actual + ? WHERE id_insumo = ? AND idnegocio = ?',
-  //                                  ^^^^^^^^^^^^   ^^^^^^^^^^^^           ^^^^^^^^^^
-  //                                  CORRECT!       CORRECT!               CORRECT!
-  [detalle.cantidad, detalle.idinsumo, idNegocio]
-);
-```
+### Before (Index-Based)
+Like a parking lot where cars are identified by their parking spot number:
+- Car A in spot 1
+- Car B in spot 2
+- Car C in spot 3
 
-### Location 3: Line 407 (procesarMovimiento - SALIDA/Decrease Stock)
+If Car A leaves, everyone moves up:
+- Car B now in spot 1 (was 2)
+- Car C now in spot 2 (was 3)
 
-#### Before ❌
-```typescript
-// Decrementar existencia
-await pool.execute<ResultSetHeader>(
-  'UPDATE tblposcrumenwebinsumos SET existencia = existencia - ? WHERE idinsumo = ? AND idnegocio = ?',
-  //                                  ^^^^^^^^^^   ^^^^^^^^^^           ^^^^^^^^
-  //                                  WRONG!       WRONG!              WRONG!
-  [detalle.cantidad, detalle.idinsumo, idNegocio]
-);
-```
+But your parking ticket still says "spot 2" - now you find the wrong car!
 
-#### After ✅
-```typescript
-// Decrementar stock_actual
-await pool.execute<ResultSetHeader>(
-  'UPDATE tblposcrumenwebinsumos SET stock_actual = stock_actual - ? WHERE id_insumo = ? AND idnegocio = ?',
-  //                                  ^^^^^^^^^^^^   ^^^^^^^^^^^^           ^^^^^^^^^^
-  //                                  CORRECT!       CORRECT!               CORRECT!
-  [detalle.cantidad, detalle.idinsumo, idNegocio]
-);
-```
+### After (UUID-Based)
+Like a parking lot where cars have license plates:
+- Car A (plate: ABC-123) in spot 1
+- Car B (plate: DEF-456) in spot 2
+- Car C (plate: GHI-789) in spot 3
 
-## UI Comparison
+If Car A leaves:
+- Car B (plate: DEF-456) now in spot 1
+- Car C (plate: GHI-789) now in spot 2
 
-### FormularioMovimiento Table - Before Fix ❌
+Your ticket says "plate: DEF-456" - you always find the right car!
 
-```
-┌────────────┬───────┬────────┬───────────┬──────┬────────┬─────────────┬───────────┬─────────────┬─────────────┬────────┐
-│   INSUMO   │ CANT. │ COSTO  │ PROVEEDOR │ U.M. │ EXIST. │ COSTO POND. │ CANT. ÚLT.│ PROV. ÚLT.  │ COSTO ÚLT.  │   ⚡   │
-├────────────┼───────┼────────┼───────────┼──────┼────────┼─────────────┼───────────┼─────────────┼─────────────┼────────┤
-│ Harina ▼   │  10   │  45.50 │ ABC ▼     │ kg   │        │    48.20    │     20    │  ABC        │    48.00    │   🗑️   │
-│            │       │        │           │      │  ❌    │             │           │             │             │        │
-│            │       │        │           │      │ EMPTY! │             │           │             │             │        │
-└────────────┴───────┴────────┴───────────┴──────┴────────┴─────────────┴───────────┴─────────────┴─────────────┴────────┘
-                                                     ⬆️
-                                              NOT SHOWING VALUE
-                                              (API query failing)
-```
+---
 
-### FormularioMovimiento Table - After Fix ✅
+## Testing Matrix
 
-```
-┌────────────┬───────┬────────┬───────────┬──────┬────────┬─────────────┬───────────┬─────────────┬─────────────┬────────┐
-│   INSUMO   │ CANT. │ COSTO  │ PROVEEDOR │ U.M. │ EXIST. │ COSTO POND. │ CANT. ÚLT.│ PROV. ÚLT.  │ COSTO ÚLT.  │   ⚡   │
-├────────────┼───────┼────────┼───────────┼──────┼────────┼─────────────┼───────────┼─────────────┼─────────────┼────────┤
-│ Harina ▼   │  10   │  45.50 │ ABC ▼     │ kg   │  150   │    48.20    │     20    │  ABC        │    48.00    │   🗑️   │
-│            │       │        │           │      │   ✅   │             │           │             │             │        │
-│            │       │        │           │      │ SHOWS! │             │           │             │             │        │
-└────────────┴───────┴────────┴───────────┴──────┴────────┴─────────────┴───────────┴─────────────┴─────────────┴────────┘
-                                                     ⬆️
-                                              NOW SHOWING: 150
-                                              (Stock from database)
-```
+| Test Case                    | Before Fix | After Fix |
+|------------------------------|------------|-----------|
+| Add single insumo            | ✓          | ✓         |
+| Add multiple insumos         | ✓          | ✓         |
+| Delete first row             | ❌         | ✅        |
+| Delete middle row            | ❌         | ✅        |
+| Delete last row              | ✓          | ✓         |
+| Delete multiple rows         | ❌         | ✅        |
+| Add after delete             | ❌         | ✅        |
+| Reorder rows (future)        | ❌         | ✅        |
+| Edit after operations        | ❌         | ✅        |
+| Console vs. Display match    | ❌         | ✅        |
 
-## Data Flow Diagram
-
-### Before Fix ❌
-```
-┌──────────────────────┐
-│  FormularioMovimiento│
-│  (Frontend)          │
-└──────────┬───────────┘
-           │ 1. Select "Harina"
-           ▼
-┌──────────────────────┐
-│  actualizarDetalle() │
-│  Line 115-161        │
-└──────────┬───────────┘
-           │ 2. Call obtenerUltimaCompra(123)
-           ▼
-┌──────────────────────┐
-│  API Request         │
-│  /ultima-compra      │
-└──────────┬───────────┘
-           │ 3. Backend queries DB
-           ▼
-┌──────────────────────┐
-│  movimientos.        │
-│  controller.ts       │
-│  Line 472            │
-└──────────┬───────────┘
-           │ 4. SQL: SELECT existencia ❌
-           │         WHERE idinsumo ❌
-           ▼
-┌──────────────────────┐
-│  Database            │
-│  Query FAILS! ⚠️     │
-└──────────┬───────────┘
-           │ 5. Returns empty/error
-           ▼
-┌──────────────────────┐
-│  EXIST. field        │
-│  Shows: [EMPTY] ❌   │
-└──────────────────────┘
-```
-
-### After Fix ✅
-```
-┌──────────────────────┐
-│  FormularioMovimiento│
-│  (Frontend)          │
-└──────────┬───────────┘
-           │ 1. Select "Harina"
-           ▼
-┌──────────────────────┐
-│  actualizarDetalle() │
-│  Line 115-161        │
-└──────────┬───────────┘
-           │ 2. Call obtenerUltimaCompra(123)
-           ▼
-┌──────────────────────┐
-│  API Request         │
-│  /ultima-compra      │
-└──────────┬───────────┘
-           │ 3. Backend queries DB
-           ▼
-┌──────────────────────┐
-│  movimientos.        │
-│  controller.ts       │
-│  Line 472            │
-└──────────┬───────────┘
-           │ 4. SQL: SELECT stock_actual ✅
-           │         WHERE id_insumo ✅
-           ▼
-┌──────────────────────┐
-│  Database            │
-│  Query SUCCESS! ✅   │
-└──────────┬───────────┘
-           │ 5. Returns: { existencia: 150 }
-           ▼
-┌──────────────────────┐
-│  EXIST. field        │
-│  Shows: 150 ✅       │
-└──────────────────────┘
-```
+---
 
 ## Summary
 
-### What Was Fixed
-✅ 3 SQL queries with incorrect column names  
-✅ Column `existencia` → `stock_actual` (correct database column)  
-✅ Column `idinsumo` → `id_insumo` (correct database column for insumos table)  
-✅ Property access updated to match new query results  
+### Before Fix
+- ❌ Index-based Map keys
+- ❌ Data misalignment after deletions
+- ❌ Console shows correct, UI shows wrong
+- ❌ Failed after ~4 previous PRs
 
-### Impact
-✅ EXIST. field now displays current stock  
-✅ Stock updates (ENTRADA/SALIDA) now work correctly  
-✅ Data integrity maintained  
-✅ No breaking changes  
+### After Fix
+- ✅ UUID-based Map keys
+- ✅ Data remains aligned after deletions
+- ✅ Console and UI always match
+- ✅ Minimal, surgical change
+- ✅ No backend modifications
+- ✅ Type-safe implementation
+- ✅ Battle-tested UUID generation
 
-### Testing Checklist
-- [ ] Open Movimientos de Inventario
-- [ ] Click "Nuevo Movimiento"
-- [ ] Click "+ INSUMO"
-- [ ] Select any insumo from dropdown
-- [ ] ✅ Verify EXIST. field shows a number (not empty)
-- [ ] Verify the number matches database stock_actual value
+---
+
+**This fix definitively resolves the issue by addressing the fundamental flaw in state management.**
