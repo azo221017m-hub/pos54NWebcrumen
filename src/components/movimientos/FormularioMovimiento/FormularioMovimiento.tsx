@@ -184,19 +184,21 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           
           // DEBUG: Display selected insumo values (with limited data when API fails)
           if (import.meta.env.DEV) {
-            const datosBasicos = nuevasUltimasCompras.get(index)!;
-            console.log('=== DEBUG: Insumo Seleccionado (datos básicos) ===');
-            console.log(`INSUMO: ${insumoSeleccionado.nombre}`);
-            console.log(`CANT.: ${nuevosDetalles[index].cantidad}`);
-            console.log(`COSTO: ${nuevosDetalles[index].costo}`);
-            console.log(`PROVEEDOR: ${nuevosDetalles[index].proveedor}`);
-            console.log(`U.M.: ${datosBasicos.unidadMedida}`);
-            console.log(`EXIST.: ${datosBasicos.existencia}`);
-            console.log(`COSTO POND.: ${datosBasicos.costoUltimoPonderado}`);
-            console.log(`CANT. ÚLT.: ${datosBasicos.cantidadUltimaCompra}`);
-            console.log(`PROV. ÚLT.: ${datosBasicos.proveedorUltimaCompra}`);
-            console.log(`COSTO ÚLT.: ${datosBasicos.costoUltimaCompra}`);
-            console.log('===================================================');
+            const datosBasicos = nuevasUltimasCompras.get(index);
+            if (datosBasicos) {
+              console.log('=== DEBUG: Insumo Seleccionado (datos básicos) ===');
+              console.log(`INSUMO: ${insumoSeleccionado.nombre}`);
+              console.log(`CANT.: ${nuevosDetalles[index].cantidad}`);
+              console.log(`COSTO: ${nuevosDetalles[index].costo}`);
+              console.log(`PROVEEDOR: ${nuevosDetalles[index].proveedor}`);
+              console.log(`U.M.: ${datosBasicos.unidadMedida}`);
+              console.log(`EXIST.: ${datosBasicos.existencia}`);
+              console.log(`COSTO POND.: ${datosBasicos.costoUltimoPonderado}`);
+              console.log(`CANT. ÚLT.: ${datosBasicos.cantidadUltimaCompra}`);
+              console.log(`PROV. ÚLT.: ${datosBasicos.proveedorUltimaCompra}`);
+              console.log(`COSTO ÚLT.: ${datosBasicos.costoUltimaCompra}`);
+              console.log('===================================================');
+            }
           }
         }
       }
