@@ -125,8 +125,10 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           unidadmedida: insumoSeleccionado.unidad_medida,
           tipoinsumo: 'INVENTARIO',
           costo: insumoSeleccionado.costo_promedio_ponderado || 0,
-          proveedor: insumoSeleccionado.idproveedor || ''
-        };
+          proveedor: insumoSeleccionado.idproveedor || '',
+          // Temporary field to hold stock_actual as fallback
+          stockActual: insumoSeleccionado.stock_actual
+        } as any;
         
         // Populate with insumo data: Existencia, Costo Promedio Ponderado, and Proveedor
         const nuevasUltimasCompras = new Map(ultimasCompras);
@@ -342,7 +344,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                     <td>
                       <input 
                         type="text" 
-                        value={ultimaCompra?.existencia ?? ''} 
+                        value={ultimaCompra?.existencia ?? (detalle as any).stockActual ?? ''} 
                         disabled 
                         className="campo-solo-lectura" 
                       />
