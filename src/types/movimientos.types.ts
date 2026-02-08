@@ -31,6 +31,7 @@ export interface DetalleMovimiento {
   idreferencia?: number;
   fechamovimiento?: string;
   observaciones?: string;
+  proveedor?: string;
   usuarioauditoria?: string;
   idnegocio?: number;
   estatusmovimiento: EstatusMovimiento;
@@ -78,6 +79,7 @@ export interface DetalleMovimientoCreate {
   costo?: number;
   precio?: number;
   observaciones?: string;
+  proveedor?: string;
 }
 
 // DTO para actualizar movimiento
@@ -98,4 +100,14 @@ export interface MovimientosListResponse {
   success: boolean;
   message: string;
   data: MovimientoConDetalles[];
+}
+
+// Response for ultima compra endpoint
+export interface UltimaCompraData {
+  existencia: number;
+  costoUltimoPonderado: number;
+  unidadMedida: string;
+  cantidadUltimaCompra: number;
+  proveedorUltimaCompra: string;
+  costoUltimaCompra: number;
 }

@@ -157,9 +157,9 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
         `INSERT INTO tblposcrumenwebdetallemovimientos (
           idinsumo, nombreinsumo, tipoinsumo, tipomovimiento, motivomovimiento,
           cantidad, referenciastock, unidadmedida, precio, costo, idreferencia,
-          fechamovimiento, observaciones, usuarioauditoria, idnegocio,
+          fechamovimiento, observaciones, proveedor, usuarioauditoria, idnegocio,
           estatusmovimiento, fecharegistro, fechaauditoria
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
         [
           detalle.idinsumo,
           detalle.nombreinsumo,
@@ -174,6 +174,7 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
           idMovimiento,
           movimientoData.fechamovimiento,
           detalle.observaciones || null,
+          detalle.proveedor || null,
           usuarioAuditoria,
           idNegocio,
           movimientoData.estatusmovimiento
@@ -446,6 +447,76 @@ export const procesarMovimiento = async (req: AuthRequest, res: Response): Promi
     res.status(500).json({
       success: false,
       message: 'Error al procesar el movimiento',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
+
+// GET /api/movimientos/insumo/:idinsumo/ultima-compra - Get last purchase data for an insumo
+export const obtenerUltimaCompra = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { idinsumo } = req.params;
+    const idNegocio = req.user?.idNegocio;
+    const isSuperuser = idNegocio === 99999;
+
+    if (!idNegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
+    // Get insumo data first
+    const [insumos] = await pool.query<RowDataPacket[]>(
+      'SELECT stock_actual, costo_promedio_ponderado, unidad_medida FROM tblposcrumenwebinsumos WHERE id_insumo = ? AND idnegocio = ?',
+      [idinsumo, idNegocio]
+    );
+
+    if (insumos.length === 0) {
+      res.status(404).json({
+        success: false,
+        message: 'Insumo no encontrado'
+      });
+      return;
+    }
+
+    const insumo = insumos[0];
+
+    // Get last purchase (COMPRA movement) for this insumo
+    const whereClause = isSuperuser
+      ? 'WHERE idinsumo = ? AND motivomovimiento = ?'
+      : 'WHERE idinsumo = ? AND idnegocio = ? AND motivomovimiento = ?';
+
+    const params = isSuperuser 
+      ? [idinsumo, 'COMPRA'] 
+      : [idinsumo, idNegocio, 'COMPRA'];
+
+    const [ultimaCompra] = await pool.query<RowDataPacket[]>(
+      `SELECT cantidad, proveedor, costo 
+       FROM tblposcrumenwebdetallemovimientos 
+       ${whereClause}
+       ORDER BY fechamovimiento DESC, iddetallemovimiento DESC
+       LIMIT 1`,
+      params
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        existencia: insumo.stock_actual || 0,
+        costoUltimoPonderado: insumo.costo_promedio_ponderado || 0,
+        unidadMedida: insumo.unidad_medida || '',
+        cantidadUltimaCompra: ultimaCompra.length > 0 ? (ultimaCompra[0].cantidad || 0) : 0,
+        proveedorUltimaCompra: ultimaCompra.length > 0 ? (ultimaCompra[0].proveedor || '') : '',
+        costoUltimaCompra: ultimaCompra.length > 0 ? (ultimaCompra[0].costo || 0) : 0
+      }
+    });
+  } catch (error) {
+    console.error('Error al obtener última compra:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener datos de última compra',
       error: error instanceof Error ? error.message : 'Unknown error'
     });
   }

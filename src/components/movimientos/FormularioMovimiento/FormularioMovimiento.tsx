@@ -4,10 +4,14 @@ import type {
   MovimientoConDetalles,
   MovimientoCreate,
   DetalleMovimientoCreate,
-  MotivoMovimiento
+  MotivoMovimiento,
+  UltimaCompraData
 } from '../../../types/movimientos.types';
 import type { Insumo } from '../../../types/insumo.types';
+import type { Proveedor } from '../../../types/proveedor.types';
 import { obtenerInsumos } from '../../../services/insumosService';
+import { obtenerProveedores } from '../../../services/proveedoresService';
+import { obtenerUltimaCompra } from '../../../services/movimientosService';
 import './FormularioMovimiento.css';
 
 interface Props {
@@ -28,6 +32,13 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
   // Estado para insumos
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [cargandoInsumos, setCargandoInsumos] = useState(false);
+  
+  // Estado para proveedores
+  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
+  const [cargandoProveedores, setCargandoProveedores] = useState(false);
+  
+  // Estado para datos de última compra por detalle
+  const [ultimasCompras, setUltimasCompras] = useState<Map<number, UltimaCompraData>>(new Map());
 
   // Cargar insumos disponibles
   useEffect(() => {
@@ -44,6 +55,22 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     };
     cargarInsumos();
   }, [idnegocio]);
+  
+  // Cargar proveedores disponibles
+  useEffect(() => {
+    const cargarProveedores = async () => {
+      setCargandoProveedores(true);
+      try {
+        const data = await obtenerProveedores();
+        setProveedores(data);
+      } catch (error) {
+        console.error('Error al cargar proveedores:', error);
+      } finally {
+        setCargandoProveedores(false);
+      }
+    };
+    cargarProveedores();
+  }, []);
 
   // Cargar datos si es edición
   useEffect(() => {
@@ -59,7 +86,8 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           unidadmedida: d.unidadmedida,
           costo: d.costo,
           precio: d.precio,
-          observaciones: d.observaciones
+          observaciones: d.observaciones,
+          proveedor: d.proveedor
         }))
       );
     }
@@ -74,7 +102,8 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
       unidadmedida: '',
       costo: 0,
       precio: 0,
-      observaciones: ''
+      observaciones: '',
+      proveedor: ''
     };
     setDetalles([...detalles, nuevoDetalle]);
   };
@@ -83,7 +112,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     setDetalles(detalles.filter((_, i) => i !== index));
   };
 
-  const actualizarDetalle = (index: number, campo: keyof DetalleMovimientoCreate, valor: any) => {
+  const actualizarDetalle = async (index: number, campo: keyof DetalleMovimientoCreate, valor: any) => {
     const nuevosDetalles = [...detalles];
     
     if (campo === 'idinsumo') {
@@ -97,6 +126,16 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           tipoinsumo: 'INVENTARIO',
           costo: insumoSeleccionado.costo_promedio_ponderado || 0
         };
+        
+        // Fetch last purchase data
+        try {
+          const ultimaCompraData = await obtenerUltimaCompra(insumoSeleccionado.id_insumo);
+          const nuevasUltimasCompras = new Map(ultimasCompras);
+          nuevasUltimasCompras.set(index, ultimaCompraData);
+          setUltimasCompras(nuevasUltimasCompras);
+        } catch (error) {
+          console.error('Error al obtener última compra:', error);
+        }
       }
     } else {
       (nuevosDetalles[index] as any)[campo] = valor;
@@ -183,6 +222,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                   <th>CANTIDAD</th>
                   <th>COSTO</th>
                   <th>PROVEEDOR</th>
+                  <th>Unidad de Medida</th>
                   <th>Existencia</th>
                   <th>Costo Última Ponderado</th>
                   <th>Cantidad Última Compra</th>
@@ -192,7 +232,9 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                 </tr>
               </thead>
               <tbody>
-                {detalles.map((detalle, index) => (
+                {detalles.map((detalle, index) => {
+                  const ultimaCompra = ultimasCompras.get(index);
+                  return (
                   <tr key={index}>
                     <td>
                       <select
@@ -229,28 +271,67 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                       />
                     </td>
                     <td>
-                      <input
-                        type="text"
-                        value={detalle.observaciones || ''}
-                        onChange={(e) => actualizarDetalle(index, 'observaciones', e.target.value)}
-                        placeholder="Proveedor"
-                        disabled={guardando}
+                      {/* Note: proveedor stores name directly, consistent with existing insumo.idproveedor field */}
+                      <select
+                        value={detalle.proveedor || ''}
+                        onChange={(e) => actualizarDetalle(index, 'proveedor', e.target.value)}
+                        disabled={guardando || cargandoProveedores}
+                      >
+                        <option value="">Seleccione...</option>
+                        {proveedores.map((proveedor) => (
+                          <option key={proveedor.id_proveedor} value={proveedor.nombre}>
+                            {proveedor.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <input 
+                        type="text" 
+                        value={ultimaCompra?.unidadMedida || detalle.unidadmedida || ''} 
+                        disabled 
+                        className="campo-solo-lectura" 
                       />
                     </td>
                     <td>
-                      <input type="text" disabled className="campo-solo-lectura" />
+                      <input 
+                        type="text" 
+                        value={ultimaCompra?.existencia ?? ''} 
+                        disabled 
+                        className="campo-solo-lectura" 
+                      />
                     </td>
                     <td>
-                      <input type="text" disabled className="campo-solo-lectura" />
+                      <input 
+                        type="text" 
+                        value={ultimaCompra?.costoUltimoPonderado ?? ''} 
+                        disabled 
+                        className="campo-solo-lectura" 
+                      />
                     </td>
                     <td>
-                      <input type="text" disabled className="campo-solo-lectura" />
+                      <input 
+                        type="text" 
+                        value={ultimaCompra?.cantidadUltimaCompra ?? ''} 
+                        disabled 
+                        className="campo-solo-lectura" 
+                      />
                     </td>
                     <td>
-                      <input type="text" disabled className="campo-solo-lectura" />
+                      <input 
+                        type="text" 
+                        value={ultimaCompra?.proveedorUltimaCompra || ''} 
+                        disabled 
+                        className="campo-solo-lectura" 
+                      />
                     </td>
                     <td>
-                      <input type="text" disabled className="campo-solo-lectura" />
+                      <input 
+                        type="text" 
+                        value={ultimaCompra?.costoUltimaCompra ?? ''} 
+                        disabled 
+                        className="campo-solo-lectura" 
+                      />
                     </td>
                     <td>
                       <button
@@ -263,7 +344,8 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                       </button>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

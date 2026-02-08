@@ -45,6 +45,7 @@ export interface DetalleMovimientoCreateDTO {
   costo?: number | null;
   precio?: number | null;
   observaciones?: string | null;
+  proveedor?: string | null;
 }
 
 // DTO para actualizar movimiento
@@ -71,6 +72,7 @@ export interface DetalleMovimiento {
   idreferencia: number;
   fechamovimiento: Date | string;
   observaciones: string | null;
+  proveedor: string | null;
   usuarioauditoria: string;
   idnegocio: number;
   estatusmovimiento: EstatusMovimiento;
@@ -91,6 +93,7 @@ export interface DetalleMovimientoCreate {
   costo?: number | null;
   idreferencia: number;
   observaciones?: string | null;
+  proveedor?: string | null;
   usuarioauditoria: string;
   idnegocio: number;
   estatusmovimiento?: EstatusMovimiento;

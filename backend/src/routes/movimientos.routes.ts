@@ -5,7 +5,8 @@ import {
   crearMovimiento,
   actualizarMovimiento,
   eliminarMovimiento,
-  procesarMovimiento
+  procesarMovimiento,
+  obtenerUltimaCompra
 } from '../controllers/movimientos.controller';
 import { authMiddleware } from '../middlewares/auth';
 
@@ -13,6 +14,9 @@ const router = Router();
 
 // Todas las rutas requieren autenticación
 router.use(authMiddleware);
+
+// Rutas específicas (deben ir antes de las rutas con :id)
+router.get('/insumo/:idinsumo/ultima-compra', obtenerUltimaCompra);
 
 // Rutas CRUD de movimientos
 router.get('/', obtenerMovimientos);

@@ -4,7 +4,8 @@ import type {
   MovimientoCreate,
   MovimientoUpdate,
   MovimientoResponse,
-  MovimientosListResponse
+  MovimientosListResponse,
+  UltimaCompraData
 } from '../types/movimientos.types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -118,5 +119,27 @@ export const procesarMovimiento = async (id: number): Promise<MovimientoConDetal
   } catch (error) {
     console.error('Error al procesar movimiento:', error);
     throw error;
+  }
+};
+
+// Obtener datos de última compra de un insumo
+export const obtenerUltimaCompra = async (idInsumo: number): Promise<UltimaCompraData> => {
+  try {
+    const response = await axios.get<{ success: boolean; data: UltimaCompraData }>(
+      `${API_URL}/movimientos/insumo/${idInsumo}/ultima-compra`,
+      getAuthHeaders()
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error('Error al obtener última compra:', error);
+    // Return default values on error
+    return {
+      existencia: 0,
+      costoUltimoPonderado: 0,
+      unidadMedida: '',
+      cantidadUltimaCompra: 0,
+      proveedorUltimaCompra: '',
+      costoUltimaCompra: 0
+    };
   }
 };
