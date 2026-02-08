@@ -124,17 +124,33 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           nombreinsumo: insumoSeleccionado.nombre,
           unidadmedida: insumoSeleccionado.unidad_medida,
           tipoinsumo: 'INVENTARIO',
-          costo: insumoSeleccionado.costo_promedio_ponderado || 0
+          costo: insumoSeleccionado.costo_promedio_ponderado || 0,
+          proveedor: insumoSeleccionado.idproveedor || ''
         };
+        
+        // Populate with insumo data: Existencia, Costo Promedio Ponderado, and Proveedor
+        const nuevasUltimasCompras = new Map(ultimasCompras);
+        nuevasUltimasCompras.set(index, {
+          existencia: insumoSeleccionado.stock_actual,
+          costoUltimoPonderado: insumoSeleccionado.costo_promedio_ponderado,
+          unidadMedida: insumoSeleccionado.unidad_medida,
+          cantidadUltimaCompra: 0,
+          proveedorUltimaCompra: '',
+          costoUltimaCompra: 0
+        });
         
         // Fetch last purchase data
         try {
           const ultimaCompraData = await obtenerUltimaCompra(insumoSeleccionado.id_insumo);
-          const nuevasUltimasCompras = new Map(ultimasCompras);
-          nuevasUltimasCompras.set(index, ultimaCompraData);
+          nuevasUltimasCompras.set(index, {
+            ...nuevasUltimasCompras.get(index)!,
+            ...ultimaCompraData
+          });
           setUltimasCompras(nuevasUltimasCompras);
         } catch (error) {
           console.error('Error al obtener última compra:', error);
+          // Still set state with basic insumo data even if ultima compra fails
+          setUltimasCompras(nuevasUltimasCompras);
         }
       }
     } else {
@@ -201,6 +217,18 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
               <button type="button" className="btn-add-insumo" onClick={agregarDetalle}>
                 + INSUMO
               </button>
+              
+              {/* Observaciones moved here */}
+              <div className="observaciones-inline">
+                <label>Observaciones</label>
+                <input
+                  type="text"
+                  value={observaciones}
+                  onChange={(e) => setObservaciones(e.target.value)}
+                  placeholder="Observaciones generales del movimiento..."
+                  disabled={guardando}
+                />
+              </div>
             </div>
 
             <div className="botones-accion">
@@ -348,18 +376,6 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                 })}
               </tbody>
             </table>
-          </div>
-
-          {/* Observaciones */}
-          <div className="observaciones-section">
-            <label>Observaciones</label>
-            <textarea
-              value={observaciones}
-              onChange={(e) => setObservaciones(e.target.value)}
-              placeholder="Observaciones generales del movimiento..."
-              disabled={guardando}
-              rows={3}
-            />
           </div>
         </form>
       </div>
