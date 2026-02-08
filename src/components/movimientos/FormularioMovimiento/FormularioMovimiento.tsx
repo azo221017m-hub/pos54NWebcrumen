@@ -271,6 +271,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                       />
                     </td>
                     <td>
+                      {/* Note: proveedor stores name directly, consistent with existing insumo.idproveedor field */}
                       <select
                         value={detalle.proveedor || ''}
                         onChange={(e) => actualizarDetalle(index, 'proveedor', e.target.value)}

@@ -507,9 +507,9 @@ export const obtenerUltimaCompra = async (req: AuthRequest, res: Response): Prom
         existencia: insumo.stock_actual || 0,
         costoUltimoPonderado: insumo.costo_promedio_ponderado || 0,
         unidadMedida: insumo.unidad_medida || '',
-        cantidadUltimaCompra: ultimaCompra.length > 0 ? ultimaCompra[0].cantidad : 0,
-        proveedorUltimaCompra: ultimaCompra.length > 0 ? ultimaCompra[0].proveedor : '',
-        costoUltimaCompra: ultimaCompra.length > 0 ? ultimaCompra[0].costo : 0
+        cantidadUltimaCompra: ultimaCompra.length > 0 ? (ultimaCompra[0].cantidad || 0) : 0,
+        proveedorUltimaCompra: ultimaCompra.length > 0 ? (ultimaCompra[0].proveedor || '') : '',
+        costoUltimaCompra: ultimaCompra.length > 0 ? (ultimaCompra[0].costo || 0) : 0
       }
     });
   } catch (error) {
