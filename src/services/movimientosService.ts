@@ -130,9 +130,19 @@ export const obtenerUltimaCompra = async (idInsumo: number): Promise<UltimaCompr
       getAuthHeaders()
     );
     return response.data.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error al obtener última compra:', error);
-    // Throw error to allow caller to handle it with fallback data from insumo
-    throw error;
+    
+    // If 404 or any other error, return default values as per requirements:
+    // 0 for int/decimal, empty string for varchar/string variables
+    console.log('No se encontró información de última compra, aplicando valores por defecto');
+    return {
+      existencia: 0,
+      costoUltimoPonderado: 0,
+      unidadMedida: '',
+      cantidadUltimaCompra: 0,
+      proveedorUltimaCompra: '',
+      costoUltimaCompra: 0
+    };
   }
 };
