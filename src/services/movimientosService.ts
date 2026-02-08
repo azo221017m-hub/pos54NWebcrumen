@@ -133,21 +133,16 @@ export const obtenerUltimaCompra = async (idInsumo: number): Promise<UltimaCompr
   } catch (error: any) {
     console.error('Error al obtener última compra:', error);
     
-    // If 404 or any error, return default values as per requirements:
-    // 0 for int/decimal, null/empty string for var
-    if (error?.response?.status === 404 || error) {
-      console.log('No se encontró información de última compra, aplicando valores por defecto');
-      return {
-        existencia: 0,
-        costoUltimoPonderado: 0,
-        unidadMedida: '',
-        cantidadUltimaCompra: 0,
-        proveedorUltimaCompra: '',
-        costoUltimaCompra: 0
-      };
-    }
-    
-    // For any other error, throw
-    throw error;
+    // If 404 or any other error, return default values as per requirements:
+    // 0 for int/decimal, empty string for varchar/string variables
+    console.log('No se encontró información de última compra, aplicando valores por defecto');
+    return {
+      existencia: 0,
+      costoUltimoPonderado: 0,
+      unidadMedida: '',
+      cantidadUltimaCompra: 0,
+      proveedorUltimaCompra: '',
+      costoUltimaCompra: 0
+    };
   }
 };
