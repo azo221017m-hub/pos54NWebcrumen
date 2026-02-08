@@ -36,6 +36,25 @@ const generarClaveTurno = (idusuario: number, idnegocio: number): string => {
   return `${aa}${mm}${dd}${idnegocio}${idusuario}${HH}${MM}${SS}`;
 };
 
+/**
+ * Helper function to get claveturno from the open turno of a user.
+ * Exported for use in related controllers that need to reference open shifts.
+ * 
+ * @param usuarioturno - The username/alias of the user
+ * @param idnegocio - The business ID
+ * @returns The claveturno of the open shift, or null if none exists
+ */
+export const obtenerClaveTurnoAbierto = async (usuarioturno: string, idnegocio: number): Promise<string | null> => {
+  const [turnosAbiertos] = await pool.query<RowDataPacket[]>(
+    `SELECT claveturno FROM tblposcrumenwebturnos 
+     WHERE usuarioturno = ? AND idnegocio = ? AND estatusturno = 'abierto'
+     LIMIT 1`,
+    [usuarioturno, idnegocio]
+  );
+  
+  return turnosAbiertos.length > 0 ? turnosAbiertos[0].claveturno : null;
+};
+
 // Obtener todos los turnos de un negocio
 export const obtenerTurnos = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -648,6 +667,55 @@ export const obtenerFondoCaja = async (req: AuthRequest, res: Response): Promise
     console.error('Error al obtener fondo de caja:', error);
     res.status(500).json({ 
       message: 'Error al obtener fondo de caja',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+};
+
+// GET /api/turnos/turno-abierto - Obtener el turno abierto del usuario actual
+export const obtenerTurnoAbierto = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const idnegocio = req.user?.idNegocio;
+    const usuarioturno = req.user?.alias;
+
+    if (!idnegocio || !usuarioturno) {
+      res.status(401).json({ 
+        message: 'Usuario no autenticado o sin negocio asignado'
+      });
+      return;
+    }
+
+    console.log('Buscando turno abierto para usuario:', usuarioturno, 'negocio:', idnegocio);
+
+    // Buscar turno abierto del usuario actual
+    const [turnos] = await pool.query<Turno[]>(
+      `SELECT idturno, numeroturno, fechainicioturno, estatusturno, claveturno, usuarioturno, idnegocio, metaturno
+       FROM tblposcrumenwebturnos 
+       WHERE usuarioturno = ? AND idnegocio = ? AND estatusturno = 'abierto'
+       LIMIT 1`,
+      [usuarioturno, idnegocio]
+    );
+
+    if (turnos.length === 0) {
+      res.status(404).json({ 
+        success: false,
+        message: 'No hay turno abierto para el usuario actual'
+      });
+      return;
+    }
+
+    const turno = turnos[0];
+    console.log('Turno abierto encontrado:', turno.claveturno);
+
+    res.json({
+      success: true,
+      data: turno
+    });
+  } catch (error) {
+    console.error('Error al obtener turno abierto:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error al obtener turno abierto',
       error: error instanceof Error ? error.message : 'Error desconocido'
     });
   }

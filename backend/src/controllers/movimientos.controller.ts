@@ -9,6 +9,7 @@ import {
   MovimientoUpdate,
   DetalleMovimiento
 } from '../types/movimientos.types';
+import { obtenerClaveTurnoAbierto } from './turnos.controller';
 
 // GET /api/movimientos - Obtener todos los movimientos
 export const obtenerMovimientos = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -113,7 +114,7 @@ export const obtenerMovimientoPorId = async (req: AuthRequest, res: Response): P
 export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idNegocio = req.user?.idNegocio;
-    const usuarioAuditoria = req.user?.nombre || 'Sistema';
+    const usuarioAuditoria = req.user?.alias || req.user?.nombre || 'Sistema';
     const movimientoData: MovimientoCreate = req.body;
 
     if (!movimientoData.detalles || movimientoData.detalles.length === 0) {
@@ -124,15 +125,28 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
       return;
     }
 
+    // Get the claveturno from the open turno of the logged-in user
+    const idreferencia = await obtenerClaveTurnoAbierto(usuarioAuditoria, idNegocio!);
+    
+    // Validate that there's an open turno - this is required for inventory movements
+    if (!idreferencia) {
+      res.status(400).json({
+        success: false,
+        message: 'No hay turno abierto. Por favor, abra un turno antes de crear un movimiento.'
+      });
+      return;
+    }
+
     // Insertar movimiento principal
     const [resultMovimiento] = await pool.execute<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebmovimientos (
-        tipomovimiento, motivomovimiento, fechamovimiento, observaciones,
+        tipomovimiento, motivomovimiento, idreferencia, fechamovimiento, observaciones,
         usuarioauditoria, idnegocio, estatusmovimiento, fecharegistro, fechaauditoria
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
       [
         movimientoData.tipomovimiento,
         movimientoData.motivomovimiento,
+        idreferencia,
         movimientoData.fechamovimiento,
         movimientoData.observaciones || null,
         usuarioAuditoria,
