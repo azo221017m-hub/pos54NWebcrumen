@@ -12,6 +12,7 @@ import type { Proveedor } from '../../../types/proveedor.types';
 import { obtenerInsumos } from '../../../services/insumosService';
 import { obtenerProveedores } from '../../../services/proveedoresService';
 import { obtenerUltimaCompra } from '../../../services/movimientosService';
+import { showInfoToast } from '../../FeedbackToast';
 import './FormularioMovimiento.css';
 
 // Extended type to include stock_actual as a fallback field
@@ -117,6 +118,28 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     setDetalles(detalles.filter((_, i) => i !== index));
   };
 
+  // Helper function to format insumo information message
+  // Format matches requirements for fields: INSUMO, CANT., COSTO, PROVEEDOR, U.M., EXIST., COSTO POND., CANT. ÚLT., PROV. ÚLT., COSTO ÚLT.
+  // Message uses newlines to separate logical sections and pipes (|) to separate related fields within each line
+  const formatInsumoMessage = (
+    insumoNombre: string,
+    cantidad: number,
+    costo: number | undefined,
+    proveedor: string | undefined,
+    datos: UltimaCompraData
+  ): string => {
+    const lines = [
+      `INSUMO: ${insumoNombre}`,
+      `CANT.: ${cantidad} | COSTO: ${costo ?? 0}`,
+      `PROVEEDOR: ${proveedor || 'N/A'}`,
+      `U.M.: ${datos.unidadMedida} | EXIST.: ${datos.existencia}`,
+      `COSTO POND.: ${datos.costoUltimoPonderado}`,
+      `CANT. ÚLT.: ${datos.cantidadUltimaCompra} | PROV. ÚLT.: ${datos.proveedorUltimaCompra || 'N/A'}`,
+      `COSTO ÚLT.: ${datos.costoUltimaCompra}`
+    ];
+    return lines.join('\n');
+  };
+
   const actualizarDetalle = async (index: number, campo: keyof DetalleMovimientoExtended, valor: any) => {
     const nuevosDetalles = [...detalles];
     
@@ -162,6 +185,16 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           nuevasUltimasCompras.set(index, datosCompletos);
           setUltimasCompras(nuevasUltimasCompras);
           
+          // Display message to user with insumo information
+          const mensaje = formatInsumoMessage(
+            insumoSeleccionado.nombre,
+            nuevosDetalles[index].cantidad,
+            nuevosDetalles[index].costo,
+            nuevosDetalles[index].proveedor,
+            datosCompletos
+          );
+          showInfoToast(mensaje);
+          
           // DEBUG: Display selected insumo values
           if (import.meta.env.DEV) {
             console.log('=== DEBUG: Insumo Seleccionado ===');
@@ -181,6 +214,19 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           console.error('Error al obtener última compra:', error);
           // Still set state with basic insumo data even if ultima compra fails
           setUltimasCompras(nuevasUltimasCompras);
+          
+          // Display message to user with basic insumo information
+          const datosBasicos = nuevasUltimasCompras.get(index);
+          if (datosBasicos) {
+            const mensaje = formatInsumoMessage(
+              insumoSeleccionado.nombre,
+              nuevosDetalles[index].cantidad,
+              nuevosDetalles[index].costo,
+              nuevosDetalles[index].proveedor,
+              datosBasicos
+            );
+            showInfoToast(mensaje);
+          }
           
           // DEBUG: Display selected insumo values (with limited data when API fails)
           if (import.meta.env.DEV) {
