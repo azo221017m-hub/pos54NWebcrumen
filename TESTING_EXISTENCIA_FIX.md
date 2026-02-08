@@ -72,7 +72,7 @@ The EXIST. value in console should match the EXIST. value displayed in the table
 ## Technical Changes
 - Added `_rowId` field to `DetalleMovimientoExtended` interface
 - Changed `ultimasCompras` Map from `Map<number, UltimaCompraData>` to `Map<string, UltimaCompraData>`
-- Generate unique ID on row creation: `row-${Date.now()}-${Math.random()}`
+- Generate unique ID on row creation using Web Crypto API: `crypto.randomUUID()`
 - Updated all Map operations to use `_rowId` instead of array index
 - Row ID is removed before submitting data to backend
 
