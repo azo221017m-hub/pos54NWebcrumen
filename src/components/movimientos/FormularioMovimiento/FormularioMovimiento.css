@@ -16,7 +16,7 @@
   background: white;
   border-radius: 8px;
   width: 100%;
-  max-width: 95vw;
+  max-width: calc(95vw - 2rem);
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -180,7 +180,6 @@
 .tabla-insumos {
   width: 100%;
   border-collapse: collapse;
-  min-width: 100%;
   table-layout: fixed;
 }
 
@@ -195,77 +194,78 @@
   color: #333;
   border-bottom: 2px solid #ddd;
   white-space: normal;
+  word-wrap: break-word;
   font-size: 0.75rem;
-  line-height: 1.2;
+  line-height: 1.3;
+  vertical-align: top;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* Column width optimization */
 .tabla-insumos th:nth-child(1), /* INSUMO */
 .tabla-insumos td:nth-child(1) {
-  width: 15%;
-  min-width: 120px;
+  width: 16%;
+  min-width: 110px;
 }
 
-.tabla-insumos th:nth-child(2), /* CANTIDAD */
+.tabla-insumos th:nth-child(2), /* CANT. */
 .tabla-insumos td:nth-child(2) {
   width: 7%;
-  min-width: 70px;
+  min-width: 65px;
 }
 
 .tabla-insumos th:nth-child(3), /* COSTO */
 .tabla-insumos td:nth-child(3) {
   width: 7%;
-  min-width: 70px;
+  min-width: 65px;
 }
 
 .tabla-insumos th:nth-child(4), /* PROVEEDOR */
 .tabla-insumos td:nth-child(4) {
-  width: 12%;
-  min-width: 100px;
+  width: 11%;
+  min-width: 90px;
 }
 
-.tabla-insumos th:nth-child(5), /* Unidad de Medida */
+.tabla-insumos th:nth-child(5), /* U.M. */
 .tabla-insumos td:nth-child(5) {
-  width: 7%;
-  min-width: 60px;
+  width: 6%;
+  min-width: 55px;
 }
 
-.tabla-insumos th:nth-child(6), /* Existencia */
+.tabla-insumos th:nth-child(6), /* EXIST. */
 .tabla-insumos td:nth-child(6) {
   width: 7%;
-  min-width: 70px;
+  min-width: 65px;
 }
 
-.tabla-insumos th:nth-child(7), /* Costo Última Ponderado */
+.tabla-insumos th:nth-child(7), /* COSTO POND. */
 .tabla-insumos td:nth-child(7) {
   width: 8%;
-  min-width: 70px;
+  min-width: 65px;
 }
 
-.tabla-insumos th:nth-child(8), /* Cantidad Última Compra */
+.tabla-insumos th:nth-child(8), /* CANT. ÚLT. */
 .tabla-insumos td:nth-child(8) {
   width: 8%;
-  min-width: 70px;
+  min-width: 65px;
 }
 
-.tabla-insumos th:nth-child(9), /* Proveedor Última Compra */
+.tabla-insumos th:nth-child(9), /* PROV. ÚLT. */
 .tabla-insumos td:nth-child(9) {
-  width: 12%;
-  min-width: 100px;
+  width: 11%;
+  min-width: 90px;
 }
 
-.tabla-insumos th:nth-child(10), /* Costo Última Compra */
+.tabla-insumos th:nth-child(10), /* COSTO ÚLT. */
 .tabla-insumos td:nth-child(10) {
   width: 8%;
-  min-width: 70px;
+  min-width: 65px;
 }
 
 .tabla-insumos th:nth-child(11), /* Delete button */
 .tabla-insumos td:nth-child(11) {
   width: 5%;
-  min-width: 40px;
+  min-width: 45px;
   text-align: center;
 }
 
