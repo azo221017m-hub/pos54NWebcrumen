@@ -146,11 +146,11 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
     // Obtener stock actual de cada insumo
     for (const detalle of movimientoData.detalles) {
       const [stockResult] = await pool.query<RowDataPacket[]>(
-        'SELECT existencia FROM tblposcrumenwebinsumos WHERE idinsumo = ? AND idnegocio = ?',
+        'SELECT stock_actual FROM tblposcrumenwebinsumos WHERE id_insumo = ? AND idnegocio = ?',
         [detalle.idinsumo, idNegocio]
       );
 
-      const referenciaStock = stockResult.length > 0 ? stockResult[0].existencia : 0;
+      const referenciaStock = stockResult.length > 0 ? stockResult[0].stock_actual : 0;
 
       // Insertar detalle
       await pool.execute<ResultSetHeader>(
@@ -396,15 +396,15 @@ export const procesarMovimiento = async (req: AuthRequest, res: Response): Promi
     // Actualizar inventario según tipo de movimiento
     for (const detalle of detalles) {
       if (movimiento.tipomovimiento === 'ENTRADA') {
-        // Incrementar existencia
+        // Incrementar stock_actual
         await pool.execute<ResultSetHeader>(
-          'UPDATE tblposcrumenwebinsumos SET existencia = existencia + ? WHERE idinsumo = ? AND idnegocio = ?',
+          'UPDATE tblposcrumenwebinsumos SET stock_actual = stock_actual + ? WHERE id_insumo = ? AND idnegocio = ?',
           [detalle.cantidad, detalle.idinsumo, idNegocio]
         );
       } else if (movimiento.tipomovimiento === 'SALIDA') {
-        // Decrementar existencia
+        // Decrementar stock_actual
         await pool.execute<ResultSetHeader>(
-          'UPDATE tblposcrumenwebinsumos SET existencia = existencia - ? WHERE idinsumo = ? AND idnegocio = ?',
+          'UPDATE tblposcrumenwebinsumos SET stock_actual = stock_actual - ? WHERE id_insumo = ? AND idnegocio = ?',
           [detalle.cantidad, detalle.idinsumo, idNegocio]
         );
       }
