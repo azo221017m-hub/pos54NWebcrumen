@@ -95,7 +95,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           precio: d.precio,
           observaciones: d.observaciones,
           proveedor: d.proveedor,
-          _rowId: `row-${Date.now()}-${Math.random()}` // Generate unique ID for each row
+          _rowId: crypto.randomUUID() // Generate unique ID for each row
         }))
       );
     }
@@ -112,7 +112,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
       precio: 0,
       observaciones: '',
       proveedor: '',
-      _rowId: `row-${Date.now()}-${Math.random()}` // Generate unique ID for this row
+      _rowId: crypto.randomUUID() // Generate unique ID for this row
     };
     setDetalles([...detalles, nuevoDetalle]);
   };
