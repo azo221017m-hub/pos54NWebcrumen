@@ -161,10 +161,45 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           
           nuevasUltimasCompras.set(index, datosCompletos);
           setUltimasCompras(nuevasUltimasCompras);
+          
+          // DEBUG: Display selected insumo values
+          if (import.meta.env.DEV) {
+            console.log('=== DEBUG: Insumo Seleccionado ===');
+            console.log(`INSUMO: ${insumoSeleccionado.nombre}`);
+            console.log(`CANT.: ${nuevosDetalles[index].cantidad}`);
+            console.log(`COSTO: ${nuevosDetalles[index].costo}`);
+            console.log(`PROVEEDOR: ${nuevosDetalles[index].proveedor}`);
+            console.log(`U.M.: ${datosCompletos.unidadMedida}`);
+            console.log(`EXIST.: ${datosCompletos.existencia}`);
+            console.log(`COSTO POND.: ${datosCompletos.costoUltimoPonderado}`);
+            console.log(`CANT. ÚLT.: ${datosCompletos.cantidadUltimaCompra}`);
+            console.log(`PROV. ÚLT.: ${datosCompletos.proveedorUltimaCompra}`);
+            console.log(`COSTO ÚLT.: ${datosCompletos.costoUltimaCompra}`);
+            console.log('================================');
+          }
         } catch (error) {
           console.error('Error al obtener última compra:', error);
           // Still set state with basic insumo data even if ultima compra fails
           setUltimasCompras(nuevasUltimasCompras);
+          
+          // DEBUG: Display selected insumo values (with limited data when API fails)
+          if (import.meta.env.DEV) {
+            const datosBasicos = nuevasUltimasCompras.get(index);
+            if (datosBasicos) {
+              console.log('=== DEBUG: Insumo Seleccionado (datos básicos) ===');
+              console.log(`INSUMO: ${insumoSeleccionado.nombre}`);
+              console.log(`CANT.: ${nuevosDetalles[index].cantidad}`);
+              console.log(`COSTO: ${nuevosDetalles[index].costo}`);
+              console.log(`PROVEEDOR: ${nuevosDetalles[index].proveedor}`);
+              console.log(`U.M.: ${datosBasicos.unidadMedida}`);
+              console.log(`EXIST.: ${datosBasicos.existencia}`);
+              console.log(`COSTO POND.: ${datosBasicos.costoUltimoPonderado}`);
+              console.log(`CANT. ÚLT.: ${datosBasicos.cantidadUltimaCompra}`);
+              console.log(`PROV. ÚLT.: ${datosBasicos.proveedorUltimaCompra}`);
+              console.log(`COSTO ÚLT.: ${datosBasicos.costoUltimaCompra}`);
+              console.log('===================================================');
+            }
+          }
         }
       }
     } else {
