@@ -256,7 +256,6 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                   <th>COSTO</th>
                   <th>PROVEEDOR</th>
                   <th>U.M.</th>
-                  <th>EXIST.</th>
                   <th>COSTO POND.</th>
                   <th>CANT. ÚLT.</th>
                   <th>PROV. ÚLT.</th>
@@ -322,14 +321,6 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                       <input 
                         type="text" 
                         value={ultimaCompra?.unidadMedida || detalle.unidadmedida || ''} 
-                        disabled 
-                        className="campo-solo-lectura" 
-                      />
-                    </td>
-                    <td>
-                      <input 
-                        type="text" 
-                        value={ultimaCompra?.existencia ?? ''} 
                         disabled 
                         className="campo-solo-lectura" 
                       />
