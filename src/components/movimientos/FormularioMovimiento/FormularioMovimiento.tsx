@@ -21,6 +21,9 @@ interface DetalleMovimientoExtended extends DetalleMovimientoCreate {
   _rowId?: string; // Unique identifier for this row to maintain data mapping
 }
 
+// Movement types that are considered ENTRADA
+const ENTRADA_TYPES: readonly MotivoMovimiento[] = ['COMPRA', 'AJUSTE_MANUAL', 'DEVOLUCION', 'INV_INICIAL'] as const;
+
 interface Props {
   movimiento: MovimientoConDetalles | null;
   onGuardar: (data: MovimientoCreate) => Promise<void>;
@@ -248,7 +251,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
       return;
     }
 
-    const tipoMovimiento = motivomovimiento === 'COMPRA' || motivomovimiento === 'AJUSTE_MANUAL' || motivomovimiento === 'DEVOLUCION' || motivomovimiento === 'INV_INICIAL' ? 'ENTRADA' : 'SALIDA';
+    const tipoMovimiento = ENTRADA_TYPES.includes(motivomovimiento) ? 'ENTRADA' : 'SALIDA';
 
     const movimientoData: MovimientoCreate = {
       tipomovimiento: tipoMovimiento,
@@ -412,7 +415,11 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                         <button
                           type="button"
                           className="btn-ultima-compra"
-                          onClick={() => actualizarDetalle(index, 'costo', ultimaCompra.costoUltimaCompra)}
+                          onClick={() => {
+                            if (ultimaCompra.costoUltimaCompra !== undefined) {
+                              actualizarDetalle(index, 'costo', ultimaCompra.costoUltimaCompra);
+                            }
+                          }}
                           disabled={guardando}
                           title={`Usar costo última compra: ${ultimaCompra.costoUltimaCompra}`}
                         >
@@ -434,7 +441,11 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                         <button
                           type="button"
                           className="btn-ultima-compra"
-                          onClick={() => actualizarDetalle(index, 'proveedor', ultimaCompra.proveedorUltimaCompra)}
+                          onClick={() => {
+                            if (ultimaCompra.proveedorUltimaCompra) {
+                              actualizarDetalle(index, 'proveedor', ultimaCompra.proveedorUltimaCompra);
+                            }
+                          }}
                           disabled={guardando}
                           title={`Usar proveedor última compra: ${ultimaCompra.proveedorUltimaCompra}`}
                         >
