@@ -2,7 +2,7 @@
 
 export type TipoInsumo = 'DIRECTO' | 'INVENTARIO' | 'RECETA';
 export type TipoMovimiento = 'ENTRADA' | 'SALIDA';
-export type MotivoMovimiento = 'COMPRA' | 'VENTA' | 'AJUSTE_MANUAL' | 'MERMA' | 'CANCELACION' | 'DEVOLUCION' | 'INV_INICIAL' | 'CONSUMO';
+export type MotivoMovimiento = 'COMPRA' | 'VENTA' | 'AJUSTE_MANUAL' | 'MERMA' | 'INV_INICIAL' | 'CONSUMO';
 export type EstatusMovimiento = 'PROCESADO' | 'PENDIENTE';
 
 // Movimiento principal (tblposcrumenwebmovimientos)

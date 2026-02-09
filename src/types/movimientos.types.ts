@@ -6,8 +6,6 @@ export type MotivoMovimiento =
   | 'COMPRA' 
   | 'AJUSTE_MANUAL' 
   | 'MERMA' 
-  | 'CANCELACION' 
-  | 'DEVOLUCION' 
   | 'INV_INICIAL' 
   | 'CONSUMO';
 
