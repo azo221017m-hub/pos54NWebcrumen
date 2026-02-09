@@ -327,11 +327,9 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                 required
               >
                 <option value="COMPRA">COMPRA</option>
-                <option value="AJUSTE_MANUAL">AJUSTE_MANUAL</option>
+                <option value="AJUSTE_MANUAL">AJUSTE MANUAL</option>
                 <option value="MERMA">MERMA</option>
-                <option value="CANCELACION">CANCELACION</option>
-                <option value="DEVOLUCION">DEVOLUCION</option>
-                <option value="INV_INICIAL">INV_INICIAL</option>
+                <option value="INV_INICIAL">INV. INICIAL</option>
                 <option value="CONSUMO">CONSUMO</option>
               </select>
               <button type="button" className="btn-add-insumo" onClick={agregarDetalle}>
@@ -416,7 +414,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                         step="0.01"
                         value={detalle.costo || 0}
                         onChange={(e) => actualizarDetalle(index, 'costo', Number(e.target.value))}
-                        disabled={guardando}
+                        disabled={guardando || motivoMovimiento === 'MERMA' || motivoMovimiento === 'CONSUMO'}
                       />
                     </td>
                     <td>
@@ -424,7 +422,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                       <select
                         value={detalle.proveedor || ''}
                         onChange={(e) => actualizarDetalle(index, 'proveedor', e.target.value)}
-                        disabled={guardando || cargandoProveedores}
+                        disabled={guardando || cargandoProveedores || motivoMovimiento === 'MERMA' || motivoMovimiento === 'CONSUMO'}
                       >
                         <option value="">Seleccione...</option>
                         {proveedores.map((proveedor) => (
