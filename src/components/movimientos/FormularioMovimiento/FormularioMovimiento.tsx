@@ -411,60 +411,28 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                       />
                     </td>
                     <td>
-                      {ultimaCompra?.costoUltimaCompra ? (
-                        <button
-                          type="button"
-                          className="btn-ultima-compra"
-                          onClick={() => {
-                            if (ultimaCompra.costoUltimaCompra !== undefined) {
-                              actualizarDetalle(index, 'costo', ultimaCompra.costoUltimaCompra);
-                            }
-                          }}
-                          disabled={guardando}
-                          title={`Usar costo última compra: ${ultimaCompra.costoUltimaCompra}`}
-                        >
-                          Usar ${ultimaCompra.costoUltimaCompra}
-                        </button>
-                      ) : (
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={detalle.costo || 0}
-                          onChange={(e) => actualizarDetalle(index, 'costo', Number(e.target.value))}
-                          disabled={guardando}
-                        />
-                      )}
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={detalle.costo || 0}
+                        onChange={(e) => actualizarDetalle(index, 'costo', Number(e.target.value))}
+                        disabled={guardando}
+                      />
                     </td>
                     <td>
                       {/* Note: proveedor stores name directly, consistent with existing insumo.idproveedor field */}
-                      {ultimaCompra?.proveedorUltimaCompra ? (
-                        <button
-                          type="button"
-                          className="btn-ultima-compra"
-                          onClick={() => {
-                            if (ultimaCompra.proveedorUltimaCompra) {
-                              actualizarDetalle(index, 'proveedor', ultimaCompra.proveedorUltimaCompra);
-                            }
-                          }}
-                          disabled={guardando}
-                          title={`Usar proveedor última compra: ${ultimaCompra.proveedorUltimaCompra}`}
-                        >
-                          Usar {ultimaCompra.proveedorUltimaCompra}
-                        </button>
-                      ) : (
-                        <select
-                          value={detalle.proveedor || ''}
-                          onChange={(e) => actualizarDetalle(index, 'proveedor', e.target.value)}
-                          disabled={guardando || cargandoProveedores}
-                        >
-                          <option value="">Seleccione...</option>
-                          {proveedores.map((proveedor) => (
-                            <option key={proveedor.id_proveedor} value={proveedor.nombre}>
-                              {proveedor.nombre}
-                            </option>
-                          ))}
-                        </select>
-                      )}
+                      <select
+                        value={detalle.proveedor || ''}
+                        onChange={(e) => actualizarDetalle(index, 'proveedor', e.target.value)}
+                        disabled={guardando || cargandoProveedores}
+                      >
+                        <option value="">Seleccione...</option>
+                        {proveedores.map((proveedor) => (
+                          <option key={proveedor.id_proveedor} value={proveedor.nombre}>
+                            {proveedor.nombre}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                     <td>
                       <input 
@@ -499,20 +467,52 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                       />
                     </td>
                     <td>
-                      <input 
-                        type="text" 
-                        value={ultimaCompra?.proveedorUltimaCompra || ''} 
-                        disabled 
-                        className="campo-solo-lectura" 
-                      />
+                      {ultimaCompra?.proveedorUltimaCompra ? (
+                        <button
+                          type="button"
+                          className="btn-ultima-compra"
+                          onClick={() => {
+                            if (ultimaCompra.proveedorUltimaCompra) {
+                              actualizarDetalle(index, 'proveedor', ultimaCompra.proveedorUltimaCompra);
+                            }
+                          }}
+                          disabled={guardando}
+                          title={`Usar proveedor última compra: ${ultimaCompra.proveedorUltimaCompra}`}
+                        >
+                          {ultimaCompra.proveedorUltimaCompra}
+                        </button>
+                      ) : (
+                        <input 
+                          type="text" 
+                          value="" 
+                          disabled 
+                          className="campo-solo-lectura" 
+                        />
+                      )}
                     </td>
                     <td>
-                      <input 
-                        type="text" 
-                        value={ultimaCompra?.costoUltimaCompra ?? ''} 
-                        disabled 
-                        className="campo-solo-lectura" 
-                      />
+                      {ultimaCompra?.costoUltimaCompra ? (
+                        <button
+                          type="button"
+                          className="btn-ultima-compra"
+                          onClick={() => {
+                            if (ultimaCompra.costoUltimaCompra !== undefined) {
+                              actualizarDetalle(index, 'costo', ultimaCompra.costoUltimaCompra);
+                            }
+                          }}
+                          disabled={guardando}
+                          title={`Usar costo última compra: ${ultimaCompra.costoUltimaCompra}`}
+                        >
+                          ${ultimaCompra.costoUltimaCompra}
+                        </button>
+                      ) : (
+                        <input 
+                          type="text" 
+                          value="" 
+                          disabled 
+                          className="campo-solo-lectura" 
+                        />
+                      )}
                     </td>
                     <td>
                       <button
