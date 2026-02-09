@@ -147,7 +147,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     return lines.join('\n');
   };
 
-  const actualizarDetalle = async (index: number, campo: keyof DetalleMovimientoExtended, valor: any) => {
+  const actualizarDetalle = async (index: number, campo: keyof DetalleMovimientoExtended, valor: string | number) => {
     const nuevosDetalles = [...detalles];
     const detalle = nuevosDetalles[index];
     const rowId = detalle._rowId!; // Get the unique row ID
@@ -222,7 +222,12 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
         }
       }
     } else {
-      (nuevosDetalles[index] as any)[campo] = valor;
+      // Type-safe way to update the field
+      if (campo === 'cantidad' || campo === 'costo' || campo === 'precio') {
+        nuevosDetalles[index][campo] = valor as number;
+      } else if (campo === 'proveedor' || campo === 'observaciones') {
+        nuevosDetalles[index][campo] = valor as string;
+      }
     }
     
     setDetalles(nuevosDetalles);
@@ -253,7 +258,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
       estatusmovimiento: 'PENDIENTE',
       // Remove stockActual and _rowId from detalles before submitting (they're only for UI)
       // Si tipomovimiento es 'SALIDA', multiplicar cantidad por -1
-      detalles: detalles.map(({ stockActual, _rowId, ...detalle }) => ({
+      detalles: detalles.map(({ stockActual: _stockActual, _rowId, ...detalle }) => ({
         ...detalle,
         cantidad: tipoMovimiento === 'SALIDA' ? detalle.cantidad * -1 : detalle.cantidad
       }))
