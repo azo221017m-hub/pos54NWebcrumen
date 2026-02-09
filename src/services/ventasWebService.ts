@@ -215,3 +215,29 @@ export const obtenerResumenVentas = async (): Promise<ResumenVentas> => {
     };
   }
 };
+
+// Verificar si una mesa tiene ventas en estado ORDENADO
+export const verificarMesaOcupada = async (nombremesa: string): Promise<boolean> => {
+  try {
+    console.log('🔵 ventasWebService: Verificando si mesa está ocupada:', nombremesa);
+    
+    // Get all sales for the business
+    const ventas = await obtenerVentasWeb();
+    
+    // Check if any sale has:
+    // - tipodeventa = 'MESA'
+    // - estadodeventa = 'ORDENADO'
+    // - cliente contains the table name
+    const mesaOcupada = ventas.some(venta => 
+      venta.tipodeventa === 'MESA' && 
+      venta.estadodeventa === 'ORDENADO' && 
+      venta.cliente.includes(nombremesa)
+    );
+    
+    console.log('🔵 ventasWebService: Mesa ocupada:', mesaOcupada);
+    return mesaOcupada;
+  } catch (error) {
+    console.error('🔴 ventasWebService: Error al verificar mesa ocupada:', error);
+    return false;
+  }
+};
