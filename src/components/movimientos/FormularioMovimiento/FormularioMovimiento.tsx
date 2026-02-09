@@ -21,6 +21,9 @@ interface DetalleMovimientoExtended extends DetalleMovimientoCreate {
   _rowId?: string; // Unique identifier for this row to maintain data mapping
 }
 
+// Movement types that are considered ENTRADA
+const ENTRADA_TYPES: readonly MotivoMovimiento[] = ['COMPRA', 'AJUSTE_MANUAL', 'DEVOLUCION', 'INV_INICIAL'] as const;
+
 interface Props {
   movimiento: MovimientoConDetalles | null;
   onGuardar: (data: MovimientoCreate) => Promise<void>;
@@ -147,7 +150,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     return lines.join('\n');
   };
 
-  const actualizarDetalle = async (index: number, campo: keyof DetalleMovimientoExtended, valor: any) => {
+  const actualizarDetalle = async (index: number, campo: keyof DetalleMovimientoExtended, valor: string | number) => {
     const nuevosDetalles = [...detalles];
     const detalle = nuevosDetalles[index];
     const rowId = detalle._rowId!; // Get the unique row ID
@@ -222,7 +225,12 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
         }
       }
     } else {
-      (nuevosDetalles[index] as any)[campo] = valor;
+      // Type-safe way to update the field
+      if (campo === 'cantidad' || campo === 'costo' || campo === 'precio') {
+        nuevosDetalles[index][campo] = valor as number;
+      } else if (campo === 'proveedor' || campo === 'observaciones') {
+        nuevosDetalles[index][campo] = valor as string;
+      }
     }
     
     setDetalles(nuevosDetalles);
@@ -243,14 +251,20 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
       return;
     }
 
+    const tipoMovimiento = ENTRADA_TYPES.includes(motivomovimiento) ? 'ENTRADA' : 'SALIDA';
+
     const movimientoData: MovimientoCreate = {
-      tipomovimiento: motivomovimiento === 'COMPRA' || motivomovimiento === 'AJUSTE_MANUAL' || motivomovimiento === 'DEVOLUCION' || motivomovimiento === 'INV_INICIAL' ? 'ENTRADA' : 'SALIDA',
+      tipomovimiento: tipoMovimiento,
       motivomovimiento,
       fechamovimiento: new Date().toISOString(),
       observaciones,
       estatusmovimiento: 'PENDIENTE',
       // Remove stockActual and _rowId from detalles before submitting (they're only for UI)
-      detalles: detalles.map(({ stockActual, _rowId, ...detalle }) => detalle)
+      // Si tipomovimiento es 'SALIDA', multiplicar cantidad por -1
+      detalles: detalles.map(({ stockActual: _stockActual, _rowId, ...detalle }) => ({
+        ...detalle,
+        cantidad: tipoMovimiento === 'SALIDA' ? detalle.cantidad * -1 : detalle.cantidad
+      }))
     };
 
     setGuardando(true);
@@ -397,28 +411,60 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                       />
                     </td>
                     <td>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={detalle.costo || 0}
-                        onChange={(e) => actualizarDetalle(index, 'costo', Number(e.target.value))}
-                        disabled={guardando}
-                      />
+                      {ultimaCompra?.costoUltimaCompra ? (
+                        <button
+                          type="button"
+                          className="btn-ultima-compra"
+                          onClick={() => {
+                            if (ultimaCompra.costoUltimaCompra !== undefined) {
+                              actualizarDetalle(index, 'costo', ultimaCompra.costoUltimaCompra);
+                            }
+                          }}
+                          disabled={guardando}
+                          title={`Usar costo última compra: ${ultimaCompra.costoUltimaCompra}`}
+                        >
+                          Usar ${ultimaCompra.costoUltimaCompra}
+                        </button>
+                      ) : (
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={detalle.costo || 0}
+                          onChange={(e) => actualizarDetalle(index, 'costo', Number(e.target.value))}
+                          disabled={guardando}
+                        />
+                      )}
                     </td>
                     <td>
                       {/* Note: proveedor stores name directly, consistent with existing insumo.idproveedor field */}
-                      <select
-                        value={detalle.proveedor || ''}
-                        onChange={(e) => actualizarDetalle(index, 'proveedor', e.target.value)}
-                        disabled={guardando || cargandoProveedores}
-                      >
-                        <option value="">Seleccione...</option>
-                        {proveedores.map((proveedor) => (
-                          <option key={proveedor.id_proveedor} value={proveedor.nombre}>
-                            {proveedor.nombre}
-                          </option>
-                        ))}
-                      </select>
+                      {ultimaCompra?.proveedorUltimaCompra ? (
+                        <button
+                          type="button"
+                          className="btn-ultima-compra"
+                          onClick={() => {
+                            if (ultimaCompra.proveedorUltimaCompra) {
+                              actualizarDetalle(index, 'proveedor', ultimaCompra.proveedorUltimaCompra);
+                            }
+                          }}
+                          disabled={guardando}
+                          title={`Usar proveedor última compra: ${ultimaCompra.proveedorUltimaCompra}`}
+                        >
+                          Usar {ultimaCompra.proveedorUltimaCompra}
+                        </button>
+                      ) : (
+                        <select
+                          value={detalle.proveedor || ''}
+                          onChange={(e) => actualizarDetalle(index, 'proveedor', e.target.value)}
+                          disabled={guardando || cargandoProveedores}
+                        >
+                          <option value="">Seleccione...</option>
+                          {proveedores.map((proveedor) => (
+                            <option key={proveedor.id_proveedor} value={proveedor.nombre}>
+                              {proveedor.nombre}
+                            </option>
+                          ))}
+                        </select>
+                      )}
                     </td>
                     <td>
                       <input 

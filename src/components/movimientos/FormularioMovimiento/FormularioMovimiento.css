@@ -393,6 +393,37 @@
   cursor: not-allowed;
 }
 
+.btn-ultima-compra {
+  width: 100%;
+  padding: 0.4rem 0.3rem;
+  border: 2px solid #4CAF50;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-ultima-compra:hover:not(:disabled) {
+  background-color: #c8e6c9;
+  border-color: #388E3C;
+  transform: scale(1.02);
+}
+
+.btn-ultima-compra:active {
+  transform: scale(0.98);
+}
+
+.btn-ultima-compra:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Sección de sumatorias */
 .sumatorias-section {
   margin-top: 1rem;
