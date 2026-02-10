@@ -283,6 +283,12 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
 
     // For INV_INICIAL, use edited insumos instead of detalles
     if (motivomovimiento === 'INV_INICIAL') {
+      // Validate observaciones is required for INV_INICIAL
+      if (!observaciones.trim()) {
+        alert('Las observaciones son requeridas para movimientos de tipo INVENTARIO INICIAL');
+        return;
+      }
+
       if (insumosEditados.size === 0) {
         alert('Debe editar al menos un insumo para guardar el inventario inicial');
         return;
