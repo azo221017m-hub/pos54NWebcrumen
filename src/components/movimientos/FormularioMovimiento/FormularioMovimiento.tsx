@@ -92,6 +92,18 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     cargarProveedores();
   }, []);
 
+  // Helper function to build insumosEditados Map from detalles
+  const buildInsumosEditadosFromDetalles = (detalles: Array<{idinsumo: number; cantidad: number; costo?: number}>) => {
+    const nuevosEditados = new Map<number, { stockActual: number; costoPromPonderado: number }>();
+    detalles.forEach((d) => {
+      nuevosEditados.set(d.idinsumo, {
+        stockActual: d.cantidad,
+        costoPromPonderado: d.costo || 0
+      });
+    });
+    return nuevosEditados;
+  };
+
   // Cargar datos si es edición
   useEffect(() => {
     if (movimiento) {
@@ -111,6 +123,11 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           _rowId: crypto.randomUUID() // Generate unique ID for each row
         }))
       );
+      
+      // For INV_INICIAL in edit mode, populate insumosEditados from detalles
+      if (movimiento.motivomovimiento === 'INV_INICIAL') {
+        setInsumosEditados(buildInsumosEditadosFromDetalles(movimiento.detalles));
+      }
     }
   }, [movimiento]);
 
@@ -266,6 +283,12 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
 
     // For INV_INICIAL, use edited insumos instead of detalles
     if (motivomovimiento === 'INV_INICIAL') {
+      // Validate observaciones is required for INV_INICIAL
+      if (!observaciones.trim()) {
+        alert('Las observaciones son requeridas para movimientos de tipo INVENTARIO INICIAL');
+        return;
+      }
+
       if (insumosEditados.size === 0) {
         alert('Debe editar al menos un insumo para guardar el inventario inicial');
         return;
@@ -412,6 +435,16 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     return insumos.filter(insumo => insumo.activo === 1);
   }, [insumos]);
 
+  // Memoized calculation: determine if motivomovimiento dropdown should be disabled
+  const isMotivomovimientoDisabled = useMemo(() => {
+    return guardando || detalles.length > 0 || motivomovimiento === 'INV_INICIAL';
+  }, [guardando, detalles.length, motivomovimiento]);
+
+  // Memoized calculation: determine if observaciones field is required
+  const isObservacionesRequired = useMemo(() => {
+    return motivomovimiento === 'AJUSTE_MANUAL' || motivomovimiento === 'INV_INICIAL';
+  }, [motivomovimiento]);
+
   return (
     <div className="formulario-movimiento-overlay">
       <div className="formulario-movimiento-container">
@@ -442,7 +475,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
               <select
                 value={motivomovimiento}
                 onChange={(e) => setMotivoMovimiento(e.target.value as MotivoMovimiento)}
-                disabled={guardando || detalles.length > 0}
+                disabled={isMotivomovimientoDisabled}
                 required
               >
                 <option value="COMPRA">COMPRA</option>
@@ -462,7 +495,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
               <div className="observaciones-inline">
                 <label>
                   Observaciones
-                  {motivomovimiento === 'AJUSTE_MANUAL' && <span style={{ color: 'red' }}> *</span>}
+                  {isObservacionesRequired && <span style={{ color: 'red' }}> *</span>}
                 </label>
                 <input
                   type="text"
@@ -470,7 +503,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                   onChange={(e) => setObservaciones(e.target.value)}
                   placeholder="Observaciones generales del movimiento..."
                   disabled={guardando}
-                  required={motivomovimiento === 'AJUSTE_MANUAL'}
+                  required={isObservacionesRequired}
                 />
               </div>
             </div>
@@ -496,8 +529,8 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
             </div>
           </div>
 
-          {/* Tabla de inventario inicial - Solo visible cuando motivomovimiento es INV_INICIAL */}
-          {motivomovimiento === 'INV_INICIAL' && !isEditMode && (
+          {/* Tabla de inventario inicial - Visible cuando motivomovimiento es INV_INICIAL */}
+          {motivomovimiento === 'INV_INICIAL' && (
             <div className="inventario-inicial-section">
               <h3>Inventario Inicial - Insumos Activos</h3>
               <div className="tabla-inventario-inicial-container">
@@ -528,7 +561,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                               min="0"
                               value={editado?.stockActual ?? insumo.stock_actual}
                               onChange={(e) => actualizarInsumoInicial(insumo.id_insumo, 'stockActual', Number(e.target.value))}
-                              disabled={guardando}
+                              disabled={guardando || isEditMode}
                             />
                           </td>
                           <td>
@@ -538,7 +571,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                               min="0"
                               value={editado?.costoPromPonderado ?? insumo.costo_promedio_ponderado ?? 0}
                               onChange={(e) => actualizarInsumoInicial(insumo.id_insumo, 'costoPromPonderado', Number(e.target.value))}
-                              disabled={guardando}
+                              disabled={guardando || isEditMode}
                             />
                           </td>
                           <td>{insumo.idproveedor || 'N/A'}</td>
