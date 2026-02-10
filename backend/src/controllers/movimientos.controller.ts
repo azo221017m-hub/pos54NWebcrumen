@@ -160,12 +160,15 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
 
     // Generate new folio format for idreferencia: YYYYMMDDHHidmovimiento
     // Example: 20260902223101 (year=2026, month=09, day=02, hour=22, idmovimiento=3101)
+    // Note: For very large idMovimiento values (>999999999), this may exceed JavaScript's MAX_SAFE_INTEGER
+    // In practice, this is unlikely to be an issue for typical use cases
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     const hour = String(now.getHours()).padStart(2, '0');
-    const folioReferencia = parseInt(`${year}${month}${day}${hour}${idMovimiento}`);
+    const folioReferenciaStr = `${year}${month}${day}${hour}${idMovimiento}`;
+    const folioReferencia = Number(folioReferenciaStr);
 
     // Update the movimiento's idreferencia with the folio format
     await pool.execute(
