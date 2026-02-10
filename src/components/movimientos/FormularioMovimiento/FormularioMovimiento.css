@@ -485,6 +485,68 @@
   font-weight: 500;
 }
 
+/* Inventario Inicial Section */
+.inventario-inicial-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f0f8ff;
+  border: 2px solid #2196F3;
+  border-radius: 4px;
+}
+
+.inventario-inicial-section h3 {
+  margin: 0 0 1rem 0;
+  color: #1976D2;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.tabla-inventario-inicial-container {
+  overflow-x: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.tabla-inventario-inicial {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.tabla-inventario-inicial thead {
+  background-color: #e3f2fd;
+}
+
+.tabla-inventario-inicial th {
+  padding: 0.4rem 0.5rem;
+  text-align: left;
+  font-weight: 600;
+  color: #1976D2;
+  border-bottom: 2px solid #2196F3;
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.tabla-inventario-inicial tbody tr {
+  border-bottom: 1px solid #eee;
+}
+
+.tabla-inventario-inicial tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+.tabla-inventario-inicial td {
+  padding: 0.3rem 0.5rem;
+  font-size: 0.85rem;
+  color: #333;
+}
+
+/* Compact row spacing for spreadsheet-like appearance */
+.tabla-inventario-inicial tbody tr {
+  line-height: 1.2;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .formulario-header-section {
