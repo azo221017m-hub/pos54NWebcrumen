@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, Loader } from 'lucide-react';
+import { ArrowLeft, Clock } from 'lucide-react';
 import type { Turno } from '../../types/turno.types';
 import { EstatusTurno } from '../../types/turno.types';
 import {
@@ -9,6 +9,7 @@ import {
 } from '../../services/turnosService';
 import CierreTurno from '../../components/turnos/CierreTurno/CierreTurno';
 import ListaTurnos from '../../components/turnos/ListaTurnos/ListaTurnos';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigTurnos.css';
 
 // Types from CierreTurno component - duplicated here to avoid circular dependencies
@@ -139,10 +140,7 @@ const ConfigTurnos: React.FC = () => {
       {/* Contenedor fijo con Lista */}
       <div className="config-container">
         {cargando ? (
-          <div className="config-cargando">
-            <Loader className="spinner" size={48} />
-            <p>Cargando turnos...</p>
-          </div>
+          <LoadingSpinner size={48} message="Cargando turnos..." />
         ) : (
           <ListaTurnos
             turnos={turnos}

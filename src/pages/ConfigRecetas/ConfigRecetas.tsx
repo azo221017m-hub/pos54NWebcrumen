@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ChefHat, Loader, ArrowLeft } from 'lucide-react';
+import { Plus, ChefHat, ArrowLeft } from 'lucide-react';
 import ListaRecetas from '../../components/recetas/ListaRecetas/ListaRecetas';
 import FormularioReceta from '../../components/recetas/FormularioReceta/FormularioReceta';
 import type { Receta, RecetaCreate, RecetaUpdate } from '../../types/receta.types';
 import { obtenerRecetas, crearReceta, actualizarReceta, eliminarReceta } from '../../services/recetasService';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigRecetas.css';
 
 const ConfigRecetas: React.FC = () => {
@@ -152,10 +153,7 @@ const ConfigRecetas: React.FC = () => {
       {/* Contenedor fijo con Lista */}
       <div className="config-container">
         {cargando ? (
-          <div className="config-cargando">
-            <Loader className="spinner" size={48} />
-            <p>Cargando recetas...</p>
-          </div>
+          <LoadingSpinner size={48} message="Cargando recetas..." />
         ) : (
           <ListaRecetas
             recetas={recetas}

@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, UserCog, Loader } from 'lucide-react';
+import { ArrowLeft, Plus, UserCog } from 'lucide-react';
 import { rolesService } from '../../services/rolesService';
 import type { Rol } from '../../types/rol.types';
 import { ListaRoles } from '../../components/roles/ListaRoles/ListaRoles';
 import { FormularioRol } from '../../components/roles/FormularioRol/FormularioRol';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigRolUsuarios.css';
 
 export const ConfigRolUsuarios = () => {
@@ -178,10 +179,7 @@ export const ConfigRolUsuarios = () => {
       <div className="config-container">
         {vistaActual === 'lista' ? (
           loading ? (
-            <div className="config-cargando">
-              <Loader className="spinner" size={48} />
-              <p>Cargando roles...</p>
-            </div>
+            <LoadingSpinner size={48} message="Cargando roles..." />
           ) : (
             <ListaRoles
               roles={roles}

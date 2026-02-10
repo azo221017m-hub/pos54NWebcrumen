@@ -1,0 +1,27 @@
+.loading-spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.loading-spinner-logo {
+  animation: spin 1.5s linear infinite;
+  margin-bottom: 1.5rem;
+}
+
+.loading-spinner-container p {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

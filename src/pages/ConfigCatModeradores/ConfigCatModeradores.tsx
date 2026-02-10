@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Users, Loader } from 'lucide-react';
+import { ArrowLeft, Plus, Users } from 'lucide-react';
 import type { CatModerador, CatModeradorCreate, CatModeradorUpdate } from '../../types/catModerador.types';
 import { obtenerCatModeradores, crearCatModerador, actualizarCatModerador, eliminarCatModerador } from '../../services/catModeradoresService';
 import ListaCatModeradores from '../../components/catModeradores/ListaCatModeradores/ListaCatModeradores';
 import FormularioCatModerador from '../../components/catModeradores/FormularioCatModerador/FormularioCatModerador';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigCatModeradores.css';
 
 const ConfigCatModeradores: React.FC = () => {
@@ -138,10 +139,7 @@ const ConfigCatModeradores: React.FC = () => {
       {/* Contenedor fijo con Lista */}
       <div className="config-container">
         {cargando ? (
-          <div className="config-cargando">
-            <Loader className="spinner" size={48} />
-            <p>Cargando categorías moderador...</p>
-          </div>
+          <LoadingSpinner size={48} message="Cargando categorías moderador..." />
         ) : (
           <ListaCatModeradores
             catModeradores={catModeradores}

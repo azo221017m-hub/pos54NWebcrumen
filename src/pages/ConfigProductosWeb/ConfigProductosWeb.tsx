@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Package, Loader } from 'lucide-react';
+import { ArrowLeft, Plus, Package } from 'lucide-react';
 import type { ProductoWeb, ProductoWebCreate, ProductoWebUpdate } from '../../types/productoWeb.types';
 import {
   obtenerProductosWeb,
@@ -10,6 +10,7 @@ import {
 } from '../../services/productosWebService';
 import ListaProductosWeb from '../../components/productosWeb/ListaProductosWeb/ListaProductosWeb';
 import FormularioProductoWeb from '../../components/productosWeb/FormularioProductoWeb/FormularioProductoWeb';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigProductosWeb.css';
 
 const ConfigProductosWeb: React.FC = () => {
@@ -193,10 +194,7 @@ const ConfigProductosWeb: React.FC = () => {
       {/* Contenedor fijo con Lista */}
       <div className="config-container">
         {cargando ? (
-          <div className="config-cargando">
-            <Loader className="spinner" size={48} />
-            <p>Cargando productos...</p>
-          </div>
+          <LoadingSpinner size={48} message="Cargando productos..." />
         ) : (
           <ListaProductosWeb
             productos={productos}

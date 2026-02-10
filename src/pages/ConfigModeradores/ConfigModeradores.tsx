@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Shield, Loader } from 'lucide-react';
+import { ArrowLeft, Plus, Shield } from 'lucide-react';
 import type { Moderador, ModeradorCreate, ModeradorUpdate } from '../../types/moderador.types';
 import {
   obtenerModeradores,
@@ -10,6 +10,7 @@ import {
 } from '../../services/moderadoresService';
 import ListaModeradores from '../../components/moderadores/ListaModeradores/ListaModeradores';
 import FormularioModerador from '../../components/moderadores/FormularioModerador/FormularioModerador';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigModeradores.css';
 
 const ConfigModeradores: React.FC = () => {
@@ -163,10 +164,7 @@ const ConfigModeradores: React.FC = () => {
       {/* Contenedor fijo con Lista */}
       <div className="config-container">
         {cargando ? (
-          <div className="config-cargando">
-            <Loader className="spinner" size={48} />
-            <p>Cargando moderadores...</p>
-          </div>
+          <LoadingSpinner size={48} message="Cargando moderadores..." />
         ) : (
           <ListaModeradores
             moderadores={moderadores}

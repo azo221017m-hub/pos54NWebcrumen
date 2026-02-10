@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Truck, Loader } from 'lucide-react';
+import { ArrowLeft, Plus, Truck } from 'lucide-react';
 import type { Proveedor, ProveedorCreate, ProveedorUpdate } from '../../types/proveedor.types';
 import {
   obtenerProveedores,
@@ -10,6 +10,7 @@ import {
 } from '../../services/proveedoresService';
 import ListaProveedores from '../../components/proveedores/ListaProveedores/ListaProveedores';
 import FormularioProveedor from '../../components/proveedores/FormularioProveedor/FormularioProveedor';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigProveedores.css';
 
 const ConfigProveedores: React.FC = () => {
@@ -155,10 +156,7 @@ const ConfigProveedores: React.FC = () => {
       {/* Contenedor fijo con Lista */}
       <div className="config-container">
         {cargando ? (
-          <div className="config-cargando">
-            <Loader className="spinner" size={48} />
-            <p>Cargando proveedores...</p>
-          </div>
+          <LoadingSpinner size={48} message="Cargando proveedores..." />
         ) : (
           <ListaProveedores
             proveedores={proveedores}

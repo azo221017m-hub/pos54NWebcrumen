@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Users, Loader } from 'lucide-react';
+import { ArrowLeft, Plus, Users } from 'lucide-react';
 import type { Cliente, ClienteCreate } from '../../types/cliente.types';
 import {
   obtenerClientes,
@@ -10,6 +10,7 @@ import {
 } from '../../services/clientesService';
 import ListaClientes from '../../components/clientes/ListaClientes/ListaClientes';
 import FormularioCliente from '../../components/clientes/FormularioCliente/FormularioCliente';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigClientes.css';
 
 const ConfigClientes: React.FC = () => {
@@ -166,10 +167,7 @@ const ConfigClientes: React.FC = () => {
       {/* Contenedor fijo con Lista */}
       <div className="config-container">
         {cargando ? (
-          <div className="config-cargando">
-            <Loader className="spinner" size={48} />
-            <p>Cargando clientes...</p>
-          </div>
+          <LoadingSpinner size={48} message="Cargando clientes..." />
         ) : (
           <ListaClientes
             clientes={clientes}

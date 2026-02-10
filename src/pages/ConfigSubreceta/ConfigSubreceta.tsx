@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, ChefHat, Loader } from 'lucide-react';
+import { ArrowLeft, Plus, ChefHat } from 'lucide-react';
 import ListaSubrecetas from '../../components/subrecetas/ListaSubrecetas/ListaSubrecetas';
 import FormularioSubreceta from '../../components/subrecetas/FormularioSubreceta/FormularioSubreceta';
 import type { Subreceta, SubrecetaCreate, SubrecetaUpdate } from '../../types/subreceta.types';
@@ -10,6 +10,7 @@ import {
   actualizarSubreceta,
   eliminarSubreceta 
 } from '../../services/subrecetasService';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigSubreceta.css';
 
 const ConfigSubreceta: React.FC = () => {
@@ -148,10 +149,7 @@ const ConfigSubreceta: React.FC = () => {
       {/* Contenedor fijo con Lista */}
       <div className="config-container">
         {cargando ? (
-          <div className="config-cargando">
-            <Loader className="spinner" size={48} />
-            <p>Cargando subrecetas...</p>
-          </div>
+          <LoadingSpinner size={48} message="Cargando subrecetas..." />
         ) : (
           <ListaSubrecetas
             subrecetas={subrecetas}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Package, Loader } from 'lucide-react';
+import { ArrowLeft, Plus, Package } from 'lucide-react';
 import type { Insumo, InsumoCreate } from '../../types/insumo.types';
 import {
   obtenerInsumos,
@@ -10,6 +10,7 @@ import {
 } from '../../services/insumosService';
 import ListaInsumos from '../../components/insumos/ListaInsumos/ListaInsumos';
 import FormularioInsumo from '../../components/insumos/FormularioInsumo/FormularioInsumo';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigInsumos.css';
 
 const ConfigInsumos: React.FC = () => {
@@ -168,10 +169,7 @@ const ConfigInsumos: React.FC = () => {
       {/* Contenedor fijo con Lista */}
       <div className="config-container">
         {cargando ? (
-          <div className="config-cargando">
-            <Loader className="spinner" size={48} />
-            <p>Cargando insumos...</p>
-          </div>
+          <LoadingSpinner size={48} message="Cargando insumos..." />
         ) : (
           <ListaInsumos
             insumos={insumos}
