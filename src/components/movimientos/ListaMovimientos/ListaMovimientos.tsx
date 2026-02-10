@@ -29,7 +29,8 @@ const ListaMovimientos: React.FC<Props> = ({ movimientos, onEditar, onEliminar }
     
     if (entradaMotivos.includes(motivo)) {
       return 'motivo-entrada';
-    } else if (salidaMotivos.includes(motivo)) {
+    }
+    if (salidaMotivos.includes(motivo)) {
       return 'motivo-salida';
     }
     return '';
