@@ -9,7 +9,7 @@ export type MotivoMovimiento =
   | 'INV_INICIAL' 
   | 'CONSUMO';
 
-export type EstatusMovimiento = 'PROCESADO' | 'PENDIENTE';
+export type EstatusMovimiento = 'PROCESADO' | 'PENDIENTE' | 'ELIMINADO';
 
 export type TipoInsumo = 'DIRECTO' | 'INVENTARIO' | 'RECETA';
 

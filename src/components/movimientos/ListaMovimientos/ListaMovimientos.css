@@ -50,7 +50,7 @@
 }
 
 /* Badges */
-.badge-tipo,
+.badge-motivo,
 .badge-estatus {
   display: inline-flex;
   align-items: center;
@@ -62,12 +62,12 @@
   white-space: nowrap;
 }
 
-.tipo-entrada {
+.motivo-entrada {
   background-color: #e8f5e9;
   color: #2e7d32;
 }
 
-.tipo-salida {
+.motivo-salida {
   background-color: #ffebee;
   color: #c62828;
 }
