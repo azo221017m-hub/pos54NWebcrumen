@@ -9,7 +9,6 @@ import {
   MovimientoUpdate,
   DetalleMovimiento
 } from '../types/movimientos.types';
-import { obtenerClaveTurnoAbierto } from './turnos.controller';
 import { formatMySQLDateTime } from '../utils/dateTime';
 
 // GET /api/movimientos - Obtener todos los movimientos
