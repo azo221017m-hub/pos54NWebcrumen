@@ -92,6 +92,18 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     cargarProveedores();
   }, []);
 
+  // Helper function to build insumosEditados Map from detalles
+  const buildInsumosEditadosFromDetalles = (detalles: Array<{idinsumo: number; cantidad: number; costo?: number}>) => {
+    const nuevosEditados = new Map<number, { stockActual: number; costoPromPonderado: number }>();
+    detalles.forEach((d) => {
+      nuevosEditados.set(d.idinsumo, {
+        stockActual: d.cantidad,
+        costoPromPonderado: d.costo || 0
+      });
+    });
+    return nuevosEditados;
+  };
+
   // Cargar datos si es edición
   useEffect(() => {
     if (movimiento) {
@@ -114,14 +126,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
       
       // For INV_INICIAL in edit mode, populate insumosEditados from detalles
       if (movimiento.motivomovimiento === 'INV_INICIAL') {
-        const nuevosEditados = new Map<number, { stockActual: number; costoPromPonderado: number }>();
-        movimiento.detalles.forEach((d) => {
-          nuevosEditados.set(d.idinsumo, {
-            stockActual: d.cantidad,
-            costoPromPonderado: d.costo || 0
-          });
-        });
-        setInsumosEditados(nuevosEditados);
+        setInsumosEditados(buildInsumosEditadosFromDetalles(movimiento.detalles));
       }
     }
   }, [movimiento]);
@@ -424,6 +429,11 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     return insumos.filter(insumo => insumo.activo === 1);
   }, [insumos]);
 
+  // Memoized calculation: determine if motivomovimiento dropdown should be disabled
+  const isMotivomovimientoDisabled = useMemo(() => {
+    return guardando || detalles.length > 0 || motivomovimiento === 'INV_INICIAL';
+  }, [guardando, detalles.length, motivomovimiento]);
+
   return (
     <div className="formulario-movimiento-overlay">
       <div className="formulario-movimiento-container">
@@ -454,7 +464,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
               <select
                 value={motivomovimiento}
                 onChange={(e) => setMotivoMovimiento(e.target.value as MotivoMovimiento)}
-                disabled={guardando || detalles.length > 0 || motivomovimiento === 'INV_INICIAL'}
+                disabled={isMotivomovimientoDisabled}
                 required
               >
                 <option value="COMPRA">COMPRA</option>
