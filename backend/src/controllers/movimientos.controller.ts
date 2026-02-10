@@ -628,9 +628,10 @@ export const aplicarMovimiento = async (req: AuthRequest, res: Response): Promis
       // Para COMPRA, MERMA, y CONSUMO, actualizar el inventario
       if (['COMPRA', 'MERMA', 'CONSUMO'].includes(movimiento.motivomovimiento)) {
         // Buscar el insumo por nombre y negocio (según requisito)
+        // Use movimiento.idnegocio instead of user's idNegocio to support superuser operations
         const [insumos] = await pool.query<RowDataPacket[]>(
           'SELECT id_insumo FROM tblposcrumenwebinsumos WHERE nombre = ? AND idnegocio = ?',
-          [detalle.nombreinsumo, idNegocio]
+          [detalle.nombreinsumo, movimiento.idnegocio]
         );
 
         if (insumos.length > 0) {
@@ -651,7 +652,7 @@ export const aplicarMovimiento = async (req: AuthRequest, res: Response): Promis
               detalle.proveedor || null,
               usuarioAuditoria,
               insumoId,
-              idNegocio
+              movimiento.idnegocio
             ]
           );
         }
@@ -660,12 +661,12 @@ export const aplicarMovimiento = async (req: AuthRequest, res: Response): Promis
         if (movimiento.tipomovimiento === 'ENTRADA') {
           await pool.execute<ResultSetHeader>(
             'UPDATE tblposcrumenwebinsumos SET stock_actual = stock_actual + ? WHERE id_insumo = ? AND idnegocio = ?',
-            [detalle.cantidad, detalle.idinsumo, idNegocio]
+            [detalle.cantidad, detalle.idinsumo, movimiento.idnegocio]
           );
         } else if (movimiento.tipomovimiento === 'SALIDA') {
           await pool.execute<ResultSetHeader>(
             'UPDATE tblposcrumenwebinsumos SET stock_actual = stock_actual - ? WHERE id_insumo = ? AND idnegocio = ?',
-            [detalle.cantidad, detalle.idinsumo, idNegocio]
+            [detalle.cantidad, detalle.idinsumo, movimiento.idnegocio]
           );
         }
       }

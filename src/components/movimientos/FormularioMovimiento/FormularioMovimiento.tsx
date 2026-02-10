@@ -280,7 +280,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
 
   const handleAplicar = async () => {
     if (!movimiento?.idmovimiento) {
-      alert('No se puede aplicar el movimiento: ID no disponible');
+      showInfoToast('No se puede aplicar el movimiento: ID no disponible');
       return;
     }
 
@@ -296,7 +296,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     setAplicando(true);
     try {
       await aplicarMovimiento(movimiento.idmovimiento);
-      alert('Movimiento aplicado exitosamente');
+      showInfoToast('Movimiento aplicado exitosamente');
       // Call parent callback to refresh the list
       if (onAplicar) {
         onAplicar();
@@ -305,7 +305,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     } catch (error: any) {
       console.error('Error al aplicar movimiento:', error);
       const errorMessage = error?.response?.data?.message || 'Error al aplicar el movimiento';
-      alert(errorMessage);
+      showInfoToast(errorMessage);
     } finally {
       setAplicando(false);
     }
