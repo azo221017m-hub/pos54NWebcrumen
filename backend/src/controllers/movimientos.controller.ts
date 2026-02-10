@@ -576,3 +576,140 @@ export const obtenerUltimaCompra = async (req: AuthRequest, res: Response): Prom
     });
   }
 };
+
+// PATCH /api/movimientos/:id/aplicar - Aplicar un movimiento pendiente con actualizaciones de inventario
+export const aplicarMovimiento = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const idNegocio = req.user?.idNegocio;
+    const usuarioAuditoria = req.user?.alias || req.user?.nombre || 'Sistema';
+    const isSuperuser = idNegocio === 99999;
+
+    const whereClause = isSuperuser
+      ? 'WHERE idmovimiento = ?'
+      : 'WHERE idmovimiento = ? AND idnegocio = ?';
+
+    const params = isSuperuser ? [id] : [id, idNegocio];
+
+    const [movimientos] = await pool.query<(Movimiento & RowDataPacket)[]>(
+      `SELECT * FROM tblposcrumenwebmovimientos ${whereClause}`,
+      params
+    );
+
+    if (movimientos.length === 0) {
+      res.status(404).json({
+        success: false,
+        message: 'Movimiento no encontrado'
+      });
+      return;
+    }
+
+    const movimiento = movimientos[0];
+
+    if (movimiento.estatusmovimiento === 'PROCESADO') {
+      res.status(400).json({
+        success: false,
+        message: 'El movimiento ya ha sido procesado'
+      });
+      return;
+    }
+
+    // Use idreferencia from movimiento if it exists, otherwise fall back to id (idmovimiento) for old records
+    const refQuery = movimiento.idreferencia || id;
+
+    // Obtener detalles del movimiento
+    const [detalles] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
+      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
+      [refQuery]
+    );
+
+    // Procesar cada detalle según el motivo de movimiento
+    for (const detalle of detalles) {
+      // Para COMPRA, MERMA, y CONSUMO, actualizar el inventario
+      if (['COMPRA', 'MERMA', 'CONSUMO'].includes(movimiento.motivomovimiento)) {
+        // Buscar el insumo por nombre y negocio (según requisito)
+        const [insumos] = await pool.query<RowDataPacket[]>(
+          'SELECT id_insumo FROM tblposcrumenwebinsumos WHERE nombre = ? AND idnegocio = ?',
+          [detalle.nombreinsumo, idNegocio]
+        );
+
+        if (insumos.length > 0) {
+          const insumoId = insumos[0].id_insumo;
+          
+          // Actualizar stock_actual, idproveedor, fechamodificacionauditoria, usuarioauditoria
+          // Para COMPRA: sumar cantidad (ya está positiva en la BD)
+          // Para MERMA y CONSUMO: la cantidad ya viene negativa en la BD
+          await pool.execute<ResultSetHeader>(
+            `UPDATE tblposcrumenwebinsumos 
+             SET stock_actual = stock_actual + ?,
+                 idproveedor = ?,
+                 fechamodificacionauditoria = NOW(),
+                 usuarioauditoria = ?
+             WHERE id_insumo = ? AND idnegocio = ?`,
+            [
+              detalle.cantidad, // Ya tiene el signo correcto (positivo para COMPRA, negativo para MERMA/CONSUMO)
+              detalle.proveedor || null,
+              usuarioAuditoria,
+              insumoId,
+              idNegocio
+            ]
+          );
+        }
+      } else {
+        // Para otros tipos de movimiento, solo actualizar stock sin cambiar proveedor
+        if (movimiento.tipomovimiento === 'ENTRADA') {
+          await pool.execute<ResultSetHeader>(
+            'UPDATE tblposcrumenwebinsumos SET stock_actual = stock_actual + ? WHERE id_insumo = ? AND idnegocio = ?',
+            [detalle.cantidad, detalle.idinsumo, idNegocio]
+          );
+        } else if (movimiento.tipomovimiento === 'SALIDA') {
+          await pool.execute<ResultSetHeader>(
+            'UPDATE tblposcrumenwebinsumos SET stock_actual = stock_actual - ? WHERE id_insumo = ? AND idnegocio = ?',
+            [detalle.cantidad, detalle.idinsumo, idNegocio]
+          );
+        }
+      }
+    }
+
+    // Actualizar estatus del movimiento y detalles a PROCESADO
+    await pool.execute<ResultSetHeader>(
+      'UPDATE tblposcrumenwebmovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE idmovimiento = ?',
+      ['PROCESADO', id]
+    );
+
+    await pool.execute<ResultSetHeader>(
+      'UPDATE tblposcrumenwebdetallemovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE idreferencia = ?',
+      ['PROCESADO', refQuery]
+    );
+
+    // Obtener movimiento actualizado
+    const [movimientoActualizado] = await pool.query<(Movimiento & RowDataPacket)[]>(
+      'SELECT * FROM tblposcrumenwebmovimientos WHERE idmovimiento = ?',
+      [id]
+    );
+
+    const refQueryUpdated = movimientoActualizado[0].idreferencia || id;
+    const [detallesActualizados] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
+      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
+      [refQueryUpdated]
+    );
+
+    const movimientoConDetalles: MovimientoConDetalles = {
+      ...movimientoActualizado[0],
+      detalles: detallesActualizados
+    };
+
+    res.status(200).json({
+      success: true,
+      message: 'Movimiento aplicado exitosamente',
+      data: movimientoConDetalles
+    });
+  } catch (error) {
+    console.error('Error al aplicar movimiento:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al aplicar el movimiento',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};

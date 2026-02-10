@@ -90,6 +90,20 @@ export const procesarMovimiento = async (id: number): Promise<MovimientoConDetal
   }
 };
 
+// Aplicar un movimiento pendiente con actualizaciones de inventario
+export const aplicarMovimiento = async (id: number): Promise<MovimientoConDetalles> => {
+  try {
+    const response = await apiClient.patch<MovimientoResponse>(`${API_BASE}/${id}/aplicar`, {});
+    if (!response.data.data) {
+      throw new Error('No se pudo aplicar el movimiento');
+    }
+    return response.data.data;
+  } catch (error) {
+    console.error('Error al aplicar movimiento:', error);
+    throw error;
+  }
+};
+
 // Obtener datos de última compra de un insumo
 export const obtenerUltimaCompra = async (idInsumo: number): Promise<UltimaCompraData> => {
   try {

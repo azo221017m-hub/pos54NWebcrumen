@@ -143,6 +143,7 @@ const MovimientosInventario: React.FC = () => {
           onCancelar={handleCancelar}
           mensaje={mensaje}
           isEditMode={!!movimientoEditar}
+          onAplicar={cargarMovimientos}
         />
       )}
     </div>
