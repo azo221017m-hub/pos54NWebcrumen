@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Table2, Loader } from 'lucide-react';
+import { ArrowLeft, Plus, Table2 } from 'lucide-react';
 import type { Mesa, MesaCreate, MesaUpdate } from '../../types/mesa.types';
 import {
   obtenerMesas,
@@ -10,6 +10,7 @@ import {
 } from '../../services/mesasService';
 import FormularioMesa from '../../components/mesas/FormularioMesa/FormularioMesa';
 import ListaMesas from '../../components/mesas/ListaMesas/ListaMesas';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigMesas.css';
 
 const ConfigMesas: React.FC = () => {
@@ -149,10 +150,7 @@ const ConfigMesas: React.FC = () => {
       {/* Contenedor fijo con Lista */}
       <div className="config-container">
         {cargando ? (
-          <div className="config-cargando">
-            <Loader className="spinner" size={48} />
-            <p>Cargando mesas...</p>
-          </div>
+          <LoadingSpinner size={48} message="Cargando mesas..." />
         ) : (
           <ListaMesas
             mesas={mesas}

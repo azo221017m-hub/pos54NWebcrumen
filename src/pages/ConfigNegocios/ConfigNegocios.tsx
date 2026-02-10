@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Store, Loader } from 'lucide-react';
+import { ArrowLeft, Plus, Store } from 'lucide-react';
 import { negociosService } from '../../services/negociosService';
 import type { Negocio, NegocioCompleto } from '../../types/negocio.types';
 import { ListaNegocios } from '../../components/negocios/ListaNegocios/ListaNegocios';
 import { FormularioNegocio } from '../../components/negocios/FormularioNegocio/FormularioNegocio';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigNegocios.css';
 
 export const ConfigNegocios = () => {
@@ -186,10 +187,7 @@ export const ConfigNegocios = () => {
       <div className="config-container">
         {vistaActual === 'lista' ? (
           loading ? (
-            <div className="config-cargando">
-              <Loader className="spinner" size={48} />
-              <p>Cargando negocios...</p>
-            </div>
+            <LoadingSpinner size={48} message="Cargando negocios..." />
           ) : (
             <ListaNegocios
               negocios={negocios}

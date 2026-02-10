@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Package, Loader } from 'lucide-react';
+import { ArrowLeft, Plus, Package } from 'lucide-react';
 import type { MovimientoConDetalles, MovimientoCreate } from '../../types/movimientos.types';
 import {
   obtenerMovimientos,
@@ -9,6 +9,7 @@ import {
 } from '../../services/movimientosService';
 import ListaMovimientos from '../../components/movimientos/ListaMovimientos/ListaMovimientos';
 import FormularioMovimiento from '../../components/movimientos/FormularioMovimiento/FormularioMovimiento';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './MovimientosInventario.css';
 
 const MovimientosInventario: React.FC = () => {
@@ -125,10 +126,7 @@ const MovimientosInventario: React.FC = () => {
       {/* Contenido */}
       <main className="page-content">
         {cargando ? (
-          <div className="cargando">
-            <Loader className="spinner" size={48} />
-            <p>Cargando movimientos...</p>
-          </div>
+          <LoadingSpinner size={48} message="Cargando movimientos..." />
         ) : (
           <ListaMovimientos
             movimientos={movimientos}
@@ -144,6 +142,7 @@ const MovimientosInventario: React.FC = () => {
           onGuardar={handleGuardar}
           onCancelar={handleCancelar}
           mensaje={mensaje}
+          isEditMode={!!movimientoEditar}
         />
       )}
     </div>

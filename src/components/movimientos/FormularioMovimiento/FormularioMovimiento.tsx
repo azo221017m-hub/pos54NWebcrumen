@@ -32,9 +32,10 @@ interface Props {
     tipo: 'success' | 'error' | 'info';
     texto: string;
   } | null;
+  isEditMode?: boolean; // Flag to indicate if editing an existing movement
 }
 
-const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancelar, mensaje }) => {
+const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancelar, mensaje, isEditMode = false }) => {
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
   
   // Estado del formulario
@@ -350,12 +351,18 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
             </div>
 
             <div className="botones-accion">
-              <button type="submit" className="btn-solicitar" disabled={guardando}>
-                {guardando ? 'GUARDANDO...' : 'SOLICITAR'}
-              </button>
-              <button type="button" className="btn-aplicar" disabled={detalles.length === 0 || guardando}>
-                APLICAR
-              </button>
+              {/* Show SOLICITAR button only when NOT in edit mode (i.e., creating new movement) */}
+              {!isEditMode && (
+                <button type="submit" className="btn-solicitar" disabled={guardando}>
+                  {guardando ? 'GUARDANDO...' : 'SOLICITAR'}
+                </button>
+              )}
+              {/* Show APLICAR button only when in edit mode */}
+              {isEditMode && (
+                <button type="button" className="btn-aplicar" disabled={detalles.length === 0 || guardando}>
+                  APLICAR
+                </button>
+              )}
             </div>
           </div>
 

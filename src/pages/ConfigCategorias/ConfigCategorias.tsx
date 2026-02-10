@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Tags, Loader } from 'lucide-react';
+import { ArrowLeft, Plus, Tags } from 'lucide-react';
 import type { Categoria, CategoriaCreate, CategoriaUpdate } from '../../types/categoria.types';
 import { obtenerCategorias, crearCategoria, actualizarCategoria, eliminarCategoria } from '../../services/categoriasService';
 import ListaCategorias from '../../components/categorias/ListaCategorias/ListaCategorias';
 import FormularioCategoria from '../../components/categorias/FormularioCategoria/FormularioCategoria';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigCategorias.css';
 
 const ConfigCategorias: React.FC = () => {
@@ -145,10 +146,7 @@ const ConfigCategorias: React.FC = () => {
       {/* Contenedor fijo con Lista */}
       <div className="config-container">
         {cargando ? (
-          <div className="config-cargando">
-            <Loader className="spinner" size={48} />
-            <p>Cargando categorías...</p>
-          </div>
+          <LoadingSpinner size={48} message="Cargando categorías..." />
         ) : (
           <ListaCategorias
             categorias={categorias}

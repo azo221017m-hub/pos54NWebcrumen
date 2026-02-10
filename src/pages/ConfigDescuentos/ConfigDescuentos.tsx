@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, BadgePercent, Loader } from 'lucide-react';
+import { ArrowLeft, Plus, BadgePercent } from 'lucide-react';
 import type { Descuento, DescuentoCreate, DescuentoUpdate } from '../../types/descuento.types';
 import { obtenerDescuentos, crearDescuento, actualizarDescuento, eliminarDescuento } from '../../services/descuentosService';
 import FormularioDescuento from '../../components/descuentos/FormularioDescuento/FormularioDescuento';
 import ListaDescuentos from '../../components/descuentos/ListaDescuentos/ListaDescuentos';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigDescuentos.css';
 
 const ConfigDescuentos: React.FC = () => {
@@ -144,10 +145,7 @@ const ConfigDescuentos: React.FC = () => {
       {/* Contenedor fijo con Lista */}
       <div className="config-container">
         {cargando ? (
-          <div className="config-cargando">
-            <Loader className="spinner" size={48} />
-            <p>Cargando descuentos...</p>
-          </div>
+          <LoadingSpinner size={48} message="Cargando descuentos..." />
         ) : (
           <ListaDescuentos
             descuentos={descuentos}
