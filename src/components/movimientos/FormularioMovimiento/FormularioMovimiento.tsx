@@ -111,6 +111,18 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           _rowId: crypto.randomUUID() // Generate unique ID for each row
         }))
       );
+      
+      // For INV_INICIAL in edit mode, populate insumosEditados from detalles
+      if (movimiento.motivomovimiento === 'INV_INICIAL') {
+        const nuevosEditados = new Map<number, { stockActual: number; costoPromPonderado: number }>();
+        movimiento.detalles.forEach((d) => {
+          nuevosEditados.set(d.idinsumo, {
+            stockActual: d.cantidad,
+            costoPromPonderado: d.costo || 0
+          });
+        });
+        setInsumosEditados(nuevosEditados);
+      }
     }
   }, [movimiento]);
 
@@ -442,7 +454,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
               <select
                 value={motivomovimiento}
                 onChange={(e) => setMotivoMovimiento(e.target.value as MotivoMovimiento)}
-                disabled={guardando || detalles.length > 0}
+                disabled={guardando || detalles.length > 0 || motivomovimiento === 'INV_INICIAL'}
                 required
               >
                 <option value="COMPRA">COMPRA</option>
@@ -462,7 +474,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
               <div className="observaciones-inline">
                 <label>
                   Observaciones
-                  {motivomovimiento === 'AJUSTE_MANUAL' && <span style={{ color: 'red' }}> *</span>}
+                  {(motivomovimiento === 'AJUSTE_MANUAL' || motivomovimiento === 'INV_INICIAL') && <span style={{ color: 'red' }}> *</span>}
                 </label>
                 <input
                   type="text"
@@ -470,7 +482,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                   onChange={(e) => setObservaciones(e.target.value)}
                   placeholder="Observaciones generales del movimiento..."
                   disabled={guardando}
-                  required={motivomovimiento === 'AJUSTE_MANUAL'}
+                  required={motivomovimiento === 'AJUSTE_MANUAL' || motivomovimiento === 'INV_INICIAL'}
                 />
               </div>
             </div>
@@ -496,8 +508,8 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
             </div>
           </div>
 
-          {/* Tabla de inventario inicial - Solo visible cuando motivomovimiento es INV_INICIAL */}
-          {motivomovimiento === 'INV_INICIAL' && !isEditMode && (
+          {/* Tabla de inventario inicial - Visible cuando motivomovimiento es INV_INICIAL */}
+          {motivomovimiento === 'INV_INICIAL' && (
             <div className="inventario-inicial-section">
               <h3>Inventario Inicial - Insumos Activos</h3>
               <div className="tabla-inventario-inicial-container">
@@ -528,7 +540,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                               min="0"
                               value={editado?.stockActual ?? insumo.stock_actual}
                               onChange={(e) => actualizarInsumoInicial(insumo.id_insumo, 'stockActual', Number(e.target.value))}
-                              disabled={guardando}
+                              disabled={guardando || isEditMode}
                             />
                           </td>
                           <td>
@@ -538,7 +550,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                               min="0"
                               value={editado?.costoPromPonderado ?? insumo.costo_promedio_ponderado ?? 0}
                               onChange={(e) => actualizarInsumoInicial(insumo.id_insumo, 'costoPromPonderado', Number(e.target.value))}
-                              disabled={guardando}
+                              disabled={guardando || isEditMode}
                             />
                           </td>
                           <td>{insumo.idproveedor || 'N/A'}</td>
