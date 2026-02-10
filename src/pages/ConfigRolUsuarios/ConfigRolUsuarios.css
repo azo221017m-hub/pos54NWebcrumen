@@ -14,7 +14,6 @@
   top: 1rem;
   right: 1rem;
   z-index: 1100;
-  animation: slideIn 0.3s ease-out;
 }
 
 @keyframes slideIn {
