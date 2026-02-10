@@ -254,6 +254,12 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
       return;
     }
 
+    // Validate observaciones is required for AJUSTE_MANUAL
+    if (motivomovimiento === 'AJUSTE_MANUAL' && !observaciones.trim()) {
+      alert('Las observaciones son requeridas para movimientos de tipo AJUSTE MANUAL');
+      return;
+    }
+
     const tipoMovimiento = ENTRADA_TYPES.includes(motivomovimiento) ? 'ENTRADA' : 'SALIDA';
 
     const movimientoData: MovimientoCreate = {
@@ -374,13 +380,17 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
               
               {/* Observaciones moved here */}
               <div className="observaciones-inline">
-                <label>Observaciones</label>
+                <label>
+                  Observaciones
+                  {motivomovimiento === 'AJUSTE_MANUAL' && <span style={{ color: 'red' }}> *</span>}
+                </label>
                 <input
                   type="text"
                   value={observaciones}
                   onChange={(e) => setObservaciones(e.target.value)}
                   placeholder="Observaciones generales del movimiento..."
                   disabled={guardando}
+                  required={motivomovimiento === 'AJUSTE_MANUAL'}
                 />
               </div>
             </div>

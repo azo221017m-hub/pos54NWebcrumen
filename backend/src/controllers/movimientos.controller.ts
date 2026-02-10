@@ -129,6 +129,15 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
       return;
     }
 
+    // Validate observaciones is required for AJUSTE_MANUAL
+    if (movimientoData.motivomovimiento === 'AJUSTE_MANUAL' && !movimientoData.observaciones?.trim()) {
+      res.status(400).json({
+        success: false,
+        message: 'Las observaciones son requeridas para movimientos de tipo AJUSTE MANUAL'
+      });
+      return;
+    }
+
     // Get the current idnegocio to use as the claveturno placeholder
     // Note: No longer requiring an open turno for inventory movements
     // We'll store the folio format in the main movimientos table's idreferencia field
@@ -625,8 +634,46 @@ export const aplicarMovimiento = async (req: AuthRequest, res: Response): Promis
 
     // Procesar cada detalle según el motivo de movimiento
     for (const detalle of detalles) {
+      // Special handling for AJUSTE_MANUAL: Set absolute values instead of relative changes
+      if (movimiento.motivomovimiento === 'AJUSTE_MANUAL') {
+        // Buscar el insumo por nombre y negocio (según requisito)
+        // Use movimiento.idnegocio instead of user's idNegocio to support superuser operations
+        const [insumos] = await pool.query<RowDataPacket[]>(
+          'SELECT id_insumo FROM tblposcrumenwebinsumos WHERE nombre = ? AND idnegocio = ?',
+          [detalle.nombreinsumo, movimiento.idnegocio]
+        );
+
+        if (insumos.length === 0) {
+          console.error(`AJUSTE_MANUAL: Insumo no encontrado: ${detalle.nombreinsumo} para negocio ${movimiento.idnegocio}`);
+          throw new Error(`Insumo no encontrado: ${detalle.nombreinsumo}`);
+        }
+
+        const insumoId = insumos[0].id_insumo;
+        
+        // For AJUSTE_MANUAL: Set absolute values (not relative)
+        // stock_actual = valor INPUT.cantidad (not stock_actual + cantidad)
+        // costo_promedio_ponderado = valor INPUT.costo (absolute value)
+        // proveedor = valor INPUT.proveedor
+        await pool.execute<ResultSetHeader>(
+          `UPDATE tblposcrumenwebinsumos 
+           SET stock_actual = ?,
+               costo_promedio_ponderado = ?,
+               idproveedor = ?,
+               fechamodificacionauditoria = NOW(),
+               usuarioauditoria = ?
+           WHERE id_insumo = ? AND idnegocio = ?`,
+          [
+            detalle.cantidad,         // Absolute value for stock
+            detalle.costo ?? 0,       // Absolute value for cost
+            detalle.proveedor || null,
+            usuarioAuditoria,
+            insumoId,
+            movimiento.idnegocio
+          ]
+        );
+      }
       // Para COMPRA, MERMA, y CONSUMO, actualizar el inventario
-      if (['COMPRA', 'MERMA', 'CONSUMO'].includes(movimiento.motivomovimiento)) {
+      else if (['COMPRA', 'MERMA', 'CONSUMO'].includes(movimiento.motivomovimiento)) {
         // Buscar el insumo por nombre y negocio (según requisito)
         // Use movimiento.idnegocio instead of user's idNegocio to support superuser operations
         const [insumos] = await pool.query<RowDataPacket[]>(
