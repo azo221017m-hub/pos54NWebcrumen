@@ -11,7 +11,7 @@ import type { Insumo } from '../../../types/insumo.types';
 import type { Proveedor } from '../../../types/proveedor.types';
 import { obtenerInsumos } from '../../../services/insumosService';
 import { obtenerProveedores } from '../../../services/proveedoresService';
-import { obtenerUltimaCompra } from '../../../services/movimientosService';
+import { obtenerUltimaCompra, aplicarMovimiento } from '../../../services/movimientosService';
 import { showInfoToast } from '../../FeedbackToast';
 import './FormularioMovimiento.css';
 
@@ -33,9 +33,10 @@ interface Props {
     texto: string;
   } | null;
   isEditMode?: boolean; // Flag to indicate if editing an existing movement
+  onAplicar?: () => void; // Callback to refresh parent list after applying movement
 }
 
-const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancelar, mensaje, isEditMode = false }) => {
+const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancelar, mensaje, isEditMode = false, onAplicar }) => {
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
   
   // Estado del formulario
@@ -43,6 +44,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
   const [observaciones, setObservaciones] = useState('');
   const [detalles, setDetalles] = useState<DetalleMovimientoExtended[]>([]);
   const [guardando, setGuardando] = useState(false);
+  const [aplicando, setAplicando] = useState(false);
   
   // Estado para insumos
   const [insumos, setInsumos] = useState<Insumo[]>([]);
@@ -276,6 +278,39 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     }
   };
 
+  const handleAplicar = async () => {
+    if (!movimiento?.idmovimiento) {
+      showInfoToast('No se puede aplicar el movimiento: ID no disponible');
+      return;
+    }
+
+    // Confirm action
+    const confirmacion = window.confirm(
+      '¿Está seguro de que desea aplicar este movimiento? Esta acción actualizará el inventario y no se puede deshacer.'
+    );
+    
+    if (!confirmacion) {
+      return;
+    }
+
+    setAplicando(true);
+    try {
+      await aplicarMovimiento(movimiento.idmovimiento);
+      showInfoToast('Movimiento aplicado exitosamente');
+      // Call parent callback to refresh the list
+      if (onAplicar) {
+        onAplicar();
+      }
+      onCancelar(); // Close the form
+    } catch (error: any) {
+      console.error('Error al aplicar movimiento:', error);
+      const errorMessage = error?.response?.data?.message || 'Error al aplicar el movimiento';
+      showInfoToast(errorMessage);
+    } finally {
+      setAplicando(false);
+    }
+  };
+
   // Memoized calculation: total sum of (cantidad * costo) for all items
   const totalGeneral = useMemo(() => {
     return detalles.reduce((sum, d) => sum + ((d.cantidad || 0) * (d.costo || 0)), 0);
@@ -358,10 +393,14 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                 </button>
               )}
               {/* Show APLICAR button only when in edit mode */}
-              {/* Note: APLICAR button functionality to be implemented in future task */}
               {isEditMode && (
-                <button type="button" className="btn-aplicar" disabled={detalles.length === 0 || guardando}>
-                  APLICAR
+                <button 
+                  type="button" 
+                  className="btn-aplicar" 
+                  disabled={detalles.length === 0 || guardando || aplicando}
+                  onClick={handleAplicar}
+                >
+                  {aplicando ? 'APLICANDO...' : 'APLICAR'}
                 </button>
               )}
             </div>
