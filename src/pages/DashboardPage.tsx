@@ -474,8 +474,9 @@ export const DashboardPage = () => {
     // Verify open turno
     verificarTurno();
 
-    // Refresh sales summary and turno status periodically
+    // Refresh sales summary, comandas, and turno status periodically
     const intervalId = setInterval(() => {
+      cargarVentasSolicitadas();
       cargarResumenVentas();
       verificarTurno();
     }, SALES_SUMMARY_REFRESH_INTERVAL);

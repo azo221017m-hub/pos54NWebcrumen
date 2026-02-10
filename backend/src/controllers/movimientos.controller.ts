@@ -157,8 +157,8 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
 
     const idMovimiento = resultMovimiento.insertId;
 
-    // Generate new folio format for idreferencia: YYYYMMDDHHidmovimiento
-    // Example: 20260902223101 (year=2026, month=09, day=02, hour=22, idmovimiento=3101)
+    // Generate new folio format for idreferencia: YYYYMMDDHHMMSSidmovimiento
+    // Example: 202609022314053101 (year=2026, month=09, day=02, hour=23, minute=14, second=05, idmovimiento=3101)
     // Note: For very large idMovimiento values (>999999999), this may exceed JavaScript's MAX_SAFE_INTEGER
     // In practice, this is unlikely to be an issue for typical use cases
     const now = new Date();
@@ -166,7 +166,9 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     const hour = String(now.getHours()).padStart(2, '0');
-    const folioReferenciaStr = `${year}${month}${day}${hour}${idMovimiento}`;
+    const minute = String(now.getMinutes()).padStart(2, '0');
+    const second = String(now.getSeconds()).padStart(2, '0');
+    const folioReferenciaStr = `${year}${month}${day}${hour}${minute}${second}${idMovimiento}`;
     const folioReferencia = Number(folioReferenciaStr);
 
     // Update the movimiento's idreferencia with the folio format
