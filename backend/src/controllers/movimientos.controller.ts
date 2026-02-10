@@ -643,33 +643,34 @@ export const aplicarMovimiento = async (req: AuthRequest, res: Response): Promis
           [detalle.nombreinsumo, movimiento.idnegocio]
         );
 
-        if (insumos.length > 0) {
-          const insumoId = insumos[0].id_insumo;
-          
-          // For AJUSTE_MANUAL: Set absolute values (not relative)
-          // stock_actual = valor INPUT.cantidad (not stock_actual + cantidad)
-          // costo_promedio_ponderado = valor INPUT.costo (absolute value)
-          // proveedor = valor INPUT.proveedor
-          await pool.execute<ResultSetHeader>(
-            `UPDATE tblposcrumenwebinsumos 
-             SET stock_actual = ?,
-                 costo_promedio_ponderado = ?,
-                 idproveedor = ?,
-                 fechamodificacionauditoria = NOW(),
-                 usuarioauditoria = ?,
-                 idnegocio = ?
-             WHERE id_insumo = ? AND idnegocio = ?`,
-            [
-              detalle.cantidad,         // Absolute value for stock
-              detalle.costo ?? 0,       // Absolute value for cost
-              detalle.proveedor || null,
-              usuarioAuditoria,
-              movimiento.idnegocio,     // Set idnegocio
-              insumoId,
-              movimiento.idnegocio
-            ]
-          );
+        if (insumos.length === 0) {
+          console.error(`AJUSTE_MANUAL: Insumo no encontrado: ${detalle.nombreinsumo} para negocio ${movimiento.idnegocio}`);
+          throw new Error(`Insumo no encontrado: ${detalle.nombreinsumo}`);
         }
+
+        const insumoId = insumos[0].id_insumo;
+        
+        // For AJUSTE_MANUAL: Set absolute values (not relative)
+        // stock_actual = valor INPUT.cantidad (not stock_actual + cantidad)
+        // costo_promedio_ponderado = valor INPUT.costo (absolute value)
+        // proveedor = valor INPUT.proveedor
+        await pool.execute<ResultSetHeader>(
+          `UPDATE tblposcrumenwebinsumos 
+           SET stock_actual = ?,
+               costo_promedio_ponderado = ?,
+               idproveedor = ?,
+               fechamodificacionauditoria = NOW(),
+               usuarioauditoria = ?
+           WHERE id_insumo = ? AND idnegocio = ?`,
+          [
+            detalle.cantidad,         // Absolute value for stock
+            detalle.costo ?? 0,       // Absolute value for cost
+            detalle.proveedor || null,
+            usuarioAuditoria,
+            insumoId,
+            movimiento.idnegocio
+          ]
+        );
       }
       // Para COMPRA, MERMA, y CONSUMO, actualizar el inventario
       else if (['COMPRA', 'MERMA', 'CONSUMO'].includes(movimiento.motivomovimiento)) {
