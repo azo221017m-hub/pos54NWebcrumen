@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
 import { obtenerMesas, cambiarEstatusMesa } from '../../services/mesasService';
 import { obtenerClientes } from '../../services/clientesService';
+import { verificarMesasOcupadas } from '../../services/ventasWebService';
 import type { Mesa, TipoServicio } from '../../types/mesa.types';
 import type { Cliente } from '../../types/cliente.types';
 import './ModalTipoServicio.css';
@@ -76,8 +77,50 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
   const cargarMesas = async () => {
     try {
       const data = await obtenerMesas();
+      
+      // Optimize: Get occupation status for all mesas in a single call
+      const mesasInfo = data.map(m => ({ idmesa: m.idmesa, nombremesa: m.nombremesa }));
+      const mesasOcupadasMap = await verificarMesasOcupadas(mesasInfo);
+      
+      // Get usuario for status updates
+      const usuarioData = localStorage.getItem('usuario');
+      if (!usuarioData) {
+        console.warn('⚠️ Usuario no encontrado en localStorage. No se podrán actualizar estados de mesas.');
+      }
+      const usuario = usuarioData ? JSON.parse(usuarioData) : null;
+      
+      // Validate each mesa and update its status if necessary
+      const mesasValidadas = await Promise.all(
+        data.map(async (mesa) => {
+          // Check if mesa has ordenado sales
+          const tieneVentaOrdenada = mesasOcupadasMap.get(mesa.nombremesa) || false;
+          
+          // If mesa has ordenado sales, it should be OCUPADA
+          // If mesa doesn't have ordenado sales, it should be DISPONIBLE
+          const estatusEsperado: 'OCUPADA' | 'DISPONIBLE' = tieneVentaOrdenada ? 'OCUPADA' : 'DISPONIBLE';
+          
+          // If current status doesn't match expected status, update it
+          if (mesa.estatusmesa !== estatusEsperado) {
+            try {
+              if (usuario) {
+                await cambiarEstatusMesa(mesa.idmesa, estatusEsperado, usuario.alias || usuario.nombre);
+                console.log(`Mesa ${mesa.nombremesa} actualizada a ${estatusEsperado}`);
+                // Return mesa with updated status
+                return { ...mesa, estatusmesa: estatusEsperado };
+              } else {
+                console.warn(`⚠️ No se pudo actualizar el estatus de la mesa ${mesa.nombremesa} porque no hay usuario autenticado.`);
+              }
+            } catch (error) {
+              console.error(`Error al actualizar estatus de mesa ${mesa.nombremesa}:`, error);
+            }
+          }
+          
+          return mesa;
+        })
+      );
+      
       // Filtrar solo mesas disponibles
-      const mesasDisponibles = data.filter(m => m.estatusmesa === 'DISPONIBLE');
+      const mesasDisponibles = mesasValidadas.filter(m => m.estatusmesa === 'DISPONIBLE');
       setMesas(mesasDisponibles);
     } catch (error) {
       console.error('Error al cargar mesas:', error);

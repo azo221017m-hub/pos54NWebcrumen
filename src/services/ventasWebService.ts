@@ -215,3 +215,61 @@ export const obtenerResumenVentas = async (): Promise<ResumenVentas> => {
     };
   }
 };
+
+// Verificar si una mesa tiene ventas en estado ORDENADO
+export const verificarMesaOcupada = async (nombremesa: string): Promise<boolean> => {
+  try {
+    console.log('🔵 ventasWebService: Verificando si mesa está ocupada:', nombremesa);
+    
+    // Get all sales for the business
+    const ventas = await obtenerVentasWeb();
+    
+    // Check if any sale has:
+    // - tipodeventa = 'MESA'
+    // - estadodeventa = 'ORDENADO'
+    // - cliente matches the table name exactly (e.g., "Mesa: Mesa 1")
+    const mesaOcupada = ventas.some(venta => 
+      venta.tipodeventa === 'MESA' && 
+      venta.estadodeventa === 'ORDENADO' && 
+      (venta.cliente === `Mesa: ${nombremesa}` || venta.cliente === nombremesa)
+    );
+    
+    console.log('🔵 ventasWebService: Mesa ocupada:', mesaOcupada);
+    return mesaOcupada;
+  } catch (error) {
+    console.error('🔴 ventasWebService: Error al verificar mesa ocupada:', error);
+    return false;
+  }
+};
+
+// Verificar múltiples mesas a la vez (optimizado para evitar N+1 queries)
+export const verificarMesasOcupadas = async (mesas: { idmesa: number; nombremesa: string }[]): Promise<Map<string, boolean>> => {
+  try {
+    console.log('🔵 ventasWebService: Verificando estado de múltiples mesas');
+    
+    // Get all sales for the business once
+    const ventas = await obtenerVentasWeb();
+    
+    // Filter to only MESA sales with ORDENADO status
+    const ventasMesaOrdenadas = ventas.filter(venta => 
+      venta.tipodeventa === 'MESA' && 
+      venta.estadodeventa === 'ORDENADO'
+    );
+    
+    // Create a map of mesa name to occupation status
+    const mesasOcupadasMap = new Map<string, boolean>();
+    
+    mesas.forEach(mesa => {
+      const tieneVentaOrdenada = ventasMesaOrdenadas.some(venta => 
+        venta.cliente === `Mesa: ${mesa.nombremesa}` || venta.cliente === mesa.nombremesa
+      );
+      mesasOcupadasMap.set(mesa.nombremesa, tieneVentaOrdenada);
+    });
+    
+    console.log('🔵 ventasWebService: Mesas validadas:', mesasOcupadasMap.size);
+    return mesasOcupadasMap;
+  } catch (error) {
+    console.error('🔴 ventasWebService: Error al verificar mesas ocupadas:', error);
+    return new Map<string, boolean>();
+  }
+};
