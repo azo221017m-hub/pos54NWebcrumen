@@ -434,6 +434,11 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     return guardando || detalles.length > 0 || motivomovimiento === 'INV_INICIAL';
   }, [guardando, detalles.length, motivomovimiento]);
 
+  // Memoized calculation: determine if observaciones field is required
+  const isObservacionesRequired = useMemo(() => {
+    return motivomovimiento === 'AJUSTE_MANUAL' || motivomovimiento === 'INV_INICIAL';
+  }, [motivomovimiento]);
+
   return (
     <div className="formulario-movimiento-overlay">
       <div className="formulario-movimiento-container">
@@ -484,7 +489,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
               <div className="observaciones-inline">
                 <label>
                   Observaciones
-                  {(motivomovimiento === 'AJUSTE_MANUAL' || motivomovimiento === 'INV_INICIAL') && <span style={{ color: 'red' }}> *</span>}
+                  {isObservacionesRequired && <span style={{ color: 'red' }}> *</span>}
                 </label>
                 <input
                   type="text"
@@ -492,7 +497,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                   onChange={(e) => setObservaciones(e.target.value)}
                   placeholder="Observaciones generales del movimiento..."
                   disabled={guardando}
-                  required={motivomovimiento === 'AJUSTE_MANUAL' || motivomovimiento === 'INV_INICIAL'}
+                  required={isObservacionesRequired}
                 />
               </div>
             </div>
