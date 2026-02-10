@@ -102,7 +102,7 @@ const ListaInsumos: React.FC<Props> = ({ insumos, onEdit, onDelete }) => {
                   <div className="stat-info">
                     <span className="stat-label">Costo Promedio</span>
                     <span className="stat-value">
-                      {formatCurrency(insumo.costo_promedio_ponderado)}
+                      {formatCurrency(Number(insumo.costo_promedio_ponderado || 0))}
                     </span>
                   </div>
                 </div>

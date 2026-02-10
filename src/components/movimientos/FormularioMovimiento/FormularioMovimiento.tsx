@@ -447,7 +447,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                         <tr key={insumo.id_insumo}>
                           <td>{insumo.nombre}</td>
                           <td>{insumo.stock_actual}</td>
-                          <td>${insumo.costo_promedio_ponderado.toFixed(2)}</td>
+                          <td>${Number(insumo.costo_promedio_ponderado || 0).toFixed(2)}</td>
                           <td>{insumo.idproveedor || 'N/A'}</td>
                         </tr>
                       ))
