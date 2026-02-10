@@ -46,6 +46,9 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
   const [guardando, setGuardando] = useState(false);
   const [aplicando, setAplicando] = useState(false);
   
+  // Estado para edición de inventario inicial (solo editable, no persistente hasta SOLICITAR)
+  const [insumosEditados, setInsumosEditados] = useState<Map<number, { stockActual: number; costoPromPonderado: number }>>(new Map());
+  
   // Estado para insumos
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [cargandoInsumos, setCargandoInsumos] = useState(false);
@@ -129,6 +132,21 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
 
   const eliminarDetalle = (index: number) => {
     setDetalles(detalles.filter((_, i) => i !== index));
+  };
+
+  // Función para actualizar valores editados de inventario inicial
+  const actualizarInsumoInicial = (idInsumo: number, campo: 'stockActual' | 'costoPromPonderado', valor: number) => {
+    const nuevosEditados = new Map(insumosEditados);
+    const insumoActual = nuevosEditados.get(idInsumo) || { stockActual: 0, costoPromPonderado: 0 };
+    
+    if (campo === 'stockActual') {
+      insumoActual.stockActual = valor;
+    } else {
+      insumoActual.costoPromPonderado = valor;
+    }
+    
+    nuevosEditados.set(idInsumo, insumoActual);
+    setInsumosEditados(nuevosEditados);
   };
 
   // Helper function to format insumo information message
@@ -242,6 +260,54 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // For INV_INICIAL, use edited insumos instead of detalles
+    if (motivomovimiento === 'INV_INICIAL') {
+      if (insumosEditados.size === 0) {
+        alert('Debe editar al menos un insumo para guardar el inventario inicial');
+        return;
+      }
+
+      // Create detalles from edited insumos
+      const detallesInvInicial: DetalleMovimientoExtended[] = [];
+      insumosEditados.forEach((valores, idInsumo) => {
+        const insumo = insumos.find(i => i.id_insumo === idInsumo);
+        if (insumo) {
+          detallesInvInicial.push({
+            idinsumo: insumo.id_insumo,
+            nombreinsumo: insumo.nombre,
+            tipoinsumo: 'INVENTARIO',
+            cantidad: valores.stockActual, // Stock actual se guarda en cantidad
+            unidadmedida: insumo.unidad_medida,
+            costo: valores.costoPromPonderado, // Costo prom ponderado se guarda en costo
+            precio: 0,
+            observaciones: '',
+            proveedor: insumo.idproveedor || '',
+            _rowId: crypto.randomUUID()
+          });
+        }
+      });
+
+      const movimientoData: MovimientoCreate = {
+        tipomovimiento: 'ENTRADA',
+        motivomovimiento,
+        fechamovimiento: new Date().toISOString(),
+        observaciones,
+        estatusmovimiento: 'PENDIENTE',
+        detalles: detallesInvInicial.map(({ stockActual: _stockActual, _rowId, ...detalle }) => detalle)
+      };
+
+      setGuardando(true);
+      try {
+        await onGuardar(movimientoData);
+        // Clear edited insumos after successful save
+        setInsumosEditados(new Map());
+      } finally {
+        setGuardando(false);
+      }
+      return;
+    }
+
+    // Original logic for other movement types
     if (detalles.length === 0) {
       alert('Debe agregar al menos un insumo');
       return;
@@ -381,9 +447,12 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                 <option value="INV_INICIAL">INV. INICIAL</option>
                 <option value="CONSUMO">CONSUMO</option>
               </select>
-              <button type="button" className="btn-add-insumo" onClick={agregarDetalle}>
-                + INSUMO
-              </button>
+              {/* Hide +Insumo button when motivomovimiento is INV_INICIAL */}
+              {motivomovimiento !== 'INV_INICIAL' && (
+                <button type="button" className="btn-add-insumo" onClick={agregarDetalle}>
+                  + INSUMO
+                </button>
+              )}
               
               {/* Observaciones moved here */}
               <div className="observaciones-inline">
@@ -443,14 +512,33 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                         <td colSpan={4} style={{ textAlign: 'center' }}>Cargando insumos...</td>
                       </tr>
                     ) : (
-                      insumosActivos.map((insumo) => (
+                      insumosActivos.map((insumo) => {
+                        const editado = insumosEditados.get(insumo.id_insumo);
+                        return (
                         <tr key={insumo.id_insumo}>
                           <td>{insumo.nombre}</td>
-                          <td>{insumo.stock_actual}</td>
-                          <td>${Number(insumo.costo_promedio_ponderado || 0).toFixed(2)}</td>
+                          <td>
+                            <input
+                              type="number"
+                              step="0.001"
+                              value={editado?.stockActual ?? insumo.stock_actual}
+                              onChange={(e) => actualizarInsumoInicial(insumo.id_insumo, 'stockActual', Number(e.target.value))}
+                              disabled={guardando}
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={editado?.costoPromPonderado ?? insumo.costo_promedio_ponderado ?? 0}
+                              onChange={(e) => actualizarInsumoInicial(insumo.id_insumo, 'costoPromPonderado', Number(e.target.value))}
+                              disabled={guardando}
+                            />
+                          </td>
                           <td>{insumo.idproveedor || 'N/A'}</td>
                         </tr>
-                      ))
+                        );
+                      })
                     )}
                     {!cargandoInsumos && insumosActivos.length === 0 && (
                       <tr>
@@ -466,6 +554,8 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
           )}
 
           {/* Tabla de insumos */}
+          {/* Hide table when motivomovimiento is INV_INICIAL */}
+          {motivomovimiento !== 'INV_INICIAL' && (
           <div className="tabla-insumos-container">
             <table className="tabla-insumos">
               <thead>
@@ -634,6 +724,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
               </tbody>
             </table>
           </div>
+          )}
 
           {/* Sección de sumatorias */}
           {detalles.length > 0 && (
