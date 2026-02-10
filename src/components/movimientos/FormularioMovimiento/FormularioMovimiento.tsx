@@ -323,7 +323,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
               <select
                 value={motivomovimiento}
                 onChange={(e) => setMotivoMovimiento(e.target.value as MotivoMovimiento)}
-                disabled={guardando}
+                disabled={guardando || detalles.length > 0}
                 required
               >
                 <option value="COMPRA">COMPRA</option>
@@ -353,7 +353,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
               <button type="submit" className="btn-solicitar" disabled={guardando}>
                 {guardando ? 'GUARDANDO...' : 'SOLICITAR'}
               </button>
-              <button type="button" className="btn-aplicar" disabled>
+              <button type="button" className="btn-aplicar" disabled={detalles.length === 0 || guardando}>
                 APLICAR
               </button>
             </div>

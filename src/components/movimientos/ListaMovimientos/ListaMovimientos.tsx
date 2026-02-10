@@ -1,16 +1,14 @@
 import React from 'react';
-import { Edit, Trash2, CheckCircle, Clock } from 'lucide-react';
+import { Edit, CheckCircle, Clock } from 'lucide-react';
 import type { MovimientoConDetalles } from '../../../types/movimientos.types';
 import './ListaMovimientos.css';
 
 interface Props {
   movimientos: MovimientoConDetalles[];
   onEditar: (id: number) => void;
-  onEliminar: (id: number) => void;
-  onProcesar: (id: number) => void;
 }
 
-const ListaMovimientos: React.FC<Props> = ({ movimientos, onEditar, onEliminar, onProcesar }) => {
+const ListaMovimientos: React.FC<Props> = ({ movimientos, onEditar }) => {
   const formatearFecha = (fecha: string) => {
     return new Date(fecha).toLocaleString('es-MX', {
       year: 'numeric',
@@ -85,30 +83,14 @@ const ListaMovimientos: React.FC<Props> = ({ movimientos, onEditar, onEliminar, 
                   <td>
                     <div className="acciones-btns">
                       {movimiento.estatusmovimiento === 'PENDIENTE' && (
-                        <>
-                          <button
-                            className="btn-accion btn-procesar"
-                            onClick={() => onProcesar(movimiento.idmovimiento)}
-                            title="Procesar"
-                          >
-                            <CheckCircle size={16} />
-                          </button>
-                          <button
-                            className="btn-accion btn-editar"
-                            onClick={() => onEditar(movimiento.idmovimiento)}
-                            title="Editar"
-                          >
-                            <Edit size={16} />
-                          </button>
-                        </>
+                        <button
+                          className="btn-accion btn-editar"
+                          onClick={() => onEditar(movimiento.idmovimiento)}
+                          title="Editar"
+                        >
+                          <Edit size={16} />
+                        </button>
                       )}
-                      <button
-                        className="btn-accion btn-eliminar"
-                        onClick={() => onEliminar(movimiento.idmovimiento)}
-                        title="Eliminar"
-                      >
-                        <Trash2 size={16} />
-                      </button>
                     </div>
                   </td>
                 </tr>
