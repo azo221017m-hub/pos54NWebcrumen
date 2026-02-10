@@ -337,6 +337,11 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     }, {} as Record<string, number>);
   }, [detalles]);
 
+  // Memoized calculation: filter active insumos once to avoid redundant iterations
+  const insumosActivos = useMemo(() => {
+    return insumos.filter(insumo => insumo.activo === 1);
+  }, [insumos]);
+
   return (
     <div className="formulario-movimiento-overlay">
       <div className="formulario-movimiento-container">
@@ -438,18 +443,16 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                         <td colSpan={4} style={{ textAlign: 'center' }}>Cargando insumos...</td>
                       </tr>
                     ) : (
-                      insumos
-                        .filter(insumo => insumo.activo === 1) // Filtrar solo insumos activos
-                        .map((insumo) => (
-                          <tr key={insumo.id_insumo}>
-                            <td>{insumo.nombre}</td>
-                            <td>{insumo.stock_actual}</td>
-                            <td>${insumo.costo_promedio_ponderado.toFixed(2)}</td>
-                            <td>{insumo.idproveedor || 'N/A'}</td>
-                          </tr>
-                        ))
+                      insumosActivos.map((insumo) => (
+                        <tr key={insumo.id_insumo}>
+                          <td>{insumo.nombre}</td>
+                          <td>{insumo.stock_actual}</td>
+                          <td>${insumo.costo_promedio_ponderado.toFixed(2)}</td>
+                          <td>{insumo.idproveedor || 'N/A'}</td>
+                        </tr>
+                      ))
                     )}
-                    {!cargandoInsumos && insumos.filter(insumo => insumo.activo === 1).length === 0 && (
+                    {!cargandoInsumos && insumosActivos.length === 0 && (
                       <tr>
                         <td colSpan={4} style={{ textAlign: 'center' }}>
                           No hay insumos activos disponibles
