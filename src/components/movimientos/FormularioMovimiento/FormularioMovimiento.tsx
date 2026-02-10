@@ -137,7 +137,11 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
   // Función para actualizar valores editados de inventario inicial
   const actualizarInsumoInicial = (idInsumo: number, campo: 'stockActual' | 'costoPromPonderado', valor: number) => {
     const nuevosEditados = new Map(insumosEditados);
-    const insumoActual = nuevosEditados.get(idInsumo) || { stockActual: 0, costoPromPonderado: 0 };
+    const insumo = insumos.find(i => i.id_insumo === idInsumo);
+    const insumoActual = nuevosEditados.get(idInsumo) || {
+      stockActual: insumo?.stock_actual || 0,
+      costoPromPonderado: insumo?.costo_promedio_ponderado || 0
+    };
     
     if (campo === 'stockActual') {
       insumoActual.stockActual = valor;
@@ -281,7 +285,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
             costo: valores.costoPromPonderado, // Costo prom ponderado se guarda en costo
             precio: 0,
             observaciones: '',
-            proveedor: insumo.idproveedor || '',
+            proveedor: String(insumo.idproveedor || ''), // Ensure string type
             _rowId: crypto.randomUUID()
           });
         }
@@ -293,7 +297,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
         fechamovimiento: new Date().toISOString(),
         observaciones,
         estatusmovimiento: 'PENDIENTE',
-        detalles: detallesInvInicial.map(({ stockActual: _stockActual, _rowId, ...detalle }) => detalle)
+        detalles: detallesInvInicial.map(({ _rowId, ...detalle }) => detalle)
       };
 
       setGuardando(true);
@@ -521,6 +525,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                             <input
                               type="number"
                               step="0.001"
+                              min="0"
                               value={editado?.stockActual ?? insumo.stock_actual}
                               onChange={(e) => actualizarInsumoInicial(insumo.id_insumo, 'stockActual', Number(e.target.value))}
                               disabled={guardando}
@@ -530,6 +535,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                             <input
                               type="number"
                               step="0.01"
+                              min="0"
                               value={editado?.costoPromPonderado ?? insumo.costo_promedio_ponderado ?? 0}
                               onChange={(e) => actualizarInsumoInicial(insumo.id_insumo, 'costoPromPonderado', Number(e.target.value))}
                               disabled={guardando}
