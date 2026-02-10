@@ -5,7 +5,8 @@ import type { MovimientoConDetalles, MovimientoCreate } from '../../types/movimi
 import {
   obtenerMovimientos,
   crearMovimiento,
-  actualizarMovimiento
+  actualizarMovimiento,
+  eliminarMovimiento
 } from '../../services/movimientosService';
 import ListaMovimientos from '../../components/movimientos/ListaMovimientos/ListaMovimientos';
 import FormularioMovimiento from '../../components/movimientos/FormularioMovimiento/FormularioMovimiento';
@@ -89,6 +90,22 @@ const MovimientosInventario: React.FC = () => {
     setMovimientoEditar(null);
   };
 
+  const handleEliminar = async (id: number) => {
+    if (!window.confirm('¿Está seguro de que desea eliminar este movimiento?')) {
+      return;
+    }
+
+    try {
+      await eliminarMovimiento(id);
+      mostrarMensaje('success', 'Movimiento eliminado correctamente');
+      cargarMovimientos();
+    } catch (error: any) {
+      console.error('Error al eliminar movimiento:', error);
+      const mensaje = error?.response?.data?.message || 'Error al eliminar el movimiento';
+      mostrarMensaje('error', mensaje);
+    }
+  };
+
   return (
     <div className="movimientos-inventario-page">
       {/* Header */}
@@ -131,6 +148,7 @@ const MovimientosInventario: React.FC = () => {
           <ListaMovimientos
             movimientos={movimientos}
             onEditar={abrirEditarMovimiento}
+            onEliminar={handleEliminar}
           />
         )}
       </main>

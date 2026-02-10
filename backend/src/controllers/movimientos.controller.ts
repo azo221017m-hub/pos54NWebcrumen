@@ -19,8 +19,8 @@ export const obtenerMovimientos = async (req: AuthRequest, res: Response): Promi
     // Si es superusuario (idNegocio = 99999), obtener todos los movimientos
     const isSuperuser = idNegocio === 99999;
     const whereClause = isSuperuser
-      ? 'WHERE m.fecharegistro IS NOT NULL'
-      : 'WHERE m.idnegocio = ?';
+      ? "WHERE m.fecharegistro IS NOT NULL AND m.estatusmovimiento IN ('PENDIENTE', 'PROCESADO')"
+      : "WHERE m.idnegocio = ? AND m.estatusmovimiento IN ('PENDIENTE', 'PROCESADO')";
 
     const params = isSuperuser ? [] : [idNegocio];
 
@@ -382,19 +382,29 @@ export const eliminarMovimiento = async (req: AuthRequest, res: Response): Promi
       return;
     }
 
-    // Use idreferencia from movimiento if it exists, otherwise fall back to id (idmovimiento) for old records
-    const refQuery = movimientos[0].idreferencia || id;
+    const movimiento = movimientos[0];
 
-    // Eliminar detalles
+    // Only allow deletion of PENDIENTE records
+    if (movimiento.estatusmovimiento !== 'PENDIENTE') {
+      res.status(400).json({
+        success: false,
+        message: 'Solo se pueden eliminar movimientos con estatus PENDIENTE'
+      });
+      return;
+    }
+
+    // Use idreferencia from movimiento if it exists, otherwise fall back to id (idmovimiento) for old records
+    const refQuery = movimiento.idreferencia || id;
+
+    // Soft delete: Update estatusmovimiento to 'ELIMINADO' in both tables
     await pool.execute<ResultSetHeader>(
-      'DELETE FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
-      [refQuery]
+      'UPDATE tblposcrumenwebmovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE idmovimiento = ?',
+      ['ELIMINADO', id]
     );
 
-    // Eliminar movimiento
     await pool.execute<ResultSetHeader>(
-      'DELETE FROM tblposcrumenwebmovimientos WHERE idmovimiento = ?',
-      [id]
+      'UPDATE tblposcrumenwebdetallemovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE idreferencia = ?',
+      ['ELIMINADO', refQuery]
     );
 
     res.status(200).json({
