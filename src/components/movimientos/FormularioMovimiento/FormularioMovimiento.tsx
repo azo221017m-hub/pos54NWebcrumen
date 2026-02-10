@@ -260,6 +260,8 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
       return;
     }
 
+    // Determine tipomovimiento based on motivomovimiento
+    // INV_INICIAL is treated as ENTRADA (inventory entry)
     const tipoMovimiento = ENTRADA_TYPES.includes(motivomovimiento) ? 'ENTRADA' : 'SALIDA';
 
     const movimientoData: MovimientoCreate = {
@@ -334,6 +336,11 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
       return acc;
     }, {} as Record<string, number>);
   }, [detalles]);
+
+  // Memoized calculation: filter active insumos once to avoid redundant iterations
+  const insumosActivos = useMemo(() => {
+    return insumos.filter(insumo => insumo.activo === 1);
+  }, [insumos]);
 
   return (
     <div className="formulario-movimiento-overlay">
@@ -415,6 +422,48 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
               )}
             </div>
           </div>
+
+          {/* Tabla de inventario inicial - Solo visible cuando motivomovimiento es INV_INICIAL */}
+          {motivomovimiento === 'INV_INICIAL' && !isEditMode && (
+            <div className="inventario-inicial-section">
+              <h3>Inventario Inicial - Insumos Activos</h3>
+              <div className="tabla-inventario-inicial-container">
+                <table className="tabla-inventario-inicial">
+                  <thead>
+                    <tr>
+                      <th>NOMBRE</th>
+                      <th>STOCK ACTUAL</th>
+                      <th>COSTO PROM. PONDERADO</th>
+                      <th>PROVEEDOR</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cargandoInsumos ? (
+                      <tr>
+                        <td colSpan={4} style={{ textAlign: 'center' }}>Cargando insumos...</td>
+                      </tr>
+                    ) : (
+                      insumosActivos.map((insumo) => (
+                        <tr key={insumo.id_insumo}>
+                          <td>{insumo.nombre}</td>
+                          <td>{insumo.stock_actual}</td>
+                          <td>${insumo.costo_promedio_ponderado.toFixed(2)}</td>
+                          <td>{insumo.idproveedor || 'N/A'}</td>
+                        </tr>
+                      ))
+                    )}
+                    {!cargandoInsumos && insumosActivos.length === 0 && (
+                      <tr>
+                        <td colSpan={4} style={{ textAlign: 'center' }}>
+                          No hay insumos activos disponibles
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           {/* Tabla de insumos */}
           <div className="tabla-insumos-container">

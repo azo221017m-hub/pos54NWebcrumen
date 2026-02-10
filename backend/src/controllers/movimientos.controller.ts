@@ -634,8 +634,8 @@ export const aplicarMovimiento = async (req: AuthRequest, res: Response): Promis
 
     // Procesar cada detalle según el motivo de movimiento
     for (const detalle of detalles) {
-      // Special handling for AJUSTE_MANUAL: Set absolute values instead of relative changes
-      if (movimiento.motivomovimiento === 'AJUSTE_MANUAL') {
+      // Special handling for AJUSTE_MANUAL and INV_INICIAL: Set absolute values instead of relative changes
+      if (movimiento.motivomovimiento === 'AJUSTE_MANUAL' || movimiento.motivomovimiento === 'INV_INICIAL') {
         // Buscar el insumo por nombre y negocio (según requisito)
         // Use movimiento.idnegocio instead of user's idNegocio to support superuser operations
         const [insumos] = await pool.query<RowDataPacket[]>(
@@ -644,13 +644,13 @@ export const aplicarMovimiento = async (req: AuthRequest, res: Response): Promis
         );
 
         if (insumos.length === 0) {
-          console.error(`AJUSTE_MANUAL: Insumo no encontrado: ${detalle.nombreinsumo} para negocio ${movimiento.idnegocio}`);
+          console.error(`${movimiento.motivomovimiento}: Insumo no encontrado: ${detalle.nombreinsumo} para negocio ${movimiento.idnegocio}`);
           throw new Error(`Insumo no encontrado: ${detalle.nombreinsumo}`);
         }
 
         const insumoId = insumos[0].id_insumo;
         
-        // For AJUSTE_MANUAL: Set absolute values (not relative)
+        // For AJUSTE_MANUAL and INV_INICIAL: Set absolute values (not relative)
         // stock_actual = valor INPUT.cantidad (not stock_actual + cantidad)
         // costo_promedio_ponderado = valor INPUT.costo (absolute value)
         // proveedor = valor INPUT.proveedor
