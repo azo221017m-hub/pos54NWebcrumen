@@ -146,7 +146,6 @@ export const DashboardPage = () => {
   const [showConfigNegocioSubmenu, setShowConfigNegocioSubmenu] = useState(false);
   const [showDashboardSubmenu, setShowDashboardSubmenu] = useState(false);
   const [showMiOperacionSubmenu, setShowMiOperacionSubmenu] = useState(false);
-  const [showInventarioSubmenu, setShowInventarioSubmenu] = useState(false);
   const [isScreenLocked, setIsScreenLocked] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [ventasSolicitadas, setVentasSolicitadas] = useState<VentaWebWithDetails[]>([]);
@@ -975,6 +974,23 @@ export const DashboardPage = () => {
               </button>
               <button 
                 className="submenu-item" 
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  e.stopPropagation(); 
+                  navigate('/movimientos-inventario'); 
+                  setMobileMenuOpen(false); 
+                  setShowMiOperacionSubmenu(false);
+                }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                  <line x1="3" y1="6" x2="21" y2="6"/>
+                  <path d="M16 10a4 4 0 0 1-8 0"/>
+                </svg>
+                Movimientos
+              </button>
+              <button 
+                className="submenu-item" 
                 disabled={!turnoAbierto}
                 title={turnoAbierto ? "Finalizar día" : "No hay turno abierto"}
                 onClick={(e) => {
@@ -988,66 +1004,6 @@ export const DashboardPage = () => {
                   <polyline points="12 6 12 12 16 14"/>
                 </svg>
                 Finaliza Día
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Menú Inventario con Submenú */}
-        <div className="nav-item-container">
-          <button 
-            className={`nav-item ${showInventarioSubmenu ? 'active' : ''}`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setShowInventarioSubmenu(!showInventarioSubmenu);
-              setShowDashboardSubmenu(false);
-              setShowConfigSubmenu(false);
-              setShowConfigNegocioSubmenu(false);
-              setShowMiOperacionSubmenu(false);
-            }}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-            </svg>
-            Inventario
-            <svg 
-              className={`chevron-submenu ${showInventarioSubmenu ? 'rotate' : ''}`}
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2"
-              style={{ 
-                width: '14px', 
-                height: '14px', 
-                marginLeft: 'auto',
-                transform: showInventarioSubmenu ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.2s'
-              }}
-            >
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
-          </button>
-
-          {/* Submenú Inventario */}
-          {showInventarioSubmenu && (
-            <div className="submenu">
-              <button 
-                className="submenu-item" 
-                onClick={(e) => { 
-                  e.preventDefault(); 
-                  e.stopPropagation(); 
-                  navigate('/movimientos-inventario'); 
-                  setMobileMenuOpen(false); 
-                  setShowInventarioSubmenu(false);
-                }}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-                  <line x1="3" y1="6" x2="21" y2="6"/>
-                  <path d="M16 10a4 4 0 0 1-8 0"/>
-                </svg>
-                Movimientos
               </button>
             </div>
           )}
