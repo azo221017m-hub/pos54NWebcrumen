@@ -6,11 +6,9 @@ import './ListaMovimientos.css';
 interface Props {
   movimientos: MovimientoConDetalles[];
   onEditar: (id: number) => void;
-  onEliminar: (id: number) => void;
-  onProcesar: (id: number) => void;
 }
 
-const ListaMovimientos: React.FC<Props> = ({ movimientos, onEditar, onEliminar, onProcesar }) => {
+const ListaMovimientos: React.FC<Props> = ({ movimientos, onEditar }) => {
   const formatearFecha = (fecha: string) => {
     return new Date(fecha).toLocaleString('es-MX', {
       year: 'numeric',

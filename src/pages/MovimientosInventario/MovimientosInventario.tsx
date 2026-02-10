@@ -5,9 +5,7 @@ import type { MovimientoConDetalles, MovimientoCreate } from '../../types/movimi
 import {
   obtenerMovimientos,
   crearMovimiento,
-  actualizarMovimiento,
-  eliminarMovimiento,
-  procesarMovimiento
+  actualizarMovimiento
 } from '../../services/movimientosService';
 import ListaMovimientos from '../../components/movimientos/ListaMovimientos/ListaMovimientos';
 import FormularioMovimiento from '../../components/movimientos/FormularioMovimiento/FormularioMovimiento';
@@ -85,38 +83,6 @@ const MovimientosInventario: React.FC = () => {
     }
   };
 
-  const handleEliminar = async (id: number) => {
-    if (!window.confirm('¿Está seguro de eliminar este movimiento?')) {
-      return;
-    }
-
-    try {
-      await eliminarMovimiento(id);
-      mostrarMensaje('success', 'Movimiento eliminado correctamente');
-      cargarMovimientos();
-    } catch (error: any) {
-      console.error('Error al eliminar movimiento:', error);
-      const mensaje = error?.response?.data?.message || 'Error al eliminar el movimiento';
-      mostrarMensaje('error', mensaje);
-    }
-  };
-
-  const handleProcesar = async (id: number) => {
-    if (!window.confirm('¿Está seguro de procesar este movimiento? Esta acción actualizará el inventario.')) {
-      return;
-    }
-
-    try {
-      await procesarMovimiento(id);
-      mostrarMensaje('success', 'Movimiento procesado correctamente');
-      cargarMovimientos();
-    } catch (error: any) {
-      console.error('Error al procesar movimiento:', error);
-      const mensaje = error?.response?.data?.message || 'Error al procesar el movimiento';
-      mostrarMensaje('error', mensaje);
-    }
-  };
-
   const handleCancelar = () => {
     setMostrarFormulario(false);
     setMovimientoEditar(null);
@@ -167,8 +133,6 @@ const MovimientosInventario: React.FC = () => {
           <ListaMovimientos
             movimientos={movimientos}
             onEditar={abrirEditarMovimiento}
-            onEliminar={handleEliminar}
-            onProcesar={handleProcesar}
           />
         )}
       </main>
