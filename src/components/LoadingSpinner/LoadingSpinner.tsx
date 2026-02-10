@@ -14,6 +14,10 @@ const LoadingSpinner: React.FC<Props> = ({ size = 48, message = 'Cargando...' })
         alt="Loading indicator" 
         className="loading-spinner-logo"
         style={{ width: size, height: size }}
+        onError={(e) => {
+          // Fallback to a simple text if image fails to load
+          (e.target as HTMLImageElement).style.display = 'none';
+        }}
       />
       {message && <p>{message}</p>}
     </div>

@@ -358,6 +358,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                 </button>
               )}
               {/* Show APLICAR button only when in edit mode */}
+              {/* Note: APLICAR button functionality to be implemented in future task */}
               {isEditMode && (
                 <button type="button" className="btn-aplicar" disabled={detalles.length === 0 || guardando}>
                   APLICAR
