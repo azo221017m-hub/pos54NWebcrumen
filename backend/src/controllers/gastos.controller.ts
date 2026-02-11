@@ -39,6 +39,7 @@ export async function obtenerGastos(req: AuthRequest, res: Response): Promise<vo
         v.totaldeventa,
         v.referencia,
         v.descripcionmov,
+        v.estatusdepago,
         v.idnegocio,
         v.usuarioauditoria,
         v.fechamodificacionauditoria
@@ -92,6 +93,7 @@ export async function obtenerGastoPorId(req: AuthRequest, res: Response): Promis
         totaldeventa,
         referencia,
         descripcionmov,
+        estatusdepago,
         idnegocio,
         usuarioauditoria,
         fechamodificacionauditoria
@@ -142,10 +144,10 @@ export async function crearGasto(req: AuthRequest, res: Response): Promise<void>
       return;
     }
 
-    if (!importegasto || importegasto <= 0) {
+    if (importegasto === undefined || importegasto === null || importegasto === 0) {
       res.status(400).json({
         success: false,
-        message: 'El importe del gasto debe ser mayor a 0'
+        message: 'El importe del gasto es requerido y no puede ser cero'
       });
       return;
     }
@@ -237,6 +239,7 @@ export async function crearGasto(req: AuthRequest, res: Response): Promise<void>
         totaldeventa,
         referencia,
         descripcionmov,
+        estatusdepago,
         idnegocio,
         usuarioauditoria,
         fechamodificacionauditoria
@@ -297,10 +300,10 @@ export async function actualizarGasto(req: AuthRequest, res: Response): Promise<
     const values: any[] = [];
 
     if (importegasto !== undefined) {
-      if (importegasto <= 0) {
+      if (importegasto === null || importegasto === 0) {
         res.status(400).json({
           success: false,
-          message: 'El importe del gasto debe ser mayor a 0'
+          message: 'El importe del gasto no puede ser cero'
         });
         return;
       }
@@ -352,6 +355,7 @@ export async function actualizarGasto(req: AuthRequest, res: Response): Promise<
         totaldeventa,
         referencia,
         descripcionmov,
+        estatusdepago,
         idnegocio,
         usuarioauditoria,
         fechamodificacionauditoria

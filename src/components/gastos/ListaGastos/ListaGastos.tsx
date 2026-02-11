@@ -1,15 +1,20 @@
-import React from 'react';
-import { Edit2, Trash2 } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { CheckCircle } from 'lucide-react';
 import type { Gasto } from '../../../types/gastos.types';
 import './ListaGastos.css';
 
 interface Props {
   gastos: Gasto[];
-  onEditar: (id: number) => void;
-  onEliminar: (id: number) => void;
 }
 
-const ListaGastos: React.FC<Props> = ({ gastos, onEditar, onEliminar }) => {
+interface GastoAgrupado {
+  fecha: string; // Date formatted as YYYY-MM-DD
+  descripcion: string; // descripcionmov
+  gastos: Gasto[];
+  totalGrupo: number;
+}
+
+const ListaGastos: React.FC<Props> = ({ gastos }) => {
   const formatearFecha = (fecha: Date | string): string => {
     const date = new Date(fecha);
     return date.toLocaleString('es-MX', {
@@ -21,12 +26,66 @@ const ListaGastos: React.FC<Props> = ({ gastos, onEditar, onEliminar }) => {
     });
   };
 
+  const formatearFechaSolo = (fecha: Date | string): string => {
+    const date = new Date(fecha);
+    return date.toLocaleDateString('es-MX', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const formatearHora = (fecha: Date | string): string => {
+    const date = new Date(fecha);
+    return date.toLocaleTimeString('es-MX', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const obtenerFechaClave = (fecha: Date | string): string => {
+    const date = new Date(fecha);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const formatearMoneda = (valor: number): string => {
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
       currency: 'MXN'
     }).format(valor);
   };
+
+  // Group gastos by date and description
+  const gastosAgrupados = useMemo((): GastoAgrupado[] => {
+    const grupos = new Map<string, GastoAgrupado>();
+
+    gastos.forEach((gasto) => {
+      const fechaClave = obtenerFechaClave(gasto.fechadeventa);
+      const descripcion = gasto.descripcionmov || 'Sin descripción';
+      const clave = `${fechaClave}|${descripcion}`;
+
+      if (!grupos.has(clave)) {
+        grupos.set(clave, {
+          fecha: fechaClave,
+          descripcion: descripcion,
+          gastos: [],
+          totalGrupo: 0
+        });
+      }
+
+      const grupo = grupos.get(clave)!;
+      grupo.gastos.push(gasto);
+      grupo.totalGrupo += gasto.totaldeventa;
+    });
+
+    // Convert map to array and sort by date (newest first)
+    return Array.from(grupos.values()).sort((a, b) => {
+      return b.fecha.localeCompare(a.fecha);
+    });
+  }, [gastos]);
 
   if (gastos.length === 0) {
     return (
@@ -39,96 +98,49 @@ const ListaGastos: React.FC<Props> = ({ gastos, onEditar, onEliminar }) => {
 
   return (
     <div className="lista-gastos">
-      <div className="tabla-gastos-container">
-        <table className="tabla-gastos">
-          <thead>
-            <tr>
-              <th>Folio</th>
-              <th>Tipo de Gasto</th>
-              <th>Descripción</th>
-              <th>Importe</th>
-              <th>Fecha</th>
-              <th>Usuario</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {gastos.map((gasto) => (
-              <tr key={gasto.idventa}>
-                <td className="folio-cell">{gasto.folioventa}</td>
-                <td className="tipo-cell">{gasto.referencia || 'Sin especificar'}</td>
-                <td className="descripcion-cell">{gasto.descripcionmov || '-'}</td>
-                <td className="importe-cell">{formatearMoneda(gasto.totaldeventa)}</td>
-                <td className="fecha-cell">{formatearFecha(gasto.fechadeventa)}</td>
-                <td className="usuario-cell">{gasto.usuarioauditoria}</td>
-                <td className="acciones-cell">
-                  <button
-                    className="btn-accion btn-editar"
-                    onClick={() => onEditar(gasto.idventa)}
-                    title="Editar gasto"
-                  >
-                    <Edit2 size={18} />
-                  </button>
-                  <button
-                    className="btn-accion btn-eliminar"
-                    onClick={() => onEliminar(gasto.idventa)}
-                    title="Eliminar gasto"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Versión móvil - tarjetas */}
-      <div className="tarjetas-gastos">
-        {gastos.map((gasto) => (
-          <div key={gasto.idventa} className="tarjeta-gasto">
-            <div className="tarjeta-header">
-              <span className="tarjeta-folio">{gasto.folioventa}</span>
-              <span className="tarjeta-importe">{formatearMoneda(gasto.totaldeventa)}</span>
-            </div>
-            <div className="tarjeta-body">
-              <div className="tarjeta-row">
-                <span className="tarjeta-label">Tipo:</span>
-                <span className="tarjeta-value">{gasto.referencia || 'Sin especificar'}</span>
+      <div className="grupos-gastos">
+        {gastosAgrupados.map((grupo) => {
+          // Create stable key from the grupo data
+          const grupoKey = `${grupo.fecha}-${grupo.descripcion}-${grupo.gastos[0]?.idventa || 0}`;
+          return (
+          <div key={grupoKey} className="grupo-gasto">
+            <div className="grupo-header">
+              <div className="grupo-info">
+                <h3 className="grupo-fecha">{formatearFechaSolo(grupo.fecha)}</h3>
+                <p className="grupo-descripcion">{grupo.descripcion}</p>
               </div>
-              <div className="tarjeta-row">
-                <span className="tarjeta-label">Descripción:</span>
-                <span className="tarjeta-value">{gasto.descripcionmov || '-'}</span>
-              </div>
-              <div className="tarjeta-row">
-                <span className="tarjeta-label">Fecha:</span>
-                <span className="tarjeta-value">{formatearFecha(gasto.fechadeventa)}</span>
-              </div>
-              <div className="tarjeta-row">
-                <span className="tarjeta-label">Usuario:</span>
-                <span className="tarjeta-value">{gasto.usuarioauditoria}</span>
+              <div className="grupo-total">
+                {formatearMoneda(grupo.totalGrupo)}
               </div>
             </div>
-            <div className="tarjeta-actions">
-              <button
-                className="btn-accion btn-editar"
-                onClick={() => onEditar(gasto.idventa)}
-                title="Editar gasto"
-              >
-                <Edit2 size={18} />
-                Editar
-              </button>
-              <button
-                className="btn-accion btn-eliminar"
-                onClick={() => onEliminar(gasto.idventa)}
-                title="Eliminar gasto"
-              >
-                <Trash2 size={18} />
-                Eliminar
-              </button>
+            <div className="grupo-items">
+              {grupo.gastos.map((gasto) => (
+                <div 
+                  key={gasto.idventa} 
+                  className={`gasto-item ${gasto.estatusdepago === 'PAGADO' ? 'gasto-aplicado' : ''}`}
+                >
+                  <div className="gasto-item-content">
+                    <div className="gasto-item-info">
+                      <span className="gasto-folio">{gasto.folioventa}</span>
+                      <span className="gasto-hora">{formatearHora(gasto.fechadeventa)}</span>
+                      <span className="gasto-tipo">{gasto.referencia || 'Sin especificar'}</span>
+                      <span className="gasto-usuario">{gasto.usuarioauditoria}</span>
+                    </div>
+                    <div className="gasto-item-monto">
+                      {formatearMoneda(gasto.totaldeventa)}
+                      {gasto.estatusdepago === 'PAGADO' && (
+                        <span className="gasto-aplicado-badge" title="Aplicado">
+                          <CheckCircle size={16} />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
+        );
+        })}
       </div>
     </div>
   );
