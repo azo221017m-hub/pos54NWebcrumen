@@ -5,8 +5,6 @@ import './ListaGastos.css';
 
 interface Props {
   gastos: Gasto[];
-  onEditar: (id: number) => void;
-  onEliminar: (id: number) => void;
 }
 
 interface GastoAgrupado {
@@ -34,6 +32,14 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
+    });
+  };
+
+  const formatearHora = (fecha: Date | string): string => {
+    const date = new Date(fecha);
+    return date.toLocaleTimeString('es-MX', {
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -113,7 +119,7 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
                   <div className="gasto-item-content">
                     <div className="gasto-item-info">
                       <span className="gasto-folio">{gasto.folioventa}</span>
-                      <span className="gasto-hora">{formatearFecha(gasto.fechadeventa).split(' ')[1]}</span>
+                      <span className="gasto-hora">{formatearHora(gasto.fechadeventa)}</span>
                       <span className="gasto-tipo">{gasto.referencia || 'Sin especificar'}</span>
                       <span className="gasto-usuario">{gasto.usuarioauditoria}</span>
                     </div>

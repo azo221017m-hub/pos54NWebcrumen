@@ -143,8 +143,6 @@ const PageGastos: React.FC = () => {
         ) : (
           <ListaGastos
             gastos={gastos}
-            onEditar={abrirEditarGasto}
-            onEliminar={handleEliminar}
           />
         )}
       </main>

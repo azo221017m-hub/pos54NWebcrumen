@@ -144,10 +144,10 @@ export async function crearGasto(req: AuthRequest, res: Response): Promise<void>
       return;
     }
 
-    if (!importegasto || importegasto === 0) {
+    if (importegasto === undefined || importegasto === null || importegasto === 0) {
       res.status(400).json({
         success: false,
-        message: 'El importe del gasto es requerido'
+        message: 'El importe del gasto es requerido y no puede ser cero'
       });
       return;
     }
@@ -300,7 +300,7 @@ export async function actualizarGasto(req: AuthRequest, res: Response): Promise<
     const values: any[] = [];
 
     if (importegasto !== undefined) {
-      if (importegasto === 0) {
+      if (importegasto === null || importegasto === 0) {
         res.status(400).json({
           success: false,
           message: 'El importe del gasto no puede ser cero'
