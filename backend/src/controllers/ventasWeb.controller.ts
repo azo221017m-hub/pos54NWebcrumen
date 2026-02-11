@@ -1243,7 +1243,7 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
         COALESCE(SUM(CASE WHEN referencia = 'GASTO' AND estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalGastos
        FROM tblposcrumenwebventas 
        WHERE idnegocio = ? 
-         AND DATE(fechaventa) BETWEEN ? AND ?`,
+         AND DATE(fechadeventa) BETWEEN ? AND ?`,
       [idnegocio, startDate, endDate]
     );
 
