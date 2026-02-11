@@ -8,7 +8,8 @@ import {
   updateDetalleEstado,
   getDetallesByEstado,
   addDetallesToVenta,
-  getSalesSummary
+  getSalesSummary,
+  getBusinessHealth
 } from '../controllers/ventasWeb.controller';
 import { authMiddleware } from '../middlewares/auth';
 
@@ -79,5 +80,12 @@ router.get('/detalles/estado/:estado', getDetallesByEstado);
  * @access  Private
  */
 router.get('/resumen/turno-actual', getSalesSummary);
+
+/**
+ * @route   GET /api/ventas-web/dashboard/salud-negocio
+ * @desc    Obtener datos de salud del negocio (Ventas vs Gastos del mes actual)
+ * @access  Private
+ */
+router.get('/dashboard/salud-negocio', getBusinessHealth);
 
 export default router;

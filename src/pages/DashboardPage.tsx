@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, type ResumenVentas } from '../services/ventasWebService';
+import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerSaludNegocio, type ResumenVentas, type SaludNegocio } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import jsPDF from 'jspdf';
 import { SessionTimer } from '../components/common/SessionTimer';
@@ -155,8 +155,17 @@ export const DashboardPage = () => {
   const [resumenVentas, setResumenVentas] = useState<ResumenVentas>({
     totalCobrado: 0,
     totalOrdenado: 0,
+    totalVentasCobradas: 0,
     metaTurno: 0,
     hasTurnoAbierto: false
+  });
+  const [saludNegocio, setSaludNegocio] = useState<SaludNegocio>({
+    totalVentas: 0,
+    totalGastos: 0,
+    periodo: {
+      inicio: '',
+      fin: ''
+    }
   });
   const [turnoAbierto, setTurnoAbierto] = useState<Turno | null>(null);
   const [showCierreTurnoModal, setShowCierreTurnoModal] = useState(false);
@@ -221,6 +230,15 @@ export const DashboardPage = () => {
       setResumenVentas(resumen);
     } catch (error) {
       console.error('Error al cargar resumen de ventas:', error);
+    }
+  }, []);
+
+  const cargarSaludNegocio = useCallback(async () => {
+    try {
+      const salud = await obtenerSaludNegocio();
+      setSaludNegocio(salud);
+    } catch (error) {
+      console.error('Error al cargar salud del negocio:', error);
     }
   }, []);
 
@@ -470,19 +488,22 @@ export const DashboardPage = () => {
     cargarModeradores();
     // Load sales summary for current shift
     cargarResumenVentas();
+    // Load business health data
+    cargarSaludNegocio();
 
     // Verify open turno
     verificarTurno();
 
-    // Refresh sales summary, comandas, and turno status periodically
+    // Refresh sales summary, comandas, turno status, and business health periodically
     const intervalId = setInterval(() => {
       cargarVentasSolicitadas();
       cargarResumenVentas();
+      cargarSaludNegocio();
       verificarTurno();
     }, SALES_SUMMARY_REFRESH_INTERVAL);
 
     return () => clearInterval(intervalId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas, cargarModeradores, cargarResumenVentas, and verificarTurno omitted to prevent infinite refresh loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas, cargarModeradores, cargarResumenVentas, cargarSaludNegocio, and verificarTurno omitted to prevent infinite refresh loop
   }, [navigate]);
 
   // Early return if not authenticated
@@ -1036,8 +1057,63 @@ export const DashboardPage = () => {
                 </svg>
               </div>
               <h3 className="card-title">Salud de mi Negocio</h3>
-              <p className="card-text">Comparativo del mes</p>
-              <div className="card-stat">Ventas vs Gastos</div>
+              <p className="card-text" style={{ fontSize: '0.55rem', marginBottom: '0.5rem' }}>Comparativo del mes</p>
+              
+              {/* Visual comparison chart */}
+              {(saludNegocio.totalVentas > 0 || saludNegocio.totalGastos > 0) ? (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', height: '80px', marginBottom: '0.5rem' }}>
+                    {/* Ventas bar */}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <div style={{
+                        width: '100%',
+                        height: `${Math.max((saludNegocio.totalVentas / Math.max(saludNegocio.totalVentas, saludNegocio.totalGastos, 1)) * 100, 5)}%`,
+                        backgroundColor: '#10b981',
+                        borderRadius: '4px 4px 0 0',
+                        minHeight: '20px',
+                        transition: 'height 0.3s ease'
+                      }}></div>
+                      <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#10b981', marginTop: '0.25rem' }}>
+                        Ventas
+                      </span>
+                    </div>
+                    
+                    {/* Gastos bar */}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <div style={{
+                        width: '100%',
+                        height: `${Math.max((saludNegocio.totalGastos / Math.max(saludNegocio.totalVentas, saludNegocio.totalGastos, 1)) * 100, 5)}%`,
+                        backgroundColor: '#ef4444',
+                        borderRadius: '4px 4px 0 0',
+                        minHeight: '20px',
+                        transition: 'height 0.3s ease'
+                      }}></div>
+                      <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#ef4444', marginTop: '0.25rem' }}>
+                        Gastos
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Balance indicator */}
+                  <div style={{ 
+                    textAlign: 'center', 
+                    fontSize: '0.6rem', 
+                    color: saludNegocio.totalVentas > saludNegocio.totalGastos ? '#10b981' : '#ef4444',
+                    fontWeight: '600'
+                  }}>
+                    {saludNegocio.totalVentas > saludNegocio.totalGastos 
+                      ? '✓ Balance positivo' 
+                      : saludNegocio.totalVentas < saludNegocio.totalGastos 
+                        ? '⚠ Balance negativo'
+                        : '— Balance neutro'
+                    }
+                  </div>
+                </div>
+              ) : (
+                <div className="card-stat" style={{ fontSize: '0.65rem', color: '#9ca3af' }}>
+                  Sin datos del mes
+                </div>
+              )}
             </div>
 
             <div className="dashboard-card">
@@ -1052,6 +1128,12 @@ export const DashboardPage = () => {
               <p className="card-text" style={{ fontSize: '0.55rem', marginBottom: '0.35rem' }}>Turno Actual</p>
               
               <div style={{ marginBottom: '0.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.2rem' }}>
+                  <span style={{ fontSize: '0.55rem', color: '#718096' }}>Total Ventas:</span>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#3b82f6' }}>
+                    ${resumenVentas.totalVentasCobradas.toFixed(2)}
+                  </span>
+                </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.2rem' }}>
                   <span style={{ fontSize: '0.55rem', color: '#718096' }}>Cobrado:</span>
                   <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#10b981' }}>

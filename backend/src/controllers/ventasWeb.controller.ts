@@ -1165,6 +1165,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
         data: {
           totalCobrado: 0,
           totalOrdenado: 0,
+          totalVentasCobradas: 0,
           metaTurno: 0,
           hasTurnoAbierto: false
         }
@@ -1180,7 +1181,8 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const [salesRows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
         COALESCE(SUM(CASE WHEN estadodeventa = 'COBRADO' THEN importedepago ELSE 0 END), 0) as totalCobrado,
-        COALESCE(SUM(CASE WHEN estadodeventa = 'ORDENADO' THEN totaldeventa ELSE 0 END), 0) as totalOrdenado
+        COALESCE(SUM(CASE WHEN estadodeventa = 'ORDENADO' THEN totaldeventa ELSE 0 END), 0) as totalOrdenado,
+        COALESCE(SUM(CASE WHEN descripcionmov = 'VENTA' AND estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalVentasCobradas
        FROM tblposcrumenwebventas 
        WHERE claveturno = ? AND idnegocio = ?`,
       [claveturno, idnegocio]
@@ -1188,12 +1190,14 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
 
     const totalCobrado = Number(salesRows[0]?.totalCobrado) || 0;
     const totalOrdenado = Number(salesRows[0]?.totalOrdenado) || 0;
+    const totalVentasCobradas = Number(salesRows[0]?.totalVentasCobradas) || 0;
 
     res.json({
       success: true,
       data: {
         totalCobrado,
         totalOrdenado,
+        totalVentasCobradas,
         metaTurno: metaturno,
         hasTurnoAbierto: true
       }
@@ -1203,6 +1207,78 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     res.status(500).json({
       success: false,
       message: 'Error al obtener resumen de ventas'
+    });
+  }
+};
+
+/**
+ * Get business health dashboard data (Sales vs Expenses for current month)
+ * @route GET /api/ventas-web/dashboard/salud-negocio
+ */
+export const getBusinessHealth = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
+    // Get current month's date range
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    // Format dates for MySQL (YYYY-MM-DD)
+    const startDate = firstDayOfMonth.toISOString().split('T')[0];
+    const endDate = lastDayOfMonth.toISOString().split('T')[0];
+
+    // Query for sales: descripcionmov='VENTA' AND estadodeventa='COBRADO'
+    const [salesRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT 
+        COALESCE(SUM(totaldeventa), 0) as totalVentas
+       FROM tblposcrumenwebventas 
+       WHERE idnegocio = ? 
+         AND descripcionmov = 'VENTA'
+         AND estadodeventa = 'COBRADO'
+         AND DATE(fechaventa) BETWEEN ? AND ?`,
+      [idnegocio, startDate, endDate]
+    );
+
+    // Query for expenses: referencia='GASTO' AND estadodeventa='COBRADO'
+    const [expensesRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT 
+        COALESCE(SUM(totaldeventa), 0) as totalGastos
+       FROM tblposcrumenwebventas 
+       WHERE idnegocio = ? 
+         AND referencia = 'GASTO'
+         AND estadodeventa = 'COBRADO'
+         AND DATE(fechaventa) BETWEEN ? AND ?`,
+      [idnegocio, startDate, endDate]
+    );
+
+    const totalVentas = Number(salesRows[0]?.totalVentas) || 0;
+    const totalGastos = Number(expensesRows[0]?.totalGastos) || 0;
+
+    res.json({
+      success: true,
+      data: {
+        totalVentas,
+        totalGastos,
+        periodo: {
+          inicio: startDate,
+          fin: endDate
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error al obtener salud del negocio:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener datos de salud del negocio'
     });
   }
 };
