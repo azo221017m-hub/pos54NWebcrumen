@@ -215,14 +215,14 @@ export async function crearGasto(req: AuthRequest, res: Response): Promise<void>
         'PAGADO',
         'GASTO',
         NULL,
-        NULL,
+        ?,
         ?,
         ?,
         NOW(),
         0,
         ?
       )`,
-      [folioventa, importegasto, importegasto, idnegocio, usuarioalias, tipodegasto]
+      [folioventa, importegasto, importegasto, idnegocio, usuarioalias, folioventa, tipodegasto]
     );
 
     // Obtener el gasto creado
