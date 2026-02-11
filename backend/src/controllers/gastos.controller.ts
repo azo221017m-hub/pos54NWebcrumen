@@ -327,8 +327,8 @@ export async function actualizarGasto(req: AuthRequest, res: Response): Promise<
       return;
     }
 
-    // Actualizar usuarioauditoria y fechamodificacionauditoria
-    updates.push('usuarioauditoria = ?', 'fechamodificacionauditoria = NOW()');
+    // Actualizar usuarioauditoria, fechamodificacionauditoria y detalledescuento
+    updates.push('usuarioauditoria = ?', 'fechamodificacionauditoria = NOW()', 'detalledescuento = 0');
     values.push(usuarioalias);
 
     // Añadir el id al final
