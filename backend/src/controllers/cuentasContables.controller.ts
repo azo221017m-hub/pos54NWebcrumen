@@ -19,14 +19,15 @@ export const obtenerCuentasContables = async (req: AuthRequest, res: Response): 
   try {
     // Usar idnegocio del usuario autenticado para seguridad
     const idnegocio = req.user?.idNegocio;
+    const naturaleza = req.query.naturaleza as string | undefined;
     
     if (!idnegocio) {
       res.status(401).json({ message: 'Usuario no autenticado o sin negocio asignado' });
       return;
     }
     
-    const [rows] = await pool.query<CuentaContable[]>(
-      `SELECT 
+    // Construir query con filtro opcional por naturaleza
+    let query = `SELECT 
         id_cuentacontable,
         naturalezacuentacontable,
         nombrecuentacontable,
@@ -36,10 +37,18 @@ export const obtenerCuentasContables = async (req: AuthRequest, res: Response): 
         fechamodificacionauditoria,
         idnegocio
       FROM tblposcrumenwebcuentacontable
-      WHERE idnegocio = ?
-      ORDER BY nombrecuentacontable ASC`,
-      [idnegocio]
-    );
+      WHERE idnegocio = ?`;
+    
+    const params: (string | number)[] = [idnegocio];
+    
+    if (naturaleza) {
+      query += ` AND naturalezacuentacontable = ?`;
+      params.push(naturaleza);
+    }
+    
+    query += ` ORDER BY nombrecuentacontable ASC`;
+    
+    const [rows] = await pool.query<CuentaContable[]>(query, params);
     
     res.json(rows);
   } catch (error) {

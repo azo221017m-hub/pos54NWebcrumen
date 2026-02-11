@@ -89,15 +89,35 @@
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.form-group-gastos input:focus {
+.form-group-gastos select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: white;
+  cursor: pointer;
+}
+
+.form-group-gastos input:focus,
+.form-group-gastos select:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.form-group-gastos input:disabled {
+.form-group-gastos input:disabled,
+.form-group-gastos select:disabled {
   background-color: #f3f4f6;
   cursor: not-allowed;
+}
+
+.texto-ayuda-gastos {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #6b7280;
 }
 
 /* Error Message */
