@@ -8,7 +8,6 @@ interface Props {
 }
 
 interface GastoAgrupado {
-  fecha: string; // Date formatted as YYYY-MM-DD
   descripcion: string; // descripcionmov
   gastos: Gasto[];
   totalGrupo: number;
@@ -32,14 +31,6 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
     });
   };
 
-  const obtenerFechaClave = (fecha: Date | string): string => {
-    const date = new Date(fecha);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
   const formatearMoneda = (valor: number): string => {
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
@@ -47,32 +38,29 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
     }).format(valor);
   };
 
-  // Group gastos by date and description
+  // Group gastos by description only (not by date)
   const gastosAgrupados = useMemo((): GastoAgrupado[] => {
     const grupos = new Map<string, GastoAgrupado>();
 
     gastos.forEach((gasto) => {
-      const fechaClave = obtenerFechaClave(gasto.fechadeventa);
       const descripcion = gasto.descripcionmov || 'Sin descripción';
-      const clave = `${fechaClave}|${descripcion}`;
 
-      if (!grupos.has(clave)) {
-        grupos.set(clave, {
-          fecha: fechaClave,
+      if (!grupos.has(descripcion)) {
+        grupos.set(descripcion, {
           descripcion: descripcion,
           gastos: [],
           totalGrupo: 0
         });
       }
 
-      const grupo = grupos.get(clave)!;
+      const grupo = grupos.get(descripcion)!;
       grupo.gastos.push(gasto);
       grupo.totalGrupo += gasto.totaldeventa;
     });
 
-    // Convert map to array and sort by date (newest first)
+    // Convert map to array and sort by description
     return Array.from(grupos.values()).sort((a, b) => {
-      return b.fecha.localeCompare(a.fecha);
+      return a.descripcion.localeCompare(b.descripcion);
     });
   }, [gastos]);
 
@@ -90,13 +78,13 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
       <div className="grupos-gastos">
         {gastosAgrupados.map((grupo) => {
           // Create stable key from the grupo data
-          const grupoKey = `${grupo.fecha}-${grupo.descripcion}-${grupo.gastos[0]?.idventa || 0}`;
+          const grupoKey = `${grupo.descripcion}-${grupo.gastos[0]?.idventa || 0}`;
           return (
           <div key={grupoKey} className="grupo-gasto">
             <div className="grupo-header">
               <div className="grupo-info">
-                <h3 className="grupo-fecha">{formatearFechaSolo(grupo.fecha)}</h3>
-                <p className="grupo-descripcion">{grupo.descripcion}</p>
+                <h3 className="grupo-descripcion-titulo">{grupo.descripcion}</h3>
+                <p className="grupo-cantidad">{grupo.gastos.length} {grupo.gastos.length === 1 ? 'registro' : 'registros'}</p>
               </div>
               <div className="grupo-total">
                 {formatearMoneda(grupo.totalGrupo)}
@@ -111,6 +99,7 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
                   <div className="gasto-item-content">
                     <div className="gasto-item-info">
                       <span className="gasto-folio">{gasto.folioventa}</span>
+                      <span className="gasto-fecha">{formatearFechaSolo(gasto.fechadeventa)}</span>
                       <span className="gasto-hora">{formatearHora(gasto.fechadeventa)}</span>
                       <span className="gasto-tipo">{gasto.referencia || 'Sin especificar'}</span>
                       <span className="gasto-usuario">{gasto.usuarioauditoria}</span>
