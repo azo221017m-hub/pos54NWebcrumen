@@ -162,6 +162,7 @@ export async function crearGasto(req: AuthRequest, res: Response): Promise<void>
     const folioventa = generarFolioGasto();
 
     // Insertar el gasto (venta de tipo MOVIMIENTO)
+    // Nota: folioventa se usa tanto para folioventa como para claveturno
     const [result] = await pool.execute<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebventas (
         tipodeventa,
