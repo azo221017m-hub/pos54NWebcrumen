@@ -21,6 +21,7 @@ import ConfigProveedores from '../pages/ConfigProveedores/ConfigProveedores';
 import ConfigTurnos from '../pages/ConfigTurnos/ConfigTurnos';
 import PageVentas from '../pages/PageVentas/PageVentas';
 import MovimientosInventario from '../pages/MovimientosInventario/MovimientosInventario';
+import PageGastos from '../pages/PageGastos/PageGastos';
 
 const router = createBrowserRouter([
   {
@@ -110,6 +111,10 @@ const router = createBrowserRouter([
   {
     path: '/movimientos-inventario',
     element: <MovimientosInventario />,
+  },
+  {
+    path: '/gastos',
+    element: <PageGastos />,
   },
 ]);
 
