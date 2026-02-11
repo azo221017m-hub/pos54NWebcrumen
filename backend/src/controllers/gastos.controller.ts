@@ -223,7 +223,7 @@ export async function crearGasto(req: AuthRequest, res: Response): Promise<void>
         0,
         ?
       )`,
-      [folioventa, importegasto, importegasto, idnegocio, usuarioalias, folioventa, tipodegasto]
+      [folioventa, importegasto, importegasto, folioventa, idnegocio, usuarioalias, tipodegasto]
     );
 
     // Obtener el gasto creado
