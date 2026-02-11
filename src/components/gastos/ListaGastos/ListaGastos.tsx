@@ -45,6 +45,12 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
     }).format(valor);
   };
 
+  // Helper function to safely parse and validate numeric values
+  const parseTotal = (value: any): number => {
+    const parsed = parseFloat(value);
+    return isNaN(parsed) || !isFinite(parsed) ? 0 : parsed;
+  };
+
   // Group gastos by description only (not by date)
   const gastosAgrupados = useMemo((): GastoAgrupado[] => {
     const grupos = new Map<string, GastoAgrupado>();
@@ -64,10 +70,7 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
       grupo.gastos.push(gasto);
       
       // Validate totaldeventa before adding - fix NaN issue
-      const total = parseFloat(String(gasto.totaldeventa || 0));
-      if (!isNaN(total) && isFinite(total)) {
-        grupo.totalGrupo += total;
-      }
+      grupo.totalGrupo += parseTotal(gasto.totaldeventa);
     });
 
     // Convert map to array and sort by description
@@ -105,12 +108,7 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
             </div>
             {/* Tree-like child nodes - indented records */}
             <div className="grupo-items">
-              {grupo.gastos.map((gasto) => {
-                // Validate totaldeventa before displaying
-                const totalVenta = parseFloat(String(gasto.totaldeventa || 0));
-                const displayTotal = isNaN(totalVenta) || !isFinite(totalVenta) ? 0 : totalVenta;
-                
-                return (
+              {grupo.gastos.map((gasto) => (
                 <div 
                   key={gasto.idventa} 
                   className={`gasto-item ${gasto.estatusdepago === 'PAGADO' ? 'gasto-aplicado' : ''}`}
@@ -124,7 +122,7 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
                       <span className="gasto-usuario">{gasto.usuarioauditoria}</span>
                     </div>
                     <div className="gasto-item-monto">
-                      {formatearMoneda(displayTotal)}
+                      {formatearMoneda(parseTotal(gasto.totaldeventa))}
                       {gasto.estatusdepago === 'PAGADO' && (
                         <span className="gasto-aplicado-badge" title="Aplicado">
                           <CheckCircle size={16} />
@@ -133,7 +131,7 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
                     </div>
                   </div>
                 </div>
-              )})}
+              ))}}
             </div>
           </div>
         );
