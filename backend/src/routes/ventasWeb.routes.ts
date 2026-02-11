@@ -12,11 +12,15 @@ import {
   getBusinessHealth
 } from '../controllers/ventasWeb.controller';
 import { authMiddleware } from '../middlewares/auth';
+import { apiLimiter } from '../middlewares/rateLimit';
 
 const router = Router();
 
 // Todas las rutas requieren autenticación
 router.use(authMiddleware);
+
+// Aplicar rate limiting a todas las rutas (después de autenticación)
+router.use(apiLimiter);
 
 /**
  * @route   GET /api/ventas-web
