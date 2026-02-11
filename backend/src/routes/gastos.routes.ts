@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateToken } from '../middlewares/auth';
+import { authMiddleware } from '../middlewares/auth';
 import {
   obtenerGastos,
   obtenerGastoPorId,
@@ -11,7 +11,7 @@ import {
 const router = Router();
 
 // Todas las rutas requieren autenticación
-router.use(authenticateToken);
+router.use(authMiddleware);
 
 // GET /api/gastos - Obtener todos los gastos
 router.get('/', obtenerGastos);

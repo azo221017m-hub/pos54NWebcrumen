@@ -3,7 +3,6 @@ import { pool } from '../config/db';
 import type { RowDataPacket, ResultSetHeader } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
 import type { Gasto, GastoCreate, GastoUpdate } from '../types/gastos.types';
-import { getMexicoTimeComponents } from '../utils/dateTime';
 
 // Helper function to generate folio in format AAAAMMDDHHMMSS
 function generarFolioGasto(): string {
@@ -19,15 +18,16 @@ function generarFolioGasto(): string {
 }
 
 // GET /api/gastos - Obtener todos los gastos del negocio
-export async function obtenerGastos(req: AuthRequest, res: Response) {
+export async function obtenerGastos(req: AuthRequest, res: Response): Promise<void> {
   try {
     const idnegocio = req.user?.idNegocio;
 
     if (!idnegocio) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'ID de negocio no encontrado'
       });
+      return;
     }
 
     const [rows] = await pool.execute<(Gasto & RowDataPacket)[]>(
@@ -65,16 +65,17 @@ export async function obtenerGastos(req: AuthRequest, res: Response) {
 }
 
 // GET /api/gastos/:id - Obtener un gasto por ID
-export async function obtenerGastoPorId(req: AuthRequest, res: Response) {
+export async function obtenerGastoPorId(req: AuthRequest, res: Response): Promise<void> {
   try {
     const { id } = req.params;
     const idnegocio = req.user?.idNegocio;
 
     if (!idnegocio) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'ID de negocio no encontrado'
       });
+      return;
     }
 
     const [rows] = await pool.execute<(Gasto & RowDataPacket)[]>(
@@ -96,10 +97,11 @@ export async function obtenerGastoPorId(req: AuthRequest, res: Response) {
     );
 
     if (rows.length === 0) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: 'Gasto no encontrado'
       });
+      return;
     }
 
     res.json({
@@ -119,7 +121,7 @@ export async function obtenerGastoPorId(req: AuthRequest, res: Response) {
 }
 
 // POST /api/gastos - Crear un nuevo gasto
-export async function crearGasto(req: AuthRequest, res: Response) {
+export async function crearGasto(req: AuthRequest, res: Response): Promise<void> {
   try {
     const { importegasto, tipodegasto } = req.body as GastoCreate;
     const idnegocio = req.user?.idNegocio;
@@ -127,24 +129,27 @@ export async function crearGasto(req: AuthRequest, res: Response) {
 
     // Validaciones
     if (!idnegocio || !usuarioalias) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Información de usuario no encontrada'
       });
+      return;
     }
 
     if (!importegasto || importegasto <= 0) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'El importe del gasto debe ser mayor a 0'
       });
+      return;
     }
 
     if (!tipodegasto || tipodegasto.trim() === '') {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'El tipo de gasto es requerido'
       });
+      return;
     }
 
     // Generar folio
@@ -246,7 +251,7 @@ export async function crearGasto(req: AuthRequest, res: Response) {
 }
 
 // PUT /api/gastos/:id - Actualizar un gasto
-export async function actualizarGasto(req: AuthRequest, res: Response) {
+export async function actualizarGasto(req: AuthRequest, res: Response): Promise<void> {
   try {
     const { id } = req.params;
     const { importegasto, tipodegasto } = req.body as GastoUpdate;
@@ -254,10 +259,11 @@ export async function actualizarGasto(req: AuthRequest, res: Response) {
     const usuarioalias = req.user?.alias;
 
     if (!idnegocio || !usuarioalias) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Información de usuario no encontrada'
       });
+      return;
     }
 
     // Verificar que el gasto existe y pertenece al negocio
@@ -268,10 +274,11 @@ export async function actualizarGasto(req: AuthRequest, res: Response) {
     );
 
     if (gastoRows.length === 0) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: 'Gasto no encontrado'
       });
+      return;
     }
 
     // Construir la actualización dinámicamente
@@ -280,10 +287,11 @@ export async function actualizarGasto(req: AuthRequest, res: Response) {
 
     if (importegasto !== undefined) {
       if (importegasto <= 0) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: 'El importe del gasto debe ser mayor a 0'
         });
+        return;
       }
       updates.push('subtotal = ?', 'totaldeventa = ?');
       values.push(importegasto, importegasto);
@@ -291,20 +299,22 @@ export async function actualizarGasto(req: AuthRequest, res: Response) {
 
     if (tipodegasto !== undefined) {
       if (tipodegasto.trim() === '') {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: 'El tipo de gasto no puede estar vacío'
         });
+        return;
       }
       updates.push('referencia = ?');
       values.push(tipodegasto);
     }
 
     if (updates.length === 0) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'No hay campos para actualizar'
       });
+      return;
     }
 
     // Actualizar usuarioauditoria y fechamodificacionauditoria
@@ -355,16 +365,17 @@ export async function actualizarGasto(req: AuthRequest, res: Response) {
 }
 
 // DELETE /api/gastos/:id - Eliminar un gasto
-export async function eliminarGasto(req: AuthRequest, res: Response) {
+export async function eliminarGasto(req: AuthRequest, res: Response): Promise<void> {
   try {
     const { id } = req.params;
     const idnegocio = req.user?.idNegocio;
 
     if (!idnegocio) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'ID de negocio no encontrado'
       });
+      return;
     }
 
     // Verificar que el gasto existe y pertenece al negocio
@@ -375,10 +386,11 @@ export async function eliminarGasto(req: AuthRequest, res: Response) {
     );
 
     if (gastoRows.length === 0) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: 'Gasto no encontrado'
       });
+      return;
     }
 
     // Eliminar el gasto
