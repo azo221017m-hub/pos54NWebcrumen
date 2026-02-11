@@ -46,13 +46,13 @@
   flex: 1;
 }
 
-.grupo-fecha {
+.grupo-descripcion-titulo {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 700;
 }
 
-.grupo-descripcion {
+.grupo-cantidad {
   margin: 0.25rem 0 0;
   font-size: 0.875rem;
   opacity: 0.9;
@@ -114,6 +114,12 @@
   background-color: #f3f4f6;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
+}
+
+.gasto-fecha {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
 }
 
 .gasto-hora {
@@ -181,7 +187,7 @@
     padding: 1rem;
   }
 
-  .grupo-fecha {
+  .grupo-descripcion-titulo {
     font-size: 1rem;
   }
 
