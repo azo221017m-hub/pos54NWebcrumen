@@ -4,10 +4,10 @@ import type { CuentaContable } from '../types/cuentaContable.types';
 /**
  * Obtener todas las cuentas contables
  */
-export const obtenerCuentasContables = async (naturaleza?: 'COMPRA' | 'GASTO'): Promise<CuentaContable[]> => {
+export const obtenerCuentasContables = async (naturaleza?: CuentaContable['naturalezacuentacontable']): Promise<CuentaContable[]> => {
   try {
     const url = naturaleza 
-      ? `/cuentas-contables?naturaleza=${naturaleza}`
+      ? `/cuentas-contables?naturaleza=${encodeURIComponent(naturaleza)}`
       : '/cuentas-contables';
     const response = await api.get<CuentaContable[]>(url);
     return response.data;
