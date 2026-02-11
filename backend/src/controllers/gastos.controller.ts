@@ -44,7 +44,7 @@ export async function obtenerGastos(req: AuthRequest, res: Response): Promise<vo
         v.fechamodificacionauditoria
       FROM tblposcrumenwebventas v
       INNER JOIN tblposcrumenwebcuentacontable c 
-        ON v.descripcionmov = c.nombrecuentacontable 
+        ON v.descripcionmov COLLATE utf8mb4_unicode_ci = c.nombrecuentacontable COLLATE utf8mb4_unicode_ci
         AND c.naturalezacuentacontable = 'GASTO'
         AND c.idnegocio = v.idnegocio
       WHERE v.tipodeventa = 'MOVIMIENTO'
