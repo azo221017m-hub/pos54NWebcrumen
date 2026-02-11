@@ -192,6 +192,7 @@ export const agregarDetallesAVenta = async (
 export interface ResumenVentas {
   totalCobrado: number;
   totalOrdenado: number;
+  totalVentasCobradas: number;
   metaTurno: number;
   hasTurnoAbierto: boolean;
 }
@@ -210,8 +211,44 @@ export const obtenerResumenVentas = async (): Promise<ResumenVentas> => {
     return {
       totalCobrado: 0,
       totalOrdenado: 0,
+      totalVentasCobradas: 0,
       metaTurno: 0,
       hasTurnoAbierto: false
+    };
+  }
+};
+
+// Obtener datos de salud del negocio (Ventas vs Gastos del mes actual)
+export interface SaludNegocio {
+  totalVentas: number;
+  totalGastos: number;
+  periodo: {
+    inicio: string;
+    fin: string;
+  };
+}
+
+export const obtenerSaludNegocio = async (): Promise<SaludNegocio> => {
+  try {
+    console.log('🔵 ventasWebService: Obteniendo salud del negocio (Ventas vs Gastos)');
+    const response = await apiClient.get<{ success: boolean; data: SaludNegocio }>(
+      `${API_BASE}/dashboard/salud-negocio`
+    );
+    console.log('🔵 ventasWebService: Salud del negocio obtenida:', response.data.data);
+    return response.data.data;
+  } catch (error) {
+    console.error('🔴 ventasWebService: Error al obtener salud del negocio:', error);
+    // Return empty data on error
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    return {
+      totalVentas: 0,
+      totalGastos: 0,
+      periodo: {
+        inicio: firstDay.toISOString().split('T')[0],
+        fin: lastDay.toISOString().split('T')[0]
+      }
     };
   }
 };

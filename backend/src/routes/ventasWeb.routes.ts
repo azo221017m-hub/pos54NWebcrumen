@@ -8,14 +8,19 @@ import {
   updateDetalleEstado,
   getDetallesByEstado,
   addDetallesToVenta,
-  getSalesSummary
+  getSalesSummary,
+  getBusinessHealth
 } from '../controllers/ventasWeb.controller';
 import { authMiddleware } from '../middlewares/auth';
+import { apiLimiter } from '../middlewares/rateLimit';
 
 const router = Router();
 
 // Todas las rutas requieren autenticación
 router.use(authMiddleware);
+
+// Aplicar rate limiting a todas las rutas (después de autenticación)
+router.use(apiLimiter);
 
 /**
  * @route   GET /api/ventas-web
@@ -79,5 +84,12 @@ router.get('/detalles/estado/:estado', getDetallesByEstado);
  * @access  Private
  */
 router.get('/resumen/turno-actual', getSalesSummary);
+
+/**
+ * @route   GET /api/ventas-web/dashboard/salud-negocio
+ * @desc    Obtener datos de salud del negocio (Ventas vs Gastos del mes actual)
+ * @access  Private
+ */
+router.get('/dashboard/salud-negocio', getBusinessHealth);
 
 export default router;
