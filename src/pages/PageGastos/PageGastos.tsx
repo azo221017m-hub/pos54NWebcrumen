@@ -5,8 +5,7 @@ import type { Gasto, GastoCreate } from '../../types/gastos.types';
 import {
   obtenerGastos,
   crearGasto,
-  actualizarGasto,
-  eliminarGasto
+  actualizarGasto
 } from '../../services/gastosService';
 import ListaGastos from '../../components/gastos/ListaGastos/ListaGastos';
 import FormularioGastos from '../../components/gastos/FormularioGastos/FormularioGastos';
@@ -52,14 +51,6 @@ const PageGastos: React.FC = () => {
     setMostrarFormulario(true);
   };
 
-  const abrirEditarGasto = async (id: number) => {
-    const gasto = gastos.find((g) => g.idventa === id);
-    if (gasto) {
-      setGastoEditar(gasto);
-      setMostrarFormulario(true);
-    }
-  };
-
   const handleGuardar = async (data: GastoCreate) => {
     try {
       if (gastoEditar) {
@@ -84,22 +75,6 @@ const PageGastos: React.FC = () => {
   const handleCancelar = () => {
     setMostrarFormulario(false);
     setGastoEditar(null);
-  };
-
-  const handleEliminar = async (id: number) => {
-    if (!window.confirm('¿Está seguro de que desea eliminar este gasto?')) {
-      return;
-    }
-
-    try {
-      await eliminarGasto(id);
-      mostrarMensaje('success', 'Gasto eliminado correctamente');
-      cargarGastos();
-    } catch (error: any) {
-      console.error('Error al eliminar gasto:', error);
-      const mensaje = error?.response?.data?.message || 'Error al eliminar el gasto';
-      mostrarMensaje('error', mensaje);
-    }
   };
 
   return (
