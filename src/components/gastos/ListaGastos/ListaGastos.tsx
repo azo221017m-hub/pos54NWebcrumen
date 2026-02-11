@@ -131,7 +131,7 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
                     </div>
                   </div>
                 </div>
-              ))}}
+              ))}
             </div>
           </div>
         );
