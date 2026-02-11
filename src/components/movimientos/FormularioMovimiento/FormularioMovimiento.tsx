@@ -47,7 +47,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
   const [aplicando, setAplicando] = useState(false);
   
   // Estado para edición de inventario inicial (solo editable, no persistente hasta SOLICITAR)
-  const [insumosEditados, setInsumosEditados] = useState<Map<number, { stockActual: number; costoPromPonderado: number }>>(new Map());
+  const [insumosEditados, setInsumosEditados] = useState<Map<number, { stockActual: number; costoPromPonderado: number; proveedor?: string }>>(new Map());
   
   // Estado para insumos
   const [insumos, setInsumos] = useState<Insumo[]>([]);
@@ -93,12 +93,13 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
   }, []);
 
   // Helper function to build insumosEditados Map from detalles
-  const buildInsumosEditadosFromDetalles = (detalles: Array<{idinsumo: number; cantidad: number; costo?: number}>) => {
-    const nuevosEditados = new Map<number, { stockActual: number; costoPromPonderado: number }>();
+  const buildInsumosEditadosFromDetalles = (detalles: Array<{idinsumo: number; cantidad: number; costo?: number; proveedor?: string}>) => {
+    const nuevosEditados = new Map<number, { stockActual: number; costoPromPonderado: number; proveedor?: string }>();
     detalles.forEach((d) => {
       nuevosEditados.set(d.idinsumo, {
         stockActual: d.cantidad,
-        costoPromPonderado: d.costo || 0
+        costoPromPonderado: d.costo || 0,
+        proveedor: d.proveedor
       });
     });
     return nuevosEditados;
@@ -152,18 +153,21 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
   };
 
   // Función para actualizar valores editados de inventario inicial
-  const actualizarInsumoInicial = (idInsumo: number, campo: 'stockActual' | 'costoPromPonderado', valor: number) => {
+  const actualizarInsumoInicial = (idInsumo: number, campo: 'stockActual' | 'costoPromPonderado' | 'proveedor', valor: number | string) => {
     const nuevosEditados = new Map(insumosEditados);
     const insumo = insumos.find(i => i.id_insumo === idInsumo);
     const insumoActual = nuevosEditados.get(idInsumo) || {
       stockActual: insumo?.stock_actual || 0,
-      costoPromPonderado: insumo?.costo_promedio_ponderado || 0
+      costoPromPonderado: insumo?.costo_promedio_ponderado || 0,
+      proveedor: insumo?.idproveedor || undefined
     };
     
     if (campo === 'stockActual') {
-      insumoActual.stockActual = valor;
-    } else {
-      insumoActual.costoPromPonderado = valor;
+      insumoActual.stockActual = valor as number;
+    } else if (campo === 'costoPromPonderado') {
+      insumoActual.costoPromPonderado = valor as number;
+    } else if (campo === 'proveedor') {
+      insumoActual.proveedor = valor as string;
     }
     
     nuevosEditados.set(idInsumo, insumoActual);
@@ -308,7 +312,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
             costo: valores.costoPromPonderado, // Costo prom ponderado se guarda en costo
             precio: 0,
             observaciones: '',
-            proveedor: String(insumo.idproveedor || ''), // Ensure string type
+            proveedor: valores.proveedor || '', // Use proveedor from edited values
             _rowId: crypto.randomUUID()
           });
         }
@@ -574,7 +578,21 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                               disabled={guardando || isEditMode}
                             />
                           </td>
-                          <td>{insumo.idproveedor || 'N/A'}</td>
+                          <td>
+                            <select
+                              value={editado?.proveedor ?? insumo.idproveedor ?? ''}
+                              onChange={(e) => actualizarInsumoInicial(insumo.id_insumo, 'proveedor', e.target.value)}
+                              disabled={guardando || isEditMode || cargandoProveedores}
+                              style={{ width: '100%' }}
+                            >
+                              <option value="">Seleccione...</option>
+                              {proveedores.map((proveedor) => (
+                                <option key={proveedor.id_proveedor} value={proveedor.nombre}>
+                                  {proveedor.nombre}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
                         </tr>
                         );
                       })
