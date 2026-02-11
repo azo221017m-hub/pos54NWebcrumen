@@ -1236,32 +1236,19 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
     const startDate = firstDayOfMonth.toISOString().split('T')[0];
     const endDate = lastDayOfMonth.toISOString().split('T')[0];
 
-    // Query for sales: descripcionmov='VENTA' AND estadodeventa='COBRADO'
-    const [salesRows] = await pool.execute<RowDataPacket[]>(
+    // Use single query with conditional aggregation for better performance
+    const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
-        COALESCE(SUM(totaldeventa), 0) as totalVentas
+        COALESCE(SUM(CASE WHEN descripcionmov = 'VENTA' AND estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalVentas,
+        COALESCE(SUM(CASE WHEN referencia = 'GASTO' AND estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalGastos
        FROM tblposcrumenwebventas 
        WHERE idnegocio = ? 
-         AND descripcionmov = 'VENTA'
-         AND estadodeventa = 'COBRADO'
          AND DATE(fechaventa) BETWEEN ? AND ?`,
       [idnegocio, startDate, endDate]
     );
 
-    // Query for expenses: referencia='GASTO' AND estadodeventa='COBRADO'
-    const [expensesRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT 
-        COALESCE(SUM(totaldeventa), 0) as totalGastos
-       FROM tblposcrumenwebventas 
-       WHERE idnegocio = ? 
-         AND referencia = 'GASTO'
-         AND estadodeventa = 'COBRADO'
-         AND DATE(fechaventa) BETWEEN ? AND ?`,
-      [idnegocio, startDate, endDate]
-    );
-
-    const totalVentas = Number(salesRows[0]?.totalVentas) || 0;
-    const totalGastos = Number(expensesRows[0]?.totalGastos) || 0;
+    const totalVentas = Number(rows[0]?.totalVentas) || 0;
+    const totalGastos = Number(rows[0]?.totalGastos) || 0;
 
     res.json({
       success: true,

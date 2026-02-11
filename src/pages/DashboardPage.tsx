@@ -1063,8 +1063,8 @@ export const DashboardPage = () => {
               {(saludNegocio.totalVentas > 0 || saludNegocio.totalGastos > 0) ? (
                 <div style={{ marginTop: '0.5rem' }}>
                   {(() => {
-                    // Calculate max value once for both bars
-                    const maxValue = Math.max(saludNegocio.totalVentas, saludNegocio.totalGastos, 1);
+                    // Calculate max value once for both bars (at this point, at least one value is > 0)
+                    const maxValue = Math.max(saludNegocio.totalVentas, saludNegocio.totalGastos);
                     const ventasHeight = Math.max((saludNegocio.totalVentas / maxValue) * 100, 5);
                     const gastosHeight = Math.max((saludNegocio.totalGastos / maxValue) * 100, 5);
                     
