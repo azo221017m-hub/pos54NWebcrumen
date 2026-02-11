@@ -1155,19 +1155,6 @@ export const DashboardPage = () => {
                     ${resumenVentas.totalOrdenado.toFixed(2)}
                   </span>
                 </div>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'baseline',
-                  marginTop: '0.5rem',
-                  paddingTop: '0.5rem',
-                  borderTop: '1px solid #e5e7eb'
-                }}>
-                  <span style={{ fontSize: '0.55rem', color: '#718096' }}>Ventas del Mes:</span>
-                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#8b5cf6' }}>
-                    ${saludNegocio.totalVentas.toFixed(2)}
-                  </span>
-                </div>
               </div>
 
               {resumenVentas.metaTurno > 0 && (
