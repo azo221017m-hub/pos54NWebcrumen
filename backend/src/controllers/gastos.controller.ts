@@ -32,19 +32,23 @@ export async function obtenerGastos(req: AuthRequest, res: Response): Promise<vo
 
     const [rows] = await pool.execute<(Gasto & RowDataPacket)[]>(
       `SELECT 
-        idventa,
-        folioventa,
-        fechadeventa,
-        subtotal,
-        totaldeventa,
-        referencia,
-        idnegocio,
-        usuarioauditoria,
-        fechamodificacionauditoria
-      FROM tblposcrumenwebventas
-      WHERE tipodeventa = 'MOVIMIENTO'
-        AND idnegocio = ?
-      ORDER BY fechadeventa DESC`,
+        v.idventa,
+        v.folioventa,
+        v.fechadeventa,
+        v.subtotal,
+        v.totaldeventa,
+        v.referencia,
+        v.idnegocio,
+        v.usuarioauditoria,
+        v.fechamodificacionauditoria
+      FROM tblposcrumenwebventas v
+      INNER JOIN tblposcrumenwebcuentacontable c 
+        ON v.referencia = c.nombrecuentacontable 
+        AND c.naturalezacuentacontable = 'GASTO'
+        AND c.idnegocio = v.idnegocio
+      WHERE v.tipodeventa = 'MOVIMIENTO'
+        AND v.idnegocio = ?
+      ORDER BY v.fechadeventa DESC`,
       [idnegocio]
     );
 

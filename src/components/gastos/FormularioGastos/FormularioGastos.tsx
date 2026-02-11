@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import type { Gasto, GastoCreate } from '../../../types/gastos.types';
+import type { CuentaContable } from '../../../types/cuentaContable.types';
+import { obtenerCuentasContables } from '../../../services/cuentasContablesService';
 import './FormularioGastos.css';
 
 interface Props {
@@ -12,8 +14,28 @@ interface Props {
 const FormularioGastos: React.FC<Props> = ({ gasto, onGuardar, onCancelar }) => {
   const [importegasto, setImporteGasto] = useState<string>('');
   const [tipodegasto, setTipoDeGasto] = useState<string>('');
+  const [cuentasGasto, setCuentasGasto] = useState<CuentaContable[]>([]);
+  const [cargandoCuentas, setCargandoCuentas] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string>('');
+
+  // Cargar cuentas de gasto al montar el componente
+  useEffect(() => {
+    const cargarCuentasGasto = async () => {
+      try {
+        setCargandoCuentas(true);
+        const cuentas = await obtenerCuentasContables('GASTO');
+        setCuentasGasto(cuentas);
+      } catch (error) {
+        console.error('Error al cargar cuentas de gasto:', error);
+        setError('Error al cargar tipos de gasto');
+      } finally {
+        setCargandoCuentas(false);
+      }
+    };
+
+    cargarCuentasGasto();
+  }, []);
 
   // Cargar datos del gasto en caso de edición
   useEffect(() => {
@@ -82,16 +104,29 @@ const FormularioGastos: React.FC<Props> = ({ gasto, onGuardar, onCancelar }) => 
 
           <div className="form-group-gastos">
             <label htmlFor="tipodegasto">Tipo de Gasto *</label>
-            <input
-              type="text"
+            <select
               id="tipodegasto"
               value={tipodegasto}
               onChange={(e) => setTipoDeGasto(e.target.value)}
-              placeholder="Ej: Renta, Luz, Agua, Mantenimiento"
-              disabled={guardando}
+              disabled={guardando || cargandoCuentas}
               required
               autoFocus
-            />
+            >
+              <option value="">Seleccione un tipo de gasto</option>
+              {cuentasGasto.map((cuenta) => (
+                <option key={cuenta.id_cuentacontable} value={cuenta.nombrecuentacontable}>
+                  {cuenta.nombrecuentacontable}
+                </option>
+              ))}
+            </select>
+            {cargandoCuentas && (
+              <small className="texto-ayuda-gastos">Cargando tipos de gasto...</small>
+            )}
+            {!cargandoCuentas && cuentasGasto.length === 0 && (
+              <small className="texto-ayuda-gastos">
+                No hay tipos de gasto configurados. Configure cuentas contables primero.
+              </small>
+            )}
           </div>
 
           <div className="form-group-gastos">
