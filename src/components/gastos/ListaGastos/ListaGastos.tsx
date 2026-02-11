@@ -32,6 +32,13 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
   };
 
   const formatearMoneda = (valor: number): string => {
+    // Validate that valor is a valid number
+    if (typeof valor !== 'number' || isNaN(valor) || !isFinite(valor)) {
+      return new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency: 'MXN'
+      }).format(0);
+    }
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
       currency: 'MXN'
@@ -55,7 +62,12 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
 
       const grupo = grupos.get(descripcion)!;
       grupo.gastos.push(gasto);
-      grupo.totalGrupo += gasto.totaldeventa;
+      
+      // Validate totaldeventa before adding - fix NaN issue
+      const total = parseFloat(String(gasto.totaldeventa || 0));
+      if (!isNaN(total) && isFinite(total)) {
+        grupo.totalGrupo += total;
+      }
     });
 
     // Convert map to array and sort by description
@@ -81,17 +93,24 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
           const grupoKey = `${grupo.descripcion}-${grupo.gastos[0]?.idventa || 0}`;
           return (
           <div key={grupoKey} className="grupo-gasto">
-            <div className="grupo-header">
-              <div className="grupo-info">
-                <h3 className="grupo-descripcion-titulo">{grupo.descripcion}</h3>
-                <p className="grupo-cantidad">{grupo.gastos.length} {grupo.gastos.length === 1 ? 'registro' : 'registros'}</p>
+            {/* Tree-like parent node - description with total */}
+            <div className="grupo-descripcion-row">
+              <div className="grupo-descripcion-info">
+                <span className="grupo-descripcion-titulo">{grupo.descripcion}</span>
+                <span className="grupo-cantidad">{grupo.gastos.length} {grupo.gastos.length === 1 ? 'registro' : 'registros'}</span>
               </div>
               <div className="grupo-total">
                 {formatearMoneda(grupo.totalGrupo)}
               </div>
             </div>
+            {/* Tree-like child nodes - indented records */}
             <div className="grupo-items">
-              {grupo.gastos.map((gasto) => (
+              {grupo.gastos.map((gasto) => {
+                // Validate totaldeventa before displaying
+                const totalVenta = parseFloat(String(gasto.totaldeventa || 0));
+                const displayTotal = isNaN(totalVenta) || !isFinite(totalVenta) ? 0 : totalVenta;
+                
+                return (
                 <div 
                   key={gasto.idventa} 
                   className={`gasto-item ${gasto.estatusdepago === 'PAGADO' ? 'gasto-aplicado' : ''}`}
@@ -105,7 +124,7 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
                       <span className="gasto-usuario">{gasto.usuarioauditoria}</span>
                     </div>
                     <div className="gasto-item-monto">
-                      {formatearMoneda(gasto.totaldeventa)}
+                      {formatearMoneda(displayTotal)}
                       {gasto.estatusdepago === 'PAGADO' && (
                         <span className="gasto-aplicado-badge" title="Aplicado">
                           <CheckCircle size={16} />
@@ -114,7 +133,7 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           </div>
         );

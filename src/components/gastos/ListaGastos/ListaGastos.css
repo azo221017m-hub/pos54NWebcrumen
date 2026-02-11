@@ -31,47 +31,66 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
 }
 
-.grupo-header {
+/* Tree-like description row (parent node) - replaces gradient header */
+.grupo-descripcion-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  padding: 1rem 1.5rem;
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
 }
 
-.grupo-info {
+.grupo-descripcion-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   flex: 1;
 }
 
 .grupo-descripcion-titulo {
-  margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 700;
+  color: #1f2937;
+  margin: 0;
 }
 
 .grupo-cantidad {
-  margin: 0.25rem 0 0;
   font-size: 0.875rem;
-  opacity: 0.9;
+  color: #6b7280;
+  margin: 0;
 }
 
 .grupo-total {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
+  color: #dc2626;
 }
 
-/* Items del grupo */
+/* Items del grupo - indented like tree children */
 .grupo-items {
-  padding: 0.5rem;
+  padding: 0;
 }
 
 .gasto-item {
-  padding: 1rem;
+  padding: 1rem 1.5rem 1rem 2.5rem; /* Left indent for tree effect */
   border-bottom: 1px solid #e5e7eb;
   transition: background-color 0.2s;
+  position: relative;
+}
+
+/* Tree connector visual */
+.gasto-item::before {
+  content: '';
+  position: absolute;
+  left: 1.5rem;
+  top: 50%;
+  width: 0.5rem;
+  height: 1px;
+  background-color: #d1d5db;
 }
 
 .gasto-item:last-child {
@@ -156,14 +175,18 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .grupo-header {
+  .grupo-descripcion-row {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   .grupo-total {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
+  }
+
+  .gasto-item {
+    padding: 1rem 1rem 1rem 2rem;
   }
 
   .gasto-item-content {
@@ -183,7 +206,7 @@
 }
 
 @media (max-width: 480px) {
-  .grupo-header {
+  .grupo-descripcion-row {
     padding: 1rem;
   }
 
@@ -192,11 +215,11 @@
   }
 
   .grupo-total {
-    font-size: 1.125rem;
+    font-size: 1rem;
   }
 
   .gasto-item {
-    padding: 0.75rem;
+    padding: 0.75rem 0.75rem 0.75rem 1.75rem;
   }
 
   .gasto-item-info {
