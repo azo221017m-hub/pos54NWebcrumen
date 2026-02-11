@@ -223,6 +223,7 @@ export async function crearGasto(req: AuthRequest, res: Response): Promise<void>
         0,
         ?
       )`,
+      // Orden de parámetros: folioventa, subtotal, totaldeventa, claveturno, idnegocio, usuarioauditoria, descripcionmov
       [folioventa, importegasto, importegasto, folioventa, idnegocio, usuarioalias, tipodegasto]
     );
 
