@@ -19,198 +19,182 @@
   width: 100%;
 }
 
-/* Tabla desktop */
-.tabla-gastos-container {
-  display: block;
-  overflow-x: auto;
+/* Grupos de gastos */
+.grupos-gastos {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.tabla-gastos {
-  width: 100%;
-  border-collapse: collapse;
+.grupo-gasto {
   background: white;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.tabla-gastos thead {
-  background-color: #f9fafb;
+.grupo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
 }
 
-.tabla-gastos th {
-  padding: 1rem;
-  text-align: left;
-  font-weight: 600;
+.grupo-info {
+  flex: 1;
+}
+
+.grupo-fecha {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.grupo-descripcion {
+  margin: 0.25rem 0 0;
   font-size: 0.875rem;
-  color: #374151;
-  border-bottom: 1px solid #e5e7eb;
+  opacity: 0.9;
 }
 
-.tabla-gastos tbody tr {
+.grupo-total {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* Items del grupo */
+.grupo-items {
+  padding: 0.5rem;
+}
+
+.gasto-item {
+  padding: 1rem;
   border-bottom: 1px solid #e5e7eb;
   transition: background-color 0.2s;
 }
 
-.tabla-gastos tbody tr:hover {
+.gasto-item:last-child {
+  border-bottom: none;
+}
+
+.gasto-item:hover {
   background-color: #f9fafb;
 }
 
-.tabla-gastos td {
-  padding: 1rem;
-  font-size: 0.875rem;
-  color: #111827;
+/* Marca visual para gastos aplicados */
+.gasto-aplicado {
+  background-color: #f0fdf4;
+  border-left: 4px solid #22c55e;
 }
 
-.folio-cell {
+.gasto-aplicado:hover {
+  background-color: #dcfce7;
+}
+
+.gasto-item-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.gasto-item-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.gasto-folio {
   font-family: monospace;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #6b7280;
+  background-color: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
 }
 
-.tipo-cell {
+.gasto-hora {
+  font-size: 0.875rem;
+  color: #6b7280;
   font-weight: 500;
 }
 
-.importe-cell {
+.gasto-tipo {
+  font-size: 0.875rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+.gasto-usuario {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.gasto-item-monto {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.125rem;
   font-weight: 600;
   color: #dc2626;
 }
 
-.fecha-cell {
-  color: #6b7280;
-  font-size: 0.8rem;
-}
-
-.usuario-cell {
-  color: #6b7280;
-}
-
-.acciones-cell {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
-}
-
-/* Botones de acción */
-.btn-accion {
+.gasto-aplicado-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.5rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-  background-color: transparent;
-}
-
-.btn-editar {
-  color: #3b82f6;
-}
-
-.btn-editar:hover {
-  background-color: #dbeafe;
-}
-
-.btn-eliminar {
-  color: #ef4444;
-}
-
-.btn-eliminar:hover {
-  background-color: #fee2e2;
-}
-
-/* Tarjetas móviles */
-.tarjetas-gastos {
-  display: none;
+  color: #22c55e;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .tabla-gastos-container {
-    display: none;
-  }
-
-  .tarjetas-gastos {
-    display: flex;
+  .grupo-header {
     flex-direction: column;
+    align-items: flex-start;
     gap: 1rem;
   }
 
-  .tarjeta-gasto {
-    background: white;
-    border-radius: 8px;
-    padding: 1rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  .grupo-total {
+    font-size: 1.25rem;
   }
 
-  .tarjeta-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #e5e7eb;
-  }
-
-  .tarjeta-folio {
-    font-family: monospace;
-    font-size: 0.75rem;
-    color: #6b7280;
-  }
-
-  .tarjeta-importe {
-    font-weight: 600;
-    font-size: 1.125rem;
-    color: #dc2626;
-  }
-
-  .tarjeta-body {
-    display: flex;
+  .gasto-item-content {
     flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    align-items: flex-start;
   }
 
-  .tarjeta-row {
-    display: flex;
+  .gasto-item-info {
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .gasto-item-monto {
+    width: 100%;
     justify-content: space-between;
-    align-items: center;
-  }
-
-  .tarjeta-label {
-    font-weight: 500;
-    font-size: 0.875rem;
-    color: #6b7280;
-  }
-
-  .tarjeta-value {
-    font-size: 0.875rem;
-    color: #111827;
-    text-align: right;
-  }
-
-  .tarjeta-actions {
-    display: flex;
-    gap: 0.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid #e5e7eb;
-  }
-
-  .tarjeta-actions .btn-accion {
-    flex: 1;
-    justify-content: center;
-    padding: 0.75rem;
   }
 }
 
 @media (max-width: 480px) {
-  .tarjeta-actions {
-    flex-direction: column;
+  .grupo-header {
+    padding: 1rem;
   }
 
-  .tarjeta-actions .btn-accion {
-    width: 100%;
+  .grupo-fecha {
+    font-size: 1rem;
+  }
+
+  .grupo-total {
+    font-size: 1.125rem;
+  }
+
+  .gasto-item {
+    padding: 0.75rem;
+  }
+
+  .gasto-item-info {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

@@ -8,6 +8,7 @@ export interface Gasto {
   totaldeventa: number;
   referencia: string | null; // Tipo de gasto
   descripcionmov: string | null; // Descripción del movimiento/gasto
+  estatusdepago: string | null; // Estado de pago (PAGADO, PENDIENTE, etc.)
   idnegocio: number;
   usuarioauditoria: string;
   fechamodificacionauditoria: Date | string;

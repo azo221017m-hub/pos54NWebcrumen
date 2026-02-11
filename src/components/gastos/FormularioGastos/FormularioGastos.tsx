@@ -40,7 +40,8 @@ const FormularioGastos: React.FC<Props> = ({ gasto, onGuardar, onCancelar }) => 
   // Cargar datos del gasto en caso de edición
   useEffect(() => {
     if (gasto) {
-      setImporteGasto(gasto.subtotal.toString());
+      // Display positive value in the form (subtotal is stored as negative)
+      setImporteGasto(Math.abs(gasto.subtotal).toString());
       setTipoDeGasto(gasto.descripcionmov || '');
     } else {
       setImporteGasto('');
@@ -67,7 +68,7 @@ const FormularioGastos: React.FC<Props> = ({ gasto, onGuardar, onCancelar }) => 
     setGuardando(true);
     try {
       await onGuardar({
-        importegasto: importeNum,
+        importegasto: importeNum * -1, // Store as negative value
         tipodegasto: tipodegasto.trim()
       });
     } catch (error: any) {
