@@ -14,6 +14,7 @@ interface Props {
 const FormularioGastos: React.FC<Props> = ({ gasto, onGuardar, onCancelar }) => {
   const [importegasto, setImporteGasto] = useState<string>('');
   const [tipodegasto, setTipoDeGasto] = useState<string>('');
+  const [descripcionmov, setDescripcionMov] = useState<string>('');
   const [cuentasGasto, setCuentasGasto] = useState<CuentaContable[]>([]);
   const [cargandoCuentas, setCargandoCuentas] = useState(true);
   const [guardando, setGuardando] = useState(false);
@@ -42,9 +43,11 @@ const FormularioGastos: React.FC<Props> = ({ gasto, onGuardar, onCancelar }) => 
     if (gasto) {
       setImporteGasto(gasto.subtotal.toString());
       setTipoDeGasto(gasto.referencia || '');
+      setDescripcionMov(gasto.descripcionmov || '');
     } else {
       setImporteGasto('');
       setTipoDeGasto('');
+      setDescripcionMov('');
     }
   }, [gasto]);
 
@@ -68,7 +71,8 @@ const FormularioGastos: React.FC<Props> = ({ gasto, onGuardar, onCancelar }) => 
     try {
       await onGuardar({
         importegasto: importeNum,
-        tipodegasto: tipodegasto.trim()
+        tipodegasto: tipodegasto.trim(),
+        descripcionmov: descripcionmov.trim() || undefined
       });
     } catch (error: any) {
       console.error('Error al guardar gasto:', error);
@@ -127,6 +131,22 @@ const FormularioGastos: React.FC<Props> = ({ gasto, onGuardar, onCancelar }) => 
                 No hay tipos de gasto configurados. Configure cuentas contables primero.
               </small>
             )}
+          </div>
+
+          <div className="form-group-gastos">
+            <label htmlFor="descripcionmov">Descripción</label>
+            <textarea
+              id="descripcionmov"
+              value={descripcionmov}
+              onChange={(e) => setDescripcionMov(e.target.value)}
+              placeholder="Descripción del gasto (opcional)"
+              rows={3}
+              disabled={guardando}
+              className="textarea-gastos"
+            />
+            <small className="texto-ayuda-gastos">
+              Agregue detalles adicionales sobre este gasto
+            </small>
           </div>
 
           <div className="form-group-gastos">

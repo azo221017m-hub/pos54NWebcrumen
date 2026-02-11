@@ -45,6 +45,7 @@ const ListaGastos: React.FC<Props> = ({ gastos, onEditar, onEliminar }) => {
             <tr>
               <th>Folio</th>
               <th>Tipo de Gasto</th>
+              <th>Descripción</th>
               <th>Importe</th>
               <th>Fecha</th>
               <th>Usuario</th>
@@ -56,7 +57,8 @@ const ListaGastos: React.FC<Props> = ({ gastos, onEditar, onEliminar }) => {
               <tr key={gasto.idventa}>
                 <td className="folio-cell">{gasto.folioventa}</td>
                 <td className="tipo-cell">{gasto.referencia || 'Sin especificar'}</td>
-                <td className="importe-cell">{formatearMoneda(gasto.subtotal)}</td>
+                <td className="descripcion-cell">{gasto.descripcionmov || '-'}</td>
+                <td className="importe-cell">{formatearMoneda(gasto.totaldeventa)}</td>
                 <td className="fecha-cell">{formatearFecha(gasto.fechadeventa)}</td>
                 <td className="usuario-cell">{gasto.usuarioauditoria}</td>
                 <td className="acciones-cell">
@@ -87,12 +89,16 @@ const ListaGastos: React.FC<Props> = ({ gastos, onEditar, onEliminar }) => {
           <div key={gasto.idventa} className="tarjeta-gasto">
             <div className="tarjeta-header">
               <span className="tarjeta-folio">{gasto.folioventa}</span>
-              <span className="tarjeta-importe">{formatearMoneda(gasto.subtotal)}</span>
+              <span className="tarjeta-importe">{formatearMoneda(gasto.totaldeventa)}</span>
             </div>
             <div className="tarjeta-body">
               <div className="tarjeta-row">
                 <span className="tarjeta-label">Tipo:</span>
                 <span className="tarjeta-value">{gasto.referencia || 'Sin especificar'}</span>
+              </div>
+              <div className="tarjeta-row">
+                <span className="tarjeta-label">Descripción:</span>
+                <span className="tarjeta-value">{gasto.descripcionmov || '-'}</span>
               </div>
               <div className="tarjeta-row">
                 <span className="tarjeta-label">Fecha:</span>
