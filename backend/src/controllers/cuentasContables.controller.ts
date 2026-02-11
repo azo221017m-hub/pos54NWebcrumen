@@ -39,7 +39,7 @@ export const obtenerCuentasContables = async (req: AuthRequest, res: Response): 
       FROM tblposcrumenwebcuentacontable
       WHERE idnegocio = ?`;
     
-    const params: any[] = [idnegocio];
+    const params: (string | number)[] = [idnegocio];
     
     if (naturaleza) {
       query += ` AND naturalezacuentacontable = ?`;

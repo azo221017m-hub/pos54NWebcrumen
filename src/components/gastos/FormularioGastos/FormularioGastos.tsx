@@ -27,7 +27,7 @@ const FormularioGastos: React.FC<Props> = ({ gasto, onGuardar, onCancelar }) => 
         const cuentas = await obtenerCuentasContables('GASTO');
         setCuentasGasto(cuentas);
       } catch (error) {
-        console.error('Error al cargar cuentas de gasto:', error);
+        console.error('Error al cargar tipos de gasto (cuentas contables):', error);
         setError('Error al cargar tipos de gasto');
       } finally {
         setCargandoCuentas(false);
