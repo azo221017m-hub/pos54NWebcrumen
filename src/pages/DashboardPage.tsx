@@ -1062,37 +1062,46 @@ export const DashboardPage = () => {
               {/* Visual comparison chart */}
               {(saludNegocio.totalVentas > 0 || saludNegocio.totalGastos > 0) ? (
                 <div style={{ marginTop: '0.5rem' }}>
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', height: '80px', marginBottom: '0.5rem' }}>
-                    {/* Ventas bar */}
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <div style={{
-                        width: '100%',
-                        height: `${Math.max((saludNegocio.totalVentas / Math.max(saludNegocio.totalVentas, saludNegocio.totalGastos, 1)) * 100, 5)}%`,
-                        backgroundColor: '#10b981',
-                        borderRadius: '4px 4px 0 0',
-                        minHeight: '20px',
-                        transition: 'height 0.3s ease'
-                      }}></div>
-                      <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#10b981', marginTop: '0.25rem' }}>
-                        Ventas
-                      </span>
-                    </div>
+                  {(() => {
+                    // Calculate max value once for both bars
+                    const maxValue = Math.max(saludNegocio.totalVentas, saludNegocio.totalGastos, 1);
+                    const ventasHeight = Math.max((saludNegocio.totalVentas / maxValue) * 100, 5);
+                    const gastosHeight = Math.max((saludNegocio.totalGastos / maxValue) * 100, 5);
                     
-                    {/* Gastos bar */}
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <div style={{
-                        width: '100%',
-                        height: `${Math.max((saludNegocio.totalGastos / Math.max(saludNegocio.totalVentas, saludNegocio.totalGastos, 1)) * 100, 5)}%`,
-                        backgroundColor: '#ef4444',
-                        borderRadius: '4px 4px 0 0',
-                        minHeight: '20px',
-                        transition: 'height 0.3s ease'
-                      }}></div>
-                      <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#ef4444', marginTop: '0.25rem' }}>
-                        Gastos
-                      </span>
-                    </div>
-                  </div>
+                    return (
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', height: '80px', marginBottom: '0.5rem' }}>
+                        {/* Ventas bar */}
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <div style={{
+                            width: '100%',
+                            height: `${ventasHeight}%`,
+                            backgroundColor: '#10b981',
+                            borderRadius: '4px 4px 0 0',
+                            minHeight: '20px',
+                            transition: 'height 0.3s ease'
+                          }}></div>
+                          <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#10b981', marginTop: '0.25rem' }}>
+                            Ventas
+                          </span>
+                        </div>
+                        
+                        {/* Gastos bar */}
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <div style={{
+                            width: '100%',
+                            height: `${gastosHeight}%`,
+                            backgroundColor: '#ef4444',
+                            borderRadius: '4px 4px 0 0',
+                            minHeight: '20px',
+                            transition: 'height 0.3s ease'
+                          }}></div>
+                          <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#ef4444', marginTop: '0.25rem' }}>
+                            Gastos
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                   
                   {/* Balance indicator */}
                   <div style={{ 
