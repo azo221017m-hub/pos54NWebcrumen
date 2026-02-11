@@ -38,13 +38,13 @@ export async function obtenerGastos(req: AuthRequest, res: Response): Promise<vo
         v.subtotal,
         v.totaldeventa,
         v.referencia,
-        v.detalledescuento as descripcionmov,
+        v.descripcionmov,
         v.idnegocio,
         v.usuarioauditoria,
         v.fechamodificacionauditoria
       FROM tblposcrumenwebventas v
       INNER JOIN tblposcrumenwebcuentacontable c 
-        ON v.referencia = c.nombrecuentacontable 
+        ON v.descripcionmov = c.nombrecuentacontable 
         AND c.naturalezacuentacontable = 'GASTO'
         AND c.idnegocio = v.idnegocio
       WHERE v.tipodeventa = 'MOVIMIENTO'
@@ -91,7 +91,7 @@ export async function obtenerGastoPorId(req: AuthRequest, res: Response): Promis
         subtotal,
         totaldeventa,
         referencia,
-        detalledescuento as descripcionmov,
+        descripcionmov,
         idnegocio,
         usuarioauditoria,
         fechamodificacionauditoria
@@ -129,7 +129,7 @@ export async function obtenerGastoPorId(req: AuthRequest, res: Response): Promis
 // POST /api/gastos - Crear un nuevo gasto
 export async function crearGasto(req: AuthRequest, res: Response): Promise<void> {
   try {
-    const { importegasto, tipodegasto, descripcionmov } = req.body as GastoCreate;
+    const { importegasto, tipodegasto } = req.body as GastoCreate;
     const idnegocio = req.user?.idNegocio;
     const usuarioalias = req.user?.alias;
 
@@ -190,7 +190,8 @@ export async function crearGasto(req: AuthRequest, res: Response): Promise<void>
         idnegocio,
         usuarioauditoria,
         fechamodificacionauditoria,
-        detalledescuento
+        detalledescuento,
+        descripcionmov
       ) VALUES (
         'MOVIMIENTO',
         ?,
@@ -201,26 +202,27 @@ export async function crearGasto(req: AuthRequest, res: Response): Promise<void>
         NULL,
         NULL,
         ?,
-        NULL,
-        NULL,
+        0,
+        0,
         ?,
         NULL,
         NULL,
         NULL,
         NULL,
-        NULL,
+        0,
         'EFECTIVO',
         0,
         'PAGADO',
-        ?,
+        'GASTO',
         NULL,
         NULL,
         ?,
         ?,
         NOW(),
+        0,
         ?
       )`,
-      [folioventa, importegasto, importegasto, tipodegasto, idnegocio, usuarioalias, descripcionmov || null]
+      [folioventa, importegasto, importegasto, idnegocio, usuarioalias, tipodegasto]
     );
 
     // Obtener el gasto creado
@@ -232,7 +234,7 @@ export async function crearGasto(req: AuthRequest, res: Response): Promise<void>
         subtotal,
         totaldeventa,
         referencia,
-        detalledescuento as descripcionmov,
+        descripcionmov,
         idnegocio,
         usuarioauditoria,
         fechamodificacionauditoria
@@ -261,7 +263,7 @@ export async function crearGasto(req: AuthRequest, res: Response): Promise<void>
 export async function actualizarGasto(req: AuthRequest, res: Response): Promise<void> {
   try {
     const { id } = req.params;
-    const { importegasto, tipodegasto, descripcionmov } = req.body as GastoUpdate;
+    const { importegasto, tipodegasto } = req.body as GastoUpdate;
     const idnegocio = req.user?.idNegocio;
     const usuarioalias = req.user?.alias;
 
@@ -312,13 +314,8 @@ export async function actualizarGasto(req: AuthRequest, res: Response): Promise<
         });
         return;
       }
-      updates.push('referencia = ?');
+      updates.push('descripcionmov = ?');
       values.push(tipodegasto);
-    }
-
-    if (descripcionmov !== undefined) {
-      updates.push('detalledescuento = ?');
-      values.push(descripcionmov || null);
     }
 
     if (updates.length === 0) {
@@ -352,7 +349,7 @@ export async function actualizarGasto(req: AuthRequest, res: Response): Promise<
         subtotal,
         totaldeventa,
         referencia,
-        detalledescuento as descripcionmov,
+        descripcionmov,
         idnegocio,
         usuarioauditoria,
         fechamodificacionauditoria

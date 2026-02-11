@@ -15,12 +15,10 @@ export interface Gasto {
 
 export interface GastoCreate {
   importegasto: number; // Será mapeado a subtotal
-  tipodegasto: string; // Será mapeado a referencia
-  descripcionmov?: string; // Descripción opcional del gasto
+  tipodegasto: string; // Será mapeado a descripcionmov
 }
 
 export interface GastoUpdate {
   importegasto?: number;
   tipodegasto?: string;
-  descripcionmov?: string;
 }
