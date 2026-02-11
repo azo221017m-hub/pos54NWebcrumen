@@ -99,8 +99,11 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
   return (
     <div className="lista-gastos">
       <div className="grupos-gastos">
-        {gastosAgrupados.map((grupo, index) => (
-          <div key={`${grupo.fecha}-${grupo.descripcion}-${index}`} className="grupo-gasto">
+        {gastosAgrupados.map((grupo) => {
+          // Create stable key from the grupo data
+          const grupoKey = `${grupo.fecha}-${grupo.descripcion}-${grupo.gastos[0]?.idventa || 0}`;
+          return (
+          <div key={grupoKey} className="grupo-gasto">
             <div className="grupo-header">
               <div className="grupo-info">
                 <h3 className="grupo-fecha">{formatearFechaSolo(grupo.fecha)}</h3>
@@ -136,7 +139,8 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
               ))}
             </div>
           </div>
-        ))}
+        );
+        })}
       </div>
     </div>
   );
