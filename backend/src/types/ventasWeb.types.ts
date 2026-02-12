@@ -75,6 +75,7 @@ export interface VentaWebCreate {
   estadodeventa?: EstadoDeVenta;
   estatusdepago?: EstatusDePago;
   estadodetalle?: EstadoDetalle;
+  descripcionmov?: string | null;
   detalles: DetalleVentaWebCreate[];
 }
 

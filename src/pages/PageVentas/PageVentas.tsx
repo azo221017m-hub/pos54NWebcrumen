@@ -695,6 +695,7 @@ const PageVentas: React.FC = () => {
           estadodeventa: estadodeventa,
           estatusdepago: estatusdepago,
           estadodetalle: estadodetalle,
+          descripcionmov: 'VENTA', // Store 'VENTA' when PRODUCIR or ESPERAR buttons are pressed
           detalles: detallesData
         };
 
