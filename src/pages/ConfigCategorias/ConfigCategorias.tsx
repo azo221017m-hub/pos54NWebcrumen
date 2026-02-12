@@ -1,8 +1,13 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Tags } from 'lucide-react';
 import type { Categoria, CategoriaCreate, CategoriaUpdate } from '../../types/categoria.types';
-import { obtenerCategorias, crearCategoria, actualizarCategoria, eliminarCategoria } from '../../services/categoriasService';
+import { 
+  useCategoriasQuery, 
+  useCrearCategoriaMutation, 
+  useActualizarCategoriaMutation, 
+  useEliminarCategoriaMutation 
+} from '../../hooks/queries';
 import ListaCategorias from '../../components/categorias/ListaCategorias/ListaCategorias';
 import FormularioCategoria from '../../components/categorias/FormularioCategoria/FormularioCategoria';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
@@ -10,8 +15,6 @@ import './ConfigCategorias.css';
 
 const ConfigCategorias: React.FC = () => {
   const navigate = useNavigate();
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [categoriaEditar, setCategoriaEditar] = useState<Categoria | null>(null);
   const [mensaje, setMensaje] = useState<{
@@ -22,28 +25,15 @@ const ConfigCategorias: React.FC = () => {
   // Obtener idnegocio del localStorage
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
 
+  const { data: categorias = [], isLoading: cargando } = useCategoriasQuery();
+  const crearCategoriaMutation = useCrearCategoriaMutation();
+  const actualizarCategoriaMutation = useActualizarCategoriaMutation();
+  const eliminarCategoriaMutation = useEliminarCategoriaMutation();
+
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
     setTimeout(() => setMensaje(null), 4000);
   }, []);
-
-  const cargarCategorias = useCallback(async () => {
-    try {
-      setCargando(true);
-      const data = await obtenerCategorias();
-      setCategorias(data);
-    } catch (error) {
-      console.error('Error al cargar categorías:', error);
-      mostrarMensaje('error', 'Error al cargar las categorías');
-      setCategorias([]);
-    } finally {
-      setCargando(false);
-    }
-  }, [mostrarMensaje]);
-
-  useEffect(() => {
-    cargarCategorias();
-  }, [cargarCategorias]);
 
   const handleNuevo = () => {
     setCategoriaEditar(null);
@@ -58,21 +48,17 @@ const ConfigCategorias: React.FC = () => {
   const handleGuardar = async (data: CategoriaCreate | CategoriaUpdate) => {
     try {
       if (categoriaEditar) {
-        const categoriaActualizada = await actualizarCategoria(categoriaEditar.idCategoria, data as CategoriaUpdate);
+        await actualizarCategoriaMutation.mutateAsync({ 
+          id: categoriaEditar.idCategoria, 
+          data: data as CategoriaUpdate 
+        });
         mostrarMensaje('success', 'Categoría actualizada exitosamente');
-        setMostrarFormulario(false);
-        setCategoriaEditar(null);
-        setCategorias(prev =>
-          prev.map(cat =>
-            cat.idCategoria === categoriaActualizada.idCategoria ? categoriaActualizada : cat
-          )
-        );
       } else {
-        const nuevaCategoria = await crearCategoria(data as CategoriaCreate);
+        await crearCategoriaMutation.mutateAsync(data as CategoriaCreate);
         mostrarMensaje('success', 'Categoría creada exitosamente');
-        setMostrarFormulario(false);
-        setCategorias(prev => [...prev, nuevaCategoria]);
       }
+      setMostrarFormulario(false);
+      setCategoriaEditar(null);
     } catch (error) {
       console.error('Error al guardar categoría:', error);
       mostrarMensaje('error', 'Error al guardar la categoría');
@@ -89,9 +75,8 @@ const ConfigCategorias: React.FC = () => {
     }
 
     try {
-      const idEliminado = await eliminarCategoria(id);
+      await eliminarCategoriaMutation.mutateAsync(id);
       mostrarMensaje('success', 'Categoría eliminada exitosamente');
-      setCategorias(prev => prev.filter(cat => cat.idCategoria !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar categoría:', error);
       mostrarMensaje('error', 'Error al eliminar la categoría');
