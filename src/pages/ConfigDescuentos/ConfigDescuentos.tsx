@@ -1,8 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, BadgePercent } from 'lucide-react';
 import type { Descuento, DescuentoCreate, DescuentoUpdate } from '../../types/descuento.types';
-import { obtenerDescuentos, crearDescuento, actualizarDescuento, eliminarDescuento } from '../../services/descuentosService';
+import {
+  useDescuentosQuery,
+  useCrearDescuentoMutation,
+  useActualizarDescuentoMutation,
+  useEliminarDescuentoMutation,
+} from '../../hooks/queries';
 import FormularioDescuento from '../../components/descuentos/FormularioDescuento/FormularioDescuento';
 import ListaDescuentos from '../../components/descuentos/ListaDescuentos/ListaDescuentos';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
@@ -10,8 +15,6 @@ import './ConfigDescuentos.css';
 
 const ConfigDescuentos: React.FC = () => {
   const navigate = useNavigate();
-  const [descuentos, setDescuentos] = useState<Descuento[]>([]);
-  const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [descuentoEditar, setDescuentoEditar] = useState<Descuento | undefined>(undefined);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
@@ -19,34 +22,22 @@ const ConfigDescuentos: React.FC = () => {
   // Obtener idnegocio del localStorage
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
 
+  // TanStack Query hooks
+  const { data: descuentos = [], isLoading: cargando } = useDescuentosQuery();
+  const crearMutation = useCrearDescuentoMutation();
+  const actualizarMutation = useActualizarDescuentoMutation();
+  const eliminarMutation = useEliminarDescuentoMutation();
+
   const mostrarMensaje = (tipo: 'success' | 'error', texto: string) => {
     setMensaje({ tipo, texto });
     setTimeout(() => setMensaje(null), 4000);
   };
 
-  const cargarDescuentos = useCallback(async () => {
-    try {
-      setCargando(true);
-      const data = await obtenerDescuentos();
-      setDescuentos(data);
-    } catch (error) {
-      console.error('Error al cargar descuentos:', error);
-      mostrarMensaje('error', 'Error al cargar los descuentos');
-    } finally {
-      setCargando(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    cargarDescuentos();
-  }, [cargarDescuentos]);
-
   const handleCrearDescuento = async (descuento: DescuentoCreate | DescuentoUpdate) => {
     try {
-      const nuevoDescuento = await crearDescuento(descuento as DescuentoCreate);
+      await crearMutation.mutateAsync(descuento as DescuentoCreate);
       mostrarMensaje('success', 'Descuento creado exitosamente');
       setMostrarFormulario(false);
-      setDescuentos(prev => [...prev, nuevoDescuento]);
     } catch (error) {
       console.error('Error al crear descuento:', error);
       mostrarMensaje('error', 'Error al crear el descuento');
@@ -57,15 +48,13 @@ const ConfigDescuentos: React.FC = () => {
     if (!descuentoEditar) return;
     
     try {
-      const descuentoActualizado = await actualizarDescuento(descuentoEditar.id_descuento, descuento as DescuentoUpdate);
+      await actualizarMutation.mutateAsync({
+        id: descuentoEditar.id_descuento,
+        data: descuento as DescuentoUpdate,
+      });
       mostrarMensaje('success', 'Descuento actualizado exitosamente');
       setMostrarFormulario(false);
       setDescuentoEditar(undefined);
-      setDescuentos(prev =>
-        prev.map(d =>
-          d.id_descuento === descuentoActualizado.id_descuento ? descuentoActualizado : d
-        )
-      );
     } catch (error) {
       console.error('Error al actualizar descuento:', error);
       mostrarMensaje('error', 'Error al actualizar el descuento');
@@ -78,9 +67,8 @@ const ConfigDescuentos: React.FC = () => {
     }
 
     try {
-      const idEliminado = await eliminarDescuento(id_descuento);
+      await eliminarMutation.mutateAsync(id_descuento);
       mostrarMensaje('success', 'Descuento eliminado exitosamente');
-      setDescuentos(prev => prev.filter(d => d.id_descuento !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar descuento:', error);
       mostrarMensaje('error', 'Error al eliminar el descuento');
