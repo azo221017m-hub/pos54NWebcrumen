@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Clock } from 'lucide-react';
 import type { Turno } from '../../types/turno.types';
 import { EstatusTurno } from '../../types/turno.types';
 import {
-  obtenerTurnos,
-  cerrarTurnoActual
-} from '../../services/turnosService';
+  useTurnosQuery,
+  useCerrarTurnoMutation
+} from '../../hooks/queries';
 import CierreTurno from '../../components/turnos/CierreTurno/CierreTurno';
 import ListaTurnos from '../../components/turnos/ListaTurnos/ListaTurnos';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
@@ -31,33 +31,17 @@ type EstatusCierre = 'sin_novedades' | 'cuentas_pendientes';
 
 const ConfigTurnos: React.FC = () => {
   const navigate = useNavigate();
-  const [turnos, setTurnos] = useState<Turno[]>([]);
-  const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [turnoEditar, setTurnoEditar] = useState<Turno | undefined>(undefined);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
+
+  const { data: turnos = [], isLoading: cargando } = useTurnosQuery();
+  const cerrarTurnoMutation = useCerrarTurnoMutation();
 
   const mostrarMensaje = (tipo: 'success' | 'error', texto: string) => {
     setMensaje({ tipo, texto });
     setTimeout(() => setMensaje(null), 4000);
   };
-
-  const cargarTurnos = useCallback(async () => {
-    try {
-      setCargando(true);
-      const data = await obtenerTurnos();
-      setTurnos(data);
-    } catch (error) {
-      console.error('Error al cargar turnos:', error);
-      mostrarMensaje('error', 'Error al cargar los turnos');
-    } finally {
-      setCargando(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    cargarTurnos();
-  }, [cargarTurnos]);
 
   const handleCerrarTurno = async (datosFormulario: {
     idTurno: string;
@@ -69,18 +53,13 @@ const ConfigTurnos: React.FC = () => {
     if (!turnoEditar) return;
     
     try {
-      // Log the closure data for debugging
       console.log('Datos del cierre de turno:', datosFormulario);
       
-      // Call the backend endpoint with the closure data
-      await cerrarTurnoActual(datosFormulario);
+      await cerrarTurnoMutation.mutateAsync(datosFormulario);
       
       mostrarMensaje('success', 'Turno cerrado exitosamente');
       setMostrarFormulario(false);
       setTurnoEditar(undefined);
-      
-      // Reload shifts to get updated data
-      await cargarTurnos();
     } catch (error) {
       console.error('Error al cerrar turno:', error);
       mostrarMensaje('error', 'Error al cerrar el turno');
