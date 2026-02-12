@@ -1,20 +1,22 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, ChefHat, ArrowLeft } from 'lucide-react';
 import ListaRecetas from '../../components/recetas/ListaRecetas/ListaRecetas';
 import FormularioReceta from '../../components/recetas/FormularioReceta/FormularioReceta';
 import type { Receta, RecetaCreate, RecetaUpdate } from '../../types/receta.types';
-import { obtenerRecetas, crearReceta, actualizarReceta, eliminarReceta } from '../../services/recetasService';
+import {
+  useRecetasQuery,
+  useCrearRecetaMutation,
+  useActualizarRecetaMutation,
+  useEliminarRecetaMutation
+} from '../../hooks/queries/useRecetas';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigRecetas.css';
 
 const ConfigRecetas: React.FC = () => {
   const navigate = useNavigate();
-  const [recetas, setRecetas] = useState<Receta[]>([]);
-  const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [recetaEditar, setRecetaEditar] = useState<Receta | null>(null);
-  const [idnegocio, setIdnegocio] = useState<number>(1);
   const [mensaje, setMensaje] = useState<{
     tipo: 'success' | 'error' | 'info';
     texto: string;
@@ -25,32 +27,25 @@ const ConfigRecetas: React.FC = () => {
     setTimeout(() => setMensaje(null), 4000);
   }, []);
 
-  useEffect(() => {
-    const idnegocioStorage = localStorage.getItem('idnegocio');
-    if (idnegocioStorage) {
-      setIdnegocio(Number(idnegocioStorage));
+  // Get idnegocio from localStorage usuario
+  const idnegocio = useMemo(() => {
+    const usuarioStr = localStorage.getItem('usuario');
+    if (usuarioStr) {
+      try {
+        const usuario = JSON.parse(usuarioStr);
+        return usuario.idnegocio || 1;
+      } catch {
+        return 1;
+      }
     }
+    return 1;
   }, []);
 
-  const cargarRecetas = useCallback(async () => {
-    console.log('🔷 ConfigRecetas: Cargando recetas...');
-    setCargando(true);
-    try {
-      const data = await obtenerRecetas(idnegocio);
-      setRecetas(Array.isArray(data) ? data : []);
-      console.log('🔷 ConfigRecetas: Recetas cargadas:', data.length);
-    } catch (error) {
-      console.error('🔴 ConfigRecetas: Error al cargar recetas:', error);
-      mostrarMensaje('error', 'Error al cargar las recetas');
-      setRecetas([]);
-    } finally {
-      setCargando(false);
-    }
-  }, [idnegocio, mostrarMensaje]);
-
-  useEffect(() => {
-    cargarRecetas();
-  }, [cargarRecetas]);
+  // TanStack Query hooks
+  const { data: recetas = [], isLoading: cargando } = useRecetasQuery(idnegocio);
+  const crearMutation = useCrearRecetaMutation();
+  const actualizarMutation = useActualizarRecetaMutation();
+  const eliminarMutation = useEliminarRecetaMutation();
 
   const handleNuevo = () => {
     setRecetaEditar(null);
@@ -65,21 +60,14 @@ const ConfigRecetas: React.FC = () => {
   const handleGuardar = async (data: RecetaCreate | RecetaUpdate) => {
     try {
       if (recetaEditar) {
-        const recetaActualizada = await actualizarReceta(recetaEditar.idReceta, data as RecetaUpdate);
+        await actualizarMutation.mutateAsync({ id: recetaEditar.idReceta, data: data as RecetaUpdate });
         mostrarMensaje('success', 'Receta actualizada exitosamente');
-        setMostrarFormulario(false);
-        setRecetaEditar(null);
-        setRecetas(prev =>
-          prev.map(rec =>
-            rec.idReceta === recetaActualizada.idReceta ? recetaActualizada : rec
-          )
-        );
       } else {
-        const nuevaReceta = await crearReceta(data as RecetaCreate);
+        await crearMutation.mutateAsync(data as RecetaCreate);
         mostrarMensaje('success', 'Receta creada exitosamente');
-        setMostrarFormulario(false);
-        setRecetas(prev => [...prev, nuevaReceta]);
       }
+      setMostrarFormulario(false);
+      setRecetaEditar(null);
     } catch (error) {
       console.error('Error al guardar receta:', error);
       mostrarMensaje('error', 'Error al guardar la receta');
@@ -96,9 +84,8 @@ const ConfigRecetas: React.FC = () => {
     }
 
     try {
-      const idEliminado = await eliminarReceta(id);
+      await eliminarMutation.mutateAsync(id);
       mostrarMensaje('success', 'Receta eliminada exitosamente');
-      setRecetas(prev => prev.filter(rec => rec.idReceta !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar receta:', error);
       mostrarMensaje('error', 'Error al eliminar la receta');

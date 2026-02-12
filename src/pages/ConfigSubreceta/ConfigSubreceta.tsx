@@ -1,22 +1,20 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, ChefHat } from 'lucide-react';
 import ListaSubrecetas from '../../components/subrecetas/ListaSubrecetas/ListaSubrecetas';
 import FormularioSubreceta from '../../components/subrecetas/FormularioSubreceta/FormularioSubreceta';
 import type { Subreceta, SubrecetaCreate, SubrecetaUpdate } from '../../types/subreceta.types';
-import { 
-  obtenerSubrecetas,
-  crearSubreceta,
-  actualizarSubreceta,
-  eliminarSubreceta 
-} from '../../services/subrecetasService';
+import {
+  useSubrecetasQuery,
+  useCrearSubrecetaMutation,
+  useActualizarSubrecetaMutation,
+  useEliminarSubrecetaMutation
+} from '../../hooks/queries/useSubrecetas';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigSubreceta.css';
 
 const ConfigSubreceta: React.FC = () => {
   const navigate = useNavigate();
-  const [subrecetas, setSubrecetas] = useState<Subreceta[]>([]);
-  const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [subrecetaEditar, setSubrecetaEditar] = useState<Subreceta | null>(null);
   const [mensaje, setMensaje] = useState<{
@@ -25,32 +23,19 @@ const ConfigSubreceta: React.FC = () => {
   } | null>(null);
 
   // Obtener idnegocio del localStorage
-  const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+  const idnegocio = usuario?.idNegocio || Number(localStorage.getItem('idnegocio')) || 1;
+
+  // TanStack Query hooks
+  const { data: subrecetas = [], isLoading: cargando } = useSubrecetasQuery(idnegocio);
+  const crearMutation = useCrearSubrecetaMutation();
+  const actualizarMutation = useActualizarSubrecetaMutation();
+  const eliminarMutation = useEliminarSubrecetaMutation();
 
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
     setTimeout(() => setMensaje(null), 4000);
   }, []);
-
-  const cargarSubrecetas = useCallback(async () => {
-    console.log('🔷 ConfigSubreceta: Cargando subrecetas...');
-    setCargando(true);
-    try {
-      const data = await obtenerSubrecetas(idnegocio);
-      setSubrecetas(Array.isArray(data) ? data : []);
-      console.log('🔷 ConfigSubreceta: Subrecetas cargadas:', data.length);
-    } catch (error) {
-      console.error('🔴 ConfigSubreceta: Error al cargar subrecetas:', error);
-      mostrarMensaje('error', 'Error al cargar las subrecetas');
-      setSubrecetas([]);
-    } finally {
-      setCargando(false);
-    }
-  }, [idnegocio, mostrarMensaje]);
-
-  useEffect(() => {
-    cargarSubrecetas();
-  }, [cargarSubrecetas]);
 
   const handleNuevo = () => {
     setSubrecetaEditar(null);
@@ -65,20 +50,14 @@ const ConfigSubreceta: React.FC = () => {
   const handleGuardar = async (data: SubrecetaCreate | SubrecetaUpdate) => {
     try {
       if (subrecetaEditar) {
-        const subrecetaActualizada = await actualizarSubreceta(subrecetaEditar.idSubReceta, data as SubrecetaUpdate);
+        await actualizarMutation.mutateAsync({ id: subrecetaEditar.idSubReceta, data: data as SubrecetaUpdate });
         setMostrarFormulario(false);
         setSubrecetaEditar(null);
         mostrarMensaje('success', 'Subreceta actualizada exitosamente');
-        setSubrecetas(prev =>
-          prev.map(sub =>
-            sub.idSubReceta === subrecetaActualizada.idSubReceta ? subrecetaActualizada : sub
-          )
-        );
       } else {
-        const nuevaSubreceta = await crearSubreceta(data as SubrecetaCreate);
+        await crearMutation.mutateAsync(data as SubrecetaCreate);
         setMostrarFormulario(false);
         mostrarMensaje('success', 'Subreceta creada exitosamente');
-        setSubrecetas(prev => [...prev, nuevaSubreceta]);
       }
     } catch (error) {
       console.error('Error al guardar subreceta:', error);
@@ -92,9 +71,8 @@ const ConfigSubreceta: React.FC = () => {
     }
 
     try {
-      const idEliminado = await eliminarSubreceta(id);
+      await eliminarMutation.mutateAsync(id);
       mostrarMensaje('success', 'Subreceta eliminada exitosamente');
-      setSubrecetas(prev => prev.filter(sub => sub.idSubReceta !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar subreceta:', error);
       mostrarMensaje('error', 'Error al eliminar la subreceta');

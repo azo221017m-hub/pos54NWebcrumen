@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Shield } from 'lucide-react';
 import type { Moderador, ModeradorCreate, ModeradorUpdate } from '../../types/moderador.types';
 import {
-  obtenerModeradores,
-  crearModerador,
-  actualizarModerador,
-  eliminarModerador
-} from '../../services/moderadoresService';
+  useModeradoresQuery,
+  useCrearModeradorMutation,
+  useActualizarModeradorMutation,
+  useEliminarModeradorMutation
+} from '../../hooks/queries';
 import ListaModeradores from '../../components/moderadores/ListaModeradores/ListaModeradores';
 import FormularioModerador from '../../components/moderadores/FormularioModerador/FormularioModerador';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
@@ -15,8 +15,6 @@ import './ConfigModeradores.css';
 
 const ConfigModeradores: React.FC = () => {
   const navigate = useNavigate();
-  const [moderadores, setModeradores] = useState<Moderador[]>([]);
-  const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [moderadorEditar, setModeradorEditar] = useState<Moderador | null>(null);
   const [mensaje, setMensaje] = useState<{
@@ -25,32 +23,20 @@ const ConfigModeradores: React.FC = () => {
   } | null>(null);
 
   // Obtener idnegocio del localStorage
-  const idnegocio = parseInt(localStorage.getItem('idnegocio') || '1');
+  const usuarioStr = localStorage.getItem('usuario');
+  const usuario = usuarioStr ? JSON.parse(usuarioStr) : null;
+  const idnegocio = usuario?.idNegocio || parseInt(localStorage.getItem('idnegocio') || '1');
 
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
     setTimeout(() => setMensaje(null), 4000);
   }, []);
 
-  const cargarModeradores = useCallback(async () => {
-    try {
-      console.log('🔷 ConfigModeradores - Iniciando carga...');
-      setCargando(true);
-      const data = await obtenerModeradores(idnegocio);
-      console.log('🔷 ConfigModeradores - Datos recibidos:', data);
-      setModeradores(data);
-    } catch (error) {
-      console.error('❌ Error al cargar moderadores:', error);
-      mostrarMensaje('error', 'Error al cargar los moderadores');
-      setModeradores([]);
-    } finally {
-      setCargando(false);
-    }
-  }, [idnegocio, mostrarMensaje]);
-
-  useEffect(() => {
-    cargarModeradores();
-  }, [cargarModeradores]);
+  // TanStack Query hooks
+  const { data: moderadores = [], isLoading: cargando } = useModeradoresQuery(idnegocio);
+  const crearModeradorMutation = useCrearModeradorMutation();
+  const actualizarModeradorMutation = useActualizarModeradorMutation();
+  const eliminarModeradorMutation = useEliminarModeradorMutation();
 
   const handleNuevoModerador = () => {
     setModeradorEditar(null);
@@ -70,21 +56,15 @@ const ConfigModeradores: React.FC = () => {
           usuarioauditoria: moderadorData.usuarioauditoria,
           estatus: moderadorData.estatus
         };
-        const moderadorActualizado = await actualizarModerador(moderadorEditar.idmoderador, dataUpdate);
+        await actualizarModeradorMutation.mutateAsync({ id: moderadorEditar.idmoderador, data: dataUpdate });
         mostrarMensaje('success', 'Moderador actualizado correctamente');
         setMostrarFormulario(false);
         setModeradorEditar(null);
-        setModeradores(prev =>
-          prev.map(mod =>
-            mod.idmoderador === moderadorActualizado.idmoderador ? moderadorActualizado : mod
-          )
-        );
       } else {
-        const nuevoModerador = await crearModerador(moderadorData);
+        await crearModeradorMutation.mutateAsync(moderadorData);
         mostrarMensaje('success', 'Moderador creado correctamente');
         setMostrarFormulario(false);
         setModeradorEditar(null);
-        setModeradores(prev => [...prev, nuevoModerador]);
       }
     } catch (error: any) {
       console.error('❌ Error al guardar moderador:', {
@@ -107,9 +87,8 @@ const ConfigModeradores: React.FC = () => {
     }
 
     try {
-      const idEliminado = await eliminarModerador(id);
+      await eliminarModeradorMutation.mutateAsync(id);
       mostrarMensaje('success', 'Moderador eliminado correctamente');
-      setModeradores(prev => prev.filter(mod => mod.idmoderador !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar moderador:', error);
       mostrarMensaje('error', 'Error al eliminar el moderador');

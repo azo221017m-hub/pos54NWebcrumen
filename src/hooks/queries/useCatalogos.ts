@@ -1,8 +1,26 @@
-import { useQuery } from '@tanstack/react-query';
-import { obtenerProductosWeb } from '../../services/productosWebService';
-import { obtenerCategorias } from '../../services/categoriasService';
-import { obtenerModeradores } from '../../services/moderadoresService';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { 
+  obtenerProductosWeb, 
+  crearProductoWeb, 
+  actualizarProductoWeb, 
+  eliminarProductoWeb 
+} from '../../services/productosWebService';
+import { 
+  obtenerCategorias, 
+  crearCategoria, 
+  actualizarCategoria, 
+  eliminarCategoria 
+} from '../../services/categoriasService';
+import { 
+  obtenerModeradores, 
+  crearModerador, 
+  actualizarModerador, 
+  eliminarModerador 
+} from '../../services/moderadoresService';
 import { obtenerModeradoresRef } from '../../services/moderadoresRefService';
+import type { ProductoWebCreate, ProductoWebUpdate } from '../../types/productoWeb.types';
+import type { CategoriaCreate, CategoriaUpdate } from '../../types/categoria.types';
+import type { ModeradorCreate, ModeradorUpdate } from '../../types/moderador.types';
 
 // Query keys for productos
 export const productosWebKeys = {
@@ -73,5 +91,124 @@ export const useModeradoresRefQuery = (idnegocio: number) => {
     queryKey: [...moderadoresRefKeys.lists(), idnegocio],
     queryFn: () => obtenerModeradoresRef(idnegocio),
     enabled: !!idnegocio,
+  });
+};
+
+// ========== MUTATIONS ==========
+
+/**
+ * Hook para crear un producto web
+ */
+export const useCrearProductoWebMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: ProductoWebCreate) => crearProductoWeb(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: productosWebKeys.lists() });
+    },
+  });
+};
+
+/**
+ * Hook para actualizar un producto web
+ */
+export const useActualizarProductoWebMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: ProductoWebUpdate }) => actualizarProductoWeb(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: productosWebKeys.lists() });
+    },
+  });
+};
+
+/**
+ * Hook para eliminar un producto web
+ */
+export const useEliminarProductoWebMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => eliminarProductoWeb(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: productosWebKeys.lists() });
+    },
+  });
+};
+
+/**
+ * Hook para crear una categoría
+ */
+export const useCrearCategoriaMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CategoriaCreate) => crearCategoria(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: categoriasKeys.lists() });
+    },
+  });
+};
+
+/**
+ * Hook para actualizar una categoría
+ */
+export const useActualizarCategoriaMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: CategoriaUpdate }) => actualizarCategoria(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: categoriasKeys.lists() });
+    },
+  });
+};
+
+/**
+ * Hook para eliminar una categoría
+ */
+export const useEliminarCategoriaMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => eliminarCategoria(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: categoriasKeys.lists() });
+    },
+  });
+};
+
+/**
+ * Hook para crear un moderador
+ */
+export const useCrearModeradorMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: ModeradorCreate) => crearModerador(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: moderadoresKeys.lists() });
+    },
+  });
+};
+
+/**
+ * Hook para actualizar un moderador
+ */
+export const useActualizarModeradorMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: ModeradorUpdate }) => actualizarModerador(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: moderadoresKeys.lists() });
+    },
+  });
+};
+
+/**
+ * Hook para eliminar un moderador
+ */
+export const useEliminarModeradorMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => eliminarModerador(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: moderadoresKeys.lists() });
+    },
   });
 };

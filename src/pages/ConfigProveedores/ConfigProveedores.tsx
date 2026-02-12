@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Truck } from 'lucide-react';
 import type { Proveedor, ProveedorCreate, ProveedorUpdate } from '../../types/proveedor.types';
 import {
-  obtenerProveedores,
-  crearProveedor,
-  actualizarProveedor,
-  eliminarProveedor
-} from '../../services/proveedoresService';
+  useProveedoresQuery,
+  useCrearProveedorMutation,
+  useActualizarProveedorMutation,
+  useEliminarProveedorMutation,
+} from '../../hooks/queries/useProveedores';
 import ListaProveedores from '../../components/proveedores/ListaProveedores/ListaProveedores';
 import FormularioProveedor from '../../components/proveedores/FormularioProveedor/FormularioProveedor';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
@@ -15,8 +15,6 @@ import './ConfigProveedores.css';
 
 const ConfigProveedores: React.FC = () => {
   const navigate = useNavigate();
-  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
-  const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [proveedorSeleccionado, setProveedorSeleccionado] = useState<Proveedor | null>(null);
@@ -28,28 +26,16 @@ const ConfigProveedores: React.FC = () => {
   // Obtener idnegocio del localStorage
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
 
+  // TanStack Query hooks
+  const { data: proveedores = [], isLoading: cargando } = useProveedoresQuery();
+  const crearMutation = useCrearProveedorMutation();
+  const actualizarMutation = useActualizarProveedorMutation();
+  const eliminarMutation = useEliminarProveedorMutation();
+
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
     setTimeout(() => setMensaje(null), 4000);
   }, []);
-
-  const cargarProveedores = useCallback(async () => {
-    try {
-      setCargando(true);
-      const data = await obtenerProveedores();
-      setProveedores(data);
-    } catch (error) {
-      console.error('Error al cargar proveedores:', error);
-      mostrarMensaje('error', 'Error al cargar los proveedores');
-      setProveedores([]);
-    } finally {
-      setCargando(false);
-    }
-  }, [mostrarMensaje]);
-
-  useEffect(() => {
-    cargarProveedores();
-  }, [cargarProveedores]);
 
   const handleNuevo = () => {
     setProveedorSeleccionado(null);
@@ -71,9 +57,8 @@ const ConfigProveedores: React.FC = () => {
     }
 
     try {
-      const idEliminado = await eliminarProveedor(id);
+      await eliminarMutation.mutateAsync(id);
       mostrarMensaje('success', 'Proveedor eliminado exitosamente');
-      setProveedores(prev => prev.filter(p => p.id_proveedor !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar proveedor:', error);
       mostrarMensaje('error', 'Error al eliminar el proveedor');
@@ -85,20 +70,14 @@ const ConfigProveedores: React.FC = () => {
 
     try {
       if ('id_proveedor' in data) {
-        const proveedorActualizado = await actualizarProveedor(data.id_proveedor, data);
+        await actualizarMutation.mutateAsync({ id: data.id_proveedor, data });
         mostrarMensaje('success', 'Proveedor actualizado exitosamente');
         setMostrarFormulario(false);
         setProveedorSeleccionado(null);
-        setProveedores(prev =>
-          prev.map(p =>
-            p.id_proveedor === proveedorActualizado.id_proveedor ? proveedorActualizado : p
-          )
-        );
       } else {
-        const nuevoProveedor = await crearProveedor(data);
+        await crearMutation.mutateAsync(data);
         mostrarMensaje('success', 'Proveedor creado exitosamente');
         setMostrarFormulario(false);
-        setProveedores(prev => [...prev, nuevoProveedor]);
       }
     } catch (error) {
       console.error('Error al guardar proveedor:', error);

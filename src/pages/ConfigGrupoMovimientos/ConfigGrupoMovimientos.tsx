@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, FileText } from 'lucide-react';
 import type { GrupoMovimientos, GrupoMovimientosCreate, GrupoMovimientosUpdate } from '../../types/grupoMovimientos.types';
 import {
-  obtenerGrupoMovimientos,
-  crearGrupoMovimientos,
-  actualizarGrupoMovimientos,
-  eliminarGrupoMovimientos
-} from '../../services/grupoMovimientosService';
+  useGrupoMovimientosQuery,
+  useCrearGrupoMovimientosMutation,
+  useActualizarGrupoMovimientosMutation,
+  useEliminarGrupoMovimientosMutation
+} from '../../hooks/queries';
 import ListaGrupoMovimientos from '../../components/grupoMovimientos/ListaGrupoMovimientos/ListaGrupoMovimientos';
 import FormularioGrupoMovimientos from '../../components/grupoMovimientos/FormularioGrupoMovimientos/FormularioGrupoMovimientos';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
@@ -15,8 +15,6 @@ import './ConfigGrupoMovimientos.css';
 
 const ConfigGrupoMovimientos: React.FC = () => {
   const navigate = useNavigate();
-  const [grupos, setGrupos] = useState<GrupoMovimientos[]>([]);
-  const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [grupoEditar, setGrupoEditar] = useState<GrupoMovimientos | null>(null);
   const [mensaje, setMensaje] = useState<{
@@ -27,30 +25,15 @@ const ConfigGrupoMovimientos: React.FC = () => {
   // Obtener idnegocio del localStorage
   const idnegocio = parseInt(localStorage.getItem('idnegocio') || '1');
 
+  const { data: grupos = [], isLoading: cargando } = useGrupoMovimientosQuery();
+  const crearGrupoMutation = useCrearGrupoMovimientosMutation();
+  const actualizarGrupoMutation = useActualizarGrupoMovimientosMutation();
+  const eliminarGrupoMutation = useEliminarGrupoMovimientosMutation();
+
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
     setTimeout(() => setMensaje(null), 4000);
   }, []);
-
-  const cargarGrupos = useCallback(async () => {
-    try {
-      console.log('🔷 ConfigGrupoMovimientos - Iniciando carga de grupos...');
-      setCargando(true);
-      const data = await obtenerGrupoMovimientos();
-      console.log('🔷 ConfigGrupoMovimientos - Datos recibidos:', data, 'Es array:', Array.isArray(data));
-      setGrupos(data);
-    } catch (error) {
-      console.error('❌ ConfigGrupoMovimientos - Error al cargar grupos:', error);
-      mostrarMensaje('error', 'Error al cargar los grupos de movimientos');
-      setGrupos([]);
-    } finally {
-      setCargando(false);
-    }
-  }, [mostrarMensaje]);
-
-  useEffect(() => {
-    cargarGrupos();
-  }, [cargarGrupos]);
 
   const handleNuevoGrupo = () => {
     setGrupoEditar(null);
@@ -70,22 +53,14 @@ const ConfigGrupoMovimientos: React.FC = () => {
           nombrecuentacontable: grupoData.nombrecuentacontable,
           tipocuentacontable: grupoData.tipocuentacontable
         };
-        const grupoActualizado = await actualizarGrupoMovimientos(grupoEditar.id_cuentacontable, dataUpdate);
+        await actualizarGrupoMutation.mutateAsync({ id: grupoEditar.id_cuentacontable, data: dataUpdate });
         mostrarMensaje('success', 'Grupo de movimientos actualizado correctamente');
-        setMostrarFormulario(false);
-        setGrupoEditar(null);
-        setGrupos(prev =>
-          prev.map(g =>
-            g.id_cuentacontable === grupoActualizado.id_cuentacontable ? grupoActualizado : g
-          )
-        );
       } else {
-        const nuevoGrupo = await crearGrupoMovimientos(grupoData);
+        await crearGrupoMutation.mutateAsync(grupoData);
         mostrarMensaje('success', 'Grupo de movimientos creado correctamente');
-        setMostrarFormulario(false);
-        setGrupoEditar(null);
-        setGrupos(prev => [...prev, nuevoGrupo]);
       }
+      setMostrarFormulario(false);
+      setGrupoEditar(null);
     } catch (error) {
       console.error('Error al guardar grupo:', error);
       mostrarMensaje('error', 'Error al guardar el grupo de movimientos');
@@ -102,9 +77,8 @@ const ConfigGrupoMovimientos: React.FC = () => {
     }
 
     try {
-      const idEliminado = await eliminarGrupoMovimientos(id);
+      await eliminarGrupoMutation.mutateAsync(id);
       mostrarMensaje('success', 'Grupo de movimientos eliminado correctamente');
-      setGrupos(prev => prev.filter(g => g.id_cuentacontable !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar grupo:', error);
       mostrarMensaje('error', 'Error al eliminar el grupo de movimientos');

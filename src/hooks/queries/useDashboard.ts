@@ -3,15 +3,13 @@ import { verificarTurnoAbierto } from '../../services/turnosService';
 import { obtenerResumenVentas, obtenerSaludNegocio } from '../../services/ventasWebService';
 import { obtenerDetallesPagos } from '../../services/pagosService';
 
+// Import turnosKeys from useTurnos to avoid duplication
+import { turnosKeys } from './useTurnos';
+
 // Constants
 const RESUMEN_VENTAS_REFRESH_INTERVAL = 30000; // 30 segundos
 
 // Query keys
-export const turnosKeys = {
-  all: ['turnos'] as const,
-  verifyOpen: () => [...turnosKeys.all, 'verify-open'] as const,
-};
-
 export const resumenVentasKeys = {
   all: ['resumenVentas'] as const,
   summary: () => [...resumenVentasKeys.all, 'summary'] as const,

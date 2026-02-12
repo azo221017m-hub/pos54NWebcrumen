@@ -1,8 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Users } from 'lucide-react';
 import type { CatModerador, CatModeradorCreate, CatModeradorUpdate } from '../../types/catModerador.types';
-import { obtenerCatModeradores, crearCatModerador, actualizarCatModerador, eliminarCatModerador } from '../../services/catModeradoresService';
+import {
+  useCatModeradoresQuery,
+  useCrearCatModeradorMutation,
+  useActualizarCatModeradorMutation,
+  useEliminarCatModeradorMutation
+} from '../../hooks/queries';
 import ListaCatModeradores from '../../components/catModeradores/ListaCatModeradores/ListaCatModeradores';
 import FormularioCatModerador from '../../components/catModeradores/FormularioCatModerador/FormularioCatModerador';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
@@ -10,8 +15,6 @@ import './ConfigCatModeradores.css';
 
 const ConfigCatModeradores: React.FC = () => {
   const navigate = useNavigate();
-  const [catModeradores, setCatModeradores] = useState<CatModerador[]>([]);
-  const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [catModeradorSeleccionada, setCatModeradorSeleccionada] = useState<CatModerador | null>(null);
   const [mensaje, setMensaje] = useState<{
@@ -21,27 +24,22 @@ const ConfigCatModeradores: React.FC = () => {
 
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
 
+  const { data: catModeradores = [], isLoading: cargando, error } = useCatModeradoresQuery();
+  const crearMutation = useCrearCatModeradorMutation();
+  const actualizarMutation = useActualizarCatModeradorMutation();
+  const eliminarMutation = useEliminarCatModeradorMutation();
+
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
     setTimeout(() => setMensaje(null), 4000);
   }, []);
 
-  const cargarCatModeradores = useCallback(async () => {
-    try {
-      setCargando(true);
-      const data = await obtenerCatModeradores();
-      setCatModeradores(data);
-    } catch (error) {
+  React.useEffect(() => {
+    if (error) {
       console.error('Error al cargar categorías moderador:', error);
       mostrarMensaje('error', 'Error al cargar las categorías moderador');
-    } finally {
-      setCargando(false);
     }
-  }, [mostrarMensaje]);
-
-  useEffect(() => {
-    cargarCatModeradores();
-  }, [cargarCatModeradores]);
+  }, [error, mostrarMensaje]);
 
   const handleNuevo = () => {
     setCatModeradorSeleccionada(null);
@@ -59,9 +57,8 @@ const ConfigCatModeradores: React.FC = () => {
     }
 
     try {
-      const idEliminado = await eliminarCatModerador(id);
+      await eliminarMutation.mutateAsync(id);
       mostrarMensaje('success', 'Categoría moderador eliminada exitosamente');
-      setCatModeradores(prev => prev.filter(cm => cm.idmodref !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar categoría moderador:', error);
       mostrarMensaje('error', 'Error al eliminar la categoría moderador');
@@ -71,17 +68,11 @@ const ConfigCatModeradores: React.FC = () => {
   const handleSubmit = async (data: CatModeradorCreate | CatModeradorUpdate) => {
     try {
       if ('idmodref' in data) {
-        const catModeradorActualizada = await actualizarCatModerador(data);
+        await actualizarMutation.mutateAsync(data);
         mostrarMensaje('success', 'Categoría moderador actualizada exitosamente');
-        setCatModeradores(prev =>
-          prev.map(cm =>
-            cm.idmodref === catModeradorActualizada.idmodref ? catModeradorActualizada : cm
-          )
-        );
       } else {
-        const nuevaCatModerador = await crearCatModerador(data);
+        await crearMutation.mutateAsync(data);
         mostrarMensaje('success', 'Categoría moderador creada exitosamente');
-        setCatModeradores(prev => [...prev, nuevaCatModerador]);
       }
       setMostrarFormulario(false);
       setCatModeradorSeleccionada(null);

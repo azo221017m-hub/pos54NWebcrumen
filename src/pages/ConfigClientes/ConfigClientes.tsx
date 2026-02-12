@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Users } from 'lucide-react';
 import type { Cliente, ClienteCreate } from '../../types/cliente.types';
 import {
-  obtenerClientes,
-  crearCliente,
-  actualizarCliente,
-  eliminarCliente
-} from '../../services/clientesService';
+  useClientesQuery,
+  useCrearClienteMutation,
+  useActualizarClienteMutation,
+  useEliminarClienteMutation,
+} from '../../hooks/queries/useClientes';
 import ListaClientes from '../../components/clientes/ListaClientes/ListaClientes';
 import FormularioCliente from '../../components/clientes/FormularioCliente/FormularioCliente';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
@@ -15,8 +15,6 @@ import './ConfigClientes.css';
 
 const ConfigClientes: React.FC = () => {
   const navigate = useNavigate();
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [clienteEditar, setClienteEditar] = useState<Cliente | null>(null);
   const [mensaje, setMensaje] = useState<{
@@ -24,28 +22,16 @@ const ConfigClientes: React.FC = () => {
     texto: string;
   } | null>(null);
 
+  // TanStack Query hooks
+  const { data: clientes = [], isLoading: cargando } = useClientesQuery();
+  const crearClienteMutation = useCrearClienteMutation();
+  const actualizarClienteMutation = useActualizarClienteMutation();
+  const eliminarClienteMutation = useEliminarClienteMutation();
+
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
     setTimeout(() => setMensaje(null), 4000);
   }, []);
-
-  const cargarClientes = useCallback(async () => {
-    try {
-      setCargando(true);
-      const data = await obtenerClientes();
-      setClientes(data);
-    } catch (error) {
-      console.error('Error al cargar clientes:', error);
-      mostrarMensaje('error', 'Error al cargar los clientes');
-      setClientes([]);
-    } finally {
-      setCargando(false);
-    }
-  }, [mostrarMensaje]);
-
-  useEffect(() => {
-    cargarClientes();
-  }, [cargarClientes]);
 
   const handleNuevo = () => {
     setClienteEditar(null);
@@ -64,11 +50,9 @@ const ConfigClientes: React.FC = () => {
 
   const handleCrear = async (data: ClienteCreate) => {
     try {
-      const nuevoCliente = await crearCliente(data);
+      await crearClienteMutation.mutateAsync(data);
       mostrarMensaje('success', 'Cliente creado exitosamente');
       setMostrarFormulario(false);
-      // Actualizar estado local sin recargar
-      setClientes(prev => [...prev, nuevoCliente]);
     } catch (error) {
       console.error('Error al crear cliente:', error);
       mostrarMensaje('error', 'Error al crear el cliente');
@@ -88,16 +72,10 @@ const ConfigClientes: React.FC = () => {
         estatus: data.estatus !== undefined ? data.estatus : 1
       };
       
-      const clienteActualizado = await actualizarCliente(clienteEditar.idCliente, dataUpdate);
+      await actualizarClienteMutation.mutateAsync({ id: clienteEditar.idCliente, data: dataUpdate });
       mostrarMensaje('success', 'Cliente actualizado exitosamente');
       setMostrarFormulario(false);
       setClienteEditar(null);
-      // Actualizar estado local sin recargar
-      setClientes(prev =>
-        prev.map(cliente =>
-          cliente.idCliente === clienteActualizado.idCliente ? clienteActualizado : cliente
-        )
-      );
     } catch (error) {
       console.error('Error al actualizar cliente:', error);
       mostrarMensaje('error', 'Error al actualizar el cliente');
@@ -114,10 +92,8 @@ const ConfigClientes: React.FC = () => {
     }
 
     try {
-      const idEliminado = await eliminarCliente(id);
+      await eliminarClienteMutation.mutateAsync(id);
       mostrarMensaje('success', 'Cliente eliminado exitosamente');
-      // Actualizar estado local sin recargar
-      setClientes(prev => prev.filter(cliente => cliente.idCliente !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar cliente:', error);
       mostrarMensaje('error', 'Error al eliminar el cliente');
