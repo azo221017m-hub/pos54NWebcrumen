@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Package } from 'lucide-react';
 import type { ProductoWeb, ProductoWebCreate, ProductoWebUpdate } from '../../types/productoWeb.types';
 import {
-  obtenerProductosWeb,
-  crearProductoWeb,
-  actualizarProductoWeb,
-  eliminarProductoWeb
-} from '../../services/productosWebService';
+  useProductosWebQuery,
+  useCrearProductoWebMutation,
+  useActualizarProductoWebMutation,
+  useEliminarProductoWebMutation
+} from '../../hooks/queries';
 import ListaProductosWeb from '../../components/productosWeb/ListaProductosWeb/ListaProductosWeb';
 import FormularioProductoWeb from '../../components/productosWeb/FormularioProductoWeb/FormularioProductoWeb';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
@@ -15,9 +15,6 @@ import './ConfigProductosWeb.css';
 
 const ConfigProductosWeb: React.FC = () => {
   const navigate = useNavigate();
-  const [productos, setProductos] = useState<ProductoWeb[]>([]);
-  const [cargando, setCargando] = useState(true);
-  const [guardando, setGuardando] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [productoSeleccionado, setProductoSeleccionado] = useState<ProductoWeb | null>(null);
   const [mensaje, setMensaje] = useState<{
@@ -27,30 +24,26 @@ const ConfigProductosWeb: React.FC = () => {
 
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
 
+  // TanStack Query hooks
+  const { data: productosData = [], isLoading: cargando, error } = useProductosWebQuery();
+  const crearMutation = useCrearProductoWebMutation();
+  const actualizarMutation = useActualizarProductoWebMutation();
+  const eliminarMutation = useEliminarProductoWebMutation();
+
+  // Filter productos - memoized to avoid recalculation
+  const productos = useMemo(() => {
+    return productosData.filter(p => p.tipoproducto !== 'Materia Prima');
+  }, [productosData]);
+
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
     setTimeout(() => setMensaje(null), 4000);
   }, []);
 
-  const cargarProductos = useCallback(async () => {
-    try {
-      setCargando(true);
-      const data = await obtenerProductosWeb();
-      // Filtrar productos que no sean Materia Prima
-      const productosFiltrados = data.filter(p => p.tipoproducto !== 'Materia Prima');
-      setProductos(productosFiltrados);
-    } catch (error) {
-      console.error('Error al cargar productos:', error);
-      mostrarMensaje('error', 'Error al cargar los productos');
-      setProductos([]);
-    } finally {
-      setCargando(false);
-    }
-  }, [mostrarMensaje]);
-
-  useEffect(() => {
-    cargarProductos();
-  }, [cargarProductos]);
+  // Handle query errors
+  if (error) {
+    console.error('Error al cargar productos:', error);
+  }
 
   const handleNuevo = () => {
     setProductoSeleccionado(null);
@@ -72,10 +65,8 @@ const ConfigProductosWeb: React.FC = () => {
     }
 
     try {
-      const idEliminado = await eliminarProductoWeb(id);
+      await eliminarMutation.mutateAsync(id);
       mostrarMensaje('success', 'Producto eliminado exitosamente');
-      // Actualizar estado local sin recargar
-      setProductos(prev => prev.filter(producto => producto.idProducto !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar producto:', error);
       mostrarMensaje('error', 'Error al eliminar el producto');
@@ -99,15 +90,9 @@ const ConfigProductosWeb: React.FC = () => {
         menudia: newValue
       };
       
-      const productoActualizadoCompleto = await actualizarProductoWeb(id, productoActualizado);
+      await actualizarMutation.mutateAsync({ id, data: productoActualizado });
       
       mostrarMensaje('success', `Producto ${newValue === 1 ? 'agregado al' : 'removido del'} Menú del Día`);
-      // Actualizar estado local sin recargar
-      setProductos(prev =>
-        prev.map(p =>
-          p.idProducto === productoActualizadoCompleto.idProducto ? productoActualizadoCompleto : p
-        )
-      );
     } catch (error) {
       console.error('Error al actualizar menú del día:', error);
       mostrarMensaje('error', 'Error al actualizar el producto');
@@ -115,34 +100,20 @@ const ConfigProductosWeb: React.FC = () => {
   };
 
   const handleSubmit = async (data: ProductoWebCreate | ProductoWebUpdate) => {
-    setGuardando(true);
-
     try {
       if ('idProducto' in data) {
-        const productoActualizado = await actualizarProductoWeb(data.idProducto, data);
+        await actualizarMutation.mutateAsync({ id: data.idProducto, data });
         mostrarMensaje('success', 'Producto actualizado exitosamente');
-        setMostrarFormulario(false);
-        setProductoSeleccionado(null);
-        // Actualizar estado local sin recargar
-        setProductos(prev =>
-          prev.map(producto =>
-            producto.idProducto === productoActualizado.idProducto ? productoActualizado : producto
-          )
-        );
       } else {
-        const nuevoProducto = await crearProductoWeb(data);
+        await crearMutation.mutateAsync(data);
         mostrarMensaje('success', 'Producto creado exitosamente');
-        setMostrarFormulario(false);
-        // Actualizar estado local sin recargar - solo si no es Materia Prima
-        if (nuevoProducto.tipoproducto !== 'Materia Prima') {
-          setProductos(prev => [...prev, nuevoProducto]);
-        }
       }
-    } catch (error: any) {
+      setMostrarFormulario(false);
+      setProductoSeleccionado(null);
+    } catch (error) {
       console.error('Error al guardar producto:', error);
-      mostrarMensaje('error', error.message || 'Error al guardar el producto');
-    } finally {
-      setGuardando(false);
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar el producto';
+      mostrarMensaje('error', errorMessage);
     }
   };
 
@@ -212,7 +183,7 @@ const ConfigProductosWeb: React.FC = () => {
           idnegocio={idnegocio}
           onSubmit={handleSubmit}
           onCancel={handleCancelar}
-          loading={guardando}
+          loading={crearMutation.isPending || actualizarMutation.isPending}
         />
       )}
     </div>
