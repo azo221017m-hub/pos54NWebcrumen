@@ -1,17 +1,21 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerSaludNegocio, type ResumenVentas, type SaludNegocio } from '../services/ventasWebService';
+import { actualizarVentaWeb } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import jsPDF from 'jspdf';
 import { SessionTimer } from '../components/common/SessionTimer';
 import { clearSession } from '../services/sessionService';
-import { obtenerModeradores } from '../services/moderadoresService';
-import type { Moderador } from '../types/moderador.types';
 import { obtenerDetallesPagos } from '../services/pagosService';
-import { verificarTurnoAbierto, cerrarTurnoActual } from '../services/turnosService';
-import type { Turno } from '../types/turno.types';
+import { cerrarTurnoActual } from '../services/turnosService';
 import CierreTurno from '../components/turnos/CierreTurno/CierreTurno';
 import { showSuccessToast, showErrorToast } from '../components/FeedbackToast';
+import { 
+  useVentasWebQuery, 
+  useModeradoresQuery,
+  useResumenVentasQuery,
+  useSaludNegocioQuery,
+  useTurnoAbiertoQuery
+} from '../hooks/queries';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -58,9 +62,6 @@ const getUsuarioFromStorage = (): Usuario | null => {
 
 const TIPO_VENTA_FILTER_ALL = 'TODOS' as const;
 type TipoVentaFilterOption = TipoDeVenta | typeof TIPO_VENTA_FILTER_ALL;
-
-// Refresh interval for sales summary (in milliseconds)
-const SALES_SUMMARY_REFRESH_INTERVAL = 30000; // 30 seconds
 
 // Helper to render icon SVG for sale type as React component
 const TipoVentaIcon: React.FC<{ tipo: TipoDeVenta }> = ({ tipo }) => {
@@ -148,27 +149,36 @@ export const DashboardPage = () => {
   const [showMiOperacionSubmenu, setShowMiOperacionSubmenu] = useState(false);
   const [isScreenLocked, setIsScreenLocked] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [ventasSolicitadas, setVentasSolicitadas] = useState<VentaWebWithDetails[]>([]);
   const [tipoVentaFilter, setTipoVentaFilter] = useState<TipoVentaFilterOption>(TIPO_VENTA_FILTER_ALL);
-  const [moderadores, setModeradores] = useState<Moderador[]>([]);
   const [pagosRegistrados, setPagosRegistrados] = useState<Record<string, number>>({});
-  const [resumenVentas, setResumenVentas] = useState<ResumenVentas>({
+  const [showCierreTurnoModal, setShowCierreTurnoModal] = useState(false);
+  
+  // TanStack Query hooks - reemplaza useState + useEffect + fetch manual
+  const { data: ventasWebData = [], refetch: refetchVentas } = useVentasWebQuery();
+  const { data: moderadores = [] } = useModeradoresQuery(usuario?.idNegocio ?? 0);
+  const { data: resumenVentas = {
     totalCobrado: 0,
     totalOrdenado: 0,
     totalVentasCobradas: 0,
     metaTurno: 0,
     hasTurnoAbierto: false
-  });
-  const [saludNegocio, setSaludNegocio] = useState<SaludNegocio>({
+  }, refetch: refetchResumen } = useResumenVentasQuery();
+  const { data: saludNegocio = {
     totalVentas: 0,
     totalGastos: 0,
     periodo: {
       inicio: '',
       fin: ''
     }
-  });
-  const [turnoAbierto, setTurnoAbierto] = useState<Turno | null>(null);
-  const [showCierreTurnoModal, setShowCierreTurnoModal] = useState(false);
+  } } = useSaludNegocioQuery();
+  const { data: turnoAbierto = null, refetch: refetchTurno } = useTurnoAbiertoQuery();
+  
+  // Filter sales with ORDENADO and ESPERAR status
+  const ventasSolicitadas = useMemo(() => {
+    return ventasWebData.filter(venta => 
+      venta.estadodeventa === 'ORDENADO' || venta.estadodeventa === 'ESPERAR'
+    );
+  }, [ventasWebData]);
 
   const handleLogout = useCallback(() => {
     // Limpiar completamente la sesión
@@ -179,85 +189,35 @@ export const DashboardPage = () => {
     window.location.href = '/login';
   }, []);
 
-  const cargarVentasSolicitadas = useCallback(async () => {
-    try {
-      const ventas = await obtenerVentasWeb();
-      // Filter sales with ORDENADO and ESPERAR status
-      const ventasFiltradas = ventas.filter(venta => 
-        venta.estadodeventa === 'ORDENADO' || venta.estadodeventa === 'ESPERAR'
-      );
-      
-      // Fetch registered payments for MIXTO sales in parallel
-      const ventasMixto = ventasFiltradas.filter(v => v.formadepago === 'MIXTO');
-      const pagosPromises = ventasMixto.map(async (venta) => {
-        try {
-          const detallesPagos = await obtenerDetallesPagos(venta.folioventa);
-          const sumaPagos = detallesPagos.reduce((sum, pago) => sum + Number(pago.totaldepago || 0), 0);
-          return { folioventa: venta.folioventa, sumaPagos };
-        } catch (error) {
-          console.error(`Error al cargar pagos para folio ${venta.folioventa}:`, error);
-          return { folioventa: venta.folioventa, sumaPagos: 0 };
-        }
-      });
-      
-      const pagosResults = await Promise.all(pagosPromises);
-      const pagosMap: Record<string, number> = {};
-      pagosResults.forEach(result => {
-        pagosMap[result.folioventa] = result.sumaPagos;
-      });
-      
-      // Set both states together (React 18 will batch these automatically)
-      setVentasSolicitadas(ventasFiltradas);
-      setPagosRegistrados(pagosMap);
-    } catch (error) {
-      console.error('Error al cargar comandas del día:', error);
-    }
-  }, []);
-
-  const cargarModeradores = useCallback(async () => {
-    if (!usuario?.idNegocio) return;
-    try {
-      const mods = await obtenerModeradores(usuario.idNegocio);
-      setModeradores(mods);
-    } catch (error) {
-      console.error('Error al cargar moderadores:', error);
-    }
-  }, [usuario?.idNegocio]);
-
-  const cargarResumenVentas = useCallback(async () => {
-    try {
-      const resumen = await obtenerResumenVentas();
-      setResumenVentas(resumen);
-    } catch (error) {
-      console.error('Error al cargar resumen de ventas:', error);
-    }
-  }, []);
-
-  const cargarSaludNegocio = useCallback(async () => {
-    try {
-      const salud = await obtenerSaludNegocio();
-      setSaludNegocio(salud);
-    } catch (error) {
-      console.error('Error al cargar salud del negocio:', error);
-    }
-  }, []);
-
-  const verificarTurno = useCallback(async () => {
-    try {
-      const turno = await verificarTurnoAbierto();
-      setTurnoAbierto(turno);
-    } catch (error) {
-      console.error('Error al verificar turno abierto:', error);
-      setTurnoAbierto(null);
-    }
-  }, []);
+  // Cargar pagos registrados para ventas MIXTO
+  const cargarPagosRegistrados = useCallback(async () => {
+    const ventasMixto = ventasSolicitadas.filter(v => v.formadepago === 'MIXTO');
+    const pagosPromises = ventasMixto.map(async (venta) => {
+      try {
+        const detallesPagos = await obtenerDetallesPagos(venta.folioventa);
+        const sumaPagos = detallesPagos.reduce((sum, pago) => sum + Number(pago.totaldepago || 0), 0);
+        return { folioventa: venta.folioventa, sumaPagos };
+      } catch (error) {
+        console.error(`Error al cargar pagos para folio ${venta.folioventa}:`, error);
+        return { folioventa: venta.folioventa, sumaPagos: 0 };
+      }
+    });
+    
+    const pagosResults = await Promise.all(pagosPromises);
+    const pagosMap: Record<string, number> = {};
+    pagosResults.forEach(result => {
+      pagosMap[result.folioventa] = result.sumaPagos;
+    });
+    
+    setPagosRegistrados(pagosMap);
+  }, [ventasSolicitadas]);
 
   const handleStatusChange = async (ventaId: number, newStatus: EstadoDeVenta) => {
     try {
       const result = await actualizarVentaWeb(ventaId, { estadodeventa: newStatus });
       if (result.success) {
-        // Reload sales after status change
-        await cargarVentasSolicitadas();
+        // Reload sales after status change usando TanStack Query
+        await refetchVentas();
       } else {
         alert(`Error al actualizar estado: ${result.message}`);
       }
@@ -283,9 +243,9 @@ export const DashboardPage = () => {
       await cerrarTurnoActual(datosFormulario);
       console.log('Turno cerrado exitosamente');
       setShowCierreTurnoModal(false);
-      // Refresh the turno status and sales summary
-      await verificarTurno();
-      await cargarResumenVentas();
+      // Refresh the turno status and sales summary usando TanStack Query
+      await refetchTurno();
+      await refetchResumen();
       // Show a success message
       showSuccessToast('Turno cerrado exitosamente');
     } catch (error) {
@@ -482,29 +442,9 @@ export const DashboardPage = () => {
       return;
     }
 
-    // Load sales with ORDENADO and ESPERAR status
-    cargarVentasSolicitadas();
-    // Load moderadores for PDF generation
-    cargarModeradores();
-    // Load sales summary for current shift
-    cargarResumenVentas();
-    // Load business health data
-    cargarSaludNegocio();
-
-    // Verify open turno
-    verificarTurno();
-
-    // Refresh sales summary, comandas, turno status, and business health periodically
-    const intervalId = setInterval(() => {
-      cargarVentasSolicitadas();
-      cargarResumenVentas();
-      cargarSaludNegocio();
-      verificarTurno();
-    }, SALES_SUMMARY_REFRESH_INTERVAL);
-
-    return () => clearInterval(intervalId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas, cargarModeradores, cargarResumenVentas, cargarSaludNegocio, and verificarTurno omitted to prevent infinite refresh loop
-  }, [navigate]);
+    // Cargar pagos registrados cuando cambian las ventas
+    cargarPagosRegistrados();
+  }, [navigate, cargarPagosRegistrados]);
 
   // Early return if not authenticated
   const usuarioData = localStorage.getItem('usuario');

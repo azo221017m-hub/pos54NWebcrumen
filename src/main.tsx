@@ -1,8 +1,21 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import './index.css'
 import App from './App.tsx'
 import { setupPromptUpdate } from './services/swUpdateService'
+
+// Configuración de TanStack Query
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30 * 1000, // 30 segundos
+      refetchOnWindowFocus: true,
+      retry: 1,
+    },
+  },
+})
 
 // Suprimir errores de extensiones de navegador que no afectan la funcionalidad
 window.addEventListener('error', (event) => {
@@ -34,7 +47,11 @@ window.addEventListener('unhandledrejection', (event) => {
 // Crear root y renderizar la aplicación
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <QueryClientProvider client={queryClient}>
+      <App />
+      {/* Herramientas de desarrollo solo en modo desarrollo */}
+      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+    </QueryClientProvider>
   </StrictMode>,
 )
 
