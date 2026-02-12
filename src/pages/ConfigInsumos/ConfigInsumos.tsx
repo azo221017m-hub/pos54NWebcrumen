@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Package } from 'lucide-react';
 import type { Insumo, InsumoCreate } from '../../types/insumo.types';
 import {
-  obtenerInsumos,
-  crearInsumo,
-  actualizarInsumo,
-  eliminarInsumo
-} from '../../services/insumosService';
+  useInsumosQuery,
+  useCrearInsumoMutation,
+  useActualizarInsumoMutation,
+  useEliminarInsumoMutation
+} from '../../hooks/queries/useInsumos';
 import ListaInsumos from '../../components/insumos/ListaInsumos/ListaInsumos';
 import FormularioInsumo from '../../components/insumos/FormularioInsumo/FormularioInsumo';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
@@ -15,8 +15,6 @@ import './ConfigInsumos.css';
 
 const ConfigInsumos: React.FC = () => {
   const navigate = useNavigate();
-  const [insumos, setInsumos] = useState<Insumo[]>([]);
-  const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [insumoEditar, setInsumoEditar] = useState<Insumo | null>(null);
   const [mensaje, setMensaje] = useState<{
@@ -24,8 +22,21 @@ const ConfigInsumos: React.FC = () => {
     texto: string;
   } | null>(null);
 
-  // Obtener idnegocio del localStorage
-  const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
+  // Obtener idnegocio del usuario en localStorage
+  const usuarioData = localStorage.getItem('usuario');
+  let usuario = null;
+  try {
+    usuario = usuarioData ? JSON.parse(usuarioData) : null;
+  } catch (error) {
+    console.error('Error parsing usuario from localStorage:', error);
+  }
+  const idnegocio = usuario?.idNegocio || 0;
+
+  // TanStack Query hooks
+  const { data: insumos = [], isLoading: cargando } = useInsumosQuery(idnegocio);
+  const crearMutation = useCrearInsumoMutation();
+  const actualizarMutation = useActualizarInsumoMutation();
+  const eliminarMutation = useEliminarInsumoMutation();
 
   // Helper para extraer mensaje de error
   const extraerMensajeError = (error: unknown, mensajePorDefecto: string): string => {
@@ -36,26 +47,6 @@ const ConfigInsumos: React.FC = () => {
     setMensaje({ tipo, texto });
     setTimeout(() => setMensaje(null), 4000);
   }, []);
-
-  const cargarInsumos = useCallback(async () => {
-    try {
-      console.log('🔷 ConfigInsumos - Iniciando carga de insumos...');
-      setCargando(true);
-      const data = await obtenerInsumos(idnegocio);
-      console.log('🔷 ConfigInsumos - Datos recibidos:', data, 'Es array:', Array.isArray(data));
-      setInsumos(data);
-    } catch (error) {
-      console.error('❌ ConfigInsumos - Error al cargar insumos:', error);
-      mostrarMensaje('error', 'Error al cargar los insumos');
-      setInsumos([]);
-    } finally {
-      setCargando(false);
-    }
-  }, [idnegocio, mostrarMensaje]);
-
-  useEffect(() => {
-    cargarInsumos();
-  }, [cargarInsumos]);
 
   const handleNuevo = () => {
     setInsumoEditar(null);
@@ -74,15 +65,14 @@ const ConfigInsumos: React.FC = () => {
 
   const handleCrear = async (data: InsumoCreate) => {
     try {
-      const nuevoInsumo = await crearInsumo(data);
+      await crearMutation.mutateAsync(data);
       mostrarMensaje('success', 'Insumo creado exitosamente');
       setMostrarFormulario(false);
-      setInsumos(prev => [...prev, nuevoInsumo]);
     } catch (error: unknown) {
       console.error('Error al crear insumo:', error);
       const mensaje = extraerMensajeError(error, 'Error al crear el insumo');
       mostrarMensaje('error', mensaje);
-      throw error; // Re-lanzar para que el formulario no se cierre automáticamente
+      throw error;
     }
   };
 
@@ -90,20 +80,15 @@ const ConfigInsumos: React.FC = () => {
     if (!insumoEditar) return;
 
     try {
-      const insumoActualizado = await actualizarInsumo(insumoEditar.id_insumo, data);
+      await actualizarMutation.mutateAsync({ id: insumoEditar.id_insumo, data });
       mostrarMensaje('success', 'Insumo actualizado exitosamente');
       setMostrarFormulario(false);
       setInsumoEditar(null);
-      setInsumos(prev =>
-        prev.map(ins =>
-          ins.id_insumo === insumoActualizado.id_insumo ? insumoActualizado : ins
-        )
-      );
     } catch (error: unknown) {
       console.error('Error al actualizar insumo:', error);
       const mensaje = extraerMensajeError(error, 'Error al actualizar el insumo');
       mostrarMensaje('error', mensaje);
-      throw error; // Re-lanzar para que el formulario no se cierre automáticamente
+      throw error;
     }
   };
 
@@ -117,9 +102,8 @@ const ConfigInsumos: React.FC = () => {
     }
 
     try {
-      const idEliminado = await eliminarInsumo(id);
+      await eliminarMutation.mutateAsync(id);
       mostrarMensaje('success', 'Insumo eliminado exitosamente');
-      setInsumos(prev => prev.filter(ins => ins.id_insumo !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar insumo:', error);
       mostrarMensaje('error', 'Error al eliminar el insumo');
