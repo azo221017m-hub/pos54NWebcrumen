@@ -2,3 +2,4 @@
 export * from './useGastos';
 export * from './useVentasWeb';
 export * from './useCatalogos';
+export * from './useDashboard';
