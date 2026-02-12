@@ -457,7 +457,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
         subtotal, descuentos, impuestos, 
         totaldeventa, cliente, direcciondeentrega, contactodeentrega, 
         telefonodeentrega, propinadeventa, formadepago, estatusdepago, 
-        detalledescuento, claveturno, idnegocio, usuarioauditoria, fechamodificacionauditoria
+        descripcionmov, claveturno, idnegocio, usuarioauditoria, fechamodificacionauditoria
       ) VALUES (?, ?, ?, NOW(), ?, NOW(), NOW(), NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         ventaData.tipodeventa,

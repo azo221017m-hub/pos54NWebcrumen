@@ -36,6 +36,7 @@ export interface VentaWeb {
   usuarioauditoria: string;
   fechamodificacionauditoria: Date | string;
   detalledescuento: string | null;
+  descripcionmov: string | null;
 }
 
 export interface DetalleVentaWeb {
