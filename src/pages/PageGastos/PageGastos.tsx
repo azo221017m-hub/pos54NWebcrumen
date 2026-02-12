@@ -1,12 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Receipt } from 'lucide-react';
 import type { Gasto, GastoCreate } from '../../types/gastos.types';
-import {
-  obtenerGastos,
-  crearGasto,
-  actualizarGasto
-} from '../../services/gastosService';
+import { useGastosQuery, useCrearGastoMutation, useActualizarGastoMutation } from '../../hooks/queries';
 import ListaGastos from '../../components/gastos/ListaGastos/ListaGastos';
 import FormularioGastos from '../../components/gastos/FormularioGastos/FormularioGastos';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
@@ -14,8 +10,13 @@ import './PageGastos.css';
 
 const PageGastos: React.FC = () => {
   const navigate = useNavigate();
-  const [gastos, setGastos] = useState<Gasto[]>([]);
-  const [cargando, setCargando] = useState(true);
+  
+  // TanStack Query hooks
+  const { data: gastos = [], isLoading: cargando } = useGastosQuery();
+  const crearGastoMutation = useCrearGastoMutation();
+  const actualizarGastoMutation = useActualizarGastoMutation();
+  
+  // UI states
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [gastoEditar, setGastoEditar] = useState<Gasto | null>(null);
   const [mensaje, setMensaje] = useState<{
@@ -28,24 +29,6 @@ const PageGastos: React.FC = () => {
     setTimeout(() => setMensaje(null), 4000);
   }, []);
 
-  const cargarGastos = useCallback(async () => {
-    try {
-      setCargando(true);
-      const data = await obtenerGastos();
-      setGastos(data);
-    } catch (error) {
-      console.error('Error al cargar gastos:', error);
-      mostrarMensaje('error', 'Error al cargar los gastos');
-      setGastos([]);
-    } finally {
-      setCargando(false);
-    }
-  }, [mostrarMensaje]);
-
-  useEffect(() => {
-    cargarGastos();
-  }, [cargarGastos]);
-
   const abrirNuevoGasto = () => {
     setGastoEditar(null);
     setMostrarFormulario(true);
@@ -55,16 +38,15 @@ const PageGastos: React.FC = () => {
     try {
       if (gastoEditar) {
         // Actualizar
-        await actualizarGasto(gastoEditar.idventa, data);
+        await actualizarGastoMutation.mutateAsync({ id: gastoEditar.idventa, data });
         mostrarMensaje('success', 'Gasto actualizado correctamente');
       } else {
         // Crear
-        await crearGasto(data);
+        await crearGastoMutation.mutateAsync(data);
         mostrarMensaje('success', 'Gasto creado correctamente');
       }
       setMostrarFormulario(false);
       setGastoEditar(null);
-      cargarGastos();
     } catch (error: any) {
       console.error('Error al guardar gasto:', error);
       const mensaje = error?.response?.data?.message || 'Error al guardar el gasto';
