@@ -1,20 +1,20 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { actualizarVentaWeb } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import jsPDF from 'jspdf';
 import { SessionTimer } from '../components/common/SessionTimer';
 import { clearSession } from '../services/sessionService';
 import { obtenerDetallesPagos } from '../services/pagosService';
-import { cerrarTurnoActual } from '../services/turnosService';
 import CierreTurno from '../components/turnos/CierreTurno/CierreTurno';
 import { showSuccessToast, showErrorToast } from '../components/FeedbackToast';
 import { 
-  useVentasWebQuery, 
+  useVentasWebQuery,
+  useActualizarVentaWebMutation,
   useModeradoresQuery,
   useResumenVentasQuery,
   useSaludNegocioQuery,
-  useTurnoAbiertoQuery
+  useTurnoAbiertoQuery,
+  useCerrarTurnoMutation
 } from '../hooks/queries';
 import './DashboardPage.css';
 
@@ -173,6 +173,10 @@ export const DashboardPage = () => {
   } } = useSaludNegocioQuery();
   const { data: turnoAbierto = null, refetch: refetchTurno } = useTurnoAbiertoQuery();
   
+  // Mutation hooks
+  const actualizarVentaMutation = useActualizarVentaWebMutation();
+  const cerrarTurnoMutation = useCerrarTurnoMutation();
+  
   // Filter sales with ORDENADO and ESPERAR status
   const ventasSolicitadas = useMemo(() => {
     return ventasWebData.filter(venta => 
@@ -214,7 +218,10 @@ export const DashboardPage = () => {
 
   const handleStatusChange = async (ventaId: number, newStatus: EstadoDeVenta) => {
     try {
-      const result = await actualizarVentaWeb(ventaId, { estadodeventa: newStatus });
+      const result = await actualizarVentaMutation.mutateAsync({ 
+        id: ventaId, 
+        data: { estadodeventa: newStatus } 
+      });
       if (result.success) {
         // Reload sales after status change usando TanStack Query
         await refetchVentas();
@@ -239,8 +246,8 @@ export const DashboardPage = () => {
   const handleCierreTurnoSubmit = async (datosFormulario: DatosCierreTurno) => {
     try {
       console.log('Datos de cierre de turno:', datosFormulario);
-      // Call the service to close the turno
-      await cerrarTurnoActual(datosFormulario);
+      // Call the mutation to close the turno
+      await cerrarTurnoMutation.mutateAsync(datosFormulario);
       console.log('Turno cerrado exitosamente');
       setShowCierreTurnoModal(false);
       // Refresh the turno status and sales summary usando TanStack Query
