@@ -3,6 +3,9 @@ import { verificarTurnoAbierto } from '../../services/turnosService';
 import { obtenerResumenVentas, obtenerSaludNegocio } from '../../services/ventasWebService';
 import { obtenerDetallesPagos } from '../../services/pagosService';
 
+// Constants
+const RESUMEN_VENTAS_REFRESH_INTERVAL = 30000; // 30 segundos
+
 // Query keys
 export const turnosKeys = {
   all: ['turnos'] as const,
@@ -43,7 +46,7 @@ export const useResumenVentasQuery = () => {
     queryKey: resumenVentasKeys.summary(),
     queryFn: obtenerResumenVentas,
     // Refetch cada 30 segundos para mantener datos actualizados
-    refetchInterval: 30000,
+    refetchInterval: RESUMEN_VENTAS_REFRESH_INTERVAL,
   });
 };
 

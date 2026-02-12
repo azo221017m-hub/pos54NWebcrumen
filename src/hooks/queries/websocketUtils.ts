@@ -9,7 +9,7 @@ import { QueryClient } from '@tanstack/react-query';
 
 interface WebSocketInvalidationConfig {
   queryClient: QueryClient;
-  queryKeys?: string[];
+  queryKeys?: readonly string[];
 }
 
 /**
@@ -24,7 +24,7 @@ interface WebSocketInvalidationConfig {
  */
 export const invalidateQueriesFromWebSocket = (
   queryClient: QueryClient,
-  queryKeys?: string[]
+  queryKeys?: readonly string[]
 ) => {
   if (queryKeys && queryKeys.length > 0) {
     // Invalidar solo las queries especificadas

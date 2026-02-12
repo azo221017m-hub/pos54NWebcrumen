@@ -155,14 +155,14 @@ export const DashboardPage = () => {
   
   // TanStack Query hooks - reemplaza useState + useEffect + fetch manual
   const { data: ventasWebData = [], refetch: refetchVentas } = useVentasWebQuery();
-  const { data: moderadores = [] } = useModeradoresQuery(usuario?.idNegocio || 0);
+  const { data: moderadores = [] } = useModeradoresQuery(usuario?.idNegocio ?? 0);
   const { data: resumenVentas = {
     totalCobrado: 0,
     totalOrdenado: 0,
     totalVentasCobradas: 0,
     metaTurno: 0,
     hasTurnoAbierto: false
-  } } = useResumenVentasQuery();
+  }, refetch: refetchResumen } = useResumenVentasQuery();
   const { data: saludNegocio = {
     totalVentas: 0,
     totalGastos: 0,
@@ -245,6 +245,7 @@ export const DashboardPage = () => {
       setShowCierreTurnoModal(false);
       // Refresh the turno status and sales summary usando TanStack Query
       await refetchTurno();
+      await refetchResumen();
       // Show a success message
       showSuccessToast('Turno cerrado exitosamente');
     } catch (error) {
