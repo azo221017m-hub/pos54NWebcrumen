@@ -19,13 +19,19 @@ export const turnosKeys = {
   verifyOpen: () => [...turnosKeys.all, 'verify-open'] as const,
 };
 
+// Constants - Automatic refresh interval for shifts list
+const TURNOS_REFRESH_INTERVAL = 60000; // 60 seconds - shifts are operational data
+
 /**
  * Hook para obtener todos los turnos
+ * Con actualización automática cada 60 segundos (turnos son datos operacionales)
  */
 export const useTurnosQuery = () => {
   return useQuery({
     queryKey: turnosKeys.lists(),
     queryFn: obtenerTurnos,
+    // Actualizar lista de turnos automáticamente cada minuto
+    refetchInterval: TURNOS_REFRESH_INTERVAL,
   });
 };
 
@@ -80,6 +86,9 @@ export const useCerrarTurnoMutation = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: turnosKeys.lists() });
       queryClient.invalidateQueries({ queryKey: turnosKeys.verifyOpen() });
+      // Invalidar también las queries del dashboard al cerrar turno
+      queryClient.invalidateQueries({ queryKey: ['resumenVentas'] });
+      queryClient.invalidateQueries({ queryKey: ['saludNegocio'] });
     },
   });
 };

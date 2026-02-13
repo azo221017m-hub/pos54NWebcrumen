@@ -7,12 +7,15 @@ import App from './App.tsx'
 import { setupPromptUpdate } from './services/swUpdateService'
 
 // Configuración de TanStack Query
+// Configuración optimizada para actualizaciones automáticas de dashboards e indicadores
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 30 * 1000, // 30 segundos
-      refetchOnWindowFocus: true,
-      retry: 1,
+      staleTime: 30 * 1000, // 30 segundos - datos se consideran frescos durante este tiempo
+      refetchOnWindowFocus: true, // Refrescar cuando el usuario vuelve a la ventana
+      refetchOnMount: true, // Refrescar cuando se monta el componente si datos están stale
+      refetchOnReconnect: true, // Refrescar cuando se reconecta a internet
+      retry: 1, // Reintentar una vez en caso de error
     },
   },
 })

@@ -19,13 +19,19 @@ export const ventasWebKeys = {
   detail: (id: number) => [...ventasWebKeys.details(), id] as const,
 };
 
+// Constants - Automatic refresh interval for sales list
+const VENTAS_WEB_REFRESH_INTERVAL = 30000; // 30 seconds
+
 /**
  * Hook para obtener todas las ventas web
+ * Con actualización automática cada 30 segundos para reflejar cambios en tiempo casi real
  */
 export const useVentasWebQuery = () => {
   return useQuery({
     queryKey: ventasWebKeys.lists(),
     queryFn: obtenerVentasWeb,
+    // Actualizar lista de ventas automáticamente cada 30 segundos
+    refetchInterval: VENTAS_WEB_REFRESH_INTERVAL,
   });
 };
 
@@ -51,6 +57,9 @@ export const useCrearVentaWebMutation = () => {
     onSuccess: () => {
       // Invalidar la lista de ventas web para refrescar los datos
       queryClient.invalidateQueries({ queryKey: ventasWebKeys.lists() });
+      // Invalidar también las queries del dashboard que dependen de ventas
+      queryClient.invalidateQueries({ queryKey: ['resumenVentas'] });
+      queryClient.invalidateQueries({ queryKey: ['saludNegocio'] });
     },
   });
 };
@@ -67,6 +76,9 @@ export const useActualizarVentaWebMutation = () => {
       // Invalidar la lista y el detalle específico
       queryClient.invalidateQueries({ queryKey: ventasWebKeys.lists() });
       queryClient.invalidateQueries({ queryKey: ventasWebKeys.detail(variables.id) });
+      // Invalidar también las queries del dashboard que dependen de ventas
+      queryClient.invalidateQueries({ queryKey: ['resumenVentas'] });
+      queryClient.invalidateQueries({ queryKey: ['saludNegocio'] });
     },
   });
 };
@@ -82,6 +94,9 @@ export const useCancelarVentaWebMutation = () => {
     onSuccess: () => {
       // Invalidar la lista de ventas web
       queryClient.invalidateQueries({ queryKey: ventasWebKeys.lists() });
+      // Invalidar también las queries del dashboard que dependen de ventas
+      queryClient.invalidateQueries({ queryKey: ['resumenVentas'] });
+      queryClient.invalidateQueries({ queryKey: ['saludNegocio'] });
     },
   });
 };
@@ -116,6 +131,9 @@ export const useAgregarDetallesMutation = () => {
       // Invalidar la lista y el detalle específico
       queryClient.invalidateQueries({ queryKey: ventasWebKeys.lists() });
       queryClient.invalidateQueries({ queryKey: ventasWebKeys.detail(variables.idventa) });
+      // Invalidar también las queries del dashboard que dependen de ventas
+      queryClient.invalidateQueries({ queryKey: ['resumenVentas'] });
+      queryClient.invalidateQueries({ queryKey: ['saludNegocio'] });
     },
   });
 };
@@ -139,6 +157,9 @@ export const useActualizarEstadoDetalleMutation = () => {
     onSuccess: () => {
       // Invalidar toda la lista de ventas web
       queryClient.invalidateQueries({ queryKey: ventasWebKeys.lists() });
+      // Invalidar también las queries del dashboard que dependen de ventas
+      queryClient.invalidateQueries({ queryKey: ['resumenVentas'] });
+      queryClient.invalidateQueries({ queryKey: ['saludNegocio'] });
     },
   });
 };
