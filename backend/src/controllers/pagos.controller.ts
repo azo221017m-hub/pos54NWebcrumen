@@ -7,6 +7,7 @@ import type {
   PagoMixtoRequest,
   VentaWeb
 } from '../types/ventasWeb.types';
+import { emitToNegocio, SOCKET_EVENTS } from '../config/socket';
 
 /**
  * Helper function to extract table name from cliente field for MESA sales
@@ -161,6 +162,12 @@ export const procesarPagoSimple = async (req: AuthRequest, res: Response): Promi
     const cambio = pagoData.formadepago === 'EFECTIVO' && pagoData.montorecibido 
       ? pagoData.montorecibido - totaldeventa 
       : 0;
+
+    // Emitir eventos WebSocket después de confirmar persistencia
+    emitToNegocio(idnegocio, SOCKET_EVENTS.PAGO_CREATED, { idventa: pagoData.idventa, folioventa: venta.folioventa });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.PAGOS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.VENTAS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.DASHBOARD_UPDATED, { timestamp: new Date() });
 
     res.json({
       success: true,
@@ -390,6 +397,12 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
     }
 
     await connection.commit();
+
+    // Emitir eventos WebSocket después de confirmar persistencia
+    emitToNegocio(idnegocio, SOCKET_EVENTS.PAGO_UPDATED, { idventa: pagoData.idventa, folioventa: venta.folioventa });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.PAGOS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.VENTAS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.DASHBOARD_UPDATED, { timestamp: new Date() });
 
     res.json({
       success: true,

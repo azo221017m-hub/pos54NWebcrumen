@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
+import { emitToNegocio, SOCKET_EVENTS } from '../config/socket';
 
 interface Insumo extends RowDataPacket {
   id_insumo: number;
@@ -318,6 +319,11 @@ export const crearInsumo = async (req: AuthRequest, res: Response): Promise<void
       return;
     }
 
+    // Emitir eventos WebSocket después de confirmar persistencia
+    emitToNegocio(idnegocio, SOCKET_EVENTS.INSUMOS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.INVENTARIO_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.DASHBOARD_UPDATED, { timestamp: new Date() });
+
     res.status(201).json(createdInsumo);
   } catch (error) {
     console.error('Error al crear insumo:', error);
@@ -441,6 +447,11 @@ export const actualizarInsumo = async (req: AuthRequest, res: Response): Promise
       });
       return;
     }
+
+    // Emitir eventos WebSocket después de confirmar persistencia
+    emitToNegocio(idnegocio, SOCKET_EVENTS.INSUMOS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.INVENTARIO_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.DASHBOARD_UPDATED, { timestamp: new Date() });
 
     res.json(updatedInsumo);
   } catch (error) {

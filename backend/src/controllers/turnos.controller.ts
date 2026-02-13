@@ -3,6 +3,7 @@ import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
 import { getMexicoTimeComponents } from '../utils/dateTime';
+import { emitToNegocio, SOCKET_EVENTS } from '../config/socket';
 
 // Constantes
 const REFERENCIA_FONDO_CAJA = 'FONDO de CAJA';
@@ -293,6 +294,12 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
     connection.release();
 
     console.log('Turno creado con ID:', idturno, 'y venta inicial con ID:', idventa);
+    
+    // Emitir eventos WebSocket después de confirmar persistencia
+    emitToNegocio(idnegocio, SOCKET_EVENTS.TURNO_OPENED, { idturno, claveturno });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.TURNOS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.DASHBOARD_UPDATED, { timestamp: new Date() });
+    
     res.status(201).json({ 
       message: 'Turno iniciado exitosamente',
       idturno,
@@ -550,6 +557,12 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
     await connection.commit();
 
     console.log('Turno cerrado exitosamente');
+    
+    // Emitir eventos WebSocket después de confirmar persistencia
+    emitToNegocio(idnegocio, SOCKET_EVENTS.TURNO_CLOSED, { idturno, claveturno });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.TURNOS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.DASHBOARD_UPDATED, { timestamp: new Date() });
+    
     res.json({ 
       message: 'Turno cerrado exitosamente',
       idturno
