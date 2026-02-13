@@ -19,8 +19,8 @@ export const ventasWebKeys = {
   detail: (id: number) => [...ventasWebKeys.details(), id] as const,
 };
 
-// Constants - Intervalo de actualización automática para lista de ventas
-const VENTAS_WEB_REFRESH_INTERVAL = 30000; // 30 segundos
+// Constants - Automatic refresh interval for sales list
+const VENTAS_WEB_REFRESH_INTERVAL = 30000; // 30 seconds
 
 /**
  * Hook para obtener todas las ventas web

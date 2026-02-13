@@ -19,8 +19,8 @@ export const turnosKeys = {
   verifyOpen: () => [...turnosKeys.all, 'verify-open'] as const,
 };
 
-// Constants - Intervalo de actualización automática para lista de turnos
-const TURNOS_REFRESH_INTERVAL = 60000; // 60 segundos - turnos son operacionales
+// Constants - Automatic refresh interval for shifts list
+const TURNOS_REFRESH_INTERVAL = 60000; // 60 seconds - shifts are operational data
 
 /**
  * Hook para obtener todos los turnos

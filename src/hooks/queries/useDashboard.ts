@@ -6,10 +6,10 @@ import { obtenerDetallesPagos } from '../../services/pagosService';
 // Import turnosKeys from useTurnos to avoid duplication
 import { turnosKeys } from './useTurnos';
 
-// Constants - Intervalos de actualización automática para dashboards e indicadores
-const RESUMEN_VENTAS_REFRESH_INTERVAL = 30000; // 30 segundos
-const TURNO_ABIERTO_REFRESH_INTERVAL = 60000; // 60 segundos - verificar estado del turno
-const SALUD_NEGOCIO_REFRESH_INTERVAL = 45000; // 45 segundos - métricas de salud del negocio
+// Constants - Refresh intervals for automatic dashboard and indicator updates
+const RESUMEN_VENTAS_REFRESH_INTERVAL = 30000; // 30 seconds
+const TURNO_ABIERTO_REFRESH_INTERVAL = 60000; // 60 seconds - check shift status
+const SALUD_NEGOCIO_REFRESH_INTERVAL = 45000; // 45 seconds - business health metrics
 
 // Query keys
 export const resumenVentasKeys = {

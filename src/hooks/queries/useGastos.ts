@@ -17,8 +17,8 @@ export const gastosKeys = {
   detail: (id: number) => [...gastosKeys.details(), id] as const,
 };
 
-// Constants - Intervalo de actualización automática para lista de gastos
-const GASTOS_REFRESH_INTERVAL = 45000; // 45 segundos
+// Constants - Automatic refresh interval for expenses list
+const GASTOS_REFRESH_INTERVAL = 45000; // 45 seconds
 
 /**
  * Hook para obtener todos los gastos
