@@ -12,6 +12,7 @@ import type {
   FormaDePago
 } from '../types/ventasWeb.types';
 import { getMexicoTimeComponents } from '../utils/dateTime';
+import { emitToNegocio, SOCKET_EVENTS } from '../config/socket';
 
 // Constantes para validación
 const FORMAS_DE_PAGO_VALIDAS: FormaDePago[] = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'MIXTO', 'sinFP'];
@@ -579,6 +580,11 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
 
     await connection.commit();
 
+    // Emitir eventos WebSocket después de confirmar la transacción
+    emitToNegocio(idnegocio, SOCKET_EVENTS.VENTA_CREATED, { idventa: ventaId, folioventa: folioFinal });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.VENTAS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.DASHBOARD_UPDATED, { timestamp: new Date() });
+
     res.status(201).json({
       success: true,
       message: 'Venta registrada exitosamente',
@@ -710,6 +716,11 @@ export const updateVentaWeb = async (req: AuthRequest, res: Response): Promise<v
 
     await pool.execute(query, values);
 
+    // Emitir eventos WebSocket después de actualizar
+    emitToNegocio(idnegocio, SOCKET_EVENTS.VENTA_UPDATED, { idventa: id });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.VENTAS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.DASHBOARD_UPDATED, { timestamp: new Date() });
+
     res.json({
       success: true,
       message: 'Venta actualizada exitosamente'
@@ -771,6 +782,11 @@ export const deleteVentaWeb = async (req: AuthRequest, res: Response): Promise<v
        WHERE idventa = ? AND idnegocio = ?`,
       [usuarioauditoria, id, idnegocio]
     );
+
+    // Emitir eventos WebSocket después de cancelar
+    emitToNegocio(idnegocio, SOCKET_EVENTS.VENTA_CANCELLED, { idventa: id });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.VENTAS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.DASHBOARD_UPDATED, { timestamp: new Date() });
 
     res.json({
       success: true,
@@ -845,6 +861,10 @@ export const updateDetalleEstado = async (req: AuthRequest, res: Response): Prom
        WHERE iddetalleventa = ? AND idventa = ? AND idnegocio = ?`,
       [estadodetalle, usuarioauditoria, iddetalle, id, idnegocio]
     );
+
+    // Emitir eventos WebSocket después de actualizar el detalle
+    emitToNegocio(idnegocio, SOCKET_EVENTS.VENTA_UPDATED, { idventa: id, iddetalle });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.VENTAS_UPDATED, { timestamp: new Date() });
 
     res.json({
       success: true,
