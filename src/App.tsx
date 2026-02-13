@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import AppRouter from './router/AppRouter';
 import UpdateNotification from './components/UpdateNotification';
 import FeedbackToast from './components/FeedbackToast';
+import WebSocketListener from './components/WebSocketListener';
 import { initSessionMonitoring, setupSessionClearOnReload } from './services/sessionService';
 import { setupActivityTracking } from './services/activityRefreshService';
 import './App.css';
@@ -36,6 +37,7 @@ function App() {
 
   return (
     <>
+      <WebSocketListener />
       <AppRouter />
       <UpdateNotification />
       <FeedbackToast />

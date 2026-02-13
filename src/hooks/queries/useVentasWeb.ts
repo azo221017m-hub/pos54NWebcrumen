@@ -9,29 +9,17 @@ import {
   actualizarEstadoDetalle
 } from '../../services/ventasWebService';
 import type { VentaWebCreate, VentaWebUpdate, EstadoDetalle } from '../../types/ventasWeb.types';
-
-// Query keys
-export const ventasWebKeys = {
-  all: ['ventasWeb'] as const,
-  lists: () => [...ventasWebKeys.all, 'list'] as const,
-  list: (filters?: Record<string, unknown>) => [...ventasWebKeys.lists(), { filters }] as const,
-  details: () => [...ventasWebKeys.all, 'detail'] as const,
-  detail: (id: number) => [...ventasWebKeys.details(), id] as const,
-};
-
-// Constants - Automatic refresh interval for sales list
-const VENTAS_WEB_REFRESH_INTERVAL = 30000; // 30 seconds
+import { ventasWebKeys, dashboardKeys } from '../../config/queryKeys';
 
 /**
  * Hook para obtener todas las ventas web
- * Con actualización automática cada 30 segundos para reflejar cambios en tiempo casi real
+ * Actualización automática mediante WebSocket (sin polling)
  */
 export const useVentasWebQuery = () => {
   return useQuery({
     queryKey: ventasWebKeys.lists(),
     queryFn: obtenerVentasWeb,
-    // Actualizar lista de ventas automáticamente cada 30 segundos
-    refetchInterval: VENTAS_WEB_REFRESH_INTERVAL,
+    // NO usar refetchInterval - las actualizaciones vienen por WebSocket
   });
 };
 
@@ -55,11 +43,12 @@ export const useCrearVentaWebMutation = () => {
   return useMutation({
     mutationFn: (data: VentaWebCreate) => crearVentaWeb(data),
     onSuccess: () => {
-      // Invalidar la lista de ventas web para refrescar los datos
+      // Las queries se invalidarán automáticamente por WebSocket
+      // No es necesario invalidar manualmente aquí
+      // Pero lo dejamos como fallback por si WebSocket falla
       queryClient.invalidateQueries({ queryKey: ventasWebKeys.lists() });
-      // Invalidar también las queries del dashboard que dependen de ventas
-      queryClient.invalidateQueries({ queryKey: ['resumenVentas'] });
-      queryClient.invalidateQueries({ queryKey: ['saludNegocio'] });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.resumenVentas() });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.saludNegocio() });
     },
   });
 };
@@ -73,11 +62,11 @@ export const useActualizarVentaWebMutation = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: VentaWebUpdate }) => actualizarVentaWeb(id, data),
     onSuccess: (_, variables) => {
-      // Invalidar la lista y el detalle específico
+      // Las queries se invalidarán automáticamente por WebSocket
+      // Esto es solo un fallback
       queryClient.invalidateQueries({ queryKey: ventasWebKeys.lists() });
       queryClient.invalidateQueries({ queryKey: ventasWebKeys.detail(variables.id) });
-      // Invalidar también las queries del dashboard que dependen de ventas
-      queryClient.invalidateQueries({ queryKey: ['resumenVentas'] });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.resumenVentas() });
       queryClient.invalidateQueries({ queryKey: ['saludNegocio'] });
     },
   });
@@ -92,11 +81,10 @@ export const useCancelarVentaWebMutation = () => {
   return useMutation({
     mutationFn: (id: number) => cancelarVentaWeb(id),
     onSuccess: () => {
-      // Invalidar la lista de ventas web
+      // Las queries se invalidarán automáticamente por WebSocket
       queryClient.invalidateQueries({ queryKey: ventasWebKeys.lists() });
-      // Invalidar también las queries del dashboard que dependen de ventas
-      queryClient.invalidateQueries({ queryKey: ['resumenVentas'] });
-      queryClient.invalidateQueries({ queryKey: ['saludNegocio'] });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.resumenVentas() });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.saludNegocio() });
     },
   });
 };
@@ -128,12 +116,11 @@ export const useAgregarDetallesMutation = () => {
       estadodetalle: EstadoDetalle;
     }) => agregarDetallesAVenta(idventa, detalles, estadodetalle),
     onSuccess: (_, variables) => {
-      // Invalidar la lista y el detalle específico
+      // Las queries se invalidarán automáticamente por WebSocket
       queryClient.invalidateQueries({ queryKey: ventasWebKeys.lists() });
       queryClient.invalidateQueries({ queryKey: ventasWebKeys.detail(variables.idventa) });
-      // Invalidar también las queries del dashboard que dependen de ventas
-      queryClient.invalidateQueries({ queryKey: ['resumenVentas'] });
-      queryClient.invalidateQueries({ queryKey: ['saludNegocio'] });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.resumenVentas() });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.saludNegocio() });
     },
   });
 };
@@ -155,10 +142,9 @@ export const useActualizarEstadoDetalleMutation = () => {
       estadodetalle: EstadoDetalle;
     }) => actualizarEstadoDetalle(idVenta, idDetalle, estadodetalle),
     onSuccess: () => {
-      // Invalidar toda la lista de ventas web
+      // Las queries se invalidarán automáticamente por WebSocket
       queryClient.invalidateQueries({ queryKey: ventasWebKeys.lists() });
-      // Invalidar también las queries del dashboard que dependen de ventas
-      queryClient.invalidateQueries({ queryKey: ['resumenVentas'] });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.resumenVentas() });
       queryClient.invalidateQueries({ queryKey: ['saludNegocio'] });
     },
   });

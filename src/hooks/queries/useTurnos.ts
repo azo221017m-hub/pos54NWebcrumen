@@ -8,30 +8,17 @@ import {
   cerrarTurnoActual,
 } from '../../services/turnosService';
 import type { TurnoUpdate } from '../../types/turno.types';
-
-// Query keys - reuse from useDashboard but export for use in mutations
-export const turnosKeys = {
-  all: ['turnos'] as const,
-  lists: () => [...turnosKeys.all, 'list'] as const,
-  list: (filters?: Record<string, unknown>) => [...turnosKeys.lists(), { filters }] as const,
-  details: () => [...turnosKeys.all, 'detail'] as const,
-  detail: (id: number) => [...turnosKeys.details(), id] as const,
-  verifyOpen: () => [...turnosKeys.all, 'verify-open'] as const,
-};
-
-// Constants - Automatic refresh interval for shifts list
-const TURNOS_REFRESH_INTERVAL = 60000; // 60 seconds - shifts are operational data
+import { turnosKeys, dashboardKeys } from '../../config/queryKeys';
 
 /**
  * Hook para obtener todos los turnos
- * Con actualización automática cada 60 segundos (turnos son datos operacionales)
+ * Actualización automática mediante WebSocket (sin polling)
  */
 export const useTurnosQuery = () => {
   return useQuery({
     queryKey: turnosKeys.lists(),
     queryFn: obtenerTurnos,
-    // Actualizar lista de turnos automáticamente cada minuto
-    refetchInterval: TURNOS_REFRESH_INTERVAL,
+    // NO usar refetchInterval - las actualizaciones vienen por WebSocket
   });
 };
 
@@ -55,8 +42,9 @@ export const useCrearTurnoMutation = () => {
     mutationFn: ({ metaturno, fondoCaja }: { metaturno?: number | null; fondoCaja?: number | null }) => 
       crearTurno(metaturno, fondoCaja),
     onSuccess: () => {
+      // Las queries se invalidarán automáticamente por WebSocket
       queryClient.invalidateQueries({ queryKey: turnosKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: turnosKeys.verifyOpen() });
+      queryClient.invalidateQueries({ queryKey: turnosKeys.abierto() });
     },
   });
 };
@@ -69,9 +57,10 @@ export const useActualizarTurnoMutation = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: TurnoUpdate }) => actualizarTurno(id, data),
     onSuccess: (_, variables) => {
+      // Las queries se invalidarán automáticamente por WebSocket
       queryClient.invalidateQueries({ queryKey: turnosKeys.lists() });
       queryClient.invalidateQueries({ queryKey: turnosKeys.detail(variables.id) });
-      queryClient.invalidateQueries({ queryKey: turnosKeys.verifyOpen() });
+      queryClient.invalidateQueries({ queryKey: turnosKeys.abierto() });
     },
   });
 };
@@ -84,11 +73,11 @@ export const useCerrarTurnoMutation = () => {
   return useMutation({
     mutationFn: (datosFormulario?: any) => cerrarTurnoActual(datosFormulario),
     onSuccess: () => {
+      // Las queries se invalidarán automáticamente por WebSocket
       queryClient.invalidateQueries({ queryKey: turnosKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: turnosKeys.verifyOpen() });
-      // Invalidar también las queries del dashboard al cerrar turno
-      queryClient.invalidateQueries({ queryKey: ['resumenVentas'] });
-      queryClient.invalidateQueries({ queryKey: ['saludNegocio'] });
+      queryClient.invalidateQueries({ queryKey: turnosKeys.abierto() });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.resumenVentas() });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.saludNegocio() });
     },
   });
 };
@@ -101,6 +90,7 @@ export const useEliminarTurnoMutation = () => {
   return useMutation({
     mutationFn: (id: number) => eliminarTurno(id),
     onSuccess: () => {
+      // Las queries se invalidarán automáticamente por WebSocket
       queryClient.invalidateQueries({ queryKey: turnosKeys.lists() });
     },
   });
