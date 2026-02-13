@@ -67,7 +67,7 @@ export const useActualizarVentaWebMutation = () => {
       queryClient.invalidateQueries({ queryKey: ventasWebKeys.lists() });
       queryClient.invalidateQueries({ queryKey: ventasWebKeys.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: dashboardKeys.resumenVentas() });
-      queryClient.invalidateQueries({ queryKey: ['saludNegocio'] });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.saludNegocio() });
     },
   });
 };
@@ -145,7 +145,7 @@ export const useActualizarEstadoDetalleMutation = () => {
       // Las queries se invalidarán automáticamente por WebSocket
       queryClient.invalidateQueries({ queryKey: ventasWebKeys.lists() });
       queryClient.invalidateQueries({ queryKey: dashboardKeys.resumenVentas() });
-      queryClient.invalidateQueries({ queryKey: ['saludNegocio'] });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.saludNegocio() });
     },
   });
 };
