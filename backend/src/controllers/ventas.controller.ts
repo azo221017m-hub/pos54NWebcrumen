@@ -2,6 +2,7 @@ import type { Response } from 'express';
 import { pool } from '../config/db';
 import type { RowDataPacket, ResultSetHeader } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
+import { emitToNegocio, SOCKET_EVENTS } from '../config/socket';
 
 interface Venta extends RowDataPacket {
   id: number;
@@ -179,6 +180,12 @@ export const createVenta = async (req: AuthRequest, res: Response): Promise<void
     }
 
     await connection.commit();
+
+    // Emitir eventos WebSocket después de confirmar la transacción
+    emitToNegocio(idnegocio, SOCKET_EVENTS.VENTA_CREATED, { id: ventaId });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.VENTAS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.DASHBOARD_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.INVENTARIO_UPDATED, { timestamp: new Date() });
 
     res.status(201).json({
       success: true,
