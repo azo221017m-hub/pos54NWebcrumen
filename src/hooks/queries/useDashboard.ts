@@ -6,8 +6,10 @@ import { obtenerDetallesPagos } from '../../services/pagosService';
 // Import turnosKeys from useTurnos to avoid duplication
 import { turnosKeys } from './useTurnos';
 
-// Constants
+// Constants - Intervalos de actualización automática para dashboards e indicadores
 const RESUMEN_VENTAS_REFRESH_INTERVAL = 30000; // 30 segundos
+const TURNO_ABIERTO_REFRESH_INTERVAL = 60000; // 60 segundos - verificar estado del turno
+const SALUD_NEGOCIO_REFRESH_INTERVAL = 45000; // 45 segundos - métricas de salud del negocio
 
 // Query keys
 export const resumenVentasKeys = {
@@ -28,11 +30,14 @@ export const pagosKeys = {
 
 /**
  * Hook para verificar si hay un turno abierto
+ * Con actualización automática cada 60 segundos
  */
 export const useTurnoAbiertoQuery = () => {
   return useQuery({
     queryKey: turnosKeys.verifyOpen(),
     queryFn: verificarTurnoAbierto,
+    // Verificar estado del turno automáticamente cada minuto
+    refetchInterval: TURNO_ABIERTO_REFRESH_INTERVAL,
   });
 };
 
@@ -50,11 +55,14 @@ export const useResumenVentasQuery = () => {
 
 /**
  * Hook para obtener la salud del negocio
+ * Con actualización automática cada 45 segundos
  */
 export const useSaludNegocioQuery = () => {
   return useQuery({
     queryKey: saludNegocioKeys.health(),
     queryFn: obtenerSaludNegocio,
+    // Actualizar métricas de salud del negocio cada 45 segundos
+    refetchInterval: SALUD_NEGOCIO_REFRESH_INTERVAL,
   });
 };
 

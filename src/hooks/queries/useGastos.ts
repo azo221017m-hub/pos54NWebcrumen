@@ -17,13 +17,19 @@ export const gastosKeys = {
   detail: (id: number) => [...gastosKeys.details(), id] as const,
 };
 
+// Constants - Intervalo de actualización automática para lista de gastos
+const GASTOS_REFRESH_INTERVAL = 45000; // 45 segundos
+
 /**
  * Hook para obtener todos los gastos
+ * Con actualización automática cada 45 segundos
  */
 export const useGastosQuery = () => {
   return useQuery({
     queryKey: gastosKeys.lists(),
     queryFn: obtenerGastos,
+    // Actualizar lista de gastos automáticamente cada 45 segundos
+    refetchInterval: GASTOS_REFRESH_INTERVAL,
   });
 };
 
@@ -49,6 +55,8 @@ export const useCrearGastoMutation = () => {
     onSuccess: () => {
       // Invalidar la lista de gastos para refrescar los datos
       queryClient.invalidateQueries({ queryKey: gastosKeys.lists() });
+      // Invalidar también las queries del dashboard que dependen de gastos
+      queryClient.invalidateQueries({ queryKey: ['saludNegocio'] });
     },
   });
 };
@@ -65,6 +73,8 @@ export const useActualizarGastoMutation = () => {
       // Invalidar la lista y el detalle específico
       queryClient.invalidateQueries({ queryKey: gastosKeys.lists() });
       queryClient.invalidateQueries({ queryKey: gastosKeys.detail(variables.id) });
+      // Invalidar también las queries del dashboard que dependen de gastos
+      queryClient.invalidateQueries({ queryKey: ['saludNegocio'] });
     },
   });
 };
@@ -80,6 +90,8 @@ export const useEliminarGastoMutation = () => {
     onSuccess: () => {
       // Invalidar la lista de gastos
       queryClient.invalidateQueries({ queryKey: gastosKeys.lists() });
+      // Invalidar también las queries del dashboard que dependen de gastos
+      queryClient.invalidateQueries({ queryKey: ['saludNegocio'] });
     },
   });
 };
