@@ -4,6 +4,35 @@ import type { PagoSimpleRequest, PagoMixtoRequest } from '../../types/ventasWeb.
 import { ventasWebKeys, dashboardKeys, pagosKeys } from '../../config/queryKeys';
 
 /**
+ * Helper function to invalidate all payment-related queries
+ * This ensures all UI components refresh with the latest data after a payment
+ */
+const invalidatePaymentQueries = (
+  queryClient: ReturnType<typeof useQueryClient>,
+  idventa?: number,
+  folioventa?: string
+) => {
+  // Invalidar lista de ventas web (comandas del día)
+  queryClient.invalidateQueries({ queryKey: ventasWebKeys.lists() });
+  
+  // Invalidar resumen de ventas en dashboard
+  queryClient.invalidateQueries({ queryKey: dashboardKeys.resumenVentas() });
+  
+  // Invalidar salud del negocio
+  queryClient.invalidateQueries({ queryKey: dashboardKeys.saludNegocio() });
+  
+  // Si tenemos el ID de venta, invalidar también el detalle específico
+  if (idventa) {
+    queryClient.invalidateQueries({ queryKey: ventasWebKeys.detail(idventa) });
+  }
+  
+  // Invalidar detalles de pagos si tenemos folioventa
+  if (folioventa) {
+    queryClient.invalidateQueries({ queryKey: pagosKeys.detail(folioventa) });
+  }
+};
+
+/**
  * Hook para procesar pagos simples (EFECTIVO o TRANSFERENCIA)
  * Invalida automáticamente las queries relevantes tras un pago exitoso
  */
@@ -15,29 +44,16 @@ export const useProcesarPagoSimpleMutation = () => {
     onSuccess: (result) => {
       if (result.success) {
         console.log('✅ Pago simple exitoso, invalidando queries...');
-        
-        // Invalidar lista de ventas web (comandas del día)
-        queryClient.invalidateQueries({ queryKey: ventasWebKeys.lists() });
-        
-        // Invalidar resumen de ventas en dashboard
-        queryClient.invalidateQueries({ queryKey: dashboardKeys.resumenVentas() });
-        
-        // Invalidar salud del negocio
-        queryClient.invalidateQueries({ queryKey: dashboardKeys.saludNegocio() });
-        
-        // Si tenemos el ID de venta, invalidar también el detalle específico
-        if (result.data?.idventa) {
-          queryClient.invalidateQueries({ queryKey: ventasWebKeys.detail(result.data.idventa) });
-        }
-        
-        // Invalidar detalles de pagos si tenemos folioventa
-        if (result.data?.folioventa) {
-          queryClient.invalidateQueries({ queryKey: pagosKeys.detail(result.data.folioventa) });
-        }
+        invalidatePaymentQueries(
+          queryClient,
+          result.data?.idventa,
+          result.data?.folioventa
+        );
       }
     },
-    onError: (error: any) => {
-      console.error('❌ Error en mutación de pago simple:', error);
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      console.error('❌ Error en mutación de pago simple:', errorMessage);
     },
   });
 };
@@ -54,29 +70,16 @@ export const useProcesarPagoMixtoMutation = () => {
     onSuccess: (result) => {
       if (result.success) {
         console.log('✅ Pago mixto exitoso, invalidando queries...');
-        
-        // Invalidar lista de ventas web (comandas del día)
-        queryClient.invalidateQueries({ queryKey: ventasWebKeys.lists() });
-        
-        // Invalidar resumen de ventas en dashboard
-        queryClient.invalidateQueries({ queryKey: dashboardKeys.resumenVentas() });
-        
-        // Invalidar salud del negocio
-        queryClient.invalidateQueries({ queryKey: dashboardKeys.saludNegocio() });
-        
-        // Si tenemos el ID de venta, invalidar también el detalle específico
-        if (result.data?.idventa) {
-          queryClient.invalidateQueries({ queryKey: ventasWebKeys.detail(result.data.idventa) });
-        }
-        
-        // Invalidar detalles de pagos si tenemos folioventa
-        if (result.data?.folioventa) {
-          queryClient.invalidateQueries({ queryKey: pagosKeys.detail(result.data.folioventa) });
-        }
+        invalidatePaymentQueries(
+          queryClient,
+          result.data?.idventa,
+          result.data?.folioventa
+        );
       }
     },
-    onError: (error: any) => {
-      console.error('❌ Error en mutación de pago mixto:', error);
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      console.error('❌ Error en mutación de pago mixto:', errorMessage);
     },
   });
 };
