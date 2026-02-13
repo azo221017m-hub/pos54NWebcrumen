@@ -3,6 +3,7 @@ import { pool } from '../config/db';
 import type { RowDataPacket, ResultSetHeader } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
 import type { Gasto, GastoCreate, GastoUpdate } from '../types/gastos.types';
+import { emitToNegocio, SOCKET_EVENTS } from '../config/socket';
 
 // Helper function to generate folio in format AAAAMMDDHHMMSS
 function generarFolioGasto(): string {
@@ -248,6 +249,11 @@ export async function crearGasto(req: AuthRequest, res: Response): Promise<void>
       [result.insertId]
     );
 
+    // Emitir eventos WebSocket después de confirmar persistencia
+    emitToNegocio(idnegocio, SOCKET_EVENTS.GASTO_CREATED, { idgasto: result.insertId });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.GASTOS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.DASHBOARD_UPDATED, { timestamp: new Date() });
+
     res.status(201).json({
       success: true,
       data: gastoCreado[0],
@@ -364,6 +370,11 @@ export async function actualizarGasto(req: AuthRequest, res: Response): Promise<
       [id]
     );
 
+    // Emitir eventos WebSocket después de confirmar persistencia
+    emitToNegocio(idnegocio, SOCKET_EVENTS.GASTO_UPDATED, { idgasto: id });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.GASTOS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.DASHBOARD_UPDATED, { timestamp: new Date() });
+
     res.json({
       success: true,
       data: gastoActualizado[0],
@@ -414,6 +425,11 @@ export async function eliminarGasto(req: AuthRequest, res: Response): Promise<vo
       'DELETE FROM tblposcrumenwebventas WHERE idventa = ?',
       [id]
     );
+
+    // Emitir eventos WebSocket después de confirmar persistencia
+    emitToNegocio(idnegocio, SOCKET_EVENTS.GASTO_DELETED, { idgasto: id });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.GASTOS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.DASHBOARD_UPDATED, { timestamp: new Date() });
 
     res.json({
       success: true,

@@ -2,6 +2,7 @@ import type { Response } from 'express';
 import { pool } from '../config/db';
 import type { RowDataPacket, ResultSetHeader } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
+import { emitToNegocio, SOCKET_EVENTS } from '../config/socket';
 
 interface Producto extends RowDataPacket {
   id: number;
@@ -127,6 +128,10 @@ export const createProducto = async (req: AuthRequest, res: Response): Promise<v
       [nombre, descripcion || null, precio, costo || 0, codigo_barras || null, categoria_id, idnegocio]
     );
 
+    // Emitir eventos WebSocket después de confirmar persistencia
+    emitToNegocio(idnegocio, SOCKET_EVENTS.PRODUCTOS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.DASHBOARD_UPDATED, { timestamp: new Date() });
+
     res.status(201).json({
       success: true,
       message: 'Producto creado exitosamente',
@@ -176,6 +181,10 @@ export const updateProducto = async (req: AuthRequest, res: Response): Promise<v
       });
       return;
     }
+
+    // Emitir eventos WebSocket después de confirmar persistencia
+    emitToNegocio(idnegocio, SOCKET_EVENTS.PRODUCTOS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(idnegocio, SOCKET_EVENTS.DASHBOARD_UPDATED, { timestamp: new Date() });
 
     res.json({
       success: true,

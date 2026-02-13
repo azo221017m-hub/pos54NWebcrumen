@@ -10,6 +10,7 @@ import {
   DetalleMovimiento
 } from '../types/movimientos.types';
 import { formatMySQLDateTime } from '../utils/dateTime';
+import { emitToNegocio, SOCKET_EVENTS } from '../config/socket';
 
 // GET /api/movimientos - Obtener todos los movimientos
 export const obtenerMovimientos = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -252,6 +253,13 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
       ...movimientoCreado[0],
       detalles
     };
+
+    // Emitir eventos WebSocket después de confirmar persistencia
+    if (idNegocio) {
+      emitToNegocio(idNegocio, SOCKET_EVENTS.MOVIMIENTO_CREATED, { idmovimiento: idMovimiento });
+      emitToNegocio(idNegocio, SOCKET_EVENTS.MOVIMIENTOS_UPDATED, { timestamp: new Date() });
+      emitToNegocio(idNegocio, SOCKET_EVENTS.DASHBOARD_UPDATED, { timestamp: new Date() });
+    }
 
     res.status(201).json({
       success: true,
@@ -756,6 +764,12 @@ export const aplicarMovimiento = async (req: AuthRequest, res: Response): Promis
       ...movimientoActualizado[0],
       detalles: detallesActualizados
     };
+
+    // Emitir eventos WebSocket después de confirmar persistencia
+    emitToNegocio(movimiento.idnegocio, SOCKET_EVENTS.MOVIMIENTOS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(movimiento.idnegocio, SOCKET_EVENTS.INVENTARIO_UPDATED, { timestamp: new Date() });
+    emitToNegocio(movimiento.idnegocio, SOCKET_EVENTS.INSUMOS_UPDATED, { timestamp: new Date() });
+    emitToNegocio(movimiento.idnegocio, SOCKET_EVENTS.DASHBOARD_UPDATED, { timestamp: new Date() });
 
     res.status(200).json({
       success: true,
