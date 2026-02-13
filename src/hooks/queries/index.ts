@@ -14,3 +14,4 @@ export * from './useClientes';
 export * from './useDescuentos';
 export * from './useTurnos';
 export * from './useGrupoMovimientos';
+export * from './usePagos';

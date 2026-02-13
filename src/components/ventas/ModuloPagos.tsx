@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import './ModuloPagos.css';
 import { obtenerDescuentos } from '../../services/descuentosService';
-import { procesarPagoSimple, procesarPagoMixto, obtenerDetallesPagos } from '../../services/pagosService';
+import { obtenerDetallesPagos } from '../../services/pagosService';
+import { useProcesarPagoSimpleMutation, useProcesarPagoMixtoMutation } from '../../hooks/queries';
 import type { Descuento } from '../../types/descuento.types';
 import type { DetallePago, TipoDeVenta } from '../../types/ventasWeb.types';
 
@@ -58,6 +59,10 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   
   // Ref for the flash timeout to allow cleanup
   const flashTimeoutRef = useRef<number | null>(null);
+
+  // Mutation hooks for payment processing
+  const procesarPagoSimpleMutation = useProcesarPagoSimpleMutation();
+  const procesarPagoMixtoMutation = useProcesarPagoMixtoMutation();
 
   const cargarDescuentos = useCallback(async () => {
     try {
@@ -288,8 +293,8 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
           return;
         }
         
-        // Process simple payment - EFECTIVO
-        const resultado = await procesarPagoSimple({
+        // Process simple payment - EFECTIVO using mutation
+        const resultado = await procesarPagoSimpleMutation.mutateAsync({
           idventa: ventaId,
           formadepago: 'EFECTIVO',
           importedepago: totalAPagar,
@@ -319,8 +324,8 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
           return;
         }
         
-        // Process simple payment - TRANSFERENCIA
-        const resultado = await procesarPagoSimple({
+        // Process simple payment - TRANSFERENCIA using mutation
+        const resultado = await procesarPagoSimpleMutation.mutateAsync({
           idventa: ventaId,
           formadepago: 'TRANSFERENCIA',
           importedepago: totalAPagar,
@@ -388,8 +393,8 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
           referencia: pago.referencia || null
         }));
 
-        // Process mixed payment
-        const resultado = await procesarPagoMixto({
+        // Process mixed payment using mutation
+        const resultado = await procesarPagoMixtoMutation.mutateAsync({
           idventa: ventaId,
           detallesPagos,
           descuento,
