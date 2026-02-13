@@ -7,6 +7,7 @@ import {
   eliminarProveedor,
 } from '../../services/proveedoresService';
 import type { ProveedorCreate, ProveedorUpdate } from '../../types/proveedor.types';
+import { invalidateInventoryRelatedQueries } from './queryInvalidation';
 
 // Query keys
 export const proveedoresKeys = {
@@ -47,6 +48,8 @@ export const useCrearProveedorMutation = () => {
     mutationFn: (data: ProveedorCreate) => crearProveedor(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: proveedoresKeys.lists() });
+      // Invalidar queries del dashboard que dependen de proveedores
+      invalidateInventoryRelatedQueries(queryClient);
     },
   });
 };
@@ -61,6 +64,8 @@ export const useActualizarProveedorMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: proveedoresKeys.lists() });
       queryClient.invalidateQueries({ queryKey: proveedoresKeys.detail(variables.id) });
+      // Invalidar queries del dashboard que dependen de proveedores
+      invalidateInventoryRelatedQueries(queryClient);
     },
   });
 };
@@ -74,6 +79,8 @@ export const useEliminarProveedorMutation = () => {
     mutationFn: (id: number) => eliminarProveedor(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: proveedoresKeys.lists() });
+      // Invalidar queries del dashboard que dependen de proveedores
+      invalidateInventoryRelatedQueries(queryClient);
     },
   });
 };

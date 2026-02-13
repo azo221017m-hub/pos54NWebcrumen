@@ -7,6 +7,7 @@ import {
   eliminarMesa,
 } from '../../services/mesasService';
 import type { MesaCreate, MesaUpdate } from '../../types/mesa.types';
+import { invalidateSalesRelatedQueries } from './queryInvalidation';
 
 // Query keys
 export const mesasKeys = {
@@ -47,6 +48,8 @@ export const useCrearMesaMutation = () => {
     mutationFn: (data: MesaCreate) => crearMesa(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mesasKeys.lists() });
+      // Invalidar queries del dashboard que dependen de mesas
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };
@@ -61,6 +64,8 @@ export const useActualizarMesaMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: mesasKeys.lists() });
       queryClient.invalidateQueries({ queryKey: mesasKeys.detail(variables.id) });
+      // Invalidar queries del dashboard que dependen de mesas
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };
@@ -74,6 +79,8 @@ export const useEliminarMesaMutation = () => {
     mutationFn: (id: number) => eliminarMesa(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mesasKeys.lists() });
+      // Invalidar queries del dashboard que dependen de mesas
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };

@@ -7,6 +7,7 @@ import {
   eliminarReceta,
 } from '../../services/recetasService';
 import type { RecetaCreate, RecetaUpdate } from '../../types/receta.types';
+import { invalidateInventoryRelatedQueries } from './queryInvalidation';
 
 // Query keys
 export const recetasKeys = {
@@ -48,6 +49,8 @@ export const useCrearRecetaMutation = () => {
     mutationFn: (data: RecetaCreate) => crearReceta(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: recetasKeys.lists() });
+      // Invalidar queries del dashboard que dependen de recetas
+      invalidateInventoryRelatedQueries(queryClient);
     },
   });
 };
@@ -62,6 +65,8 @@ export const useActualizarRecetaMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: recetasKeys.lists() });
       queryClient.invalidateQueries({ queryKey: recetasKeys.detail(variables.id) });
+      // Invalidar queries del dashboard que dependen de recetas
+      invalidateInventoryRelatedQueries(queryClient);
     },
   });
 };
@@ -75,6 +80,8 @@ export const useEliminarRecetaMutation = () => {
     mutationFn: (id: number) => eliminarReceta(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: recetasKeys.lists() });
+      // Invalidar queries del dashboard que dependen de recetas
+      invalidateInventoryRelatedQueries(queryClient);
     },
   });
 };

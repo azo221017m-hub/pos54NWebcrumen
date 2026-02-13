@@ -7,6 +7,7 @@ import {
   eliminarCliente,
 } from '../../services/clientesService';
 import type { ClienteCreate, ClienteUpdate } from '../../types/cliente.types';
+import { invalidateSalesRelatedQueries } from './queryInvalidation';
 
 // Query keys
 export const clientesKeys = {
@@ -47,6 +48,8 @@ export const useCrearClienteMutation = () => {
     mutationFn: (data: ClienteCreate) => crearCliente(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: clientesKeys.lists() });
+      // Invalidar queries del dashboard que dependen de clientes
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };
@@ -61,6 +64,8 @@ export const useActualizarClienteMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: clientesKeys.lists() });
       queryClient.invalidateQueries({ queryKey: clientesKeys.detail(variables.id) });
+      // Invalidar queries del dashboard que dependen de clientes
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };
@@ -74,6 +79,8 @@ export const useEliminarClienteMutation = () => {
     mutationFn: (id: number) => eliminarCliente(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: clientesKeys.lists() });
+      // Invalidar queries del dashboard que dependen de clientes
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };

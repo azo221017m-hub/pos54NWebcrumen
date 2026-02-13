@@ -7,6 +7,7 @@ import {
   eliminarSubreceta,
 } from '../../services/subrecetasService';
 import type { SubrecetaCreate, SubrecetaUpdate } from '../../types/subreceta.types';
+import { invalidateInventoryRelatedQueries } from './queryInvalidation';
 
 // Query keys
 export const subrecetasKeys = {
@@ -48,6 +49,8 @@ export const useCrearSubrecetaMutation = () => {
     mutationFn: (data: SubrecetaCreate) => crearSubreceta(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: subrecetasKeys.lists() });
+      // Invalidar queries del dashboard que dependen de subrecetas
+      invalidateInventoryRelatedQueries(queryClient);
     },
   });
 };
@@ -62,6 +65,8 @@ export const useActualizarSubrecetaMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: subrecetasKeys.lists() });
       queryClient.invalidateQueries({ queryKey: subrecetasKeys.detail(variables.id) });
+      // Invalidar queries del dashboard que dependen de subrecetas
+      invalidateInventoryRelatedQueries(queryClient);
     },
   });
 };
@@ -75,6 +80,8 @@ export const useEliminarSubrecetaMutation = () => {
     mutationFn: (id: number) => eliminarSubreceta(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: subrecetasKeys.lists() });
+      // Invalidar queries del dashboard que dependen de subrecetas
+      invalidateInventoryRelatedQueries(queryClient);
     },
   });
 };
