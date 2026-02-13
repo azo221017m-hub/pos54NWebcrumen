@@ -7,6 +7,7 @@ import {
   eliminarInsumo,
 } from '../../services/insumosService';
 import type { InsumoCreate, InsumoUpdate } from '../../types/insumo.types';
+import { invalidateInventoryRelatedQueries } from './queryInvalidation';
 
 // Query keys
 export const insumosKeys = {
@@ -48,6 +49,8 @@ export const useCrearInsumoMutation = () => {
     mutationFn: (data: InsumoCreate) => crearInsumo(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: insumosKeys.lists() });
+      // Invalidar queries del dashboard que dependen de insumos
+      invalidateInventoryRelatedQueries(queryClient);
     },
   });
 };
@@ -62,6 +65,8 @@ export const useActualizarInsumoMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: insumosKeys.lists() });
       queryClient.invalidateQueries({ queryKey: insumosKeys.detail(variables.id) });
+      // Invalidar queries del dashboard que dependen de insumos
+      invalidateInventoryRelatedQueries(queryClient);
     },
   });
 };
@@ -75,6 +80,8 @@ export const useEliminarInsumoMutation = () => {
     mutationFn: (id: number) => eliminarInsumo(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: insumosKeys.lists() });
+      // Invalidar queries del dashboard que dependen de insumos
+      invalidateInventoryRelatedQueries(queryClient);
     },
   });
 };

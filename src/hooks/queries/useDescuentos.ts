@@ -7,6 +7,7 @@ import {
   eliminarDescuento,
 } from '../../services/descuentosService';
 import type { DescuentoCreate, DescuentoUpdate } from '../../types/descuento.types';
+import { invalidateSalesRelatedQueries } from './queryInvalidation';
 
 // Query keys
 export const descuentosKeys = {
@@ -47,6 +48,8 @@ export const useCrearDescuentoMutation = () => {
     mutationFn: (data: DescuentoCreate) => crearDescuento(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: descuentosKeys.lists() });
+      // Invalidar queries del dashboard que dependen de descuentos
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };
@@ -61,6 +64,8 @@ export const useActualizarDescuentoMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: descuentosKeys.lists() });
       queryClient.invalidateQueries({ queryKey: descuentosKeys.detail(variables.id) });
+      // Invalidar queries del dashboard que dependen de descuentos
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };
@@ -74,6 +79,8 @@ export const useEliminarDescuentoMutation = () => {
     mutationFn: (id: number) => eliminarDescuento(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: descuentosKeys.lists() });
+      // Invalidar queries del dashboard que dependen de descuentos
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };

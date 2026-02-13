@@ -7,6 +7,7 @@ import {
   eliminarCatModerador,
 } from '../../services/catModeradoresService';
 import type { CatModeradorCreate, CatModeradorUpdate } from '../../types/catModerador.types';
+import { invalidateSalesRelatedQueries } from './queryInvalidation';
 
 // Query keys
 export const catModeradoresKeys = {
@@ -47,6 +48,8 @@ export const useCrearCatModeradorMutation = () => {
     mutationFn: (data: CatModeradorCreate) => crearCatModerador(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: catModeradoresKeys.lists() });
+      // Invalidar queries del dashboard que dependen de moderadores
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };
@@ -63,6 +66,8 @@ export const useActualizarCatModeradorMutation = () => {
       if (data.idmodref) {
         queryClient.invalidateQueries({ queryKey: catModeradoresKeys.detail(data.idmodref) });
       }
+      // Invalidar queries del dashboard que dependen de moderadores
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };
@@ -76,6 +81,8 @@ export const useEliminarCatModeradorMutation = () => {
     mutationFn: (id: number) => eliminarCatModerador(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: catModeradoresKeys.lists() });
+      // Invalidar queries del dashboard que dependen de moderadores
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };

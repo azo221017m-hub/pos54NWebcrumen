@@ -21,6 +21,7 @@ import { obtenerModeradoresRef } from '../../services/moderadoresRefService';
 import type { ProductoWebCreate, ProductoWebUpdate } from '../../types/productoWeb.types';
 import type { CategoriaCreate, CategoriaUpdate } from '../../types/categoria.types';
 import type { ModeradorCreate, ModeradorUpdate } from '../../types/moderador.types';
+import { invalidateSalesRelatedQueries } from './queryInvalidation';
 
 // Query keys for productos
 export const productosWebKeys = {
@@ -105,6 +106,8 @@ export const useCrearProductoWebMutation = () => {
     mutationFn: (data: ProductoWebCreate) => crearProductoWeb(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productosWebKeys.lists() });
+      // Invalidar queries del dashboard que dependen de productos
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };
@@ -118,6 +121,8 @@ export const useActualizarProductoWebMutation = () => {
     mutationFn: ({ id, data }: { id: number; data: ProductoWebUpdate }) => actualizarProductoWeb(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productosWebKeys.lists() });
+      // Invalidar queries del dashboard que dependen de productos
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };
@@ -131,6 +136,8 @@ export const useEliminarProductoWebMutation = () => {
     mutationFn: (id: number) => eliminarProductoWeb(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productosWebKeys.lists() });
+      // Invalidar queries del dashboard que dependen de productos
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };
@@ -144,6 +151,8 @@ export const useCrearCategoriaMutation = () => {
     mutationFn: (data: CategoriaCreate) => crearCategoria(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: categoriasKeys.lists() });
+      // Invalidar queries del dashboard que dependen de categorías
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };
@@ -157,6 +166,8 @@ export const useActualizarCategoriaMutation = () => {
     mutationFn: ({ id, data }: { id: number; data: CategoriaUpdate }) => actualizarCategoria(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: categoriasKeys.lists() });
+      // Invalidar queries del dashboard que dependen de categorías
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };
@@ -170,6 +181,8 @@ export const useEliminarCategoriaMutation = () => {
     mutationFn: (id: number) => eliminarCategoria(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: categoriasKeys.lists() });
+      // Invalidar queries del dashboard que dependen de categorías
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };
@@ -183,6 +196,8 @@ export const useCrearModeradorMutation = () => {
     mutationFn: (data: ModeradorCreate) => crearModerador(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: moderadoresKeys.lists() });
+      // Invalidar queries del dashboard que dependen de moderadores
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };
@@ -196,6 +211,8 @@ export const useActualizarModeradorMutation = () => {
     mutationFn: ({ id, data }: { id: number; data: ModeradorUpdate }) => actualizarModerador(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: moderadoresKeys.lists() });
+      // Invalidar queries del dashboard que dependen de moderadores
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };
@@ -209,6 +226,8 @@ export const useEliminarModeradorMutation = () => {
     mutationFn: (id: number) => eliminarModerador(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: moderadoresKeys.lists() });
+      // Invalidar queries del dashboard que dependen de moderadores
+      invalidateSalesRelatedQueries(queryClient);
     },
   });
 };
