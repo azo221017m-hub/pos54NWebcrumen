@@ -49,7 +49,7 @@ export const pagosKeys = {
   lists: () => [...pagosKeys.all, 'list'] as const,
   list: (filters?: Record<string, unknown>) => [...pagosKeys.lists(), { filters }] as const,
   details: () => [...pagosKeys.all, 'detail'] as const,
-  detail: (id: number) => [...pagosKeys.details(), id] as const,
+  detail: (id: number | string) => [...pagosKeys.details(), id] as const,
 };
 
 /**
