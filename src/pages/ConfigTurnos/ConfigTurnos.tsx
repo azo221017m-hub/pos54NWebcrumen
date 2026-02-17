@@ -73,14 +73,20 @@ const ConfigTurnos: React.FC = () => {
       console.log('Datos del cierre de turno:', datosFormulario);
       
       // Call the backend endpoint with the closure data
-      await cerrarTurnoActual(datosFormulario);
+      const response = await cerrarTurnoActual(datosFormulario);
       
       mostrarMensaje('success', 'Turno cerrado exitosamente');
       setMostrarFormulario(false);
       setTurnoEditar(undefined);
       
-      // Reload shifts to get updated data
-      await cargarTurnos();
+      // Actualizar estado local sin recargar - cambiar el estatus del turno cerrado
+      setTurnos(prev =>
+        prev.map(turno =>
+          turno.idturno === response.idturno 
+            ? { ...turno, estatusturno: EstatusTurno.CERRADO }
+            : turno
+        )
+      );
     } catch (error) {
       console.error('Error al cerrar turno:', error);
       mostrarMensaje('error', 'Error al cerrar el turno');

@@ -64,20 +64,28 @@ const MovimientosInventario: React.FC = () => {
     try {
       if (movimientoEditar) {
         // Actualizar
-        await actualizarMovimiento(movimientoEditar.idmovimiento, {
+        const movimientoActualizado = await actualizarMovimiento(movimientoEditar.idmovimiento, {
           motivomovimiento: data.motivomovimiento,
           observaciones: data.observaciones,
           estatusmovimiento: data.estatusmovimiento
         });
         mostrarMensaje('success', 'Movimiento actualizado correctamente');
+        setMostrarFormulario(false);
+        setMovimientoEditar(null);
+        // Actualizar estado local sin recargar
+        setMovimientos(prev =>
+          prev.map(mov =>
+            mov.idmovimiento === movimientoActualizado.idmovimiento ? movimientoActualizado : mov
+          )
+        );
       } else {
         // Crear
-        await crearMovimiento(data);
+        const nuevoMovimiento = await crearMovimiento(data);
         mostrarMensaje('success', 'Movimiento creado correctamente');
+        setMostrarFormulario(false);
+        // Actualizar estado local sin recargar
+        setMovimientos(prev => [...prev, nuevoMovimiento]);
       }
-      setMostrarFormulario(false);
-      setMovimientoEditar(null);
-      cargarMovimientos();
     } catch (error: any) {
       console.error('Error al guardar movimiento:', error);
       const mensaje = error?.response?.data?.message || 'Error al guardar el movimiento';
@@ -98,7 +106,8 @@ const MovimientosInventario: React.FC = () => {
     try {
       await eliminarMovimiento(id);
       mostrarMensaje('success', 'Movimiento eliminado correctamente');
-      cargarMovimientos();
+      // Actualizar estado local sin recargar
+      setMovimientos(prev => prev.filter(mov => mov.idmovimiento !== id));
     } catch (error: any) {
       console.error('Error al eliminar movimiento:', error);
       const mensaje = error?.response?.data?.message || 'Error al eliminar el movimiento';
