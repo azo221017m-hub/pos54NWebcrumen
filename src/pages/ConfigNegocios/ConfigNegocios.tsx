@@ -12,7 +12,7 @@ export const ConfigNegocios = () => {
   const navigate = useNavigate();
   const [negocios, setNegocios] = useState<Negocio[]>([]);
   const [loading, setLoading] = useState(true);
-  const [vistaActual, setVistaActual] = useState<'lista' | 'formulario'>('lista');
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [negocioEditar, setNegocioEditar] = useState<NegocioCompleto | null>(null);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
 
@@ -44,7 +44,7 @@ export const ConfigNegocios = () => {
 
   const handleNuevoNegocio = () => {
     setNegocioEditar(null);
-    setVistaActual('formulario');
+    setMostrarFormulario(true);
   };
 
   const handleEditarNegocio = async (negocio: Negocio) => {
@@ -54,7 +54,7 @@ export const ConfigNegocios = () => {
       setLoading(true);
       const negocioCompleto = await negociosService.obtenerNegocioPorId(negocio.idNegocio);
       setNegocioEditar(negocioCompleto);
-      setVistaActual('formulario');
+      setMostrarFormulario(true);
     } catch (error) {
       mostrarMensaje('error', 'Error al cargar el negocio');
       console.error('Error:', error);
@@ -113,7 +113,7 @@ export const ConfigNegocios = () => {
         setNegocios(prev => [...prev, nuevoNegocio]);
       }
 
-      setVistaActual('lista');
+      setMostrarFormulario(false);
       setNegocioEditar(null);
     } catch (error) {
       if (error instanceof Error) {
@@ -126,7 +126,7 @@ export const ConfigNegocios = () => {
   };
 
   const handleCancelar = () => {
-    setVistaActual('lista');
+    setMostrarFormulario(false);
     setNegocioEditar(null);
   };
 
@@ -150,60 +150,52 @@ export const ConfigNegocios = () => {
 
       {/* Header con botones */}
       <div className="config-header">
-        {vistaActual === 'lista' ? (
-          <>
-            <button className="btn-volver" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft size={20} />
-              Volver al Dashboard
-            </button>
-            
-            <div className="config-header-content">
-              <div className="config-title">
-                <Store size={32} className="config-icon" />
-                <div>
-                  <h1>Gestión de Negocios</h1>
-                  <p>
-                    Total: {negocios.length} | 
-                    Activos: {negocios.filter(n => n.estatusnegocio === 1).length} | 
-                    Inactivos: {negocios.filter(n => n.estatusnegocio === 0).length}
-                  </p>
-                </div>
-              </div>
-              <button onClick={handleNuevoNegocio} className="btn-nuevo">
-                <Plus size={20} />
-                Nuevo Negocio
-              </button>
+        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
+          <ArrowLeft size={20} />
+          Volver al Dashboard
+        </button>
+        
+        <div className="config-header-content">
+          <div className="config-title">
+            <Store size={32} className="config-icon" />
+            <div>
+              <h1>Gestión de Negocios</h1>
+              <p>
+                Total: {negocios.length} | 
+                Activos: {negocios.filter(n => n.estatusnegocio === 1).length} | 
+                Inactivos: {negocios.filter(n => n.estatusnegocio === 0).length}
+              </p>
             </div>
-          </>
-        ) : (
-          <button className="btn-volver" onClick={handleCancelar}>
-            <ArrowLeft size={20} />
-            Volver a la lista
+          </div>
+          <button onClick={handleNuevoNegocio} className="btn-nuevo">
+            <Plus size={20} />
+            Nuevo Negocio
           </button>
-        )}
+        </div>
       </div>
 
-      {/* Contenedor fijo con Lista o Formulario */}
+      {/* Contenedor fijo con Lista */}
       <div className="config-container">
-        {vistaActual === 'lista' ? (
-          loading ? (
-            <LoadingSpinner size={48} message="Cargando negocios..." />
-          ) : (
-            <ListaNegocios
-              negocios={negocios}
-              onEditar={handleEditarNegocio}
-              onEliminar={handleEliminarNegocio}
-              loading={loading}
-            />
-          )
+        {loading ? (
+          <LoadingSpinner size={48} message="Cargando negocios..." />
         ) : (
-          <FormularioNegocio
-            negocioEditar={negocioEditar}
-            onSubmit={handleSubmitFormulario}
-            onCancel={handleCancelar}
+          <ListaNegocios
+            negocios={negocios}
+            onEditar={handleEditarNegocio}
+            onEliminar={handleEliminarNegocio}
+            loading={loading}
           />
         )}
       </div>
+
+      {/* Formulario Modal */}
+      {mostrarFormulario && (
+        <FormularioNegocio
+          negocioEditar={negocioEditar}
+          onSubmit={handleSubmitFormulario}
+          onCancel={handleCancelar}
+        />
+      )}
     </div>
   );
 };

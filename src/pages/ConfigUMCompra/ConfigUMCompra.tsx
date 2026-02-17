@@ -13,12 +13,10 @@ import {
 } from '../../services/umcompraService';
 import './ConfigUMCompra.css';
 
-type Vista = 'lista' | 'formulario';
-
 export const ConfigUMCompra: React.FC = () => {
   const navigate = useNavigate();
   const [unidades, setUnidades] = useState<UMCompra[]>([]);
-  const [vista, setVista] = useState<Vista>('lista');
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [umEditar, setUmEditar] = useState<UMCompra | null>(null);
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
@@ -53,12 +51,12 @@ export const ConfigUMCompra: React.FC = () => {
 
   const handleNuevaUnidad = () => {
     setUmEditar(null);
-    setVista('formulario');
+    setMostrarFormulario(true);
   };
 
   const handleEditarUnidad = (um: UMCompra) => {
     setUmEditar(um);
-    setVista('formulario');
+    setMostrarFormulario(true);
   };
 
   const handleEliminarUnidad = async (id: number) => {
@@ -105,7 +103,7 @@ export const ConfigUMCompra: React.FC = () => {
         setUnidades(prev => [...prev, nuevaUM]);
       }
 
-      setVista('lista');
+      setMostrarFormulario(false);
       setUmEditar(null);
     } catch (error) {
       console.error('Error al guardar unidad:', error);
@@ -116,7 +114,7 @@ export const ConfigUMCompra: React.FC = () => {
   };
 
   const handleCancelarFormulario = () => {
-    setVista('lista');
+    setMostrarFormulario(false);
     setUmEditar(null);
   };
 
@@ -157,33 +155,32 @@ export const ConfigUMCompra: React.FC = () => {
               <p>Administra las unidades de medida de compra</p>
             </div>
           </div>
-          {vista === 'lista' && (
-            <button className="btn-nuevo" onClick={handleNuevaUnidad}>
-              <Plus size={20} />
-              Nueva Unidad
-            </button>
-          )}
+          <button className="btn-nuevo" onClick={handleNuevaUnidad}>
+            <Plus size={20} />
+            Nueva Unidad
+          </button>
         </div>
       </div>
 
-      {/* Contenedor fijo sin scroll */}
+      {/* Contenedor fijo con Lista */}
       <div className="config-container">
-        {vista === 'lista' ? (
-          <ListaUMCompra
-            unidades={unidades}
-            onEditar={handleEditarUnidad}
-            onEliminar={handleEliminarUnidad}
-            loading={loading}
-          />
-        ) : (
-          <FormularioUMCompra
-            umEditar={umEditar}
-            onSubmit={handleSubmitFormulario}
-            onCancelar={handleCancelarFormulario}
-            loading={loading}
-          />
-        )}
+        <ListaUMCompra
+          unidades={unidades}
+          onEditar={handleEditarUnidad}
+          onEliminar={handleEliminarUnidad}
+          loading={loading}
+        />
       </div>
+
+      {/* Formulario Modal */}
+      {mostrarFormulario && (
+        <FormularioUMCompra
+          umEditar={umEditar}
+          onSubmit={handleSubmitFormulario}
+          onCancelar={handleCancelarFormulario}
+          loading={loading}
+        />
+      )}
     </div>
   );
 };

@@ -12,7 +12,7 @@ export const ConfigRolUsuarios = () => {
   const navigate = useNavigate();
   const [roles, setRoles] = useState<Rol[]>([]);
   const [loading, setLoading] = useState(true);
-  const [vistaActual, setVistaActual] = useState<'lista' | 'formulario'>('lista');
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [rolEditar, setRolEditar] = useState<Rol | null>(null);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
 
@@ -43,7 +43,7 @@ export const ConfigRolUsuarios = () => {
 
   const handleNuevoRol = () => {
     setRolEditar(null);
-    setVistaActual('formulario');
+    setMostrarFormulario(true);
   };
 
   const handleEditarRol = async (rol: Rol) => {
@@ -53,7 +53,7 @@ export const ConfigRolUsuarios = () => {
       setLoading(true);
       const rolCompleto = await rolesService.obtenerRolPorId(rol.idRol);
       setRolEditar(rolCompleto);
-      setVistaActual('formulario');
+      setMostrarFormulario(true);
     } catch (error) {
       mostrarMensaje('error', 'Error al cargar el rol');
       console.error('Error:', error);
@@ -105,7 +105,7 @@ export const ConfigRolUsuarios = () => {
         setRoles(prev => [...prev, nuevoRol]);
       }
 
-      setVistaActual('lista');
+      setMostrarFormulario(false);
       setRolEditar(null);
     } catch (error) {
       if (error instanceof Error) {
@@ -118,7 +118,7 @@ export const ConfigRolUsuarios = () => {
   };
 
   const handleCancelar = () => {
-    setVistaActual('lista');
+    setMostrarFormulario(false);
     setRolEditar(null);
   };
 
@@ -142,60 +142,52 @@ export const ConfigRolUsuarios = () => {
 
       {/* Header con botones */}
       <div className="config-header">
-        {vistaActual === 'lista' ? (
-          <>
-            <button className="btn-volver" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft size={20} />
-              Volver al Dashboard
-            </button>
-            
-            <div className="config-header-content">
-              <div className="config-title">
-                <UserCog size={32} className="config-icon" />
-                <div>
-                  <h1>Gestión de Roles de Usuarios</h1>
-                  <p>
-                    Total: {roles.length} | 
-                    Activos: {roles.filter(r => r.estatus === 1).length} | 
-                    Inactivos: {roles.filter(r => r.estatus === 0).length}
-                  </p>
-                </div>
-              </div>
-              <button onClick={handleNuevoRol} className="btn-nuevo">
-                <Plus size={20} />
-                Nuevo Rol
-              </button>
+        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
+          <ArrowLeft size={20} />
+          Volver al Dashboard
+        </button>
+        
+        <div className="config-header-content">
+          <div className="config-title">
+            <UserCog size={32} className="config-icon" />
+            <div>
+              <h1>Gestión de Roles de Usuarios</h1>
+              <p>
+                Total: {roles.length} | 
+                Activos: {roles.filter(r => r.estatus === 1).length} | 
+                Inactivos: {roles.filter(r => r.estatus === 0).length}
+              </p>
             </div>
-          </>
-        ) : (
-          <button className="btn-volver" onClick={handleCancelar}>
-            <ArrowLeft size={20} />
-            Volver a la lista
+          </div>
+          <button onClick={handleNuevoRol} className="btn-nuevo">
+            <Plus size={20} />
+            Nuevo Rol
           </button>
-        )}
+        </div>
       </div>
 
-      {/* Contenedor fijo con Lista o Formulario */}
+      {/* Contenedor fijo con Lista */}
       <div className="config-container">
-        {vistaActual === 'lista' ? (
-          loading ? (
-            <LoadingSpinner size={48} message="Cargando roles..." />
-          ) : (
-            <ListaRoles
-              roles={roles}
-              onEditar={handleEditarRol}
-              loading={loading}
-            />
-          )
+        {loading ? (
+          <LoadingSpinner size={48} message="Cargando roles..." />
         ) : (
-          <FormularioRol
-            rolEditar={rolEditar}
-            rolesExistentes={roles}
-            onSubmit={handleSubmitFormulario}
-            onCancel={handleCancelar}
+          <ListaRoles
+            roles={roles}
+            onEditar={handleEditarRol}
+            loading={loading}
           />
         )}
       </div>
+
+      {/* Formulario Modal */}
+      {mostrarFormulario && (
+        <FormularioRol
+          rolEditar={rolEditar}
+          rolesExistentes={roles}
+          onSubmit={handleSubmitFormulario}
+          onCancel={handleCancelar}
+        />
+      )}
     </div>
   );
 };
