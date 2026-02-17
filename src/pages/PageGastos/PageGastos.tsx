@@ -55,16 +55,23 @@ const PageGastos: React.FC = () => {
     try {
       if (gastoEditar) {
         // Actualizar
-        await actualizarGasto(gastoEditar.idventa, data);
+        const gastoActualizado = await actualizarGasto(gastoEditar.idventa, data);
         mostrarMensaje('success', 'Gasto actualizado correctamente');
+        // Actualizar estado local sin recargar
+        setGastos(prev =>
+          prev.map(gasto =>
+            gasto.idventa === gastoActualizado.idventa ? gastoActualizado : gasto
+          )
+        );
       } else {
         // Crear
-        await crearGasto(data);
+        const nuevoGasto = await crearGasto(data);
         mostrarMensaje('success', 'Gasto creado correctamente');
+        // Agregar al estado local sin recargar
+        setGastos(prev => [...prev, nuevoGasto]);
       }
       setMostrarFormulario(false);
       setGastoEditar(null);
-      cargarGastos();
     } catch (error: any) {
       console.error('Error al guardar gasto:', error);
       const mensaje = error?.response?.data?.message || 'Error al guardar el gasto';
