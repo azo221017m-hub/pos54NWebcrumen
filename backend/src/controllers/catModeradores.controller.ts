@@ -127,11 +127,24 @@ export const crearCatModerador = async (req: AuthRequest, res: Response): Promis
 
     await connection.commit();
 
+    // Obtener el registro completo creado
+    const [createdRows] = await pool.query<CatModerador[]>(
+      `SELECT 
+        idmodref,
+        nombremodref,
+        fechaRegistroauditoria,
+        usuarioauditoria,
+        fehamodificacionauditoria,
+        idnegocio,
+        estatus,
+        moderadores
+      FROM tblposcrumenwebmodref
+      WHERE idmodref = ?`,
+      [result.insertId]
+    );
+
     console.log('✅ Categoría moderador creada con ID:', result.insertId);
-    res.status(201).json({
-      mensaje: 'Categoría moderador creada exitosamente',
-      idmodref: result.insertId
-    });
+    res.status(201).json(createdRows[0]);
   } catch (error) {
     await connection.rollback();
     console.error('🔴 Error al crear categoría moderador:', error);
@@ -186,8 +199,24 @@ export const actualizarCatModerador = async (req: AuthRequest, res: Response): P
       return;
     }
 
+    // Obtener el registro completo actualizado
+    const [updatedRows] = await pool.query<CatModerador[]>(
+      `SELECT 
+        idmodref,
+        nombremodref,
+        fechaRegistroauditoria,
+        usuarioauditoria,
+        fehamodificacionauditoria,
+        idnegocio,
+        estatus,
+        moderadores
+      FROM tblposcrumenwebmodref
+      WHERE idmodref = ?`,
+      [id]
+    );
+
     console.log('✅ Categoría moderador actualizada');
-    res.status(200).json({ mensaje: 'Categoría moderador actualizada exitosamente' });
+    res.status(200).json(updatedRows[0]);
   } catch (error) {
     await connection.rollback();
     console.error('🔴 Error al actualizar categoría moderador:', error);

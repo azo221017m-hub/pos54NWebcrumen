@@ -206,9 +206,34 @@ export const crearSubreceta = async (req: AuthRequest, res: Response): Promise<v
 
     await connection.commit();
 
+    // Obtener el registro completo creado con sus detalles
+    const [createdSubrecetas] = await pool.query<Subreceta[]>(
+      `SELECT 
+        idSubReceta,
+        nombreSubReceta,
+        CAST(instruccionesSubr AS CHAR) as instruccionesSubr,
+        archivoInstruccionesSubr,
+        costoSubReceta,
+        estatusSubr,
+        fechaRegistroauditoria,
+        usuarioauditoria,
+        fehamodificacionauditoria,
+        idnegocio
+      FROM tblposcrumenwebsubrecetas 
+      WHERE idSubReceta = ?`,
+      [idSubReceta]
+    );
+
+    const [createdDetalles] = await pool.query<DetalleSubreceta[]>(
+      `SELECT * FROM tblposcrumenwebdetallesubrecetas 
+       WHERE dtlSubRecetaId = ?
+       ORDER BY nombreInsumoSubr ASC`,
+      [idSubReceta]
+    );
+
     res.status(201).json({
-      mensaje: 'Subreceta creada exitosamente',
-      idSubReceta
+      ...createdSubrecetas[0],
+      detalles: createdDetalles
     });
   } catch (error) {
     await connection.rollback();
@@ -286,7 +311,35 @@ export const actualizarSubreceta = async (req: AuthRequest, res: Response): Prom
 
     await connection.commit();
 
-    res.status(200).json({ mensaje: 'Subreceta actualizada exitosamente' });
+    // Obtener el registro completo actualizado con sus detalles
+    const [updatedSubrecetas] = await pool.query<Subreceta[]>(
+      `SELECT 
+        idSubReceta,
+        nombreSubReceta,
+        CAST(instruccionesSubr AS CHAR) as instruccionesSubr,
+        archivoInstruccionesSubr,
+        costoSubReceta,
+        estatusSubr,
+        fechaRegistroauditoria,
+        usuarioauditoria,
+        fehamodificacionauditoria,
+        idnegocio
+      FROM tblposcrumenwebsubrecetas 
+      WHERE idSubReceta = ?`,
+      [id]
+    );
+
+    const [updatedDetalles] = await pool.query<DetalleSubreceta[]>(
+      `SELECT * FROM tblposcrumenwebdetallesubrecetas 
+       WHERE dtlSubRecetaId = ?
+       ORDER BY nombreInsumoSubr ASC`,
+      [id]
+    );
+
+    res.status(200).json({
+      ...updatedSubrecetas[0],
+      detalles: updatedDetalles
+    });
   } catch (error) {
     await connection.rollback();
     console.error('Error al actualizar subreceta:', error);

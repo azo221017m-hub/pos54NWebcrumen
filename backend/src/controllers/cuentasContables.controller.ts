@@ -131,10 +131,23 @@ export const crearCuentaContable = async (req: AuthRequest, res: Response): Prom
       ]
     );
 
-    res.status(201).json({
-      message: 'Cuenta contable creada exitosamente',
-      id: result.insertId
-    });
+    // Obtener el registro completo creado
+    const [createdRows] = await pool.query<CuentaContable[]>(
+      `SELECT 
+        id_cuentacontable,
+        naturalezacuentacontable,
+        nombrecuentacontable,
+        tipocuentacontable,
+        fechaRegistroauditoria,
+        usuarioauditoria,
+        fechamodificacionauditoria,
+        idnegocio
+      FROM tblposcrumenwebcuentacontable
+      WHERE id_cuentacontable = ?`,
+      [result.insertId]
+    );
+
+    res.status(201).json(createdRows[0]);
   } catch (error) {
     console.error('Error al crear cuenta contable:', error);
     res.status(500).json({ 
@@ -185,7 +198,23 @@ export const actualizarCuentaContable = async (req: AuthRequest, res: Response):
       return;
     }
 
-    res.json({ message: 'Cuenta contable actualizada exitosamente' });
+    // Obtener el registro completo actualizado
+    const [updatedRows] = await pool.query<CuentaContable[]>(
+      `SELECT 
+        id_cuentacontable,
+        naturalezacuentacontable,
+        nombrecuentacontable,
+        tipocuentacontable,
+        fechaRegistroauditoria,
+        usuarioauditoria,
+        fechamodificacionauditoria,
+        idnegocio
+      FROM tblposcrumenwebcuentacontable
+      WHERE id_cuentacontable = ?`,
+      [id]
+    );
+
+    res.json(updatedRows[0]);
   } catch (error) {
     console.error('Error al actualizar cuenta contable:', error);
     res.status(500).json({ 

@@ -137,10 +137,22 @@ export const crearModerador = async (req: AuthRequest, res: Response): Promise<v
       ]
     );
 
-    res.status(201).json({
-      message: 'Moderador creado exitosamente',
-      id: result.insertId
-    });
+    // Obtener el registro completo creado
+    const [createdRows] = await pool.query<Moderador[]>(
+      `SELECT 
+        idmoderador,
+        nombremoderador,
+        fechaRegistroauditoria,
+        usuarioauditoria,
+        fehamodificacionauditoria,
+        idnegocio,
+        estatus
+      FROM tblposcrumenwebmoderadores
+      WHERE idmoderador = ?`,
+      [result.insertId]
+    );
+
+    res.status(201).json(createdRows[0]);
   } catch (error) {
     console.error('Error al crear moderador:', error);
     res.status(500).json({ 
@@ -181,7 +193,22 @@ export const actualizarModerador = async (req: Request, res: Response): Promise<
       return;
     }
 
-    res.json({ message: 'Moderador actualizado exitosamente' });
+    // Obtener el registro completo actualizado
+    const [updatedRows] = await pool.query<Moderador[]>(
+      `SELECT 
+        idmoderador,
+        nombremoderador,
+        fechaRegistroauditoria,
+        usuarioauditoria,
+        fehamodificacionauditoria,
+        idnegocio,
+        estatus
+      FROM tblposcrumenwebmoderadores
+      WHERE idmoderador = ?`,
+      [id]
+    );
+
+    res.json(updatedRows[0]);
   } catch (error) {
     console.error('Error al actualizar moderador:', error);
     res.status(500).json({ 

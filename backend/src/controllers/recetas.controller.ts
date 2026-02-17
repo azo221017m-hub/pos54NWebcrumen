@@ -232,9 +232,47 @@ export const crearReceta = async (req: AuthRequest, res: Response): Promise<void
 
     await connection.commit();
 
+    // Obtener el registro completo creado con sus detalles
+    const [createdRecetas] = await pool.query<Receta[]>(
+      `SELECT 
+        idReceta,
+        nombreReceta,
+        CAST(instrucciones AS CHAR) as instrucciones,
+        CAST(archivoInstrucciones AS CHAR) as archivoInstrucciones,
+        costoReceta,
+        estatus,
+        fechaRegistroauditoria,
+        usuarioauditoria,
+        fehamodificacionauditoria,
+        idnegocio
+      FROM tblposcrumenwebrecetas 
+      WHERE idReceta = ?`,
+      [idReceta]
+    );
+
+    const [createdDetalles] = await pool.query<DetalleReceta[]>(
+      `SELECT 
+        idDetalleReceta,
+        dtlRecetaId,
+        nombreinsumo,
+        umInsumo,
+        cantidadUso,
+        costoInsumo,
+        estatus,
+        idreferencia,
+        fechaRegistroauditoria,
+        usuarioauditoria,
+        fehamodificacionauditoria,
+        idnegocio
+       FROM tblposcrumenwebdetallerecetas 
+       WHERE dtlRecetaId = ?
+       ORDER BY idreferencia ASC`,
+      [idReceta]
+    );
+
     res.status(201).json({
-      mensaje: 'Receta creada exitosamente',
-      idReceta
+      ...createdRecetas[0],
+      detalles: createdDetalles
     });
   } catch (error) {
     await connection.rollback();
@@ -312,7 +350,48 @@ export const actualizarReceta = async (req: AuthRequest, res: Response): Promise
 
     await connection.commit();
 
-    res.status(200).json({ mensaje: 'Receta actualizada exitosamente' });
+    // Obtener el registro completo actualizado con sus detalles
+    const [updatedRecetas] = await pool.query<Receta[]>(
+      `SELECT 
+        idReceta,
+        nombreReceta,
+        CAST(instrucciones AS CHAR) as instrucciones,
+        CAST(archivoInstrucciones AS CHAR) as archivoInstrucciones,
+        costoReceta,
+        estatus,
+        fechaRegistroauditoria,
+        usuarioauditoria,
+        fehamodificacionauditoria,
+        idnegocio
+      FROM tblposcrumenwebrecetas 
+      WHERE idReceta = ?`,
+      [id]
+    );
+
+    const [updatedDetalles] = await pool.query<DetalleReceta[]>(
+      `SELECT 
+        idDetalleReceta,
+        dtlRecetaId,
+        nombreinsumo,
+        umInsumo,
+        cantidadUso,
+        costoInsumo,
+        estatus,
+        idreferencia,
+        fechaRegistroauditoria,
+        usuarioauditoria,
+        fehamodificacionauditoria,
+        idnegocio
+       FROM tblposcrumenwebdetallerecetas 
+       WHERE dtlRecetaId = ?
+       ORDER BY idreferencia ASC`,
+      [id]
+    );
+
+    res.status(200).json({
+      ...updatedRecetas[0],
+      detalles: updatedDetalles
+    });
   } catch (error) {
     await connection.rollback();
     console.error('Error al actualizar receta:', error);
