@@ -290,9 +290,46 @@ export const crearUsuario = async (req: AuthRequest, res: Response): Promise<voi
       ]
     );
 
+    // Obtener el usuario completo creado
+    const [createdRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT 
+        idUsuario, 
+        idNegocio, 
+        idRol, 
+        nombre, 
+        alias, 
+        telefono, 
+        cumple, 
+        frasepersonal, 
+        desempeno, 
+        popularidad, 
+        estatus, 
+        fechaRegistroauditoria, 
+        usuarioauditoria, 
+        fehamodificacionauditoria,
+        LENGTH(fotoine) as fotoine_size,
+        LENGTH(fotopersona) as fotopersona_size,
+        LENGTH(fotoavatar) as fotoavatar_size,
+        fotoine,
+        fotopersona,
+        fotoavatar
+      FROM tblposcrumenwebusuarios
+      WHERE idUsuario = ?`,
+      [result.insertId]
+    );
+
+    // Convertir imágenes de Buffer a Base64
+    const usuarioCreado = createdRows[0];
+    const usuarioConImagenes = {
+      ...usuarioCreado,
+      fotoine: usuarioCreado.fotoine ? (usuarioCreado.fotoine as Buffer).toString('base64') : null,
+      fotopersona: usuarioCreado.fotopersona ? (usuarioCreado.fotopersona as Buffer).toString('base64') : null,
+      fotoavatar: usuarioCreado.fotoavatar ? (usuarioCreado.fotoavatar as Buffer).toString('base64') : null
+    };
+
     res.status(201).json({
       success: true,
-      data: { idUsuario: result.insertId },
+      data: usuarioConImagenes,
       message: 'Usuario creado exitosamente'
     });
   } catch (error) {
@@ -459,8 +496,46 @@ export const actualizarUsuario = async (req: AuthRequest, res: Response): Promis
 
     await pool.execute(query, params);
 
+    // Obtener el usuario completo actualizado
+    const [updatedRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT 
+        idUsuario, 
+        idNegocio, 
+        idRol, 
+        nombre, 
+        alias, 
+        telefono, 
+        cumple, 
+        frasepersonal, 
+        desempeno, 
+        popularidad, 
+        estatus, 
+        fechaRegistroauditoria, 
+        usuarioauditoria, 
+        fehamodificacionauditoria,
+        LENGTH(fotoine) as fotoine_size,
+        LENGTH(fotopersona) as fotopersona_size,
+        LENGTH(fotoavatar) as fotoavatar_size,
+        fotoine,
+        fotopersona,
+        fotoavatar
+      FROM tblposcrumenwebusuarios
+      WHERE idUsuario = ?`,
+      [id]
+    );
+
+    // Convertir imágenes de Buffer a Base64
+    const usuarioActualizado = updatedRows[0];
+    const usuarioConImagenes = {
+      ...usuarioActualizado,
+      fotoine: usuarioActualizado.fotoine ? (usuarioActualizado.fotoine as Buffer).toString('base64') : null,
+      fotopersona: usuarioActualizado.fotopersona ? (usuarioActualizado.fotopersona as Buffer).toString('base64') : null,
+      fotoavatar: usuarioActualizado.fotoavatar ? (usuarioActualizado.fotoavatar as Buffer).toString('base64') : null
+    };
+
     res.json({
       success: true,
+      data: usuarioConImagenes,
       message: 'Usuario actualizado exitosamente'
     });
   } catch (error) {

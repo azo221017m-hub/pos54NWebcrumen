@@ -429,6 +429,122 @@ res.status(200).json({
 
 ---
 
+### 6. **Usuarios** ⭐ NEW
+**Archivo:** `backend/src/controllers/usuarios.controller.ts`
+
+#### Crear Usuario
+**Antes:**
+```typescript
+res.status(201).json({
+  success: true,
+  data: { idUsuario: result.insertId },
+  message: 'Usuario creado exitosamente'
+});
+```
+
+**Después:**
+```typescript
+// Obtener el usuario completo creado
+const [createdRows] = await pool.execute<RowDataPacket[]>(
+  `SELECT 
+    idUsuario, 
+    idNegocio, 
+    idRol, 
+    nombre, 
+    alias, 
+    telefono, 
+    cumple, 
+    frasepersonal, 
+    desempeno, 
+    popularidad, 
+    estatus, 
+    fechaRegistroauditoria, 
+    usuarioauditoria, 
+    fehamodificacionauditoria,
+    LENGTH(fotoine) as fotoine_size,
+    LENGTH(fotopersona) as fotopersona_size,
+    LENGTH(fotoavatar) as fotoavatar_size,
+    fotoine,
+    fotopersona,
+    fotoavatar
+  FROM tblposcrumenwebusuarios
+  WHERE idUsuario = ?`,
+  [result.insertId]
+);
+
+// Convertir imágenes de Buffer a Base64
+const usuarioCreado = createdRows[0];
+const usuarioConImagenes = {
+  ...usuarioCreado,
+  fotoine: usuarioCreado.fotoine ? (usuarioCreado.fotoine as Buffer).toString('base64') : null,
+  fotopersona: usuarioCreado.fotopersona ? (usuarioCreado.fotopersona as Buffer).toString('base64') : null,
+  fotoavatar: usuarioCreado.fotoavatar ? (usuarioCreado.fotoavatar as Buffer).toString('base64') : null
+};
+
+res.status(201).json({
+  success: true,
+  data: usuarioConImagenes,
+  message: 'Usuario creado exitosamente'
+});
+```
+
+#### Actualizar Usuario
+**Antes:**
+```typescript
+res.json({
+  success: true,
+  message: 'Usuario actualizado exitosamente'
+});
+```
+
+**Después:**
+```typescript
+// Obtener el usuario completo actualizado
+const [updatedRows] = await pool.execute<RowDataPacket[]>(
+  `SELECT 
+    idUsuario, 
+    idNegocio, 
+    idRol, 
+    nombre, 
+    alias, 
+    telefono, 
+    cumple, 
+    frasepersonal, 
+    desempeno, 
+    popularidad, 
+    estatus, 
+    fechaRegistroauditoria, 
+    usuarioauditoria, 
+    fehamodificacionauditoria,
+    LENGTH(fotoine) as fotoine_size,
+    LENGTH(fotopersona) as fotopersona_size,
+    LENGTH(fotoavatar) as fotoavatar_size,
+    fotoine,
+    fotopersona,
+    fotoavatar
+  FROM tblposcrumenwebusuarios
+  WHERE idUsuario = ?`,
+  [id]
+);
+
+// Convertir imágenes de Buffer a Base64
+const usuarioActualizado = updatedRows[0];
+const usuarioConImagenes = {
+  ...usuarioActualizado,
+  fotoine: usuarioActualizado.fotoine ? (usuarioActualizado.fotoine as Buffer).toString('base64') : null,
+  fotopersona: usuarioActualizado.fotopersona ? (usuarioActualizado.fotopersona as Buffer).toString('base64') : null,
+  fotoavatar: usuarioActualizado.fotoavatar ? (usuarioActualizado.fotoavatar as Buffer).toString('base64') : null
+};
+
+res.json({
+  success: true,
+  data: usuarioConImagenes,
+  message: 'Usuario actualizado exitosamente'
+});
+```
+
+---
+
 ## ✅ Beneficios de esta Corrección
 
 ### 1. **Experiencia de Usuario Mejorada**
@@ -560,6 +676,12 @@ Para cada módulo modificado, verificar:
 - Costo compensado por eliminar GET separado
 - Mejora general en UX y reducción de tráfico
 
+### Imágenes en Base64 (Usuarios)
+- Las imágenes `BLOB` de MySQL se convierten a Base64 en el servidor
+- Esto aumenta el tamaño de la respuesta (~33% más grande)
+- Es consistente con el endpoint `GET /api/usuarios`
+- El frontend ya maneja correctamente imágenes en Base64
+
 ### Compatibilidad
 - ✅ No rompe código frontend existente
 - ✅ Frontend ya preparado para recibir objetos completos
@@ -594,4 +716,9 @@ GitHub Copilot
 
 ## ✨ Conclusión
 
-Esta corrección **mejora significativamente** la experiencia del usuario al hacer que las cards de las listas muestren información completa y actualizada instantáneamente, sin necesidad de recargas manuales o llamadas adicionales al servidor. El patrón ahora es **consistente** con otros módulos del sistema que ya funcionaban correctamente (como Descuentos, Gastos, etc.).
+Esta corrección **mejora significativamente** la experiencia del usuario al hacer que las cards de las listas muestren información completa y actualizada instantáneamente, sin necesidad de recargas manuales o llamadas adicionales al servidor.
+
+**Módulos Corregidos:** 6 (GrupoMovimientos, Moderadores, CategoriaModerador, Recetas, Subrecetas, Usuarios)
+
+El patrón ahora es **consistente** con otros módulos del sistema que ya funcionaban correctamente (como Descuentos, Gastos, etc.).
+
