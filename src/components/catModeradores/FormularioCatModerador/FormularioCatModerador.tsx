@@ -98,7 +98,7 @@ const FormularioCatModerador: React.FC<Props> = ({ catModerador, idnegocio, onSu
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validarFormulario()) {
@@ -117,12 +117,12 @@ const FormularioCatModerador: React.FC<Props> = ({ catModerador, idnegocio, onSu
     };
 
     if (catModerador) {
-      onSubmit({
+      await onSubmit({
         ...dataToSubmit,
         idmodref: catModerador.idmodref
       } as CatModeradorUpdate);
     } else {
-      onSubmit(dataToSubmit as CatModeradorCreate);
+      await onSubmit(dataToSubmit as CatModeradorCreate);
     }
   };
 

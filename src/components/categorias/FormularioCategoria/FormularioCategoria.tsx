@@ -117,7 +117,7 @@ const FormularioCategoria: React.FC<Props> = ({ categoria, idnegocio, onSubmit, 
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validarFormulario()) {
@@ -135,12 +135,12 @@ const FormularioCategoria: React.FC<Props> = ({ categoria, idnegocio, onSubmit, 
     };
 
     if (categoria) {
-      onSubmit({
+      await onSubmit({
         ...dataToSubmit,
         idCategoria: categoria.idCategoria
       } as CategoriaUpdate);
     } else {
-      onSubmit(dataToSubmit as CategoriaCreate);
+      await onSubmit(dataToSubmit as CategoriaCreate);
     }
   };
 
