@@ -123,7 +123,7 @@ const FormularioMesa: React.FC<FormularioMesaProps> = ({
         tiempoactual: formData.tiempoactual || null,
         UsuarioModifico: usuario
       };
-      onSubmit(mesaUpdate);
+      await onSubmit(mesaUpdate);
     } else {
       // Crear
       const mesaCreate: MesaCreate = {
@@ -132,7 +132,7 @@ const FormularioMesa: React.FC<FormularioMesaProps> = ({
         tiempoactual: formData.tiempoactual || undefined,
         UsuarioCreo: usuario
       };
-      onSubmit(mesaCreate);
+      await onSubmit(mesaCreate);
     }
   };
 

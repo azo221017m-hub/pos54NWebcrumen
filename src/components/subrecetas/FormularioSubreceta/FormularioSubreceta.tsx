@@ -204,7 +204,7 @@ const FormularioSubreceta: React.FC<Props> = ({ subreceta, idnegocio, onSubmit, 
     return Object.keys(nuevosErrores).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validarFormulario()) {
@@ -228,7 +228,7 @@ const FormularioSubreceta: React.FC<Props> = ({ subreceta, idnegocio, onSubmit, 
       idnegocio
     };
 
-    onSubmit(data);
+    await onSubmit(data);
   };
 
   return (

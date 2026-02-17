@@ -92,7 +92,7 @@ export const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({
     setFormData(initialFormData);
   }, [initialFormData]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Obtener usuario de auditoría
@@ -110,7 +110,7 @@ export const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({
       delete datosEnviar.password;
     }
 
-    onSubmit(datosEnviar);
+    await onSubmit(datosEnviar);
   };
 
   const handleChange = (

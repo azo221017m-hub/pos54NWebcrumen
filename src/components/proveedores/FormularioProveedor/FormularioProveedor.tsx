@@ -88,7 +88,7 @@ const FormularioProveedor: React.FC<Props> = ({ proveedorEditar, idnegocio, onSu
     return Object.keys(nuevosErrores).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validarFormulario()) {
@@ -96,12 +96,12 @@ const FormularioProveedor: React.FC<Props> = ({ proveedorEditar, idnegocio, onSu
     }
 
     if (proveedorEditar) {
-      onSubmit({
+      await onSubmit({
         ...formData,
         id_proveedor: proveedorEditar.id_proveedor
       } as ProveedorUpdate);
     } else {
-      onSubmit(formData as ProveedorCreate);
+      await onSubmit(formData as ProveedorCreate);
     }
   };
 

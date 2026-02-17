@@ -326,7 +326,7 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
     return Object.keys(nuevosErrores).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validarFormulario()) {
@@ -339,12 +339,12 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
     };
 
     if (productoEditar) {
-      onSubmit({
+      await onSubmit({
         ...dataToSubmit,
         idProducto: productoEditar.idProducto
       } as ProductoWebUpdate);
     } else {
-      onSubmit(dataToSubmit as ProductoWebCreate);
+      await onSubmit(dataToSubmit as ProductoWebCreate);
     }
   };
 

@@ -30,14 +30,14 @@ export const FormularioUMCompra: React.FC<FormularioUMCompraProps> = ({
     setFormData(initialFormData);
   }, [initialFormData]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Obtener usuario de auditoría
     const usuarioStorage = localStorage.getItem('usuario');
     const usuarioAudit = usuarioStorage ? JSON.parse(usuarioStorage).alias : 'sistema';
 
-    onSubmit({
+    await onSubmit({
       ...formData,
       usuarioauditoria: usuarioAudit
     });

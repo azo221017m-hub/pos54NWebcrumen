@@ -50,7 +50,7 @@ const FormularioModerador: React.FC<Props> = ({ moderador, idnegocio, onSave, on
     return Object.keys(nuevosErrores).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validarFormulario()) {
@@ -74,7 +74,7 @@ const FormularioModerador: React.FC<Props> = ({ moderador, idnegocio, onSave, on
       idnegocio
     };
 
-    onSave(moderadorData);
+    await onSave(moderadorData);
   };
 
   return (

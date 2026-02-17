@@ -248,7 +248,7 @@ const FormularioReceta: React.FC<Props> = ({ receta, idnegocio, onSubmit, onCanc
     return Object.keys(nuevosErrores).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     console.log('🔵 FormularioReceta: Iniciando validación...');
@@ -278,13 +278,13 @@ const FormularioReceta: React.FC<Props> = ({ receta, idnegocio, onSubmit, onCanc
 
     if (receta) {
       console.log('🔵 FormularioReceta: Actualizando receta existente');
-      onSubmit({
+      await onSubmit({
         ...dataToSubmit,
         idReceta: receta.idReceta
       } as RecetaUpdate);
     } else {
       console.log('🔵 FormularioReceta: Creando nueva receta');
-      onSubmit(dataToSubmit as RecetaCreate);
+      await onSubmit(dataToSubmit as RecetaCreate);
     }
   };
 

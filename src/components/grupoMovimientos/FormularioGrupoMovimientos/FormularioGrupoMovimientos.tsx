@@ -144,7 +144,7 @@ const FormularioGrupoMovimientos: React.FC<Props> = ({ grupo, idnegocio, onSave,
     return Object.keys(nuevosErrores).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validarFormulario()) {
@@ -156,7 +156,7 @@ const FormularioGrupoMovimientos: React.FC<Props> = ({ grupo, idnegocio, onSave,
       idnegocio
     };
 
-    onSave(grupoData);
+    await onSave(grupoData);
   };
 
   return (

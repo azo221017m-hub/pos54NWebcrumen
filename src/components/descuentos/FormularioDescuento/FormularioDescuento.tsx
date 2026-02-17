@@ -113,14 +113,14 @@ const FormularioDescuento: React.FC<FormularioDescuentoProps> = ({
         ...formData,
         UsuarioModifico: usuario
       };
-      onSubmit(descuentoUpdate);
+      await onSubmit(descuentoUpdate);
     } else {
       // Crear
       const descuentoCreate: DescuentoCreate = {
         ...formData,
         UsuarioCreo: usuario
       };
-      onSubmit(descuentoCreate);
+      await onSubmit(descuentoCreate);
     }
   };
 
