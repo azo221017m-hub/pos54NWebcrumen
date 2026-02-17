@@ -170,8 +170,10 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
   };
 
   return (
-    <form onSubmit={handleSubmit} className="formulario-negocio">
-      <div className="formulario-header">
+    <div className="formulario-negocio-overlay" onClick={onCancel}>
+      <div className="formulario-negocio-modal" onClick={(e) => e.stopPropagation()}>
+        <form onSubmit={handleSubmit} className="formulario-negocio">
+          <div className="formulario-header">
         <h2 className="formulario-titulo">
           <Building2 size={28} />
           {negocioEditar ? 'Editar Negocio' : 'Nuevo Negocio'}
@@ -520,7 +522,9 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
           <Check size={20} />
           {loading ? 'Guardando...' : negocioEditar ? 'Actualizar' : 'Crear Negocio'}
         </button>
+        </div>
+      </form>
       </div>
-    </form>
+    </div>
   );
 };
