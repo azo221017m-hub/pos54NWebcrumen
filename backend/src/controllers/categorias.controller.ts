@@ -17,6 +17,28 @@ interface Categoria extends RowDataPacket {
   orden: number;
 }
 
+// Helper function para obtener una categoría completa por ID
+async function obtenerCategoriaCompleta(idCategoria: number): Promise<Categoria | null> {
+  const [rows] = await pool.query<Categoria[]>(
+    `SELECT 
+      idCategoria,
+      nombre,
+      CAST(imagencategoria AS CHAR) as imagencategoria,
+      descripcion,
+      estatus,
+      fechaRegistroauditoria,
+      usuarioauditoria,
+      fechamodificacionauditoria,
+      idnegocio,
+      idmoderadordef,
+      orden
+    FROM tblposcrumenwebcategorias 
+    WHERE idCategoria = ?`,
+    [idCategoria]
+  );
+  return rows.length > 0 ? rows[0] : null;
+}
+
 // Obtener todas las categorías por negocio
 export const obtenerCategorias = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -125,10 +147,16 @@ export const crearCategoria = async (req: AuthRequest, res: Response): Promise<v
 
     await connection.commit();
 
-    res.status(201).json({
-      mensaje: 'Categoría creada exitosamente',
-      idCategoria: result.insertId
-    });
+    // Obtener la categoría completa creada
+    const createdCategoria = await obtenerCategoriaCompleta(result.insertId);
+    
+    if (!createdCategoria) {
+      await connection.rollback();
+      res.status(500).json({ mensaje: 'Categoría creada pero no se pudo recuperar' });
+      return;
+    }
+
+    res.status(201).json(createdCategoria);
   } catch (error) {
     await connection.rollback();
     console.error('Error al crear categoría:', error);
@@ -180,7 +208,16 @@ export const actualizarCategoria = async (req: AuthRequest, res: Response): Prom
 
     await connection.commit();
 
-    res.status(200).json({ mensaje: 'Categoría actualizada exitosamente' });
+    // Obtener la categoría completa actualizada
+    const updatedCategoria = await obtenerCategoriaCompleta(Number(id));
+    
+    if (!updatedCategoria) {
+      await connection.rollback();
+      res.status(500).json({ mensaje: 'Categoría actualizada pero no se pudo recuperar' });
+      return;
+    }
+
+    res.status(200).json(updatedCategoria);
   } catch (error) {
     await connection.rollback();
     console.error('Error al actualizar categoría:', error);

@@ -18,6 +18,24 @@ interface Descuento extends RowDataPacket {
   idnegocio: number;
 }
 
+// Helper function para obtener un descuento completo por ID
+async function obtenerDescuentoCompleto(id_descuento: number): Promise<Descuento | null> {
+  const [rows] = await pool.query<Descuento[]>(
+    `SELECT 
+      id_descuento,
+      nombre,
+      tipodescuento,
+      valor,
+      estatusdescuento,
+      requiereautorizacion,
+      idnegocio
+    FROM tblposcrumenwebdescuentos
+    WHERE id_descuento = ?`,
+    [id_descuento]
+  );
+  return rows.length > 0 ? rows[0] : null;
+}
+
 // Obtener todos los descuentos de un negocio
 export const obtenerDescuentos = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -163,10 +181,16 @@ export const crearDescuento = async (req: AuthRequest, res: Response): Promise<v
     );
 
     console.log('Descuento creado con ID:', result.insertId);
-    res.status(201).json({
-      message: 'Descuento creado exitosamente',
-      id_descuento: result.insertId
-    });
+    
+    // Obtener el descuento completo creado
+    const createdDescuento = await obtenerDescuentoCompleto(result.insertId);
+    
+    if (!createdDescuento) {
+      res.status(500).json({ message: 'Descuento creado pero no se pudo recuperar' });
+      return;
+    }
+
+    res.status(201).json(createdDescuento);
   } catch (error) {
     console.error('Error al crear descuento:', error);
     res.status(500).json({ 
@@ -258,7 +282,16 @@ export const actualizarDescuento = async (req: AuthRequest, res: Response): Prom
     }
 
     console.log('Descuento actualizado exitosamente');
-    res.json({ message: 'Descuento actualizado exitosamente' });
+    
+    // Obtener el descuento completo actualizado
+    const updatedDescuento = await obtenerDescuentoCompleto(Number(id_descuento));
+    
+    if (!updatedDescuento) {
+      res.status(500).json({ message: 'Descuento actualizado pero no se pudo recuperar' });
+      return;
+    }
+
+    res.json(updatedDescuento);
   } catch (error) {
     console.error('Error al actualizar descuento:', error);
     res.status(500).json({ 

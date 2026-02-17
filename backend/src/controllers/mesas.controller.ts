@@ -23,6 +23,26 @@ interface Mesa extends RowDataPacket {
   idnegocio: number;
 }
 
+// Helper function para obtener una mesa completa por ID
+async function obtenerMesaCompleta(idmesa: number): Promise<Mesa | null> {
+  const [rows] = await pool.query<Mesa[]>(
+    `SELECT 
+      idmesa,
+      nombremesa,
+      numeromesa,
+      cantcomensales,
+      estatusmesa,
+      tiempodeinicio,
+      tiempoactual,
+      estatustiempo,
+      idnegocio
+    FROM tblposcrumenwebmesas
+    WHERE idmesa = ?`,
+    [idmesa]
+  );
+  return rows.length > 0 ? rows[0] : null;
+}
+
 // Obtener todas las mesas de un negocio
 export const obtenerMesas = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -193,10 +213,16 @@ export const crearMesa = async (req: AuthRequest, res: Response): Promise<void> 
     );
 
     console.log('Mesa creada con ID:', result.insertId);
-    res.status(201).json({
-      message: 'Mesa creada exitosamente',
-      idmesa: result.insertId
-    });
+    
+    // Obtener la mesa completa creada
+    const createdMesa = await obtenerMesaCompleta(result.insertId);
+    
+    if (!createdMesa) {
+      res.status(500).json({ message: 'Mesa creada pero no se pudo recuperar' });
+      return;
+    }
+
+    res.status(201).json(createdMesa);
   } catch (error) {
     console.error('Error al crear mesa:', error);
     res.status(500).json({ 
@@ -318,7 +344,16 @@ export const actualizarMesa = async (req: AuthRequest, res: Response): Promise<v
     }
 
     console.log('Mesa actualizada exitosamente');
-    res.json({ message: 'Mesa actualizada exitosamente' });
+    
+    // Obtener la mesa completa actualizada
+    const updatedMesa = await obtenerMesaCompleta(Number(idmesa));
+    
+    if (!updatedMesa) {
+      res.status(500).json({ message: 'Mesa actualizada pero no se pudo recuperar' });
+      return;
+    }
+
+    res.json(updatedMesa);
   } catch (error) {
     console.error('Error al actualizar mesa:', error);
     res.status(500).json({ 

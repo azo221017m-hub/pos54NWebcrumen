@@ -27,6 +27,38 @@ interface Cliente extends RowDataPacket {
   idnegocio: number;
 }
 
+// Helper function para obtener un cliente completo por ID
+async function obtenerClienteCompleto(idCliente: number): Promise<Cliente | null> {
+  const [rows] = await pool.query<Cliente[]>(
+    `SELECT 
+      idCliente,
+      nombre,
+      referencia,
+      cumple,
+      categoriacliente,
+      satisfaccion,
+      comentarios,
+      puntosfidelidad,
+      estatus_seguimiento,
+      responsable_seguimiento,
+      medio_contacto,
+      observacionesseguimiento,
+      fechaultimoseguimiento,
+      telefono,
+      email,
+      direccion,
+      estatus,
+      fecharegistroauditoria,
+      usuarioauditoria,
+      fehamodificacionauditoria,
+      idnegocio
+    FROM tblposcrumenwebclientes 
+    WHERE idCliente = ?`,
+    [idCliente]
+  );
+  return rows.length > 0 ? rows[0] : null;
+}
+
 // Obtener todos los clientes por negocio
 export const obtenerClientes = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -201,10 +233,15 @@ export const crearCliente = async (req: AuthRequest, res: Response): Promise<voi
       ]
     );
 
-    res.status(201).json({ 
-      message: 'Cliente creado exitosamente', 
-      idCliente: result.insertId 
-    });
+    // Obtener el cliente completo creado
+    const createdCliente = await obtenerClienteCompleto(result.insertId);
+    
+    if (!createdCliente) {
+      res.status(500).json({ message: 'Cliente creado pero no se pudo recuperar' });
+      return;
+    }
+
+    res.status(201).json(createdCliente);
   } catch (error) {
     console.error('Error al crear cliente:', error);
     res.status(500).json({ 
@@ -297,7 +334,15 @@ export const actualizarCliente = async (req: Request, res: Response): Promise<vo
       return;
     }
 
-    res.json({ message: 'Cliente actualizado exitosamente' });
+    // Obtener el cliente completo actualizado
+    const updatedCliente = await obtenerClienteCompleto(Number(idCliente));
+    
+    if (!updatedCliente) {
+      res.status(500).json({ message: 'Cliente actualizado pero no se pudo recuperar' });
+      return;
+    }
+
+    res.json(updatedCliente);
   } catch (error) {
     console.error('Error al actualizar cliente:', error);
     res.status(500).json({ 

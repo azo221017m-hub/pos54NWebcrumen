@@ -101,6 +101,36 @@ export const obtenerProveedorPorId = async (req: Request, res: Response): Promis
   }
 };
 
+// Helper function to get full proveedor details by ID
+const obtenerProveedorCompleto = async (id_proveedor: number): Promise<Proveedor | null> => {
+  // Validate id_proveedor
+  if (!id_proveedor || id_proveedor <= 0) {
+    return null;
+  }
+  
+  const [rows] = await pool.query<Proveedor[]>(
+    `SELECT 
+      id_proveedor,
+      nombre,
+      rfc,
+      telefono,
+      correo,
+      direccion,
+      banco,
+      cuenta,
+      activo,
+      fechaRegistroauditoria,
+      usuarioauditoria,
+      fehamodificacionauditoria,
+      idnegocio
+    FROM tblposcrumenwebproveedores
+    WHERE id_proveedor = ?`,
+    [id_proveedor]
+  );
+  
+  return rows.length > 0 ? rows[0] : null;
+};
+
 // Crear nuevo proveedor
 export const crearProveedor = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -154,10 +184,17 @@ export const crearProveedor = async (req: AuthRequest, res: Response): Promise<v
       ]
     );
 
-    res.status(201).json({ 
-      message: 'Proveedor creado exitosamente', 
-      id_proveedor: result.insertId 
-    });
+    // Fetch the complete created proveedor to return to frontend
+    const createdProveedor = await obtenerProveedorCompleto(result.insertId);
+    
+    if (!createdProveedor) {
+      res.status(500).json({ 
+        message: `Error: No se pudo recuperar el proveedor creado con ID ${result.insertId}` 
+      });
+      return;
+    }
+
+    res.status(201).json(createdProveedor);
   } catch (error) {
     console.error('Error al crear proveedor:', error);
     res.status(500).json({ 
@@ -226,7 +263,17 @@ export const actualizarProveedor = async (req: Request, res: Response): Promise<
       return;
     }
 
-    res.json({ message: 'Proveedor actualizado exitosamente' });
+    // Fetch the complete updated proveedor to return to frontend
+    const updatedProveedor = await obtenerProveedorCompleto(Number(id_proveedor));
+    
+    if (!updatedProveedor) {
+      res.status(500).json({ 
+        message: `Error: No se pudo recuperar el proveedor actualizado con ID ${id_proveedor}` 
+      });
+      return;
+    }
+
+    res.json(updatedProveedor);
   } catch (error) {
     console.error('Error al actualizar proveedor:', error);
     res.status(500).json({ 
