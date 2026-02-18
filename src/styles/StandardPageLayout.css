@@ -1,0 +1,460 @@
+/* ===================================
+   LAYOUT ESTÁNDAR PARA TODAS LAS PÁGINAS
+   =================================== */
+
+/* Contenedor principal de la página */
+.standard-page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  overflow: hidden;
+}
+
+/* ===================================
+   HEADER - Barra superior con logo y botones
+   =================================== */
+.standard-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  min-height: 70px;
+}
+
+/* Botón de regreso */
+.standard-page-header .btn-back {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.standard-page-header .btn-back:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateX(-4px);
+}
+
+/* Título del header */
+.standard-page-header .header-title-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  justify-content: center;
+}
+
+.standard-page-header .header-logo {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.standard-page-header .header-title {
+  color: white;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.standard-page-header .header-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 400;
+}
+
+/* Botón de acción principal (derecha) */
+.standard-page-header .btn-action {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: white;
+  border: none;
+  border-radius: 8px;
+  color: #667eea;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.standard-page-header .btn-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* ===================================
+   HERO - Sección con título y descripción
+   =================================== */
+.standard-page-hero {
+  padding: 2rem 2rem 1.5rem 2rem;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.standard-page-hero .hero-content {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.standard-page-hero .hero-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.standard-page-hero .hero-description {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ===================================
+   MAIN CONTENT - Contenedor de contenido principal
+   =================================== */
+.standard-page-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  overflow: hidden;
+}
+
+/* Contenedor de datos con scroll */
+.standard-page-content {
+  flex: 1;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  
+  /* Scroll personalizado */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.standard-page-content::-webkit-scrollbar {
+  width: 12px;
+}
+
+.standard-page-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 6px;
+}
+
+.standard-page-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 6px;
+  border: 2px solid #f1f5f9;
+}
+
+.standard-page-content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ===================================
+   GRID DE CARDS - Para listas de elementos
+   =================================== */
+.standard-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  padding: 0.5rem;
+}
+
+/* Card individual */
+.standard-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: fit-content;
+  height: auto;
+}
+
+.standard-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  border-color: #667eea;
+}
+
+/* Header del card */
+.standard-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.standard-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  flex: 1;
+}
+
+/* Contenido del card */
+.standard-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.standard-card-field {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 0.5rem;
+  align-items: start;
+}
+
+.standard-card-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.standard-card-value {
+  font-size: 0.95rem;
+  color: #1f2937;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+/* Footer del card con acciones */
+.standard-card-footer {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f3f4f6;
+  margin-top: auto;
+}
+
+.standard-card-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.standard-card-btn:hover {
+  background: #f9fafb;
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.standard-card-btn.btn-edit {
+  color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.standard-card-btn.btn-edit:hover {
+  background: #eff6ff;
+}
+
+.standard-card-btn.btn-delete {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.standard-card-btn.btn-delete:hover {
+  background: #fef2f2;
+}
+
+/* ===================================
+   ESTADOS - Loading y Empty
+   =================================== */
+.standard-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1.5rem;
+}
+
+.standard-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+  color: #9ca3af;
+}
+
+.standard-empty-state svg {
+  width: 80px;
+  height: 80px;
+  opacity: 0.5;
+}
+
+.standard-empty-state p {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* ===================================
+   NOTIFICACIONES
+   =================================== */
+.standard-notification {
+  position: fixed;
+  top: 90px;
+  right: 2rem;
+  max-width: 400px;
+  padding: 1rem 1.5rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  z-index: 1000;
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.standard-notification.success {
+  border-left: 4px solid #10b981;
+}
+
+.standard-notification.error {
+  border-left: 4px solid #ef4444;
+}
+
+.standard-notification.info {
+  border-left: 4px solid #3b82f6;
+}
+
+.standard-notification .notification-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.standard-notification .notification-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.standard-notification .notification-message {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.standard-notification .btn-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.standard-notification .btn-close:hover {
+  color: #1f2937;
+}
+
+/* ===================================
+   RESPONSIVE
+   =================================== */
+@media (max-width: 768px) {
+  .standard-page-header {
+    padding: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .standard-page-header .header-title-section {
+    order: 1;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .standard-page-header .btn-back {
+    order: 2;
+  }
+
+  .standard-page-header .btn-action {
+    order: 3;
+  }
+
+  .standard-page-hero {
+    padding: 1.5rem 1rem;
+  }
+
+  .standard-page-main {
+    padding: 1rem;
+  }
+
+  .standard-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .standard-card-field {
+    grid-template-columns: 1fr;
+  }
+}

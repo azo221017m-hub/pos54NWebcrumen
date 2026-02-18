@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, User } from 'lucide-react';
-import { ListaUsuarios } from '../../components/usuarios/ListaUsuarios/ListaUsuarios';
+import { Plus, User, Edit, Trash2, Shield } from 'lucide-react';
+import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
+import StandardCard from '../../components/StandardCard/StandardCard';
 import { FormularioUsuario } from '../../components/usuarios/FormularioUsuario/FormularioUsuario';
 import type { Usuario, UsuarioFormData } from '../../types/usuario.types';
 import {
@@ -16,7 +16,6 @@ import './ConfigUsuarios.css';
 type Vista = 'lista' | 'formulario';
 
 export const ConfigUsuarios: React.FC = () => {
-  const navigate = useNavigate();
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [vista, setVista] = useState<Vista>('lista');
   const [usuarioEditar, setUsuarioEditar] = useState<Usuario | null>(null);
@@ -128,69 +127,135 @@ export const ConfigUsuarios: React.FC = () => {
   };
 
   return (
-    <div className="config-usuarios-page">
+    <>
       {/* Mensajes */}
       {mensaje && (
-        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
-          <div className="mensaje-contenido">
-            <span className="mensaje-texto">{mensaje.texto}</span>
-            <button
-              className="mensaje-cerrar"
-              onClick={() => setMensaje(null)}
-              aria-label="Cerrar mensaje"
-            >
-              ×
-            </button>
+        <div className={`standard-notification ${mensaje.tipo}`}>
+          <div className="notification-content">
+            <p className="notification-message">{mensaje.texto}</p>
           </div>
+          <button
+            className="btn-close"
+            onClick={() => setMensaje(null)}
+            aria-label="Cerrar mensaje"
+          >
+            ×
+          </button>
         </div>
       )}
 
-      {/* Header con botones */}
-      <div className="config-header">
-        <button 
-          className="btn-volver" 
-          onClick={() => navigate('/dashboard')}
-          title="Volver al Dashboard"
+      {vista === 'lista' ? (
+        <StandardPageLayout
+          headerTitle="Configuración de Usuarios"
+          headerSubtitle="Administra los usuarios del sistema"
+          backButtonText="Regresa a DASHBOARD"
+          backButtonPath="/dashboard"
+          actionButton={{
+            text: 'Nuevo Usuario',
+            icon: <Plus size={20} />,
+            onClick: handleNuevoUsuario
+          }}
+          loading={loading}
+          loadingMessage="Cargando usuarios..."
+          isEmpty={usuarios.length === 0}
+          emptyIcon={<User size={80} />}
+          emptyMessage="No hay usuarios registrados. Comienza agregando uno nuevo."
         >
-          <ArrowLeft size={20} />
-          Volver al Dashboard
-        </button>
-        
-        <div className="config-header-content">
-          <div className="config-title">
-            <User size={32} className="config-icon" />
-            <div>
-              <h1>Configuración de Usuarios</h1>
-              <p>Administra los usuarios del sistema</p>
-            </div>
+          <div className="standard-cards-grid">
+            {usuarios.map((usuario) => (
+              <StandardCard
+                key={usuario.idUsuario}
+                title={usuario.nombre}
+                fields={[
+                  {
+                    label: 'Alias',
+                    value: (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <User size={14} />
+                        {usuario.alias}
+                      </span>
+                    )
+                  },
+                  {
+                    label: 'Teléfono',
+                    value: usuario.telefono || 'No especificado'
+                  },
+                  {
+                    label: 'Cumpleaños',
+                    value: usuario.cumple ? new Date(usuario.cumple).toLocaleDateString('es-MX') : 'No especificado'
+                  },
+                  {
+                    label: 'Rol ID',
+                    value: (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Shield size={14} />
+                        {usuario.idRol || 'Sin rol'}
+                      </span>
+                    )
+                  },
+                  {
+                    label: 'Desempeño',
+                    value: `${usuario.desempeno || 0}%`
+                  },
+                  {
+                    label: 'Estado',
+                    value: (
+                      <span style={{ 
+                        color: usuario.estatus === 1 ? '#10b981' : '#ef4444',
+                        fontWeight: 600
+                      }}>
+                        {usuario.estatus === 1 ? 'Activo' : 'Inactivo'}
+                      </span>
+                    )
+                  }
+                ]}
+                actions={[
+                  {
+                    label: 'Editar',
+                    icon: <Edit size={16} />,
+                    onClick: () => handleEditarUsuario(usuario),
+                    variant: 'edit'
+                  },
+                  {
+                    label: 'Eliminar',
+                    icon: <Trash2 size={16} />,
+                    onClick: () => {
+                      if (window.confirm(`¿Está seguro de eliminar al usuario "${usuario.nombre}"?\n\nEsta acción no se puede deshacer.`)) {
+                        handleEliminarUsuario(usuario.idUsuario!);
+                      }
+                    },
+                    variant: 'delete'
+                  }
+                ]}
+              />
+            ))}
           </div>
-          {vista === 'lista' && (
-            <button className="btn-nuevo" onClick={handleNuevoUsuario}>
-              <Plus size={20} />
-              Nuevo Usuario
-            </button>
-          )}
+        </StandardPageLayout>
+      ) : (
+        <div className="standard-page-container">
+          <header className="standard-page-header">
+            <div className="header-title-section">
+              <User size={50} />
+              <div>
+                <h1 className="header-title">
+                  {usuarioEditar ? 'Editar Usuario' : 'Nuevo Usuario'}
+                </h1>
+                <p className="header-subtitle">Complete el formulario</p>
+              </div>
+            </div>
+          </header>
+          <main className="standard-page-main">
+            <div className="standard-page-content">
+              <FormularioUsuario
+                usuarioEditar={usuarioEditar}
+                onSubmit={handleSubmitFormulario}
+                onCancelar={handleCancelarFormulario}
+                loading={loading}
+              />
+            </div>
+          </main>
         </div>
-      </div>
-
-      {/* Contenedor fijo sin scroll */}
-      <div className="config-container">
-        {vista === 'lista' ? (
-          <ListaUsuarios
-            usuarios={usuarios}
-            onEditar={handleEditarUsuario}
-            onEliminar={handleEliminarUsuario}
-            loading={loading}
-          />
-        ) : (
-          <FormularioUsuario
-            usuarioEditar={usuarioEditar}
-            onSubmit={handleSubmitFormulario}
-            onCancelar={handleCancelarFormulario}
-            loading={loading}
-          />
-        )}
-      </div>
-    </div>
+      )}
+    </>
   );
 };
