@@ -1413,7 +1413,7 @@ export const DashboardPage = () => {
                 </div>
               )}
 
-              {/* Gráfico de Líneas - Tipo de Venta */}
+              {/* Gráfico de Barras Horizontales - Tipo de Venta */}
               {resumenVentas.ventasPorTipoDeVenta && resumenVentas.ventasPorTipoDeVenta.length > 0 && (
                 <div style={{ marginTop: '1rem', borderTop: '1px solid #e5e7eb', paddingTop: '0.75rem' }}>
                   <h4 style={{ fontSize: '0.65rem', fontWeight: '600', color: '#374151', marginBottom: '0.75rem', textAlign: 'center' }}>
@@ -1430,7 +1430,7 @@ export const DashboardPage = () => {
                       'ONLINE': '#3b82f6'
                     };
 
-                    // Define order for line chart
+                    // Define order for bar chart
                     const ordenTipos = ['MESA', 'DOMICILIO', 'LLEVAR', 'ONLINE'];
                     const datosOrdenados = ordenTipos.map(tipo => {
                       const found = resumenVentas.ventasPorTipoDeVenta.find(item => item.tipodeventa === tipo);
@@ -1443,198 +1443,104 @@ export const DashboardPage = () => {
 
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        {/* Line Chart Container */}
-                        <div style={{ 
-                          position: 'relative', 
-                          height: '120px', 
-                          padding: '0.5rem',
-                          backgroundColor: '#f9fafb',
-                          borderRadius: '6px',
-                          border: '1px solid #e5e7eb'
-                        }}>
-                          {/* Y-axis labels */}
-                          <div style={{ 
-                            position: 'absolute', 
-                            left: '0', 
-                            top: '0.5rem', 
-                            bottom: '1.5rem',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between',
-                            fontSize: '0.45rem',
-                            color: '#9ca3af',
-                            paddingRight: '0.25rem'
-                          }}>
-                            <div>${(maxTipoVenta / 1000).toFixed(0)}k</div>
-                            <div>${(maxTipoVenta / 2000).toFixed(0)}k</div>
-                            <div>$0</div>
-                          </div>
-
-                          {/* Chart Area */}
-                          <div style={{ 
-                            marginLeft: '1.5rem',
-                            height: '100%',
-                            position: 'relative',
-                            display: 'flex',
-                            alignItems: 'flex-end',
-                            gap: '0.25rem',
-                            paddingBottom: '1.5rem'
-                          }}>
-                            {/* Grid lines */}
-                            <div style={{
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              bottom: '1.5rem',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              justifyContent: 'space-between',
-                              pointerEvents: 'none'
-                            }}>
-                              <div style={{ height: '1px', backgroundColor: '#e5e7eb' }}></div>
-                              <div style={{ height: '1px', backgroundColor: '#e5e7eb' }}></div>
-                              <div style={{ height: '1px', backgroundColor: '#e5e7eb' }}></div>
-                            </div>
-
-                            {/* Data points and lines */}
-                            <svg 
-                              style={{ 
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                width: '100%',
-                                height: 'calc(100% - 1.5rem)',
-                                overflow: 'visible'
-                              }}
-                              viewBox="0 0 100 100"
-                              preserveAspectRatio="none"
-                            >
-                              {/* Line path */}
-                              <polyline
-                                points={datosOrdenados.map((item, idx) => {
-                                  const x = (idx / (datosOrdenados.length - 1)) * 100;
-                                  const y = 100 - ((item.total / maxTipoVenta) * 100);
-                                  return `${x},${y}`;
-                                }).join(' ')}
-                                fill="none"
-                                stroke="#3b82f6"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                style={{ vectorEffect: 'non-scaling-stroke' }}
-                              />
-                              
-                              {/* Area under line */}
-                              <polygon
-                                points={`0,100 ${datosOrdenados.map((item, idx) => {
-                                  const x = (idx / (datosOrdenados.length - 1)) * 100;
-                                  const y = 100 - ((item.total / maxTipoVenta) * 100);
-                                  return `${x},${y}`;
-                                }).join(' ')} 100,100`}
-                                fill="#3b82f6"
-                                fillOpacity="0.1"
-                              />
-
-                              {/* Data points */}
-                              {datosOrdenados.map((item, idx) => {
-                                const x = (idx / (datosOrdenados.length - 1)) * 100;
-                                const y = 100 - ((item.total / maxTipoVenta) * 100);
-                                return (
-                                  <g key={idx}>
-                                    <circle
-                                      cx={x}
-                                      cy={y}
-                                      r="3"
-                                      fill="white"
-                                      stroke={item.color}
-                                      strokeWidth="2"
-                                      style={{ vectorEffect: 'non-scaling-stroke' }}
-                                    />
-                                    <circle
-                                      cx={x}
-                                      cy={y}
-                                      r="1.5"
-                                      fill={item.color}
-                                    />
-                                  </g>
-                                );
-                              })}
-                            </svg>
-
-                            {/* X-axis labels */}
-                            <div style={{
-                              position: 'absolute',
-                              bottom: 0,
-                              left: 0,
-                              right: 0,
-                              display: 'flex',
-                              justifyContent: 'space-around',
-                              fontSize: '0.45rem',
-                              color: '#6b7280',
-                              fontWeight: '600'
-                            }}>
-                              {datosOrdenados.map((item, idx) => (
-                                <div 
-                                  key={idx}
-                                  style={{ 
-                                    textAlign: 'center',
-                                    color: item.color,
-                                    flex: 1
-                                  }}
-                                >
-                                  {item.tipodeventa.substring(0, 3)}
+                        {/* Horizontal Bar Chart */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          {datosOrdenados.map((item, index) => {
+                            const percentage = maxTipoVenta > 0 ? (item.total / maxTipoVenta) * 100 : 0;
+                            
+                            return (
+                              <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                {/* Label and Value */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                    <div style={{ 
+                                      width: '8px', 
+                                      height: '8px', 
+                                      borderRadius: '2px', 
+                                      backgroundColor: item.color,
+                                      boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                                    }}></div>
+                                    <span style={{ fontSize: '0.6rem', color: '#374151', fontWeight: '600' }}>
+                                      {item.tipodeventa}
+                                    </span>
+                                  </div>
+                                  <span style={{ fontSize: '0.6rem', fontWeight: '700', color: item.color }}>
+                                    ${item.total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                  </span>
                                 </div>
-                              ))}
-                            </div>
-                          </div>
+                                
+                                {/* Horizontal Bar */}
+                                <div style={{ 
+                                  position: 'relative',
+                                  width: '100%', 
+                                  height: '20px', 
+                                  backgroundColor: '#f3f4f6', 
+                                  borderRadius: '10px', 
+                                  overflow: 'hidden',
+                                  boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)'
+                                }}>
+                                  <div style={{
+                                    width: `${percentage}%`,
+                                    height: '100%',
+                                    backgroundColor: item.color,
+                                    borderRadius: '10px',
+                                    transition: 'width 0.3s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'flex-end',
+                                    paddingRight: percentage > 15 ? '0.5rem' : '0',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                  }}>
+                                    {percentage > 15 && (
+                                      <span style={{ 
+                                        fontSize: '0.55rem', 
+                                        fontWeight: '700', 
+                                        color: 'white',
+                                        textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                                      }}>
+                                        {percentage.toFixed(0)}%
+                                      </span>
+                                    )}
+                                  </div>
+                                  
+                                  {/* Percentage label outside bar if too small */}
+                                  {percentage > 0 && percentage <= 15 && (
+                                    <span style={{ 
+                                      position: 'absolute',
+                                      right: '0.5rem',
+                                      top: '50%',
+                                      transform: 'translateY(-50%)',
+                                      fontSize: '0.5rem', 
+                                      fontWeight: '600', 
+                                      color: '#9ca3af'
+                                    }}>
+                                      {percentage.toFixed(0)}%
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
 
-                        {/* Values Table */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                          {datosOrdenados.map((item, index) => (
-                            <div key={index} style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              alignItems: 'center',
-                              padding: '0.25rem 0.5rem',
-                              borderRadius: '4px',
-                              backgroundColor: index % 2 === 0 ? '#f9fafb' : 'transparent'
-                            }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                                <div style={{ 
-                                  width: '3px', 
-                                  height: '12px', 
-                                  borderRadius: '2px', 
-                                  backgroundColor: item.color
-                                }}></div>
-                                <span style={{ fontSize: '0.55rem', color: '#4b5563', fontWeight: '500' }}>
-                                  {item.tipodeventa}
-                                </span>
-                              </div>
-                              <span style={{ fontSize: '0.6rem', fontWeight: '700', color: item.color }}>
-                                ${item.total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                              </span>
-                            </div>
-                          ))}
-                          
-                          {/* Total */}
-                          <div style={{ 
-                            marginTop: '0.25rem', 
-                            paddingTop: '0.35rem', 
-                            borderTop: '2px solid #e5e7eb',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            padding: '0.25rem 0.5rem'
-                          }}>
-                            <span style={{ fontSize: '0.6rem', fontWeight: '700', color: '#1f2937' }}>
-                              TOTAL
-                            </span>
-                            <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#1f2937' }}>
-                              ${totalTipoVenta.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                            </span>
-                          </div>
+                        {/* Total Summary */}
+                        <div style={{ 
+                          marginTop: '0.25rem', 
+                          paddingTop: '0.5rem', 
+                          borderTop: '2px solid #e5e7eb',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '0.35rem 0.5rem',
+                          backgroundColor: '#f9fafb',
+                          borderRadius: '6px'
+                        }}>
+                          <span style={{ fontSize: '0.65rem', fontWeight: '700', color: '#1f2937' }}>
+                            TOTAL
+                          </span>
+                          <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#1f2937' }}>
+                            ${totalTipoVenta.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          </span>
                         </div>
                       </div>
                     );
