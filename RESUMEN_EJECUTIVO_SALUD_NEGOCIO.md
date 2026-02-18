@@ -272,7 +272,7 @@ Contiene:
 ## 🎯 Cumplimiento de Requisitos
 
 ### ✅ Requisito 1: Costo de Venta
-- [x] Fórmula: `SUM(cantidad * costo)`
+- [x] Fórmula: `SUM(cantidad * costo * -1)` (cantidad almacenada en negativo)
 - [x] Filtros: SALIDA, VENTA/CONSUMO, PROCESADO
 - [x] Parámetros: fecha_inicio, fecha_fin, idnegocio
 - [x] SQL injection prevenido

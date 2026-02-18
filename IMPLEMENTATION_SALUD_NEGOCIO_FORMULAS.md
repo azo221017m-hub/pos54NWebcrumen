@@ -36,7 +36,7 @@ WHERE idnegocio = ?
 
 ### 2. Costo de Venta
 ```sql
-SELECT COALESCE(SUM(cantidad * costo), 0) as costoVenta
+SELECT COALESCE(SUM(cantidad * costo * -1), 0) as costoVenta
 FROM tblposcrumenwebdetallemovimientos
 WHERE tipomovimiento = 'SALIDA'
   AND motivomovimiento IN ('VENTA', 'CONSUMO')
@@ -45,11 +45,17 @@ WHERE tipomovimiento = 'SALIDA'
   AND idnegocio = ?
 ```
 
+**IMPORTANTE:** Las cantidades en la base de datos están almacenadas en **negativo** para movimientos de SALIDA. Por esta razón, la fórmula multiplica por **-1** para obtener el valor positivo del costo.
+
+**Ejemplo:**
+- Si `cantidad = -5` y `costo = 100`
+- Cálculo: `(-5) × 100 × (-1) = 500` ✅ (valor positivo)
+
 **Criterios:**
 - Solo movimientos de salida (`tipomovimiento = 'SALIDA'`)
 - Motivos: VENTA y CONSUMO
 - Solo movimientos procesados (`estatusmovimiento = 'PROCESADO'`)
-- Cálculo: `SUM(cantidad * costo)`
+- Cálculo: `SUM(cantidad * costo * -1)` (se multiplica por -1 porque cantidad está en negativo)
 - Filtrado por negocio y rango de fechas
 
 ---
@@ -121,8 +127,9 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
     const ventas = Number(ventasRows[0]?.totalVentas) || 0;
 
     // 2. Calcular COSTO DE VENTA
+    // NOTA: cantidad está almacenada en negativo, por eso se multiplica por -1
     const [costoVentaRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT COALESCE(SUM(cantidad * costo), 0) as costoVenta
+      `SELECT COALESCE(SUM(cantidad * costo * -1), 0) as costoVenta
        FROM tblposcrumenwebdetallemovimientos
        WHERE tipomovimiento = 'SALIDA'
          AND motivomovimiento IN ('VENTA', 'CONSUMO')

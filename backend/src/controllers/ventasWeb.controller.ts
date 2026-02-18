@@ -1297,8 +1297,9 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
     // 2. Calculate COSTO DE VENTA (Cost of Sales)
     // Sum of cantidad * costo from tblposcrumenwebdetallemovimientos
     // where tipomovimiento = 'SALIDA' AND motivomovimiento IN ('VENTA', 'CONSUMO')
+    // NOTA: cantidad está almacenada en negativo, por eso se multiplica por -1
     const [costoVentaRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT COALESCE(SUM(cantidad * costo), 0) as costoVenta
+      `SELECT COALESCE(SUM(cantidad * costo * -1), 0) as costoVenta
        FROM tblposcrumenwebdetallemovimientos
        WHERE tipomovimiento = 'SALIDA'
          AND motivomovimiento IN ('VENTA', 'CONSUMO')
