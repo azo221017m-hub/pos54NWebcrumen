@@ -1,15 +1,13 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Tags } from 'lucide-react';
+import { Plus, Tags, Edit, Trash2, Image } from 'lucide-react';
 import type { Categoria, CategoriaCreate, CategoriaUpdate } from '../../types/categoria.types';
 import { obtenerCategorias, crearCategoria, actualizarCategoria, eliminarCategoria } from '../../services/categoriasService';
-import ListaCategorias from '../../components/categorias/ListaCategorias/ListaCategorias';
+import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
+import StandardCard from '../../components/StandardCard/StandardCard';
 import FormularioCategoria from '../../components/categorias/FormularioCategoria/FormularioCategoria';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigCategorias.css';
 
 const ConfigCategorias: React.FC = () => {
-  const navigate = useNavigate();
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -104,57 +102,90 @@ const ConfigCategorias: React.FC = () => {
   };
 
   return (
-    <div className="config-categorias-page">
-      {/* Mensaje de Notificación */}
+    <>
+      {/* Notificación */}
       {mensaje && (
-        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
-          <div className="mensaje-contenido">
-            <span className="mensaje-texto">{mensaje.texto}</span>
-            <button
-              className="mensaje-cerrar"
-              onClick={() => setMensaje(null)}
-              aria-label="Cerrar mensaje"
-            >
-              ×
-            </button>
+        <div className={`standard-notification ${mensaje.tipo}`}>
+          <div className="notification-content">
+            <p className="notification-message">{mensaje.texto}</p>
           </div>
+          <button className="btn-close" onClick={() => setMensaje(null)}>×</button>
         </div>
       )}
 
-      {/* Header con botones */}
-      <div className="config-header">
-        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={20} />
-          Volver al Dashboard
-        </button>
-        
-        <div className="config-header-content">
-          <div className="config-title">
-            <Tags size={32} className="config-icon" />
-            <div>
-              <h1>Gestión de Categorías</h1>
-              <p>Administra las categorías de productos</p>
-            </div>
-          </div>
-          <button onClick={handleNuevo} className="btn-nuevo">
-            <Plus size={20} />
-            Nueva Categoría
-          </button>
+      <StandardPageLayout
+        headerTitle="Gestión de Categorías"
+        headerSubtitle="Administra las categorías de productos"
+        backButtonText="Regresa a DASHBOARD"
+        backButtonPath="/dashboard"
+        actionButton={{
+          text: 'Nueva Categoría',
+          icon: <Plus size={20} />,
+          onClick: handleNuevo
+        }}
+        loading={cargando}
+        loadingMessage="Cargando categorías..."
+        isEmpty={categorias.length === 0}
+        emptyIcon={<Tags size={80} />}
+        emptyMessage="No hay categorías registradas. Comienza agregando una nueva."
+      >
+        <div className="standard-cards-grid">
+          {categorias.map((categoria) => (
+            <StandardCard
+              key={categoria.idCategoria}
+              title={categoria.nombre}
+              fields={[
+                {
+                  label: 'Descripción',
+                  value: categoria.descripcion || 'Sin descripción'
+                },
+                {
+                  label: 'Imagen',
+                  value: categoria.imagencategoria ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Image size={14} />
+                      Sí
+                    </span>
+                  ) : 'No'
+                },
+                {
+                  label: 'Orden',
+                  value: categoria.orden
+                },
+                {
+                  label: 'Moderador Def.',
+                  value: categoria.idmoderadordef?.toString() || 'Sin asignar'
+                },
+                {
+                  label: 'Estado',
+                  value: (
+                    <span style={{ 
+                      color: categoria.estatus ? '#10b981' : '#ef4444',
+                      fontWeight: 600
+                    }}>
+                      {categoria.estatus ? 'Activo' : 'Inactivo'}
+                    </span>
+                  )
+                }
+              ]}
+              actions={[
+                {
+                  label: 'Editar',
+                  icon: <Edit size={16} />,
+                  onClick: () => handleEditar(categoria),
+                  variant: 'edit'
+                },
+                {
+                  label: 'Eliminar',
+                  icon: <Trash2 size={16} />,
+                  onClick: () => handleEliminar(categoria.idCategoria),
+                  variant: 'delete'
+                }
+              ]}
+            />
+          ))}
         </div>
-      </div>
-
-      {/* Contenedor fijo con Lista */}
-      <div className="config-container">
-        {cargando ? (
-          <LoadingSpinner size={48} message="Cargando categorías..." />
-        ) : (
-          <ListaCategorias
-            categorias={categorias}
-            onEditar={handleEditar}
-            onEliminar={handleEliminar}
-          />
-        )}
-      </div>
+      </StandardPageLayout>
 
       {/* Formulario Modal */}
       {mostrarFormulario && (
@@ -165,7 +196,7 @@ const ConfigCategorias: React.FC = () => {
           onCancel={handleCancelar}
         />
       )}
-    </div>
+    </>
   );
 };
 
