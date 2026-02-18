@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Package } from 'lucide-react';
+import { Plus, Package, Edit, Trash2, ArrowUp, ArrowDown, FileText, Calendar, Tag } from 'lucide-react';
+import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
+import StandardCard from '../../components/StandardCard/StandardCard';
 import type { MovimientoConDetalles, MovimientoCreate } from '../../types/movimientos.types';
 import {
   obtenerMovimientos,
@@ -8,13 +9,10 @@ import {
   actualizarMovimiento,
   eliminarMovimiento
 } from '../../services/movimientosService';
-import ListaMovimientos from '../../components/movimientos/ListaMovimientos/ListaMovimientos';
 import FormularioMovimiento from '../../components/movimientos/FormularioMovimiento/FormularioMovimiento';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
-import './MovimientosInventario.css';
+import '../../styles/StandardPageLayout.css';
 
 const MovimientosInventario: React.FC = () => {
-  const navigate = useNavigate();
   const [movimientos, setMovimientos] = useState<MovimientoConDetalles[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -86,9 +84,9 @@ const MovimientosInventario: React.FC = () => {
         // Actualizar estado local sin recargar
         setMovimientos(prev => [...prev, nuevoMovimiento]);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error al guardar movimiento:', error);
-      const mensaje = error?.response?.data?.message || 'Error al guardar el movimiento';
+      const mensaje = error instanceof Error ? error.message : 'Error al guardar el movimiento';
       mostrarMensaje('error', mensaje);
     }
   };
@@ -108,59 +106,139 @@ const MovimientosInventario: React.FC = () => {
       mostrarMensaje('success', 'Movimiento eliminado correctamente');
       // Actualizar estado local sin recargar
       setMovimientos(prev => prev.filter(mov => mov.idmovimiento !== id));
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error al eliminar movimiento:', error);
-      const mensaje = error?.response?.data?.message || 'Error al eliminar el movimiento';
+      const mensaje = error instanceof Error ? error.message : 'Error al eliminar el movimiento';
       mostrarMensaje('error', mensaje);
     }
   };
 
+  const getTipoMovimiento = (tipo: string) => {
+    if (tipo === 'ENTRADA') {
+      return { color: '#10b981', icon: <ArrowUp size={14} />, text: 'ENTRADA' };
+    }
+    return { color: '#ef4444', icon: <ArrowDown size={14} />, text: 'SALIDA' };
+  };
+
+  const formatFecha = (fecha: string) => {
+    return new Date(fecha).toLocaleDateString('es-MX', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   return (
-    <div className="movimientos-inventario-page">
-      {/* Header */}
-      <header className="page-header">
-        <div className="header-content">
-          <button className="btn-volver" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft size={20} />
-            Volver
-          </button>
-
-          <div className="header-info">
-            <div className="header-icon">
-              <Package size={32} />
-            </div>
-            <div className="header-text">
-              <h1>Movimientos de Inventario</h1>
-              <p>Gestiona las entradas y salidas del inventario</p>
-            </div>
-          </div>
-
-          <button className="btn-nuevo" onClick={abrirNuevoMovimiento}>
-            <Plus size={20} />
-            Nuevo Movimiento
-          </button>
-        </div>
-      </header>
-
-      {/* Mensajes */}
+    <>
       {mensaje && (
-        <div className={`mensaje mensaje-${mensaje.tipo}`}>
-          {mensaje.texto}
+        <div className={`standard-notification ${mensaje.tipo === 'success' ? 'success' : mensaje.tipo === 'error' ? 'error' : 'info'}`}>
+          <p>{mensaje.texto}</p>
+          <button onClick={() => setMensaje(null)}>×</button>
         </div>
       )}
 
-      {/* Contenido */}
-      <main className="page-content">
-        {cargando ? (
-          <LoadingSpinner size={48} message="Cargando movimientos..." />
-        ) : (
-          <ListaMovimientos
-            movimientos={movimientos}
-            onEditar={abrirEditarMovimiento}
-            onEliminar={handleEliminar}
-          />
-        )}
-      </main>
+      <StandardPageLayout
+        headerTitle="Movimientos de Inventario"
+        headerSubtitle="Gestiona las entradas y salidas del inventario"
+        actionButton={{
+          text: 'Nuevo Movimiento',
+          icon: <Plus size={20} />,
+          onClick: abrirNuevoMovimiento
+        }}
+        loading={cargando}
+        loadingMessage="Cargando movimientos..."
+        isEmpty={movimientos.length === 0}
+        emptyIcon={<Package size={80} />}
+        emptyMessage="No hay movimientos registrados"
+      >
+        <div className="standard-cards-grid">
+          {movimientos.map((movimiento) => {
+            const tipoMov = getTipoMovimiento(movimiento.tipomovimiento);
+            const cantidadInsumos = movimiento.detalles?.length || 0;
+            
+            return (
+              <StandardCard
+                key={movimiento.idmovimiento}
+                title={`Movimiento #${movimiento.idmovimiento}`}
+                fields={[
+                  {
+                    label: 'Tipo',
+                    value: (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {tipoMov.icon}
+                        <span style={{ color: tipoMov.color, fontWeight: 600 }}>
+                          {tipoMov.text}
+                        </span>
+                      </div>
+                    )
+                  },
+                  {
+                    label: 'Motivo',
+                    value: (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Tag size={14} />
+                        {movimiento.motivomovimiento}
+                      </div>
+                    )
+                  },
+                  {
+                    label: 'Insumos Afectados',
+                    value: (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Package size={14} />
+                        {cantidadInsumos} insumo{cantidadInsumos !== 1 ? 's' : ''}
+                      </div>
+                    )
+                  },
+                  {
+                    label: 'Fecha',
+                    value: (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Calendar size={14} />
+                        {formatFecha(movimiento.fechamovimiento)}
+                      </div>
+                    )
+                  },
+                  {
+                    label: 'Observaciones',
+                    value: (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <FileText size={14} />
+                        {movimiento.observaciones || 'Sin observaciones'}
+                      </div>
+                    )
+                  },
+                  {
+                    label: 'Estado',
+                    value: (
+                      <span style={{ 
+                        color: movimiento.estatusmovimiento === 'PROCESADO' ? '#10b981' : '#f59e0b',
+                        fontWeight: 600
+                      }}>
+                        {movimiento.estatusmovimiento}
+                      </span>
+                    )
+                  }
+                ]}
+                actions={[
+                  {
+                    label: 'Editar',
+                    icon: <Edit size={16} />,
+                    onClick: () => abrirEditarMovimiento(movimiento.idmovimiento),
+                    variant: 'edit'
+                  },
+                  {
+                    label: 'Eliminar',
+                    icon: <Trash2 size={16} />,
+                    onClick: () => handleEliminar(movimiento.idmovimiento),
+                    variant: 'delete'
+                  }
+                ]}
+              />
+            );
+          })}
+        </div>
+      </StandardPageLayout>
 
       {/* Formulario Modal */}
       {mostrarFormulario && (
@@ -173,7 +251,7 @@ const MovimientosInventario: React.FC = () => {
           onAplicar={cargarMovimientos}
         />
       )}
-    </div>
+    </>
   );
 };
 

@@ -1,19 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Receipt } from 'lucide-react';
+import { Plus, Receipt, DollarSign, FileText, Calendar, CheckCircle, XCircle } from 'lucide-react';
+import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
+import StandardCard from '../../components/StandardCard/StandardCard';
 import type { Gasto, GastoCreate } from '../../types/gastos.types';
 import {
   obtenerGastos,
   crearGasto,
   actualizarGasto
 } from '../../services/gastosService';
-import ListaGastos from '../../components/gastos/ListaGastos/ListaGastos';
 import FormularioGastos from '../../components/gastos/FormularioGastos/FormularioGastos';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
-import './PageGastos.css';
+import '../../styles/StandardPageLayout.css';
 
 const PageGastos: React.FC = () => {
-  const navigate = useNavigate();
   const [gastos, setGastos] = useState<Gasto[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -73,9 +71,9 @@ const PageGastos: React.FC = () => {
         // Actualizar estado local sin recargar
         setGastos(prev => [...prev, nuevoGasto]);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error al guardar gasto:', error);
-      const mensaje = error?.response?.data?.message || 'Error al guardar el gasto';
+      const mensaje = error instanceof Error ? error.message : 'Error al guardar el gasto';
       mostrarMensaje('error', mensaje);
     }
   };
@@ -85,50 +83,103 @@ const PageGastos: React.FC = () => {
     setGastoEditar(null);
   };
 
+  const formatFecha = (fecha: Date | string) => {
+    return new Date(fecha).toLocaleDateString('es-MX', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const getEstadoPago = (estado: string | null) => {
+    if (!estado) return { color: '#94a3b8', text: 'Sin estado' };
+    if (estado === 'PAGADO') return { color: '#10b981', text: 'PAGADO', icon: <CheckCircle size={14} /> };
+    if (estado === 'PENDIENTE') return { color: '#f59e0b', text: 'PENDIENTE', icon: <XCircle size={14} /> };
+    return { color: '#64748b', text: estado };
+  };
+
   return (
-    <div className="page-gastos">
-      {/* Header */}
-      <header className="page-header-gastos">
-        <div className="header-content-gastos">
-          <button className="btn-volver-gastos" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft size={20} />
-            Volver
-          </button>
-
-          <div className="header-info-gastos">
-            <div className="header-icon-gastos">
-              <Receipt size={32} />
-            </div>
-            <div className="header-text-gastos">
-              <h1>Gastos</h1>
-              <p>Registra y gestiona los gastos del negocio</p>
-            </div>
-          </div>
-
-          <button className="btn-nuevo-gastos" onClick={abrirNuevoGasto}>
-            <Plus size={20} />
-            Nuevo Gasto
-          </button>
-        </div>
-      </header>
-
-      {/* Mensajes */}
+    <>
       {mensaje && (
-        <div className={`mensaje-gastos mensaje-${mensaje.tipo}`}>
-          {mensaje.texto}
+        <div className={`standard-notification ${mensaje.tipo === 'success' ? 'success' : mensaje.tipo === 'error' ? 'error' : 'info'}`}>
+          <p>{mensaje.texto}</p>
+          <button onClick={() => setMensaje(null)}>×</button>
         </div>
       )}
 
-      {/* Contenido */}
-      <main className="page-content-gastos">
-        {cargando ? (
-          <LoadingSpinner size={48} message="Cargando gastos..." />
-        ) : (
-          <ListaGastos
-            gastos={gastos}
-          />
-        )}
-      </main>
+      <StandardPageLayout
+        headerTitle="Gastos"
+        headerSubtitle="Registra y gestiona los gastos del negocio"
+        actionButton={{
+          text: 'Nuevo Gasto',
+          icon: <Plus size={20} />,
+          onClick: abrirNuevoGasto
+        }}
+        loading={cargando}
+        loadingMessage="Cargando gastos..."
+        isEmpty={gastos.length === 0}
+        emptyIcon={<Receipt size={80} />}
+        emptyMessage="No hay gastos registrados"
+      >
+        <div className="standard-cards-grid">
+          {gastos.map((gasto) => {
+            const estadoPago = getEstadoPago(gasto.estatusdepago);
+            return (
+              <StandardCard
+                key={gasto.idventa}
+                title={`Folio: ${gasto.folioventa}`}
+                fields={[
+                  {
+                    label: 'Tipo de Gasto',
+                    value: (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <FileText size={14} />
+                        {gasto.descripcionmov || 'N/A'}
+                      </div>
+                    )
+                  },
+                  {
+                    label: 'Importe',
+                    value: (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <DollarSign size={14} />
+                        <span style={{ fontWeight: 600, color: '#ef4444' }}>
+                          ${gasto.totaldeventa.toFixed(2)}
+                        </span>
+                      </div>
+                    )
+                  },
+                  {
+                    label: 'Fecha',
+                    value: (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Calendar size={14} />
+                        {formatFecha(gasto.fechadeventa)}
+                      </div>
+                    )
+                  },
+                  {
+                    label: 'Estado de Pago',
+                    value: (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {estadoPago.icon}
+                        <span style={{ color: estadoPago.color, fontWeight: 600 }}>
+                          {estadoPago.text}
+                        </span>
+                      </div>
+                    )
+                  },
+                  {
+                    label: 'Referencia',
+                    value: gasto.referencia || 'Sin referencia'
+                  }
+                ]}
+                actions={[]}
+              />
+            );
+          })}
+        </div>
+      </StandardPageLayout>
 
       {/* Formulario Modal */}
       {mostrarFormulario && (
@@ -138,7 +189,7 @@ const PageGastos: React.FC = () => {
           onCancelar={handleCancelar}
         />
       )}
-    </div>
+    </>
   );
 };
 

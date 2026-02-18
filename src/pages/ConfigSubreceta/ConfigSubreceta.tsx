@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, ChefHat } from 'lucide-react';
-import ListaSubrecetas from '../../components/subrecetas/ListaSubrecetas/ListaSubrecetas';
+import { Plus, ChefHat, Edit, Trash2, DollarSign, Package } from 'lucide-react';
+import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
+import StandardCard from '../../components/StandardCard/StandardCard';
 import FormularioSubreceta from '../../components/subrecetas/FormularioSubreceta/FormularioSubreceta';
 import type { Subreceta, SubrecetaCreate, SubrecetaUpdate } from '../../types/subreceta.types';
 import { 
@@ -10,11 +10,9 @@ import {
   actualizarSubreceta,
   eliminarSubreceta 
 } from '../../services/subrecetasService';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
-import './ConfigSubreceta.css';
+import '../../styles/StandardPageLayout.css';
 
 const ConfigSubreceta: React.FC = () => {
-  const navigate = useNavigate();
   const [subrecetas, setSubrecetas] = useState<Subreceta[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -106,58 +104,100 @@ const ConfigSubreceta: React.FC = () => {
     setSubrecetaEditar(null);
   };
 
+  const getCantidadIngredientes = (subreceta: Subreceta) => {
+    const count = subreceta.detalles?.length || 0;
+    return `${count} ingrediente${count !== 1 ? 's' : ''}`;
+  };
+
+  const getSubtitle = () => {
+    return `${subrecetas.length} subreceta${subrecetas.length !== 1 ? 's' : ''} registrada${subrecetas.length !== 1 ? 's' : ''}`;
+  };
+
   return (
-    <div className="config-subreceta-page">
-      {/* Mensaje de Notificación */}
+    <>
       {mensaje && (
-        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
-          <div className="mensaje-contenido">
-            <span className="mensaje-texto">{mensaje.texto}</span>
-            <button
-              className="mensaje-cerrar"
-              onClick={() => setMensaje(null)}
-              aria-label="Cerrar mensaje"
-            >
-              ×
-            </button>
-          </div>
+        <div className={`standard-notification ${mensaje.tipo === 'success' ? 'success' : mensaje.tipo === 'error' ? 'error' : 'info'}`}>
+          <p>{mensaje.texto}</p>
+          <button onClick={() => setMensaje(null)}>×</button>
         </div>
       )}
 
-      {/* Header con botones */}
-      <div className="config-header">
-        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={20} />
-          Volver al Dashboard
-        </button>
-        
-        <div className="config-header-content">
-          <div className="config-title">
-            <ChefHat size={32} className="config-icon" />
-            <div>
-              <h1>Gestión de Subrecetas</h1>
-              <p>{subrecetas.length} subreceta{subrecetas.length !== 1 ? 's' : ''} registrada{subrecetas.length !== 1 ? 's' : ''}</p>
-            </div>
-          </div>
-          <button onClick={handleNuevo} className="btn-nuevo">
-            <Plus size={20} />
-            Nueva Subreceta
-          </button>
+      <StandardPageLayout
+        headerTitle="Gestión de Subrecetas"
+        headerSubtitle={getSubtitle()}
+        actionButton={{
+          text: 'Nueva Subreceta',
+          icon: <Plus size={20} />,
+          onClick: handleNuevo
+        }}
+        loading={cargando}
+        loadingMessage="Cargando subrecetas..."
+        isEmpty={subrecetas.length === 0}
+        emptyIcon={<ChefHat size={80} />}
+        emptyMessage="No hay subrecetas registradas"
+      >
+        <div className="standard-cards-grid">
+          {subrecetas.map((subreceta) => (
+            <StandardCard
+              key={subreceta.idSubReceta}
+              title={subreceta.nombreSubReceta}
+              fields={[
+                {
+                  label: 'Costo Total',
+                  value: (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <DollarSign size={14} />
+                      <span style={{ fontWeight: 600, color: '#10b981' }}>
+                        ${Number(subreceta.costoSubReceta || 0).toFixed(2)}
+                      </span>
+                    </div>
+                  )
+                },
+                {
+                  label: 'Ingredientes',
+                  value: (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Package size={14} />
+                      {getCantidadIngredientes(subreceta)}
+                    </div>
+                  )
+                },
+                {
+                  label: 'Instrucciones',
+                  value: subreceta.instruccionesSubr 
+                    ? `${subreceta.instruccionesSubr.substring(0, 50)}...` 
+                    : 'Sin instrucciones'
+                },
+                {
+                  label: 'Estado',
+                  value: (
+                    <span style={{ 
+                      color: subreceta.estatusSubr === 1 ? '#10b981' : '#ef4444',
+                      fontWeight: 600
+                    }}>
+                      {subreceta.estatusSubr === 1 ? 'ACTIVA' : 'INACTIVA'}
+                    </span>
+                  )
+                }
+              ]}
+              actions={[
+                {
+                  label: 'Editar',
+                  icon: <Edit size={16} />,
+                  onClick: () => handleEditar(subreceta),
+                  variant: 'edit'
+                },
+                {
+                  label: 'Eliminar',
+                  icon: <Trash2 size={16} />,
+                  onClick: () => handleEliminar(subreceta.idSubReceta),
+                  variant: 'delete'
+                }
+              ]}
+            />
+          ))}
         </div>
-      </div>
-
-      {/* Contenedor fijo con Lista */}
-      <div className="config-container">
-        {cargando ? (
-          <LoadingSpinner size={48} message="Cargando subrecetas..." />
-        ) : (
-          <ListaSubrecetas
-            subrecetas={subrecetas}
-            onEditar={handleEditar}
-            onEliminar={handleEliminar}
-          />
-        )}
-      </div>
+      </StandardPageLayout>
 
       {/* Formulario Modal */}
       {mostrarFormulario && (
@@ -168,7 +208,7 @@ const ConfigSubreceta: React.FC = () => {
           onCancel={handleCancelar}
         />
       )}
-    </div>
+    </>
   );
 };
 
