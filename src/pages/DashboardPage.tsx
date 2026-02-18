@@ -1242,90 +1242,14 @@ export const DashboardPage = () => {
               </div>
               <h3 className="card-title">Ventas Hoy</h3>
 
-              {/* Layout: Izquierda (Info) + Derecha (Gráfico Pastel) */}
-              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-                {/* Columna Izquierda: Turno Actual */}
-                <div style={{ flex: 1 }}>
-                  <div style={{ marginBottom: '0.5rem' }}>
-                    <p style={{ fontSize: '0.55rem', color: '#9ca3af', marginBottom: '0.25rem', fontWeight: '500' }}>
-                      Turno Actual
-                    </p>
-                    <p style={{ fontSize: '2rem', fontWeight: '700', color: '#3b82f6', margin: 0, lineHeight: '1' }}>
-                      {turnoAbierto?.numeroturno || '6'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Columna Derecha: Gráfico de Pastel */}
-                {resumenVentas.ventasPorFormaDePago && resumenVentas.ventasPorFormaDePago.length > 0 && (
-                  <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    {(() => {
-                      const totalFormaDePago = resumenVentas.ventasPorFormaDePago.reduce((sum, item) => sum + item.total, 0);
-                      
-                      const coloresPago: Record<string, string> = {
-                        'EFECTIVO': '#10b981',
-                        'TARJETA': '#3b82f6',
-                        'TRANSFERENCIA': '#8b5cf6',
-                        'MIXTO': '#f59e0b',
-                        'sinFP': '#6b7280'
-                      };
-
-                      let currentAngle = 0;
-                      const segments = resumenVentas.ventasPorFormaDePago.map((item) => {
-                        const percentage = totalFormaDePago > 0 ? (item.total / totalFormaDePago) * 100 : 0;
-                        const angle = (percentage / 100) * 360;
-                        const startAngle = currentAngle;
-                        currentAngle += angle;
-                        
-                        return {
-                          formadepago: item.formadepago,
-                          total: item.total,
-                          percentage,
-                          startAngle,
-                          endAngle: currentAngle,
-                          color: coloresPago[item.formadepago] || '#9ca3af'
-                        };
-                      });
-
-                      const gradientStops = segments.map((seg) => {
-                        const start = seg.startAngle;
-                        const end = seg.endAngle;
-                        return `${seg.color} ${start}deg ${end}deg`;
-                      }).join(', ');
-
-                      return (
-                        <div style={{
-                          width: '100px',
-                          height: '100px',
-                          borderRadius: '50%',
-                          background: `conic-gradient(${gradientStops})`,
-                          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                          position: 'relative'
-                        }}>
-                          <div style={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            width: '50px',
-                            height: '50px',
-                            borderRadius: '50%',
-                            backgroundColor: 'white',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
-                          }}>
-                            <div style={{ fontSize: '0.7rem', fontWeight: '700', color: '#1f2937' }}>
-                              {segments.length > 0 ? `${Math.round(segments[0].percentage)}%` : '0%'}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                )}
+              {/* Turno Actual */}
+              <div style={{ marginBottom: '1rem' }}>
+                <p style={{ fontSize: '0.55rem', color: '#9ca3af', marginBottom: '0.25rem', fontWeight: '500' }}>
+                  Turno Actual
+                </p>
+                <p style={{ fontSize: '2rem', fontWeight: '700', color: '#3b82f6', margin: 0, lineHeight: '1' }}>
+                  {turnoAbierto?.numeroturno || '6'}
+                </p>
               </div>
 
               {/* Leyenda de Formas de Pago */}
