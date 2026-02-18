@@ -6,7 +6,8 @@
 .standard-page-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   overflow: hidden;
 }
@@ -138,6 +139,7 @@
   flex-direction: column;
   padding: 2rem;
   overflow: hidden;
+  min-height: 0; /* Importante para que flex funcione correctamente con overflow */
 }
 
 /* Contenedor de datos con scroll */
@@ -152,10 +154,11 @@
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
+  min-height: 0; /* Importante para que flex funcione correctamente con overflow */
   
   /* Scroll personalizado */
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
+  scrollbar-color: #94a3b8 #f1f5f9;
 }
 
 .standard-page-content::-webkit-scrollbar {
@@ -165,16 +168,22 @@
 .standard-page-content::-webkit-scrollbar-track {
   background: #f1f5f9;
   border-radius: 6px;
+  margin: 4px 0;
 }
 
 .standard-page-content::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #94a3b8;
   border-radius: 6px;
   border: 2px solid #f1f5f9;
+  transition: background 0.3s ease;
 }
 
 .standard-page-content::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #64748b;
+}
+
+.standard-page-content::-webkit-scrollbar-thumb:active {
+  background: #475569;
 }
 
 /* ===================================
