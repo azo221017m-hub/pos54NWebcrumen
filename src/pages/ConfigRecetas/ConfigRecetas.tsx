@@ -142,7 +142,7 @@ const ConfigRecetas: React.FC = () => {
               fields={[
                 {
                   label: 'Costo',
-                  value: `$${receta.costoReceta.toFixed(2)}`
+                  value: `$${Number(receta.costoReceta || 0).toFixed(2)}`
                 },
                 {
                   label: 'Ingredientes',

@@ -212,11 +212,11 @@ const ConfigProductosWeb: React.FC = () => {
                 },
                 {
                   label: 'Precio',
-                  value: `$${producto.precio.toFixed(2)}`
+                  value: `$${Number(producto.precio || 0).toFixed(2)}`
                 },
                 {
                   label: 'Costo',
-                  value: `$${producto.costoproducto.toFixed(2)}`
+                  value: `$${Number(producto.costoproducto || 0).toFixed(2)}`
                 },
                 {
                   label: 'Imagen',

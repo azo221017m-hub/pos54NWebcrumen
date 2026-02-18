@@ -160,7 +160,7 @@ export const ConfigUMCompra: React.FC = () => {
                   value: (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <Scale size={14} />
-                      {um.valor.toFixed(3)}
+                      {Number(um.valor || 0).toFixed(3)}
                     </div>
                   )
                 },
@@ -175,7 +175,7 @@ export const ConfigUMCompra: React.FC = () => {
                 },
                 {
                   label: 'Valor Convertido',
-                  value: um.valorConvertido?.toFixed(3) || 'N/A'
+                  value: um.valorConvertido ? Number(um.valorConvertido).toFixed(3) : 'N/A'
                 },
                 {
                   label: 'Fecha Registro',

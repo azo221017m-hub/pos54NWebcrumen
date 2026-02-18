@@ -144,7 +144,7 @@ const PageGastos: React.FC = () => {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <DollarSign size={14} />
                         <span style={{ fontWeight: 600, color: '#ef4444' }}>
-                          ${gasto.totaldeventa.toFixed(2)}
+                          ${Number(gasto.totaldeventa || 0).toFixed(2)}
                         </span>
                       </div>
                     )
