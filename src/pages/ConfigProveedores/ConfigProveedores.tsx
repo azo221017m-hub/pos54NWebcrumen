@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Truck } from 'lucide-react';
+import { Plus, Truck, Edit, Trash2, Phone, Mail, MapPin, CreditCard } from 'lucide-react';
 import type { Proveedor, ProveedorCreate, ProveedorUpdate } from '../../types/proveedor.types';
 import {
   obtenerProveedores,
@@ -8,13 +7,12 @@ import {
   actualizarProveedor,
   eliminarProveedor
 } from '../../services/proveedoresService';
-import ListaProveedores from '../../components/proveedores/ListaProveedores/ListaProveedores';
+import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
+import StandardCard from '../../components/StandardCard/StandardCard';
 import FormularioProveedor from '../../components/proveedores/FormularioProveedor/FormularioProveedor';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigProveedores.css';
 
 const ConfigProveedores: React.FC = () => {
-  const navigate = useNavigate();
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
@@ -114,57 +112,109 @@ const ConfigProveedores: React.FC = () => {
   };
 
   return (
-    <div className="config-proveedores-page">
-      {/* Mensaje de Notificación */}
+    <>
+      {/* Notificación */}
       {mensaje && (
-        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
-          <div className="mensaje-contenido">
-            <span className="mensaje-texto">{mensaje.texto}</span>
-            <button
-              className="mensaje-cerrar"
-              onClick={() => setMensaje(null)}
-              aria-label="Cerrar mensaje"
-            >
-              ×
-            </button>
+        <div className={`standard-notification ${mensaje.tipo}`}>
+          <div className="notification-content">
+            <p className="notification-message">{mensaje.texto}</p>
           </div>
+          <button className="btn-close" onClick={() => setMensaje(null)}>×</button>
         </div>
       )}
 
-      {/* Header con botones */}
-      <div className="config-header">
-        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={20} />
-          Volver al Dashboard
-        </button>
-        
-        <div className="config-header-content">
-          <div className="config-title">
-            <Truck size={32} className="config-icon" />
-            <div>
-              <h1>Gestión de Proveedores</h1>
-              <p>Administra los proveedores del sistema</p>
-            </div>
-          </div>
-          <button onClick={handleNuevo} className="btn-nuevo">
-            <Plus size={20} />
-            Nuevo Proveedor
-          </button>
+      <StandardPageLayout
+        headerTitle="Gestión de Proveedores"
+        headerSubtitle="Administra los proveedores del sistema"
+        backButtonText="Regresa a DASHBOARD"
+        backButtonPath="/dashboard"
+        actionButton={{
+          text: 'Nuevo Proveedor',
+          icon: <Plus size={20} />,
+          onClick: handleNuevo
+        }}
+        loading={cargando}
+        loadingMessage="Cargando proveedores..."
+        isEmpty={proveedores.length === 0}
+        emptyIcon={<Truck size={80} />}
+        emptyMessage="No hay proveedores registrados. Comienza agregando uno nuevo."
+      >
+        <div className="standard-cards-grid">
+          {proveedores.map((proveedor) => (
+            <StandardCard
+              key={proveedor.id_proveedor}
+              title={proveedor.nombre}
+              fields={[
+                {
+                  label: 'RFC',
+                  value: proveedor.rfc || 'No especificado'
+                },
+                {
+                  label: 'Teléfono',
+                  value: proveedor.telefono ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Phone size={14} />
+                      {proveedor.telefono}
+                    </span>
+                  ) : 'No especificado'
+                },
+                {
+                  label: 'Correo',
+                  value: proveedor.correo ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Mail size={14} />
+                      {proveedor.correo}
+                    </span>
+                  ) : 'No especificado'
+                },
+                {
+                  label: 'Dirección',
+                  value: proveedor.direccion ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <MapPin size={14} />
+                      {proveedor.direccion}
+                    </span>
+                  ) : 'No especificada'
+                },
+                {
+                  label: 'Banco',
+                  value: proveedor.banco ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <CreditCard size={14} />
+                      {proveedor.banco}
+                    </span>
+                  ) : 'No especificado'
+                },
+                {
+                  label: 'Estado',
+                  value: (
+                    <span style={{ 
+                      color: proveedor.activo ? '#10b981' : '#ef4444',
+                      fontWeight: 600
+                    }}>
+                      {proveedor.activo ? 'Activo' : 'Inactivo'}
+                    </span>
+                  )
+                }
+              ]}
+              actions={[
+                {
+                  label: 'Editar',
+                  icon: <Edit size={16} />,
+                  onClick: () => handleEditar(proveedor),
+                  variant: 'edit'
+                },
+                {
+                  label: 'Eliminar',
+                  icon: <Trash2 size={16} />,
+                  onClick: () => handleEliminar(proveedor.id_proveedor),
+                  variant: 'delete'
+                }
+              ]}
+            />
+          ))}
         </div>
-      </div>
-
-      {/* Contenedor fijo con Lista */}
-      <div className="config-container">
-        {cargando ? (
-          <LoadingSpinner size={48} message="Cargando proveedores..." />
-        ) : (
-          <ListaProveedores
-            proveedores={proveedores}
-            onEditar={handleEditar}
-            onEliminar={handleEliminar}
-          />
-        )}
-      </div>
+      </StandardPageLayout>
 
       {/* Formulario Modal */}
       {mostrarFormulario && (
@@ -176,7 +226,7 @@ const ConfigProveedores: React.FC = () => {
           loading={guardando}
         />
       )}
-    </div>
+    </>
   );
 };
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Users } from 'lucide-react';
+import { Plus, Users, Edit, Trash2, Phone, Mail, MapPin, Award } from 'lucide-react';
 import type { Cliente, ClienteCreate } from '../../types/cliente.types';
 import {
   obtenerClientes,
@@ -8,13 +7,12 @@ import {
   actualizarCliente,
   eliminarCliente
 } from '../../services/clientesService';
-import ListaClientes from '../../components/clientes/ListaClientes/ListaClientes';
+import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
+import StandardCard from '../../components/StandardCard/StandardCard';
 import FormularioCliente from '../../components/clientes/FormularioCliente/FormularioCliente';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigClientes.css';
 
 const ConfigClientes: React.FC = () => {
-  const navigate = useNavigate();
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -116,7 +114,6 @@ const ConfigClientes: React.FC = () => {
     try {
       const idEliminado = await eliminarCliente(id);
       mostrarMensaje('success', 'Cliente eliminado exitosamente');
-      // Actualizar estado local sin recargar
       setClientes(prev => prev.filter(cliente => cliente.idCliente !== idEliminado));
     } catch (error) {
       console.error('Error al eliminar cliente:', error);
@@ -124,58 +121,128 @@ const ConfigClientes: React.FC = () => {
     }
   };
 
+  const getCategoriaColor = (categoria: string) => {
+    const colores: Record<string, string> = {
+      'VIP': '#8b5cf6',
+      'FRECUENTE': '#10b981',
+      'RECURRENTE': '#3b82f6',
+      'NUEVO': '#f59e0b',
+      'INACTIVO': '#6b7280'
+    };
+    return colores[categoria] || '#6b7280';
+  };
+
   return (
-    <div className="config-clientes-page">
-      {/* Mensaje de Notificación */}
+    <>
+      {/* Notificación */}
       {mensaje && (
-        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
-          <div className="mensaje-contenido">
-            <span className="mensaje-texto">{mensaje.texto}</span>
-            <button
-              className="mensaje-cerrar"
-              onClick={() => setMensaje(null)}
-              aria-label="Cerrar mensaje"
-            >
-              ×
-            </button>
+        <div className={`standard-notification ${mensaje.tipo}`}>
+          <div className="notification-content">
+            <p className="notification-message">{mensaje.texto}</p>
           </div>
+          <button className="btn-close" onClick={() => setMensaje(null)}>×</button>
         </div>
       )}
 
-      {/* Header con botones */}
-      <div className="config-header">
-        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={20} />
-          Volver al Dashboard
-        </button>
-        
-        <div className="config-header-content">
-          <div className="config-title">
-            <Users size={32} className="config-icon" />
-            <div>
-              <h1>Gestión de Clientes</h1>
-              <p>Administra tu cartera de clientes</p>
-            </div>
-          </div>
-          <button onClick={handleNuevo} className="btn-nuevo">
-            <Plus size={20} />
-            Nuevo Cliente
-          </button>
+      <StandardPageLayout
+        headerTitle="Gestión de Clientes"
+        headerSubtitle="Administra tu cartera de clientes"
+        backButtonText="Regresa a DASHBOARD"
+        backButtonPath="/dashboard"
+        actionButton={{
+          text: 'Nuevo Cliente',
+          icon: <Plus size={20} />,
+          onClick: handleNuevo
+        }}
+        loading={cargando}
+        loadingMessage="Cargando clientes..."
+        isEmpty={clientes.length === 0}
+        emptyIcon={<Users size={80} />}
+        emptyMessage="No hay clientes registrados. Comienza agregando uno nuevo."
+      >
+        <div className="standard-cards-grid">
+          {clientes.map((cliente) => (
+            <StandardCard
+              key={cliente.idCliente}
+              title={cliente.nombre}
+              fields={[
+                {
+                  label: 'Categoría',
+                  value: (
+                    <span style={{ 
+                      color: getCategoriaColor(cliente.categoriacliente),
+                      fontWeight: 600
+                    }}>
+                      {cliente.categoriacliente}
+                    </span>
+                  )
+                },
+                {
+                  label: 'Teléfono',
+                  value: cliente.telefono ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Phone size={14} />
+                      {cliente.telefono}
+                    </span>
+                  ) : 'No especificado'
+                },
+                {
+                  label: 'Email',
+                  value: cliente.email ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Mail size={14} />
+                      {cliente.email}
+                    </span>
+                  ) : 'No especificado'
+                },
+                {
+                  label: 'Dirección',
+                  value: cliente.direccion ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <MapPin size={14} />
+                      {cliente.direccion}
+                    </span>
+                  ) : 'No especificada'
+                },
+                {
+                  label: 'Puntos Fidelidad',
+                  value: (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#f59e0b', fontWeight: 600 }}>
+                      <Award size={14} />
+                      {cliente.puntosfidelidad}
+                    </span>
+                  )
+                },
+                {
+                  label: 'Estado',
+                  value: (
+                    <span style={{ 
+                      color: cliente.estatus ? '#10b981' : '#ef4444',
+                      fontWeight: 600
+                    }}>
+                      {cliente.estatus ? 'Activo' : 'Inactivo'}
+                    </span>
+                  )
+                }
+              ]}
+              actions={[
+                {
+                  label: 'Editar',
+                  icon: <Edit size={16} />,
+                  onClick: () => handleEditar(cliente),
+                  variant: 'edit'
+                },
+                {
+                  label: 'Eliminar',
+                  icon: <Trash2 size={16} />,
+                  onClick: () => handleEliminar(cliente.idCliente),
+                  variant: 'delete'
+                }
+              ]}
+            />
+          ))}
         </div>
-      </div>
-
-      {/* Contenedor fijo con Lista */}
-      <div className="config-container">
-        {cargando ? (
-          <LoadingSpinner size={48} message="Cargando clientes..." />
-        ) : (
-          <ListaClientes
-            clientes={clientes}
-            onEdit={handleEditar}
-            onDelete={handleEliminar}
-          />
-        )}
-      </div>
+      </StandardPageLayout>
 
       {/* Formulario Modal */}
       {mostrarFormulario && (
@@ -186,7 +253,7 @@ const ConfigClientes: React.FC = () => {
           loading={cargando}
         />
       )}
-    </div>
+    </>
   );
 };
 
