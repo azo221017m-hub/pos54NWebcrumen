@@ -1268,15 +1268,17 @@ export const DashboardPage = () => {
               </div>
               <h3 className="card-title">Ventas Hoy</h3>
 
-              {/* Turno Actual */}
-              <div style={{ marginBottom: '1rem' }}>
-                <p style={{ fontSize: '0.55rem', color: '#9ca3af', marginBottom: '0.25rem', fontWeight: '500' }}>
-                  Turno Actual
-                </p>
-                <p style={{ fontSize: '2rem', fontWeight: '700', color: '#3b82f6', margin: 0, lineHeight: '1' }}>
-                  {turnoAbierto?.numeroturno || '6'}
-                </p>
-              </div>
+              {/* Turno Actual - Solo mostrar si hay turno abierto */}
+              {turnoAbierto && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <p style={{ fontSize: '0.55rem', color: '#9ca3af', marginBottom: '0.25rem', fontWeight: '500' }}>
+                    Turno Actual
+                  </p>
+                  <p style={{ fontSize: '2rem', fontWeight: '700', color: '#3b82f6', margin: 0, lineHeight: '1' }}>
+                    {turnoAbierto.numeroturno}
+                  </p>
+                </div>
+              )}
 
               {/* Leyenda de Formas de Pago */}
               {resumenVentas.ventasPorFormaDePago && resumenVentas.ventasPorFormaDePago.length > 0 && (
