@@ -162,6 +162,7 @@ export const DashboardPage = () => {
   const [saludNegocio, setSaludNegocio] = useState<SaludNegocio>({
     totalVentas: 0,
     totalGastos: 0,
+    totalCompras: 0,
     periodo: {
       inicio: '',
       fin: ''
@@ -1057,66 +1058,169 @@ export const DashboardPage = () => {
                 </svg>
               </div>
               <h3 className="card-title">Salud de mi Negocio</h3>
-              <p className="card-text" style={{ fontSize: '0.55rem', marginBottom: '0.5rem' }}>Comparativo del mes</p>
               
-              {/* Visual comparison chart */}
-              {(saludNegocio.totalVentas > 0 || saludNegocio.totalGastos > 0) ? (
-                <div style={{ marginTop: '0.5rem' }}>
+              {/* Date display in top right */}
+              <div style={{ position: 'absolute', top: '1rem', right: '1rem', fontSize: '0.7rem', color: '#6b7280', fontWeight: '500' }}>
+                {(() => {
+                  const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                  const now = new Date();
+                  return `${meses[now.getMonth()]} ${now.getDate()}`;
+                })()}
+              </div>
+              
+              {(saludNegocio.totalVentas > 0 || saludNegocio.totalGastos > 0 || saludNegocio.totalCompras > 0) ? (
+                <div style={{ marginTop: '1rem' }}>
                   {(() => {
-                    // Calculate max value once for both bars (at this point, at least one value is > 0)
-                    const maxValue = Math.max(saludNegocio.totalVentas, saludNegocio.totalGastos);
-                    const ventasHeight = Math.max((saludNegocio.totalVentas / maxValue) * 100, 5);
-                    const gastosHeight = Math.max((saludNegocio.totalGastos / maxValue) * 100, 5);
+                    // Calculate total and percentages
+                    const total = saludNegocio.totalVentas + saludNegocio.totalGastos + saludNegocio.totalCompras;
+                    const ventasPercent = total > 0 ? (saludNegocio.totalVentas / total) * 100 : 0;
+                    const gastosPercent = total > 0 ? (saludNegocio.totalGastos / total) * 100 : 0;
+                    const comprasPercent = total > 0 ? (saludNegocio.totalCompras / total) * 100 : 0;
                     
                     return (
-                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', height: '80px', marginBottom: '0.5rem' }}>
-                        {/* Ventas bar */}
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                          <div style={{
-                            width: '100%',
-                            height: `${ventasHeight}%`,
-                            backgroundColor: '#10b981',
-                            borderRadius: '4px 4px 0 0',
-                            minHeight: '20px',
-                            transition: 'height 0.3s ease'
-                          }}></div>
-                          <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#10b981', marginTop: '0.25rem' }}>
-                            Ventas
-                          </span>
+                      <>
+                        {/* Total amount display */}
+                        <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
+                          <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1f2937' }}>
+                            ${total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          </div>
+                          <div style={{ fontSize: '0.55rem', color: '#6b7280', marginTop: '0.1rem' }}>Total del mes</div>
                         </div>
-                        
-                        {/* Gastos bar */}
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                          <div style={{
-                            width: '100%',
-                            height: `${gastosHeight}%`,
-                            backgroundColor: '#ef4444',
-                            borderRadius: '4px 4px 0 0',
-                            minHeight: '20px',
-                            transition: 'height 0.3s ease'
-                          }}></div>
-                          <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#ef4444', marginTop: '0.25rem' }}>
-                            Gastos
-                          </span>
+
+                        {/* Horizontal bar chart */}
+                        <div style={{ marginBottom: '0.75rem' }}>
+                          <div style={{ 
+                            display: 'flex', 
+                            height: '24px', 
+                            borderRadius: '6px', 
+                            overflow: 'hidden',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                          }}>
+                            {/* GASTOS bar */}
+                            {gastosPercent > 0 && (
+                              <div style={{
+                                width: `${gastosPercent}%`,
+                                backgroundColor: '#06b6d4', // cyan-500
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontSize: '0.6rem',
+                                fontWeight: '600',
+                                minWidth: gastosPercent > 15 ? 'auto' : '0',
+                                transition: 'width 0.3s ease'
+                              }}>
+                                {gastosPercent > 15 && `${Math.round(gastosPercent)}%`}
+                              </div>
+                            )}
+                            
+                            {/* COMPRAS bar */}
+                            {comprasPercent > 0 && (
+                              <div style={{
+                                width: `${comprasPercent}%`,
+                                backgroundColor: '#38bdf8', // sky-400
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontSize: '0.6rem',
+                                fontWeight: '600',
+                                minWidth: comprasPercent > 15 ? 'auto' : '0',
+                                transition: 'width 0.3s ease'
+                              }}>
+                                {comprasPercent > 15 && `${Math.round(comprasPercent)}%`}
+                              </div>
+                            )}
+                            
+                            {/* VENTAS bar */}
+                            {ventasPercent > 0 && (
+                              <div style={{
+                                width: `${ventasPercent}%`,
+                                backgroundColor: '#3b82f6', // blue-500
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontSize: '0.6rem',
+                                fontWeight: '600',
+                                minWidth: ventasPercent > 15 ? 'auto' : '0',
+                                transition: 'width 0.3s ease'
+                              }}>
+                                {ventasPercent > 15 && `${Math.round(ventasPercent)}%`}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
+
+                        {/* Category labels with amounts */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                          {/* GASTOS */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                              <div style={{ 
+                                width: '10px', 
+                                height: '10px', 
+                                borderRadius: '2px', 
+                                backgroundColor: '#06b6d4' 
+                              }}></div>
+                              <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#374151' }}>GASTOS</span>
+                            </div>
+                            <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#06b6d4' }}>
+                              ${saludNegocio.totalGastos.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                            </span>
+                          </div>
+
+                          {/* COMPRAS */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                              <div style={{ 
+                                width: '10px', 
+                                height: '10px', 
+                                borderRadius: '2px', 
+                                backgroundColor: '#38bdf8' 
+                              }}></div>
+                              <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#374151' }}>COMPRAS</span>
+                            </div>
+                            <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#38bdf8' }}>
+                              ${saludNegocio.totalCompras.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                            </span>
+                          </div>
+
+                          {/* VENTAS */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                              <div style={{ 
+                                width: '10px', 
+                                height: '10px', 
+                                borderRadius: '2px', 
+                                backgroundColor: '#3b82f6' 
+                              }}></div>
+                              <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#374151' }}>VENTAS</span>
+                            </div>
+                            <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#3b82f6' }}>
+                              ${saludNegocio.totalVentas.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Balance indicator */}
+                        <div style={{ 
+                          textAlign: 'center', 
+                          fontSize: '0.65rem', 
+                          color: saludNegocio.totalVentas > (saludNegocio.totalGastos + saludNegocio.totalCompras) ? '#10b981' : '#ef4444',
+                          fontWeight: '600',
+                          marginTop: '0.75rem'
+                        }}>
+                          {saludNegocio.totalVentas > (saludNegocio.totalGastos + saludNegocio.totalCompras)
+                            ? '✓ Balance positivo' 
+                            : saludNegocio.totalVentas < (saludNegocio.totalGastos + saludNegocio.totalCompras)
+                              ? '⚠ Balance negativo'
+                              : '— Balance neutro'
+                          }
+                        </div>
+                      </>
                     );
                   })()}
-                  
-                  {/* Balance indicator */}
-                  <div style={{ 
-                    textAlign: 'center', 
-                    fontSize: '0.6rem', 
-                    color: saludNegocio.totalVentas > saludNegocio.totalGastos ? '#10b981' : '#ef4444',
-                    fontWeight: '600'
-                  }}>
-                    {saludNegocio.totalVentas > saludNegocio.totalGastos 
-                      ? '✓ Balance positivo' 
-                      : saludNegocio.totalVentas < saludNegocio.totalGastos 
-                        ? '⚠ Balance negativo'
-                        : '— Balance neutro'
-                    }
-                  </div>
                 </div>
               ) : (
                 <div className="card-stat" style={{ fontSize: '0.65rem', color: '#9ca3af' }}>

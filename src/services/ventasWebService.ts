@@ -222,6 +222,7 @@ export const obtenerResumenVentas = async (): Promise<ResumenVentas> => {
 export interface SaludNegocio {
   totalVentas: number;
   totalGastos: number;
+  totalCompras: number;
   periodo: {
     inicio: string;
     fin: string;
@@ -245,6 +246,7 @@ export const obtenerSaludNegocio = async (): Promise<SaludNegocio> => {
     return {
       totalVentas: 0,
       totalGastos: 0,
+      totalCompras: 0,
       periodo: {
         inicio: firstDay.toISOString().split('T')[0],
         fin: lastDay.toISOString().split('T')[0]

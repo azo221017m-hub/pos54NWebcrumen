@@ -1241,7 +1241,8 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
         COALESCE(SUM(CASE WHEN descripcionmov = 'VENTA' AND estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalVentas,
-        COALESCE(SUM(CASE WHEN referencia = 'GASTO' AND estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalGastos
+        COALESCE(SUM(CASE WHEN referencia = 'GASTO' AND estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalGastos,
+        COALESCE(SUM(CASE WHEN referencia = 'COMPRA' AND estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalCompras
        FROM tblposcrumenwebventas 
        WHERE idnegocio = ? 
          AND DATE(fechadeventa) BETWEEN ? AND ?`,
@@ -1250,12 +1251,14 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
 
     const totalVentas = Number(rows[0]?.totalVentas) || 0;
     const totalGastos = Number(rows[0]?.totalGastos) || 0;
+    const totalCompras = Number(rows[0]?.totalCompras) || 0;
 
     res.json({
       success: true,
       data: {
         totalVentas,
         totalGastos,
+        totalCompras,
         periodo: {
           inicio: startDate,
           fin: endDate
