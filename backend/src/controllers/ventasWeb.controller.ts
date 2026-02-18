@@ -1322,10 +1322,27 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
     // 5. Evaluate margin and get classification with alerts
     const evaluacion = evaluarMargen(Number(porcentajeMargen.toFixed(2)));
 
-    // Get legacy data (gastos y compras) for backwards compatibility
+    // 6. Calculate GASTOS (Operating Expenses)
+    // Sum of totaldeventa from tblposcrumenwebventas where referencia = 'GASTO'
+    const [gastosRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(totaldeventa), 0) as totalGastos
+       FROM tblposcrumenwebventas 
+       WHERE idnegocio = ? 
+         AND DATE(fechadeventa) BETWEEN ? AND ?
+         AND referencia = 'GASTO'
+         AND estadodeventa = 'COBRADO'`,
+      [idnegocio, startDate, endDate]
+    );
+
+    const gastos = Number(gastosRows[0]?.totalGastos) || 0;
+
+    // 7. Calculate UTILIDAD OPERATIVA (Operating Profit)
+    // Utilidad Operativa = Margen Bruto - Gastos
+    const utilidadOperativa = margenBruto - gastos;
+
+    // Get legacy data (compras) for backwards compatibility
     const [legacyRows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
-        COALESCE(SUM(CASE WHEN referencia = 'GASTO' AND estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalGastos,
         COALESCE(SUM(CASE WHEN referencia = 'COMPRA' AND estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalCompras
        FROM tblposcrumenwebventas 
        WHERE idnegocio = ? 
@@ -1333,7 +1350,6 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
       [idnegocio, startDate, endDate]
     );
 
-    const totalGastos = Number(legacyRows[0]?.totalGastos) || 0;
     const totalCompras = Number(legacyRows[0]?.totalCompras) || 0;
 
     res.json({
@@ -1344,6 +1360,8 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
         costoVenta,
         margenBruto,
         porcentajeMargen: Number(porcentajeMargen.toFixed(2)),
+        gastos,
+        utilidadOperativa,
         
         // Margin evaluation and classification
         clasificacion: evaluacion.clasificacion,
@@ -1354,7 +1372,7 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
         
         // Legacy metrics for backwards compatibility
         totalVentas: ventas,
-        totalGastos,
+        totalGastos: gastos,
         totalCompras,
         
         periodo: {

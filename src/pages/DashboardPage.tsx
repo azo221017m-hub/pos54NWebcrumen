@@ -166,6 +166,8 @@ export const DashboardPage = () => {
     costoVenta: 0,
     margenBruto: 0,
     porcentajeMargen: 0,
+    gastos: 0,
+    utilidadOperativa: 0,
     totalVentas: 0,
     totalGastos: 0,
     totalCompras: 0,
@@ -1136,6 +1138,36 @@ export const DashboardPage = () => {
                       </div>
                       <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#8b5cf6' }}>
                         {saludNegocio.porcentajeMargen.toFixed(2)}%
+                      </div>
+                    </div>
+
+                    {/* Gastos */}
+                    <div style={{ 
+                      padding: '0.75rem', 
+                      backgroundColor: '#fef3c7', 
+                      borderRadius: '8px',
+                      border: '1px solid #fde68a'
+                    }}>
+                      <div style={{ fontSize: '0.55rem', color: '#6b7280', marginBottom: '0.25rem', fontWeight: '500' }}>
+                        Gastos
+                      </div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#f59e0b' }}>
+                        ${saludNegocio.gastos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </div>
+                    </div>
+
+                    {/* Utilidad Operativa */}
+                    <div style={{ 
+                      padding: '0.75rem', 
+                      backgroundColor: '#dbeafe', 
+                      borderRadius: '8px',
+                      border: '1px solid #bfdbfe'
+                    }}>
+                      <div style={{ fontSize: '0.55rem', color: '#6b7280', marginBottom: '0.25rem', fontWeight: '500' }}>
+                        Utilidad Operativa
+                      </div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: '700', color: saludNegocio.utilidadOperativa >= 0 ? '#0ea5e9' : '#dc2626' }}>
+                        ${saludNegocio.utilidadOperativa.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                     </div>
                   </div>
