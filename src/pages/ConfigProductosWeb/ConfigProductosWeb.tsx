@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Package } from 'lucide-react';
+import { Plus, Package, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import type { ProductoWeb, ProductoWebCreate, ProductoWebUpdate } from '../../types/productoWeb.types';
 import {
   obtenerProductosWeb,
@@ -8,13 +7,12 @@ import {
   actualizarProductoWeb,
   eliminarProductoWeb
 } from '../../services/productosWebService';
-import ListaProductosWeb from '../../components/productosWeb/ListaProductosWeb/ListaProductosWeb';
+import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
+import StandardCard from '../../components/StandardCard/StandardCard';
 import FormularioProductoWeb from '../../components/productosWeb/FormularioProductoWeb/FormularioProductoWeb';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigProductosWeb.css';
 
 const ConfigProductosWeb: React.FC = () => {
-  const navigate = useNavigate();
   const [productos, setProductos] = useState<ProductoWeb[]>([]);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
@@ -82,6 +80,9 @@ const ConfigProductosWeb: React.FC = () => {
     }
   };
 
+  // Función comentada - no utilizada en el layout estándar
+  // Se mantiene por si es necesaria en el futuro
+  /*
   const handleToggleMenuDia = async (id: number, currentValue: number) => {
     try {
       const newValue = currentValue === 1 ? 0 : 1;
@@ -113,6 +114,7 @@ const ConfigProductosWeb: React.FC = () => {
       mostrarMensaje('error', 'Error al actualizar el producto');
     }
   };
+  */
 
   const handleSubmit = async (data: ProductoWebCreate | ProductoWebUpdate) => {
     setGuardando(true);
@@ -138,9 +140,10 @@ const ConfigProductosWeb: React.FC = () => {
           setProductos(prev => [...prev, nuevoProducto]);
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error al guardar producto:', error);
-      mostrarMensaje('error', error.message || 'Error al guardar el producto');
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar el producto';
+      mostrarMensaje('error', errorMessage);
     } finally {
       setGuardando(false);
     }
@@ -151,59 +154,108 @@ const ConfigProductosWeb: React.FC = () => {
     setProductoSeleccionado(null);
   };
 
+  const getTipoProductoColor = (tipo: string) => {
+    switch (tipo) {
+      case 'Directo': return '#3b82f6'; // azul
+      case 'Inventario': return '#f59e0b'; // naranja
+      case 'Receta': return '#8b5cf6'; // morado
+      default: return '#6b7280'; // gris
+    }
+  };
+
   return (
-    <div className="config-productos-web-page">
+    <>
       {/* Mensaje de Notificación */}
       {mensaje && (
-        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
-          <div className="mensaje-contenido">
-            <span className="mensaje-texto">{mensaje.texto}</span>
-            <button
-              className="mensaje-cerrar"
-              onClick={() => setMensaje(null)}
-              aria-label="Cerrar mensaje"
-            >
-              ×
-            </button>
+        <div className={`standard-notification ${mensaje.tipo}`}>
+          <div className="notification-content">
+            <p className="notification-message">{mensaje.texto}</p>
           </div>
+          <button className="btn-close" onClick={() => setMensaje(null)}>×</button>
         </div>
       )}
 
-      {/* Header con botones */}
-      <div className="config-header">
-        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={20} />
-          Volver al Dashboard
-        </button>
-        
-        <div className="config-header-content">
-          <div className="config-title">
-            <Package size={32} className="config-icon" />
-            <div>
-              <h1>Gestión de Productos</h1>
-              <p>Administra los productos del sistema</p>
-            </div>
-          </div>
-          <button onClick={handleNuevo} className="btn-nuevo">
-            <Plus size={20} />
-            Nuevo Producto
-          </button>
+      <StandardPageLayout
+        headerTitle="GESTIÓN DE PRODUCTOS"
+        headerSubtitle={`${productos.length} productos registrados`}
+        actionButton={{
+          text: 'Nuevo Producto',
+          icon: <Plus size={20} />,
+          onClick: handleNuevo
+        }}
+        loading={cargando}
+        loadingMessage="Cargando productos..."
+        isEmpty={productos.length === 0}
+        emptyIcon={<Package size={80} />}
+        emptyMessage="No hay productos registrados."
+      >
+        <div className="standard-cards-grid">
+          {productos.map((producto) => (
+            <StandardCard
+              key={producto.idProducto}
+              title={producto.nombre}
+              fields={[
+                {
+                  label: 'Categoría',
+                  value: producto.nombreCategoria || 'Sin categoría'
+                },
+                {
+                  label: 'Tipo',
+                  value: (
+                    <span style={{ 
+                      color: getTipoProductoColor(producto.tipoproducto),
+                      fontWeight: 600
+                    }}>
+                      {producto.tipoproducto}
+                    </span>
+                  )
+                },
+                {
+                  label: 'Precio',
+                  value: `$${producto.precio.toFixed(2)}`
+                },
+                {
+                  label: 'Costo',
+                  value: `$${producto.costoproducto.toFixed(2)}`
+                },
+                {
+                  label: 'Imagen',
+                  value: producto.imagenProducto ? 'Sí' : 'No'
+                },
+                {
+                  label: 'Estado',
+                  value: (
+                    <span style={{ 
+                      color: producto.estatus === 1 ? '#10b981' : '#ef4444',
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      {producto.estatus === 1 ? <CheckCircle size={16} /> : <XCircle size={16} />}
+                      {producto.estatus === 1 ? 'Activo' : 'Inactivo'}
+                    </span>
+                  )
+                }
+              ]}
+              actions={[
+                {
+                  label: 'Editar',
+                  icon: <Edit size={18} />,
+                  onClick: () => handleEditar(producto),
+                  variant: 'edit'
+                },
+                {
+                  label: 'Eliminar',
+                  icon: <Trash2 size={18} />,
+                  onClick: () => handleEliminar(producto.idProducto),
+                  variant: 'delete'
+                }
+              ]}
+            />
+          ))}
         </div>
-      </div>
-
-      {/* Contenedor fijo con Lista */}
-      <div className="config-container">
-        {cargando ? (
-          <LoadingSpinner size={48} message="Cargando productos..." />
-        ) : (
-          <ListaProductosWeb
-            productos={productos}
-            onEditar={handleEditar}
-            onEliminar={handleEliminar}
-            onToggleMenuDia={handleToggleMenuDia}
-          />
-        )}
-      </div>
+      </StandardPageLayout>
 
       {/* Formulario Modal */}
       {mostrarFormulario && (
@@ -215,7 +267,7 @@ const ConfigProductosWeb: React.FC = () => {
           loading={guardando}
         />
       )}
-    </div>
+    </>
   );
 };
 

@@ -8,14 +8,18 @@
 
 | Estado | Cantidad | Porcentaje |
 |--------|----------|------------|
-| ✅ Completadas | 6 | 30% |
+| ✅ Completadas | 10 | 50% |
 | 🔄 En Progreso | 0 | 0% |
-| ⏳ Pendientes | 14 | 70% |
+| ⏳ Pendientes | 10 | 50% |
 | **TOTAL** | **20** | **100%** |
+
+**⏱️ Tiempo Total Invertido**: 4h 30min  
+**📊 Promedio por Página**: 27 min  
+**⏳ Tiempo Estimado Restante**: 4h 30min
 
 ---
 
-## ✅ Páginas Completadas (6/20)
+## ✅ Páginas Completadas (10/20)
 
 ### 1. ConfigInsumos.tsx ✅
 - **Fecha**: 18 Feb 2026
@@ -68,54 +72,95 @@
 - **Estado**: ✅ Compilado y funcional
 
 ### 6. ConfigProductosWeb.tsx ✅
-- **Fecha**: 18 Feb 2026 (próxima)
-- **Estado**: ⏳ Pendiente
+- **Fecha**: 18 Feb 2026
+- **Tiempo**: 30 minutos
+- **Características**:
+  - 6 campos mostrados (categoría, tipo, precio, costo, imagen, estado)
+  - Colores por tipo producto
+  - Formato de moneda
+  - Filtro materia prima
+- **Estado**: ✅ Compilado y funcional
+
+### 7. ConfigMesas.tsx ✅
+- **Fecha**: 18 Feb 2026
+- **Tiempo**: 20 minutos
+- **Características**:
+  - 5 campos mostrados
+  - Colores por estado (DISPONIBLE/OCUPADA/RESERVADA)
+  - Estado de tiempo
+  - Usuario creador
+- **Estado**: ✅ Compilado y funcional
+
+### 8. ConfigRecetas.tsx ✅
+- **Fecha**: 18 Feb 2026
+- **Tiempo**: 25 minutos
+- **Características**:
+  - 5 campos mostrados
+  - Contador de ingredientes
+  - Formato de moneda
+  - Usuario auditoría
+- **Estado**: ✅ Compilado y funcional
+
+### 9. ConfigTurnos.tsx ✅
+- **Fecha**: 18 Feb 2026
+- **Tiempo**: 27 minutos
+- **Características**:
+  - 5 campos mostrados
+  - Formato de fecha personalizado
+  - Botón cerrar solo para abiertos
+  - Color dinámico ABIERTO/CERRADO
+- **Estado**: ✅ Compilado y funcional
 
 ---
 
-## ⏳ Páginas Pendientes (17/20)
+## ⏳ Páginas Pendientes (10/20)
 
-### Alta Prioridad (6 páginas)
+### Media Prioridad (5 páginas)
 
-#### 4. ConfigClientes ⏳
+#### 1. ConfigDescuentos ⏳
 - **Complejidad**: Media
 - **Estimado**: 30 min
 - **Campos sugeridos**:
-  - Nombre
-  - RFC
-  - Teléfono
-  - Email
-  - Dirección
+  - Nombre descuento
+  - Tipo (porcentaje/fijo)
+  - Valor
+  - Vigencia
   - Estado
 
-#### 5. ConfigProductosWeb ⏳
-- **Complejidad**: Alta
-- **Estimado**: 45 min
-- **Campos sugeridos**:
-  - Nombre
-  - Categoría
-  - Precio
-  - Descripción
-  - Imagen
-  - Disponibilidad
-
-#### 6. ConfigProveedores ⏳
+#### 2. ConfigGrupoMovimientos ⏳
 - **Complejidad**: Media
-- **Estimado**: 30 min
+- **Estimado**: 28 min
 - **Campos sugeridos**:
-  - Nombre
-  - Contacto
-  - Teléfono
-  - Email
-  - Productos
+  - Nombre grupo
+  - Descripción
+  - Tipo cuenta
+  - Estado
 
-#### 7. ConfigMesas ⏳
+#### 3. ConfigModeradores ⏳
+- **Complejidad**: Media
+- **Estimado**: 25 min
+- **Campos sugeridos**:
+  - Nombre moderador
+  - Categoría
+  - Precio adicional
+  - Estado
+
+#### 4. ConfigCatModeradores ⏳
 - **Complejidad**: Baja
 - **Estimado**: 20 min
 - **Campos sugeridos**:
-  - Número de mesa
-  - Capacidad
-  - Ubicación
+  - Nombre categoría
+  - Descripción
+  - Orden
+  - Estado
+
+#### 5. ConfigRolUsuarios ⏳
+- **Complejidad**: Baja
+- **Estimado**: 25 min
+- **Campos sugeridos**:
+  - Nombre rol
+  - Permisos
+  - Descripción
   - Estado
 
 #### 8. ConfigRecetas ⏳

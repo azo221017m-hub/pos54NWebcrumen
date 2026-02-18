@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, ChefHat, ArrowLeft } from 'lucide-react';
-import ListaRecetas from '../../components/recetas/ListaRecetas/ListaRecetas';
+import { Plus, ChefHat, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
+import StandardCard from '../../components/StandardCard/StandardCard';
 import FormularioReceta from '../../components/recetas/FormularioReceta/FormularioReceta';
 import type { Receta, RecetaCreate, RecetaUpdate } from '../../types/receta.types';
 import { obtenerRecetas, crearReceta, actualizarReceta, eliminarReceta } from '../../services/recetasService';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigRecetas.css';
 
 const ConfigRecetas: React.FC = () => {
-  const navigate = useNavigate();
   const [recetas, setRecetas] = useState<Receta[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -111,57 +109,87 @@ const ConfigRecetas: React.FC = () => {
   };
 
   return (
-    <div className="config-recetas-page">
+    <>
       {/* Mensaje de Notificación */}
       {mensaje && (
-        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
-          <div className="mensaje-contenido">
-            <span className="mensaje-texto">{mensaje.texto}</span>
-            <button
-              className="mensaje-cerrar"
-              onClick={() => setMensaje(null)}
-              aria-label="Cerrar mensaje"
-            >
-              ×
-            </button>
+        <div className={`standard-notification ${mensaje.tipo}`}>
+          <div className="notification-content">
+            <p className="notification-message">{mensaje.texto}</p>
           </div>
+          <button className="btn-close" onClick={() => setMensaje(null)}>×</button>
         </div>
       )}
 
-      {/* Header con botones */}
-      <div className="config-header">
-        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={20} />
-          Volver al Dashboard
-        </button>
-        
-        <div className="config-header-content">
-          <div className="config-title">
-            <ChefHat size={32} className="config-icon" />
-            <div>
-              <h1>Gestión de Recetas</h1>
-              <p>{recetas.length} receta{recetas.length !== 1 ? 's' : ''} registrada{recetas.length !== 1 ? 's' : ''}</p>
-            </div>
-          </div>
-          <button onClick={handleNuevo} className="btn-nuevo">
-            <Plus size={20} />
-            Nueva Receta
-          </button>
+      <StandardPageLayout
+        headerTitle="GESTIÓN DE RECETAS"
+        headerSubtitle={`${recetas.length} receta${recetas.length !== 1 ? 's' : ''} registrada${recetas.length !== 1 ? 's' : ''}`}
+        actionButton={{
+          text: 'Nueva Receta',
+          icon: <Plus size={20} />,
+          onClick: handleNuevo
+        }}
+        loading={cargando}
+        loadingMessage="Cargando recetas..."
+        isEmpty={recetas.length === 0}
+        emptyIcon={<ChefHat size={80} />}
+        emptyMessage="No hay recetas registradas."
+      >
+        <div className="standard-cards-grid">
+          {recetas.map((receta) => (
+            <StandardCard
+              key={receta.idReceta}
+              title={receta.nombreReceta}
+              fields={[
+                {
+                  label: 'Costo',
+                  value: `$${receta.costoReceta.toFixed(2)}`
+                },
+                {
+                  label: 'Ingredientes',
+                  value: receta.detalles ? `${receta.detalles.length} ingrediente${receta.detalles.length !== 1 ? 's' : ''}` : '0 ingredientes'
+                },
+                {
+                  label: 'Instrucciones',
+                  value: receta.archivoInstrucciones || 'Sin archivo'
+                },
+                {
+                  label: 'Estado',
+                  value: (
+                    <span style={{ 
+                      color: receta.estatus === 1 ? '#10b981' : '#ef4444',
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      {receta.estatus === 1 ? <CheckCircle size={16} /> : <XCircle size={16} />}
+                      {receta.estatus === 1 ? 'Activa' : 'Inactiva'}
+                    </span>
+                  )
+                },
+                {
+                  label: 'Usuario',
+                  value: receta.usuarioauditoria
+                }
+              ]}
+              actions={[
+                {
+                  label: 'Editar',
+                  icon: <Edit size={18} />,
+                  onClick: () => handleEditar(receta),
+                  variant: 'edit'
+                },
+                {
+                  label: 'Eliminar',
+                  icon: <Trash2 size={18} />,
+                  onClick: () => handleEliminar(receta.idReceta),
+                  variant: 'delete'
+                }
+              ]}
+            />
+          ))}
         </div>
-      </div>
-
-      {/* Contenedor fijo con Lista */}
-      <div className="config-container">
-        {cargando ? (
-          <LoadingSpinner size={48} message="Cargando recetas..." />
-        ) : (
-          <ListaRecetas
-            recetas={recetas}
-            onEditar={handleEditar}
-            onEliminar={handleEliminar}
-          />
-        )}
-      </div>
+      </StandardPageLayout>
 
       {/* Formulario Modal */}
       {mostrarFormulario && (
@@ -172,7 +200,7 @@ const ConfigRecetas: React.FC = () => {
           onCancel={handleCancelar}
         />
       )}
-    </div>
+    </>
   );
 };
 

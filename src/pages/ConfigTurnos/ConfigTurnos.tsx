@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock } from 'lucide-react';
+import { Clock, Edit } from 'lucide-react';
+import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
+import StandardCard from '../../components/StandardCard/StandardCard';
 import type { Turno } from '../../types/turno.types';
 import { EstatusTurno } from '../../types/turno.types';
 import {
@@ -8,8 +9,6 @@ import {
   cerrarTurnoActual
 } from '../../services/turnosService';
 import CierreTurno from '../../components/turnos/CierreTurno/CierreTurno';
-import ListaTurnos from '../../components/turnos/ListaTurnos/ListaTurnos';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigTurnos.css';
 
 // Types from CierreTurno component - duplicated here to avoid circular dependencies
@@ -30,7 +29,6 @@ interface Denominaciones {
 type EstatusCierre = 'sin_novedades' | 'cuentas_pendientes';
 
 const ConfigTurnos: React.FC = () => {
-  const navigate = useNavigate();
   const [turnos, setTurnos] = useState<Turno[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -107,53 +105,83 @@ const ConfigTurnos: React.FC = () => {
     setTurnoEditar(undefined);
   };
 
+  const formatearFecha = (fecha: string) => {
+    return new Date(fecha).toLocaleDateString('es-MX', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   return (
-    <div className="config-turnos-page">
+    <>
       {/* Mensaje de Notificación */}
       {mensaje && (
-        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
-          <div className="mensaje-contenido">
-            <span className="mensaje-texto">{mensaje.texto}</span>
-            <button
-              className="mensaje-cerrar"
-              onClick={() => setMensaje(null)}
-              aria-label="Cerrar mensaje"
-            >
-              ×
-            </button>
+        <div className={`standard-notification ${mensaje.tipo}`}>
+          <div className="notification-content">
+            <p className="notification-message">{mensaje.texto}</p>
           </div>
+          <button className="btn-close" onClick={() => setMensaje(null)}>×</button>
         </div>
       )}
 
-      {/* Header con botones */}
-      <div className="config-header">
-        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={20} />
-          Volver al Dashboard
-        </button>
-        
-        <div className="config-header-content">
-          <div className="config-title">
-            <Clock size={32} className="config-icon" />
-            <div>
-              <h1>Gestión de Turnos</h1>
-              <p>Administra los turnos de trabajo del negocio</p>
-            </div>
-          </div>
+      <StandardPageLayout
+        headerTitle="GESTIÓN DE TURNOS"
+        headerSubtitle={`${turnos.length} turnos registrados`}
+        loading={cargando}
+        loadingMessage="Cargando turnos..."
+        isEmpty={turnos.length === 0}
+        emptyIcon={<Clock size={80} />}
+        emptyMessage="No hay turnos registrados."
+      >
+        <div className="standard-cards-grid">
+          {turnos.map((turno) => (
+            <StandardCard
+              key={turno.idturno}
+              title={`Turno #${turno.numeroturno}`}
+              fields={[
+                {
+                  label: 'Clave',
+                  value: turno.claveturno
+                },
+                {
+                  label: 'Usuario',
+                  value: turno.usuarioturno
+                },
+                {
+                  label: 'Inicio',
+                  value: formatearFecha(turno.fechainicioturno)
+                },
+                {
+                  label: 'Fin',
+                  value: turno.fechafinturno ? formatearFecha(turno.fechafinturno) : 'En curso'
+                },
+                {
+                  label: 'Estado',
+                  value: (
+                    <span style={{ 
+                      color: turno.estatusturno === EstatusTurno.ABIERTO ? '#10b981' : '#6b7280',
+                      fontWeight: 600
+                    }}>
+                      {turno.estatusturno.toUpperCase()}
+                    </span>
+                  )
+                }
+              ]}
+              actions={turno.estatusturno === EstatusTurno.ABIERTO ? [
+                {
+                  label: 'Cerrar Turno',
+                  icon: <Edit size={18} />,
+                  onClick: () => handleEditarTurno(turno),
+                  variant: 'edit'
+                }
+              ] : []}
+            />
+          ))}
         </div>
-      </div>
-
-      {/* Contenedor fijo con Lista */}
-      <div className="config-container">
-        {cargando ? (
-          <LoadingSpinner size={48} message="Cargando turnos..." />
-        ) : (
-          <ListaTurnos
-            turnos={turnos}
-            onEdit={handleEditarTurno}
-          />
-        )}
-      </div>
+      </StandardPageLayout>
 
       {/* Formulario Modal */}
       {mostrarFormulario && turnoEditar && (
@@ -163,7 +191,7 @@ const ConfigTurnos: React.FC = () => {
           onCancel={handleCancelar}
         />
       )}
-    </div>
+    </>
   );
 };
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Table2 } from 'lucide-react';
+import { Plus, Table2, Edit, Trash2 } from 'lucide-react';
 import type { Mesa, MesaCreate, MesaUpdate } from '../../types/mesa.types';
 import {
   obtenerMesas,
@@ -8,13 +7,12 @@ import {
   actualizarMesa,
   eliminarMesa
 } from '../../services/mesasService';
+import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
+import StandardCard from '../../components/StandardCard/StandardCard';
 import FormularioMesa from '../../components/mesas/FormularioMesa/FormularioMesa';
-import ListaMesas from '../../components/mesas/ListaMesas/ListaMesas';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigMesas.css';
 
 const ConfigMesas: React.FC = () => {
-  const navigate = useNavigate();
   const [mesas, setMesas] = useState<Mesa[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -37,7 +35,7 @@ const ConfigMesas: React.FC = () => {
     } catch (error) {
       console.error('Error al cargar mesas:', error);
       mostrarMensaje('error', 'Error al cargar las mesas');
-    } finally {
+    } finally{
       setCargando(false);
     }
   }, []);
@@ -107,58 +105,93 @@ const ConfigMesas: React.FC = () => {
     setMostrarFormulario(true);
   };
 
+  const getEstatusColor = (estatus: string) => {
+    switch (estatus) {
+      case 'DISPONIBLE': return '#10b981'; // verde
+      case 'OCUPADA': return '#ef4444'; // rojo
+      case 'RESERVADA': return '#f59e0b'; // naranja
+      default: return '#6b7280'; // gris
+    }
+  };
+
   return (
-    <div className="config-mesas-page">
+    <>
       {/* Mensaje de Notificación */}
       {mensaje && (
-        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
-          <div className="mensaje-contenido">
-            <span className="mensaje-texto">{mensaje.texto}</span>
-            <button
-              className="mensaje-cerrar"
-              onClick={() => setMensaje(null)}
-              aria-label="Cerrar mensaje"
-            >
-              ×
-            </button>
+        <div className={`standard-notification ${mensaje.tipo}`}>
+          <div className="notification-content">
+            <p className="notification-message">{mensaje.texto}</p>
           </div>
+          <button className="btn-close" onClick={() => setMensaje(null)}>×</button>
         </div>
       )}
 
-      {/* Header con botones */}
-      <div className="config-header">
-        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={20} />
-          Volver al Dashboard
-        </button>
-        
-        <div className="config-header-content">
-          <div className="config-title">
-            <Table2 size={32} className="config-icon" />
-            <div>
-              <h1>Gestión de Mesas</h1>
-              <p>Administra las mesas del restaurante</p>
-            </div>
-          </div>
-          <button onClick={handleNuevaMesa} className="btn-nuevo">
-            <Plus size={20} />
-            Nueva Mesa
-          </button>
+      <StandardPageLayout
+        headerTitle="GESTIÓN DE MESAS"
+        headerSubtitle={`${mesas.length} mesas registradas`}
+        actionButton={{
+          text: 'Nueva Mesa',
+          icon: <Plus size={20} />,
+          onClick: handleNuevaMesa
+        }}
+        loading={cargando}
+        loadingMessage="Cargando mesas..."
+        isEmpty={mesas.length === 0}
+        emptyIcon={<Table2 size={80} />}
+        emptyMessage="No hay mesas registradas."
+      >
+        <div className="standard-cards-grid">
+          {mesas.map((mesa) => (
+            <StandardCard
+              key={mesa.idmesa}
+              title={mesa.nombremesa}
+              fields={[
+                {
+                  label: 'Número',
+                  value: `Mesa #${mesa.numeromesa}`
+                },
+                {
+                  label: 'Capacidad',
+                  value: `${mesa.cantcomensales} comensales`
+                },
+                {
+                  label: 'Estado',
+                  value: (
+                    <span style={{ 
+                      color: getEstatusColor(mesa.estatusmesa),
+                      fontWeight: 600
+                    }}>
+                      {mesa.estatusmesa}
+                    </span>
+                  )
+                },
+                {
+                  label: 'Estado Tiempo',
+                  value: mesa.estatustiempo.replace('_', ' ')
+                },
+                {
+                  label: 'Creado por',
+                  value: mesa.UsuarioCreo
+                }
+              ]}
+              actions={[
+                {
+                  label: 'Editar',
+                  icon: <Edit size={18} />,
+                  onClick: () => handleEditarMesa(mesa),
+                  variant: 'edit'
+                },
+                {
+                  label: 'Eliminar',
+                  icon: <Trash2 size={18} />,
+                  onClick: () => handleEliminarMesa(mesa.idmesa),
+                  variant: 'delete'
+                }
+              ]}
+            />
+          ))}
         </div>
-      </div>
-
-      {/* Contenedor fijo con Lista */}
-      <div className="config-container">
-        {cargando ? (
-          <LoadingSpinner size={48} message="Cargando mesas..." />
-        ) : (
-          <ListaMesas
-            mesas={mesas}
-            onEdit={handleEditarMesa}
-            onDelete={handleEliminarMesa}
-          />
-        )}
-      </div>
+      </StandardPageLayout>
 
       {/* Formulario Modal */}
       {mostrarFormulario && (
@@ -169,7 +202,7 @@ const ConfigMesas: React.FC = () => {
           idnegocio={idnegocio}
         />
       )}
-    </div>
+    </>
   );
 };
 
