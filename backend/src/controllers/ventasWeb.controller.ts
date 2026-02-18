@@ -1213,7 +1213,10 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
         tipodeventa,
         COALESCE(SUM(totaldeventa), 0) as total
        FROM tblposcrumenwebventas 
-       WHERE claveturno = ? AND idnegocio = ? AND estadodeventa = 'COBRADO'
+       WHERE claveturno = ? 
+         AND idnegocio = ? 
+         AND estadodeventa = 'COBRADO'
+         AND tipodeventa IN ('MESA', 'DOMICILIO', 'ONLINE', 'LLEVAR')
        GROUP BY tipodeventa
        ORDER BY total DESC`,
       [claveturno, idnegocio]
