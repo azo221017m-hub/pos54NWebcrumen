@@ -1255,7 +1255,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
 };
 
 /**
- * Get business health dashboard data (Sales vs Expenses for current month)
+ * Get business health dashboard data (Sales, Cost of Sales, Gross Margin for current month)
  * @route GET /api/ventas-web/dashboard/salud-negocio
  */
 export const getBusinessHealth = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -1279,10 +1279,47 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
     const startDate = firstDayOfMonth.toISOString().split('T')[0];
     const endDate = lastDayOfMonth.toISOString().split('T')[0];
 
-    // Use single query with conditional aggregation for better performance
-    const [rows] = await pool.execute<RowDataPacket[]>(
+    // 1. Calculate VENTAS (Sales)
+    // Sum of tblposcrumenwebventas.totaldeventa where motivomovimiento = 'VENTA'
+    const [ventasRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(totaldeventa), 0) as totalVentas
+       FROM tblposcrumenwebventas 
+       WHERE idnegocio = ? 
+         AND DATE(fechadeventa) BETWEEN ? AND ?
+         AND estadodeventa = 'COBRADO'
+         AND descripcionmov = 'VENTA'`,
+      [idnegocio, startDate, endDate]
+    );
+
+    const ventas = Number(ventasRows[0]?.totalVentas) || 0;
+
+    // 2. Calculate COSTO DE VENTA (Cost of Sales)
+    // Sum of cantidad * costo from tblposcrumenwebdetallemovimientos
+    // where tipomovimiento = 'SALIDA' AND motivomovimiento IN ('VENTA', 'CONSUMO')
+    const [costoVentaRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(cantidad * costo), 0) as costoVenta
+       FROM tblposcrumenwebdetallemovimientos
+       WHERE tipomovimiento = 'SALIDA'
+         AND motivomovimiento IN ('VENTA', 'CONSUMO')
+         AND estatusmovimiento = 'PROCESADO'
+         AND DATE(fechamovimiento) BETWEEN ? AND ?
+         AND idnegocio = ?`,
+      [startDate, endDate, idnegocio]
+    );
+
+    const costoVenta = Number(costoVentaRows[0]?.costoVenta) || 0;
+
+    // 3. Calculate MARGEN BRUTO (Gross Margin)
+    // Margen Bruto = Ventas - Costo de Venta
+    const margenBruto = ventas - costoVenta;
+
+    // 4. Calculate % MARGEN (Margin Percentage)
+    // % Margen = (Margen Bruto / Ventas) * 100
+    const porcentajeMargen = ventas > 0 ? (margenBruto / ventas) * 100 : 0;
+
+    // Get legacy data (gastos y compras) for backwards compatibility
+    const [legacyRows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
-        COALESCE(SUM(CASE WHEN descripcionmov = 'VENTA' AND estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalVentas,
         COALESCE(SUM(CASE WHEN referencia = 'GASTO' AND estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalGastos,
         COALESCE(SUM(CASE WHEN referencia = 'COMPRA' AND estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalCompras
        FROM tblposcrumenwebventas 
@@ -1291,19 +1328,27 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
       [idnegocio, startDate, endDate]
     );
 
-    const totalVentas = Number(rows[0]?.totalVentas) || 0;
-    const totalGastos = Number(rows[0]?.totalGastos) || 0;
-    const totalCompras = Number(rows[0]?.totalCompras) || 0;
+    const totalGastos = Number(legacyRows[0]?.totalGastos) || 0;
+    const totalCompras = Number(legacyRows[0]?.totalCompras) || 0;
 
     res.json({
       success: true,
       data: {
-        totalVentas,
+        // New business health metrics
+        ventas,
+        costoVenta,
+        margenBruto,
+        porcentajeMargen: Number(porcentajeMargen.toFixed(2)),
+        
+        // Legacy metrics for backwards compatibility
+        totalVentas: ventas,
         totalGastos,
         totalCompras,
+        
         periodo: {
           inicio: startDate,
-          fin: endDate
+          fin: endDate,
+          mes: now.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
         }
       }
     });

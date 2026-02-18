@@ -232,20 +232,29 @@ export const obtenerResumenVentas = async (): Promise<ResumenVentas> => {
   }
 };
 
-// Obtener datos de salud del negocio (Ventas vs Gastos del mes actual)
+// Obtener datos de salud del negocio (Ventas, Costo de Venta, Margen Bruto, % Margen)
 export interface SaludNegocio {
+  // New business health metrics
+  ventas: number;
+  costoVenta: number;
+  margenBruto: number;
+  porcentajeMargen: number;
+  
+  // Legacy metrics for backwards compatibility
   totalVentas: number;
   totalGastos: number;
   totalCompras: number;
+  
   periodo: {
     inicio: string;
     fin: string;
+    mes?: string;
   };
 }
 
 export const obtenerSaludNegocio = async (): Promise<SaludNegocio> => {
   try {
-    console.log('🔵 ventasWebService: Obteniendo salud del negocio (Ventas vs Gastos)');
+    console.log('🔵 ventasWebService: Obteniendo salud del negocio (Métricas financieras)');
     const response = await apiClient.get<{ success: boolean; data: SaludNegocio }>(
       `${API_BASE}/dashboard/salud-negocio`
     );
@@ -258,6 +267,10 @@ export const obtenerSaludNegocio = async (): Promise<SaludNegocio> => {
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     return {
+      ventas: 0,
+      costoVenta: 0,
+      margenBruto: 0,
+      porcentajeMargen: 0,
       totalVentas: 0,
       totalGastos: 0,
       totalCompras: 0,

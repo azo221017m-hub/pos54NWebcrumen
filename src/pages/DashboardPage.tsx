@@ -162,6 +162,10 @@ export const DashboardPage = () => {
     ventasPorTipoDeVenta: []
   });
   const [saludNegocio, setSaludNegocio] = useState<SaludNegocio>({
+    ventas: 0,
+    costoVenta: 0,
+    margenBruto: 0,
+    porcentajeMargen: 0,
     totalVentas: 0,
     totalGastos: 0,
     totalCompras: 0,
@@ -1063,166 +1067,132 @@ export const DashboardPage = () => {
               
               {/* Date display in top right */}
               <div style={{ position: 'absolute', top: '1rem', right: '1rem', fontSize: '0.7rem', color: '#6b7280', fontWeight: '500' }}>
-                {(() => {
+                {saludNegocio.periodo.mes || (() => {
                   const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
                   const now = new Date();
-                  return `${meses[now.getMonth()]} ${now.getDate()}`;
+                  return `${meses[now.getMonth()]} ${now.getFullYear()}`;
                 })()}
               </div>
               
-              {(saludNegocio.totalVentas > 0 || saludNegocio.totalGastos > 0 || saludNegocio.totalCompras > 0) ? (
+              {/* New Business Health Metrics */}
+              {saludNegocio.ventas > 0 ? (
                 <div style={{ marginTop: '1rem' }}>
-                  {(() => {
-                    // Calculate total and percentages
-                    const total = saludNegocio.totalVentas + saludNegocio.totalGastos + saludNegocio.totalCompras;
-                    const ventasPercent = total > 0 ? (saludNegocio.totalVentas / total) * 100 : 0;
-                    const gastosPercent = total > 0 ? (saludNegocio.totalGastos / total) * 100 : 0;
-                    const comprasPercent = total > 0 ? (saludNegocio.totalCompras / total) * 100 : 0;
-                    
-                    return (
-                      <>
-                        {/* Total amount display */}
-                        <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
-                          <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1f2937' }}>
-                            ${total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                          </div>
-                          <div style={{ fontSize: '0.55rem', color: '#6b7280', marginTop: '0.1rem' }}>Total del mes</div>
-                        </div>
+                  {/* Main Metrics Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                    {/* Ventas */}
+                    <div style={{ 
+                      padding: '0.75rem', 
+                      backgroundColor: '#eff6ff', 
+                      borderRadius: '8px',
+                      border: '1px solid #dbeafe'
+                    }}>
+                      <div style={{ fontSize: '0.55rem', color: '#6b7280', marginBottom: '0.25rem', fontWeight: '500' }}>
+                        Ventas
+                      </div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#3b82f6' }}>
+                        ${saludNegocio.ventas.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </div>
+                    </div>
 
-                        {/* Horizontal bar chart */}
-                        <div style={{ marginBottom: '0.75rem' }}>
-                          <div style={{ 
-                            display: 'flex', 
-                            height: '24px', 
-                            borderRadius: '6px', 
-                            overflow: 'hidden',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                          }}>
-                            {/* GASTOS bar */}
-                            {gastosPercent > 0 && (
-                              <div style={{
-                                width: `${gastosPercent}%`,
-                                backgroundColor: '#06b6d4', // cyan-500
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                fontSize: '0.6rem',
-                                fontWeight: '600',
-                                minWidth: gastosPercent > 15 ? 'auto' : '0',
-                                transition: 'width 0.3s ease'
-                              }}>
-                                {gastosPercent > 15 && `${Math.round(gastosPercent)}%`}
-                              </div>
-                            )}
-                            
-                            {/* COMPRAS bar */}
-                            {comprasPercent > 0 && (
-                              <div style={{
-                                width: `${comprasPercent}%`,
-                                backgroundColor: '#38bdf8', // sky-400
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                fontSize: '0.6rem',
-                                fontWeight: '600',
-                                minWidth: comprasPercent > 15 ? 'auto' : '0',
-                                transition: 'width 0.3s ease'
-                              }}>
-                                {comprasPercent > 15 && `${Math.round(comprasPercent)}%`}
-                              </div>
-                            )}
-                            
-                            {/* VENTAS bar */}
-                            {ventasPercent > 0 && (
-                              <div style={{
-                                width: `${ventasPercent}%`,
-                                backgroundColor: '#3b82f6', // blue-500
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                fontSize: '0.6rem',
-                                fontWeight: '600',
-                                minWidth: ventasPercent > 15 ? 'auto' : '0',
-                                transition: 'width 0.3s ease'
-                              }}>
-                                {ventasPercent > 15 && `${Math.round(ventasPercent)}%`}
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                    {/* Costo de Venta */}
+                    <div style={{ 
+                      padding: '0.75rem', 
+                      backgroundColor: '#fef2f2', 
+                      borderRadius: '8px',
+                      border: '1px solid #fecaca'
+                    }}>
+                      <div style={{ fontSize: '0.55rem', color: '#6b7280', marginBottom: '0.25rem', fontWeight: '500' }}>
+                        Costo de Venta
+                      </div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#ef4444' }}>
+                        ${saludNegocio.costoVenta.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </div>
+                    </div>
 
-                        {/* Category labels with amounts */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                          {/* GASTOS */}
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                              <div style={{ 
-                                width: '10px', 
-                                height: '10px', 
-                                borderRadius: '2px', 
-                                backgroundColor: '#06b6d4' 
-                              }}></div>
-                              <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#374151' }}>GASTOS</span>
-                            </div>
-                            <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#06b6d4' }}>
-                              ${saludNegocio.totalGastos.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                            </span>
-                          </div>
+                    {/* Margen Bruto */}
+                    <div style={{ 
+                      padding: '0.75rem', 
+                      backgroundColor: '#f0fdf4', 
+                      borderRadius: '8px',
+                      border: '1px solid #bbf7d0'
+                    }}>
+                      <div style={{ fontSize: '0.55rem', color: '#6b7280', marginBottom: '0.25rem', fontWeight: '500' }}>
+                        Margen Bruto
+                      </div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#10b981' }}>
+                        ${saludNegocio.margenBruto.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </div>
+                    </div>
 
-                          {/* COMPRAS */}
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                              <div style={{ 
-                                width: '10px', 
-                                height: '10px', 
-                                borderRadius: '2px', 
-                                backgroundColor: '#38bdf8' 
-                              }}></div>
-                              <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#374151' }}>COMPRAS</span>
-                            </div>
-                            <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#38bdf8' }}>
-                              ${saludNegocio.totalCompras.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                            </span>
-                          </div>
+                    {/* % Margen */}
+                    <div style={{ 
+                      padding: '0.75rem', 
+                      backgroundColor: '#faf5ff', 
+                      borderRadius: '8px',
+                      border: '1px solid #e9d5ff'
+                    }}>
+                      <div style={{ fontSize: '0.55rem', color: '#6b7280', marginBottom: '0.25rem', fontWeight: '500' }}>
+                        % Margen
+                      </div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#8b5cf6' }}>
+                        {saludNegocio.porcentajeMargen.toFixed(2)}%
+                      </div>
+                    </div>
+                  </div>
 
-                          {/* VENTAS */}
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                              <div style={{ 
-                                width: '10px', 
-                                height: '10px', 
-                                borderRadius: '2px', 
-                                backgroundColor: '#3b82f6' 
-                              }}></div>
-                              <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#374151' }}>VENTAS</span>
-                            </div>
-                            <span style={{ fontSize: '0.6rem', fontWeight: '600', color: '#3b82f6' }}>
-                              ${saludNegocio.totalVentas.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                            </span>
-                          </div>
-                        </div>
+                  {/* Separador */}
+                  <div style={{ borderTop: '1px solid #e5e7eb', marginBottom: '0.75rem' }}></div>
 
-                        {/* Balance indicator */}
-                        <div style={{ 
-                          textAlign: 'center', 
-                          fontSize: '0.65rem', 
-                          color: saludNegocio.totalVentas > (saludNegocio.totalGastos + saludNegocio.totalCompras) ? '#10b981' : '#ef4444',
-                          fontWeight: '600',
-                          marginTop: '0.75rem'
-                        }}>
-                          {saludNegocio.totalVentas > (saludNegocio.totalGastos + saludNegocio.totalCompras)
-                            ? '✓ Balance positivo' 
-                            : saludNegocio.totalVentas < (saludNegocio.totalGastos + saludNegocio.totalCompras)
-                              ? '⚠ Balance negativo'
-                              : '— Balance neutro'
-                          }
-                        </div>
-                      </>
-                    );
-                  })()}
+                  {/* Visual Indicator - Margin Health */}
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <div style={{ fontSize: '0.6rem', color: '#6b7280', marginBottom: '0.35rem', fontWeight: '500', textAlign: 'center' }}>
+                      Estado del Margen
+                    </div>
+                    <div style={{ 
+                      display: 'flex', 
+                      height: '20px', 
+                      borderRadius: '10px', 
+                      overflow: 'hidden',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      backgroundColor: '#f3f4f6'
+                    }}>
+                      <div style={{
+                        width: `${Math.min(Math.max(saludNegocio.porcentajeMargen, 0), 100)}%`,
+                        backgroundColor: saludNegocio.porcentajeMargen >= 30 
+                          ? '#10b981' // green - healthy
+                          : saludNegocio.porcentajeMargen >= 15
+                            ? '#f59e0b' // amber - warning
+                            : '#ef4444', // red - critical
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: '0.55rem',
+                        fontWeight: '700',
+                        transition: 'width 0.3s ease, background-color 0.3s ease'
+                      }}>
+                        {saludNegocio.porcentajeMargen > 0 && `${saludNegocio.porcentajeMargen.toFixed(1)}%`}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Status Message */}
+                  <div style={{ 
+                    textAlign: 'center', 
+                    fontSize: '0.65rem', 
+                    color: saludNegocio.margenBruto > 0 ? '#10b981' : '#ef4444',
+                    fontWeight: '600',
+                    marginTop: '0.5rem'
+                  }}>
+                    {saludNegocio.margenBruto > 0
+                      ? saludNegocio.porcentajeMargen >= 30
+                        ? '✓ Margen saludable'
+                        : saludNegocio.porcentajeMargen >= 15
+                          ? '⚠ Margen aceptable'
+                          : '⚠ Margen bajo'
+                      : '⚠ Sin margen de ganancia'
+                    }
+                  </div>
                 </div>
               ) : (
                 <div className="card-stat" style={{ fontSize: '0.65rem', color: '#9ca3af' }}>
