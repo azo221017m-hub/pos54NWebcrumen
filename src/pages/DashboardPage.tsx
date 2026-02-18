@@ -168,6 +168,7 @@ export const DashboardPage = () => {
     porcentajeMargen: 0,
     gastos: 0,
     utilidadOperativa: 0,
+    valorInventario: 0,
     totalVentas: 0,
     totalGastos: 0,
     totalCompras: 0,
@@ -1485,8 +1486,10 @@ export const DashboardPage = () => {
                 </svg>
               </div>
               <h3 className="card-title">Inventario</h3>
-              <p className="card-text">Alertas de stock</p>
-              <div className="card-stat">0 alertas</div>
+              <p className="card-text">Valor de Inventario</p>
+              <div className="card-stat">
+                ${saludNegocio.valorInventario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
             </div>
           </div>
 

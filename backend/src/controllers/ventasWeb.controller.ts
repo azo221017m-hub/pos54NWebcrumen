@@ -1353,6 +1353,20 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
 
     const totalCompras = Number(legacyRows[0]?.totalCompras) || 0;
 
+    // 8. Calculate VALOR DEL INVENTARIO (Inventory Value)
+    // Sum of (stock_actual * costo_promedio_ponderado) from tblposcrumenwebinsumos
+    // where activo = 1 AND inventariable = 1
+    const [inventarioRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(stock_actual * costo_promedio_ponderado), 0) as valorInventario
+       FROM tblposcrumenwebinsumos
+       WHERE idnegocio = ?
+         AND activo = 1
+         AND inventariable = 1`,
+      [idnegocio]
+    );
+
+    const valorInventario = Number(inventarioRows[0]?.valorInventario) || 0;
+
     res.json({
       success: true,
       data: {
@@ -1363,6 +1377,7 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
         porcentajeMargen: Number(porcentajeMargen.toFixed(2)),
         gastos,
         utilidadOperativa,
+        valorInventario,
         
         // Margin evaluation and classification
         clasificacion: evaluacion.clasificacion,

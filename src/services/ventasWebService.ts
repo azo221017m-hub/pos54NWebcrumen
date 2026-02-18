@@ -249,6 +249,7 @@ export interface SaludNegocio {
   porcentajeMargen: number;
   gastos: number;
   utilidadOperativa: number;
+  valorInventario: number;
   
   // Margin evaluation and classification
   clasificacion?: string;
@@ -290,6 +291,7 @@ export const obtenerSaludNegocio = async (): Promise<SaludNegocio> => {
       porcentajeMargen: 0,
       gastos: 0,
       utilidadOperativa: 0,
+      valorInventario: 0,
       totalVentas: 0,
       totalGastos: 0,
       totalCompras: 0,
