@@ -12,6 +12,8 @@ import { verificarTurnoAbierto, cerrarTurnoActual } from '../services/turnosServ
 import type { Turno } from '../types/turno.types';
 import CierreTurno from '../components/turnos/CierreTurno/CierreTurno';
 import { showSuccessToast, showErrorToast } from '../components/FeedbackToast';
+import { obtenerInsumos } from '../services/insumosService';
+import type { Insumo } from '../types/insumo.types';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -179,6 +181,19 @@ export const DashboardPage = () => {
   });
   const [turnoAbierto, setTurnoAbierto] = useState<Turno | null>(null);
   const [showCierreTurnoModal, setShowCierreTurnoModal] = useState(false);
+  const [nivelInventario, setNivelInventario] = useState<{
+    nivel: 'OPTIMO' | 'ADVERTENCIA' | 'CRITICO';
+    color: string;
+    mensaje: string;
+    icono: string;
+    insumosAfectados: number;
+  }>({
+    nivel: 'OPTIMO',
+    color: '#10b981',
+    mensaje: 'Inventario en nivel óptimo',
+    icono: '🟢',
+    insumosAfectados: 0
+  });
 
   const handleLogout = useCallback(() => {
     // Limpiar completamente la sesión
@@ -251,6 +266,57 @@ export const DashboardPage = () => {
       console.error('Error al cargar salud del negocio:', error);
     }
   }, []);
+
+  const calcularNivelInventario = useCallback(async () => {
+    if (!usuario?.idNegocio) return;
+    
+    try {
+      const insumos = await obtenerInsumos(usuario.idNegocio);
+      
+      let criticos = 0;
+      let advertencia = 0;
+      
+      insumos.forEach((insumo: Insumo) => {
+        const stockActual = Number(insumo.stock_actual || 0);
+        const stockMinimo = Number(insumo.stock_minimo || 0);
+        
+        if (stockActual <= stockMinimo) {
+          criticos++;
+        } else if (stockActual <= stockMinimo * 1.2) {
+          advertencia++;
+        }
+      });
+      
+      // Determinar el nivel general basado en prioridad
+      if (criticos > 0) {
+        setNivelInventario({
+          nivel: 'CRITICO',
+          color: '#ef4444',
+          mensaje: `${criticos} insumo${criticos !== 1 ? 's' : ''} en nivel crítico`,
+          icono: '🔴',
+          insumosAfectados: criticos
+        });
+      } else if (advertencia > 0) {
+        setNivelInventario({
+          nivel: 'ADVERTENCIA',
+          color: '#f59e0b',
+          mensaje: `${advertencia} insumo${advertencia !== 1 ? 's' : ''} próximo${advertencia !== 1 ? 's' : ''} a nivel mínimo`,
+          icono: '🟠',
+          insumosAfectados: advertencia
+        });
+      } else {
+        setNivelInventario({
+          nivel: 'OPTIMO',
+          color: '#10b981',
+          mensaje: 'Inventario en nivel óptimo',
+          icono: '🟢',
+          insumosAfectados: 0
+        });
+      }
+    } catch (error) {
+      console.error('Error al calcular nivel de inventario:', error);
+    }
+  }, [usuario?.idNegocio]);
 
   const verificarTurno = useCallback(async () => {
     try {
@@ -500,6 +566,8 @@ export const DashboardPage = () => {
     cargarResumenVentas();
     // Load business health data
     cargarSaludNegocio();
+    // Calculate inventory level
+    calcularNivelInventario();
 
     // Verify open turno
     verificarTurno();
@@ -509,6 +577,7 @@ export const DashboardPage = () => {
       cargarVentasSolicitadas();
       cargarResumenVentas();
       cargarSaludNegocio();
+      calcularNivelInventario();
       verificarTurno();
     }, SALES_SUMMARY_REFRESH_INTERVAL);
 
@@ -1489,6 +1558,38 @@ export const DashboardPage = () => {
               <p className="card-text">Valor de Inventario</p>
               <div className="card-stat">
                 ${saludNegocio.valorInventario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              
+              {/* Indicador de Nivel de Inventario */}
+              <div style={{
+                marginTop: '1rem',
+                padding: '0.75rem',
+                backgroundColor: `${nivelInventario.color}15`,
+                border: `2px solid ${nivelInventario.color}`,
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <span style={{ fontSize: '1.2rem' }}>{nivelInventario.icono}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontSize: '0.75rem',
+                    fontWeight: '700',
+                    color: nivelInventario.color,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}>
+                    {nivelInventario.nivel}
+                  </div>
+                  <div style={{
+                    fontSize: '0.7rem',
+                    color: '#6b7280',
+                    marginTop: '0.15rem'
+                  }}>
+                    {nivelInventario.mensaje}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
