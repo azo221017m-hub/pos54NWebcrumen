@@ -1,15 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Store } from 'lucide-react';
+import { Plus, Store, Edit, Trash2, Building2, Phone, MapPin } from 'lucide-react';
+import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
+import StandardCard from '../../components/StandardCard/StandardCard';
 import { negociosService } from '../../services/negociosService';
 import type { Negocio, NegocioCompleto } from '../../types/negocio.types';
-import { ListaNegocios } from '../../components/negocios/ListaNegocios/ListaNegocios';
 import { FormularioNegocio } from '../../components/negocios/FormularioNegocio/FormularioNegocio';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
-import './ConfigNegocios.css';
+import '../../styles/StandardPageLayout.css';
 
 export const ConfigNegocios = () => {
-  const navigate = useNavigate();
   const [negocios, setNegocios] = useState<Negocio[]>([]);
   const [loading, setLoading] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -130,63 +128,107 @@ export const ConfigNegocios = () => {
     setNegocioEditar(null);
   };
 
+  const getSubtitle = () => {
+    const total = negocios.length;
+    const activos = negocios.filter(n => n.estatusnegocio === 1).length;
+    const inactivos = negocios.filter(n => n.estatusnegocio === 0).length;
+    return `Total: ${total} | Activos: ${activos} | Inactivos: ${inactivos}`;
+  };
+
   return (
-    <div className="config-negocios-page">
-      {/* Mensaje de Notificación */}
+    <>
       {mensaje && (
-        <div className={`mensaje-notificacion mensaje-${mensaje.tipo === 'success' ? 'success' : 'error'}`}>
-          <div className="mensaje-contenido">
-            <span className="mensaje-texto">{mensaje.texto}</span>
-            <button
-              className="mensaje-cerrar"
-              onClick={() => setMensaje(null)}
-              aria-label="Cerrar mensaje"
-            >
-              ×
-            </button>
-          </div>
+        <div className={`standard-notification ${mensaje.tipo === 'success' ? 'success' : 'error'}`}>
+          <p>{mensaje.texto}</p>
+          <button onClick={() => setMensaje(null)}>×</button>
         </div>
       )}
 
-      {/* Header con botones */}
-      <div className="config-header">
-        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={20} />
-          Volver al Dashboard
-        </button>
-        
-        <div className="config-header-content">
-          <div className="config-title">
-            <Store size={32} className="config-icon" />
-            <div>
-              <h1>Gestión de Negocios</h1>
-              <p>
-                Total: {negocios.length} | 
-                Activos: {negocios.filter(n => n.estatusnegocio === 1).length} | 
-                Inactivos: {negocios.filter(n => n.estatusnegocio === 0).length}
-              </p>
-            </div>
-          </div>
-          <button onClick={handleNuevoNegocio} className="btn-nuevo">
-            <Plus size={20} />
-            Nuevo Negocio
-          </button>
+      <StandardPageLayout
+        headerTitle="Gestión de Negocios"
+        headerSubtitle={getSubtitle()}
+        actionButton={{
+          text: 'Nuevo Negocio',
+          icon: <Plus size={20} />,
+          onClick: handleNuevoNegocio
+        }}
+        loading={loading}
+        loadingMessage="Cargando negocios..."
+        isEmpty={negocios.length === 0}
+        emptyIcon={<Store size={80} />}
+        emptyMessage="No hay negocios registrados"
+      >
+        <div className="standard-cards-grid">
+          {negocios.map((negocio) => (
+            <StandardCard
+              key={negocio.idNegocio}
+              title={negocio.nombreNegocio}
+              fields={[
+                {
+                  label: 'Número',
+                  value: `#${negocio.numeronegocio}`
+                },
+                {
+                  label: 'RFC',
+                  value: (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Building2 size={14} />
+                      {negocio.rfcnegocio}
+                    </div>
+                  )
+                },
+                {
+                  label: 'Teléfono',
+                  value: (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Phone size={14} />
+                      {negocio.telefonocontacto}
+                    </div>
+                  )
+                },
+                {
+                  label: 'Dirección',
+                  value: (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <MapPin size={14} />
+                      {negocio.direccionfiscalnegocio.substring(0, 50)}...
+                    </div>
+                  )
+                },
+                {
+                  label: 'Contacto',
+                  value: negocio.contactonegocio
+                },
+                {
+                  label: 'Estado',
+                  value: (
+                    <span style={{ 
+                      color: negocio.estatusnegocio === 1 ? '#10b981' : '#ef4444',
+                      fontWeight: 600
+                    }}>
+                      {negocio.estatusnegocio === 1 ? 'ACTIVO' : 'INACTIVO'}
+                    </span>
+                  )
+                }
+              ]}
+              actions={[
+                {
+                  label: 'Editar',
+                  icon: <Edit size={16} />,
+                  onClick: () => handleEditarNegocio(negocio),
+                  variant: 'edit'
+                },
+                {
+                  label: 'Eliminar',
+                  icon: <Trash2 size={16} />,
+                  onClick: () => handleEliminarNegocio(negocio.idNegocio!),
+                  variant: 'delete'
+                }
+              ]}
+            />
+          ))}
         </div>
-      </div>
-
-      {/* Contenedor fijo con Lista */}
-      <div className="config-container">
-        {loading ? (
-          <LoadingSpinner size={48} message="Cargando negocios..." />
-        ) : (
-          <ListaNegocios
-            negocios={negocios}
-            onEditar={handleEditarNegocio}
-            onEliminar={handleEliminarNegocio}
-            loading={loading}
-          />
-        )}
-      </div>
+      </StandardPageLayout>
 
       {/* Formulario Modal */}
       {mostrarFormulario && (
@@ -196,7 +238,7 @@ export const ConfigNegocios = () => {
           onCancel={handleCancelar}
         />
       )}
-    </div>
+    </>
   );
 };
 

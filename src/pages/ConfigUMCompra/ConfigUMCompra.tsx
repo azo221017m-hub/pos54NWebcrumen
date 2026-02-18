@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Scale } from 'lucide-react';
-import { ListaUMCompra } from '../../components/umcompra/ListaUMCompra/ListaUMCompra';
+import { Plus, Scale, Edit, Trash2, Package } from 'lucide-react';
+import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
+import StandardCard from '../../components/StandardCard/StandardCard';
 import { FormularioUMCompra } from '../../components/umcompra/FormularioUMCompra/FormularioUMCompra';
 import type { UMCompra, UMCompraFormData } from '../../types/umcompra.types';
 import {
@@ -11,10 +11,9 @@ import {
   eliminarUMCompra,
   validarNombreUnico
 } from '../../services/umcompraService';
-import './ConfigUMCompra.css';
+import '../../styles/StandardPageLayout.css';
 
 export const ConfigUMCompra: React.FC = () => {
-  const navigate = useNavigate();
   const [unidades, setUnidades] = useState<UMCompra[]>([]);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [umEditar, setUmEditar] = useState<UMCompra | null>(null);
@@ -118,59 +117,89 @@ export const ConfigUMCompra: React.FC = () => {
     setUmEditar(null);
   };
 
+  const formatFecha = (fecha?: string) => {
+    if (!fecha) return 'N/A';
+    return new Date(fecha).toLocaleDateString('es-MX', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   return (
-    <div className="config-umcompra-page">
-      {/* Mensajes */}
+    <>
       {mensaje && (
-        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
-          <div className="mensaje-contenido">
-            <span className="mensaje-texto">{mensaje.texto}</span>
-            <button
-              className="mensaje-cerrar"
-              onClick={() => setMensaje(null)}
-              aria-label="Cerrar mensaje"
-            >
-              ×
-            </button>
-          </div>
+        <div className={`standard-notification ${mensaje.tipo === 'success' ? 'success' : 'error'}`}>
+          <p>{mensaje.texto}</p>
+          <button onClick={() => setMensaje(null)}>×</button>
         </div>
       )}
 
-      {/* Header con botones */}
-      <div className="config-header">
-        <button 
-          className="btn-volver" 
-          onClick={() => navigate('/dashboard')}
-          title="Volver al Dashboard"
-        >
-          <ArrowLeft size={20} />
-          Volver al Dashboard
-        </button>
-        
-        <div className="config-header-content">
-          <div className="config-title">
-            <Scale size={32} className="config-icon" />
-            <div>
-              <h1>Configuración de Unidades de Medida</h1>
-              <p>Administra las unidades de medida de compra</p>
-            </div>
-          </div>
-          <button className="btn-nuevo" onClick={handleNuevaUnidad}>
-            <Plus size={20} />
-            Nueva Unidad
-          </button>
+      <StandardPageLayout
+        headerTitle="Configuración de Unidades de Medida"
+        headerSubtitle="Administra las unidades de medida de compra"
+        actionButton={{
+          text: 'Nueva Unidad',
+          icon: <Plus size={20} />,
+          onClick: handleNuevaUnidad
+        }}
+        loading={loading}
+        loadingMessage="Cargando unidades de medida..."
+        isEmpty={unidades.length === 0}
+        emptyIcon={<Scale size={80} />}
+        emptyMessage="No hay unidades de medida registradas"
+      >
+        <div className="standard-cards-grid">
+          {unidades.map((um) => (
+            <StandardCard
+              key={um.idUmCompra}
+              title={um.nombreUmCompra}
+              fields={[
+                {
+                  label: 'Valor',
+                  value: (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Scale size={14} />
+                      {um.valor.toFixed(3)}
+                    </div>
+                  )
+                },
+                {
+                  label: 'Materia Prima',
+                  value: (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Package size={14} />
+                      {um.umMatPrima || 'N/A'}
+                    </div>
+                  )
+                },
+                {
+                  label: 'Valor Convertido',
+                  value: um.valorConvertido?.toFixed(3) || 'N/A'
+                },
+                {
+                  label: 'Fecha Registro',
+                  value: formatFecha(um.fechaRegistroauditoria)
+                }
+              ]}
+              actions={[
+                {
+                  label: 'Editar',
+                  icon: <Edit size={16} />,
+                  onClick: () => handleEditarUnidad(um),
+                  variant: 'edit'
+                },
+                {
+                  label: 'Eliminar',
+                  icon: <Trash2 size={16} />,
+                  onClick: () => handleEliminarUnidad(um.idUmCompra!),
+                  variant: 'delete'
+                }
+              ]}
+            />
+          ))}
         </div>
-      </div>
-
-      {/* Contenedor fijo con Lista */}
-      <div className="config-container">
-        <ListaUMCompra
-          unidades={unidades}
-          onEditar={handleEditarUnidad}
-          onEliminar={handleEliminarUnidad}
-          loading={loading}
-        />
-      </div>
+      </StandardPageLayout>
 
       {/* Formulario Modal */}
       {mostrarFormulario && (
@@ -181,6 +210,6 @@ export const ConfigUMCompra: React.FC = () => {
           loading={loading}
         />
       )}
-    </div>
+    </>
   );
 };
