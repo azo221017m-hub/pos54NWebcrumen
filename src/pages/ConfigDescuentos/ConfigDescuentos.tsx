@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, BadgePercent } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
+import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
+import StandardCard from '../../components/StandardCard/StandardCard';
 import type { Descuento, DescuentoCreate, DescuentoUpdate } from '../../types/descuento.types';
 import { obtenerDescuentos, crearDescuento, actualizarDescuento, eliminarDescuento } from '../../services/descuentosService';
 import FormularioDescuento from '../../components/descuentos/FormularioDescuento/FormularioDescuento';
-import ListaDescuentos from '../../components/descuentos/ListaDescuentos/ListaDescuentos';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigDescuentos.css';
 
 const ConfigDescuentos: React.FC = () => {
-  const navigate = useNavigate();
   const [descuentos, setDescuentos] = useState<Descuento[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -102,69 +100,98 @@ const ConfigDescuentos: React.FC = () => {
     setMostrarFormulario(true);
   };
 
+  const getTipoClass = (tipo: string) => {
+    return tipo.toLowerCase() === 'porcentaje' ? '% ' : '$';
+  };
+
   return (
-    <div className="config-descuentos-page">
+    <>
       {/* Mensaje de Notificación */}
       {mensaje && (
-        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
-          <div className="mensaje-contenido">
-            <span className="mensaje-texto">{mensaje.texto}</span>
-            <button
-              className="mensaje-cerrar"
-              onClick={() => setMensaje(null)}
-              aria-label="Cerrar mensaje"
-            >
-              ×
-            </button>
+        <div className={`standard-notification ${mensaje.tipo}`}>
+          <div className="notification-content">
+            <p className="notification-message">{mensaje.texto}</p>
           </div>
+          <button className="btn-close" onClick={() => setMensaje(null)}>×</button>
         </div>
       )}
 
-      {/* Header con botones */}
-      <div className="config-header">
-        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={20} />
-          Volver al Dashboard
-        </button>
-        
-        <div className="config-header-content">
-          <div className="config-title">
-            <BadgePercent size={32} className="config-icon" />
-            <div>
-              <h1>Gestión de Descuentos</h1>
-              <p>Administra los descuentos del negocio</p>
-            </div>
-          </div>
-          <button onClick={handleNuevoDescuento} className="btn-nuevo">
-            <Plus size={20} />
-            Nuevo Descuento
-          </button>
+      <StandardPageLayout
+        headerTitle="Gestión de Descuentos"
+        headerSubtitle="Administra los descuentos del negocio"
+        actionButton={{
+          text: 'Nuevo Descuento',
+          icon: <Plus size={20} />,
+          onClick: handleNuevoDescuento
+        }}
+        loading={cargando}
+        loadingMessage="Cargando descuentos..."
+        isEmpty={descuentos.length === 0}
+        emptyMessage="No hay descuentos registrados."
+      >
+        <div className="standard-cards-grid">
+          {descuentos.map((descuento) => (
+            <StandardCard
+              key={descuento.id_descuento}
+              title={descuento.nombre}
+              fields={[
+                {
+                  label: 'Tipo',
+                  value: descuento.tipodescuento
+                },
+                {
+                  label: 'Valor',
+                  value: `${getTipoClass(descuento.tipodescuento)}${descuento.valor}`
+                },
+                {
+                  label: 'Estado',
+                  value: (
+                    <span style={{
+                      color: descuento.estatusdescuento === 'ACTIVO' ? '#10b981' : '#ef4444',
+                      fontWeight: 600
+                    }}>
+                      {descuento.estatusdescuento}
+                    </span>
+                  )
+                },
+                {
+                  label: 'Requiere Autorización',
+                  value: descuento.requiereautorizacion === 'SI' ? 'Sí' : 'No'
+                },
+                {
+                  label: 'Usuario',
+                  value: descuento.UsuarioCreo
+                }
+              ]}
+              actions={[
+                {
+                  label: 'Editar',
+                  icon: <Edit size={16} />,
+                  onClick: () => handleEditarDescuento(descuento),
+                  variant: 'edit'
+                },
+                {
+                  label: 'Eliminar',
+                  icon: <Trash2 size={16} />,
+                  onClick: () => handleEliminarDescuento(descuento.id_descuento),
+                  variant: 'delete'
+                }
+              ]}
+            />
+          ))}
         </div>
-      </div>
 
-      {/* Contenedor fijo con Lista */}
-      <div className="config-container">
-        {cargando ? (
-          <LoadingSpinner size={48} message="Cargando descuentos..." />
-        ) : (
-          <ListaDescuentos
-            descuentos={descuentos}
-            onEdit={handleEditarDescuento}
-            onDelete={handleEliminarDescuento}
+        {/* Formulario Modal */}
+        {mostrarFormulario && (
+          <FormularioDescuento
+            descuentoInicial={descuentoEditar}
+            onSubmit={descuentoEditar ? handleActualizarDescuento : handleCrearDescuento}
+            onCancel={handleCancelar}
+            idnegocio={idnegocio}
           />
         )}
-      </div>
-
-      {/* Formulario Modal */}
-      {mostrarFormulario && (
-        <FormularioDescuento
-          descuentoInicial={descuentoEditar}
-          onSubmit={descuentoEditar ? handleActualizarDescuento : handleCrearDescuento}
-          onCancel={handleCancelar}
-          idnegocio={idnegocio}
-        />
-      )}
-    </div>
+      </StandardPageLayout>
+    </>
   );
 };
 

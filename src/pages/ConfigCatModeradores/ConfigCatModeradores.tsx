@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Users } from 'lucide-react';
+import { Plus, Users, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
+import StandardCard from '../../components/StandardCard/StandardCard';
 import type { CatModerador, CatModeradorCreate, CatModeradorUpdate } from '../../types/catModerador.types';
 import { obtenerCatModeradores, crearCatModerador, actualizarCatModerador, eliminarCatModerador } from '../../services/catModeradoresService';
-import ListaCatModeradores from '../../components/catModeradores/ListaCatModeradores/ListaCatModeradores';
 import FormularioCatModerador from '../../components/catModeradores/FormularioCatModerador/FormularioCatModerador';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigCatModeradores.css';
 
 const ConfigCatModeradores: React.FC = () => {
-  const navigate = useNavigate();
   const [catModeradores, setCatModeradores] = useState<CatModerador[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -96,69 +94,122 @@ const ConfigCatModeradores: React.FC = () => {
     setCatModeradorSeleccionada(null);
   };
 
+  const obtenerCantidadModeradores = (moderadores: string): number => {
+    if (!moderadores || moderadores === '' || moderadores === '0') {
+      return 0;
+    }
+    if (moderadores.includes(',')) {
+      return moderadores.split(',').filter(id => id.trim() !== '0' && id.trim() !== '').length;
+    }
+    return 1;
+  };
+
   return (
-    <div className="config-cat-moderadores-page">
+    <>
       {/* Mensaje de Notificación */}
       {mensaje && (
-        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
-          <div className="mensaje-contenido">
-            <span className="mensaje-texto">{mensaje.texto}</span>
-            <button
-              className="mensaje-cerrar"
-              onClick={() => setMensaje(null)}
-              aria-label="Cerrar mensaje"
-            >
-              ×
-            </button>
+        <div className={`standard-notification ${mensaje.tipo}`}>
+          <div className="notification-content">
+            <p className="notification-message">{mensaje.texto}</p>
           </div>
+          <button className="btn-close" onClick={() => setMensaje(null)}>×</button>
         </div>
       )}
 
-      {/* Header con botones */}
-      <div className="config-header">
-        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={20} />
-          Volver al Dashboard
-        </button>
-        
-        <div className="config-header-content">
-          <div className="config-title">
-            <Users size={32} className="config-icon" />
-            <div>
-              <h1>Categoría Moderadores</h1>
-              <p>Gestión de categorías de moderadores</p>
-            </div>
-          </div>
-          <button onClick={handleNuevo} className="btn-nuevo">
-            <Plus size={20} />
-            Nueva Categoría
-          </button>
+      <StandardPageLayout
+        headerTitle="Categoría Moderadores"
+        headerSubtitle="Gestión de categorías de moderadores"
+        actionButton={{
+          text: 'Nueva Categoría',
+          icon: <Plus size={20} />,
+          onClick: handleNuevo
+        }}
+        loading={cargando}
+        loadingMessage="Cargando categorías moderador..."
+        isEmpty={catModeradores.length === 0}
+        emptyIcon={<Users size={64} />}
+        emptyMessage="No hay categorías moderador registradas."
+      >
+        <div className="standard-cards-grid">
+          {catModeradores.map((catModerador) => {
+            const cantidadModeradores = obtenerCantidadModeradores(catModerador.moderadores);
+            
+            return (
+              <StandardCard
+                key={catModerador.idmodref}
+                title={catModerador.nombremodref}
+                fields={[
+                  {
+                    label: 'Estado',
+                    value: (
+                      <span style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        color: catModerador.estatus === 1 ? '#10b981' : '#ef4444',
+                        fontWeight: 600
+                      }}>
+                        {catModerador.estatus === 1 ? <CheckCircle size={14} /> : <XCircle size={14} />}
+                        {catModerador.estatus === 1 ? 'Activo' : 'Inactivo'}
+                      </span>
+                    )
+                  },
+                  {
+                    label: 'Moderadores',
+                    value: (
+                      <span style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        color: '#8b5cf6',
+                        fontWeight: 600
+                      }}>
+                        <Users size={14} />
+                        {cantidadModeradores} moderador{cantidadModeradores !== 1 ? 'es' : ''}
+                      </span>
+                    )
+                  },
+                  {
+                    label: 'Usuario',
+                    value: catModerador.usuarioauditoria
+                  },
+                  {
+                    label: 'Fecha Registro',
+                    value: catModerador.fechaRegistroauditoria
+                      ? new Date(catModerador.fechaRegistroauditoria).toLocaleDateString('es-MX')
+                      : 'N/A'
+                  }
+                ]}
+                actions={[
+                  {
+                    label: 'Editar',
+                    icon: <Edit size={16} />,
+                    onClick: () => handleEditar(catModerador),
+                    variant: 'edit'
+                  },
+                  {
+                    label: 'Eliminar',
+                    icon: <Trash2 size={16} />,
+                    onClick: () => handleEliminar(catModerador.idmodref),
+                    variant: 'delete'
+                  }
+                ]}
+              />
+            );
+          })}
         </div>
-      </div>
 
-      {/* Contenedor fijo con Lista */}
-      <div className="config-container">
-        {cargando ? (
-          <LoadingSpinner size={48} message="Cargando categorías moderador..." />
-        ) : (
-          <ListaCatModeradores
-            catModeradores={catModeradores}
-            onEditar={handleEditar}
-            onEliminar={handleEliminar}
+        {/* Formulario Modal */}
+        {mostrarFormulario && (
+          <FormularioCatModerador
+            catModerador={catModeradorSeleccionada}
+            idnegocio={idnegocio}
+            onSubmit={handleSubmit}
+            onCancel={handleCancelar}
           />
         )}
-      </div>
-
-      {/* Formulario Modal */}
-      {mostrarFormulario && (
-        <FormularioCatModerador
-          catModerador={catModeradorSeleccionada}
-          idnegocio={idnegocio}
-          onSubmit={handleSubmit}
-          onCancel={handleCancelar}
-        />
-      )}
-    </div>
+      </StandardPageLayout>
+    </>
   );
 };
 

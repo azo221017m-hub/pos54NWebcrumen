@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, FileText } from 'lucide-react';
+import { Plus, FileText, Edit, Trash2, Tag } from 'lucide-react';
+import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
+import StandardCard from '../../components/StandardCard/StandardCard';
 import type { GrupoMovimientos, GrupoMovimientosCreate, GrupoMovimientosUpdate } from '../../types/grupoMovimientos.types';
 import {
   obtenerGrupoMovimientos,
@@ -8,13 +9,10 @@ import {
   actualizarGrupoMovimientos,
   eliminarGrupoMovimientos
 } from '../../services/grupoMovimientosService';
-import ListaGrupoMovimientos from '../../components/grupoMovimientos/ListaGrupoMovimientos/ListaGrupoMovimientos';
 import FormularioGrupoMovimientos from '../../components/grupoMovimientos/FormularioGrupoMovimientos/FormularioGrupoMovimientos';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigGrupoMovimientos.css';
 
 const ConfigGrupoMovimientos: React.FC = () => {
-  const navigate = useNavigate();
   const [grupos, setGrupos] = useState<GrupoMovimientos[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -116,69 +114,98 @@ const ConfigGrupoMovimientos: React.FC = () => {
     setGrupoEditar(null);
   };
 
+  const getNaturalezaColor = (naturaleza: string) => {
+    return naturaleza === 'COMPRA' ? '#3b82f6' : '#8b5cf6';
+  };
+
   return (
-    <div className="config-grupo-movimientos-page">
+    <>
       {/* Mensaje de Notificación */}
       {mensaje && (
-        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
-          <div className="mensaje-contenido">
-            <span className="mensaje-texto">{mensaje.texto}</span>
-            <button
-              className="mensaje-cerrar"
-              onClick={() => setMensaje(null)}
-              aria-label="Cerrar mensaje"
-            >
-              ×
-            </button>
+        <div className={`standard-notification ${mensaje.tipo}`}>
+          <div className="notification-content">
+            <p className="notification-message">{mensaje.texto}</p>
           </div>
+          <button className="btn-close" onClick={() => setMensaje(null)}>×</button>
         </div>
       )}
 
-      {/* Header con botones */}
-      <div className="config-header">
-        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={20} />
-          Volver al Dashboard
-        </button>
-        
-        <div className="config-header-content">
-          <div className="config-title">
-            <FileText size={32} className="config-icon" />
-            <div>
-              <h1>Gestión de Grupos de Movimientos</h1>
-              <p>Administra los grupos de movimientos del sistema</p>
-            </div>
-          </div>
-          <button onClick={handleNuevoGrupo} className="btn-nuevo">
-            <Plus size={20} />
-            Nuevo Grupo
-          </button>
+      <StandardPageLayout
+        headerTitle="Gestión de Grupos de Movimientos"
+        headerSubtitle="Administra los grupos de movimientos del sistema"
+        actionButton={{
+          text: 'Nuevo Grupo',
+          icon: <Plus size={20} />,
+          onClick: handleNuevoGrupo
+        }}
+        loading={cargando}
+        loadingMessage="Cargando grupos de movimientos..."
+        isEmpty={grupos.length === 0}
+        emptyIcon={<FileText size={64} />}
+        emptyMessage="No hay grupos de movimientos registrados."
+      >
+        <div className="standard-cards-grid">
+          {grupos.map((grupo) => (
+            <StandardCard
+              key={grupo.id_cuentacontable}
+              title={grupo.nombrecuentacontable}
+              fields={[
+                {
+                  label: 'Naturaleza',
+                  value: (
+                    <span style={{
+                      color: getNaturalezaColor(grupo.naturalezacuentacontable),
+                      fontWeight: 600
+                    }}>
+                      <Tag size={14} style={{ display: 'inline', marginRight: '0.5rem' }} />
+                      {grupo.naturalezacuentacontable}
+                    </span>
+                  )
+                },
+                {
+                  label: 'Tipo de Grupo',
+                  value: grupo.tipocuentacontable
+                },
+                {
+                  label: 'Usuario',
+                  value: grupo.usuarioauditoria || 'N/A'
+                },
+                {
+                  label: 'Fecha Registro',
+                  value: grupo.fechaRegistroauditoria 
+                    ? new Date(grupo.fechaRegistroauditoria).toLocaleDateString('es-MX')
+                    : 'N/A'
+                }
+              ]}
+              actions={[
+                {
+                  label: 'Editar',
+                  icon: <Edit size={16} />,
+                  onClick: () => handleEditarGrupo(grupo),
+                  variant: 'edit'
+                },
+                {
+                  label: 'Eliminar',
+                  icon: <Trash2 size={16} />,
+                  onClick: () => handleEliminarGrupo(grupo.id_cuentacontable),
+                  variant: 'delete'
+                }
+              ]}
+            />
+          ))}
         </div>
-      </div>
 
-      {/* Contenedor fijo con Lista */}
-      <div className="config-container">
-        {cargando ? (
-          <LoadingSpinner size={48} message="Cargando grupos de movimientos..." />
-        ) : (
-          <ListaGrupoMovimientos
-            grupos={grupos}
-            onEdit={handleEditarGrupo}
-            onDelete={handleEliminarGrupo}
+        {/* Formulario Modal */}
+        {mostrarFormulario && (
+          <FormularioGrupoMovimientos
+            grupo={grupoEditar}
+            idnegocio={idnegocio}
+            onSave={handleGuardarGrupo}
+            onCancel={handleCancelarFormulario}
           />
         )}
-      </div>
-
-      {/* Formulario Modal */}
-      {mostrarFormulario && (
-        <FormularioGrupoMovimientos
-          grupo={grupoEditar}
-          idnegocio={idnegocio}
-          onSave={handleGuardarGrupo}
-          onCancel={handleCancelarFormulario}
-        />
-      )}
-    </div>
+      </StandardPageLayout>
+    </>
   );
 };
 

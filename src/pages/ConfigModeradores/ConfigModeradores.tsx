@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Shield } from 'lucide-react';
+import { Plus, Shield, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
+import StandardCard from '../../components/StandardCard/StandardCard';
 import type { Moderador, ModeradorCreate, ModeradorUpdate } from '../../types/moderador.types';
 import {
   obtenerModeradores,
@@ -8,13 +9,10 @@ import {
   actualizarModerador,
   eliminarModerador
 } from '../../services/moderadoresService';
-import ListaModeradores from '../../components/moderadores/ListaModeradores/ListaModeradores';
 import FormularioModerador from '../../components/moderadores/FormularioModerador/FormularioModerador';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './ConfigModeradores.css';
 
 const ConfigModeradores: React.FC = () => {
-  const navigate = useNavigate();
   const [moderadores, setModeradores] = useState<Moderador[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -122,68 +120,92 @@ const ConfigModeradores: React.FC = () => {
   };
 
   return (
-    <div className="config-moderadores-page">
+    <>
       {/* Mensaje de Notificación */}
       {mensaje && (
-        <div className={`mensaje-notificacion mensaje-${mensaje.tipo}`}>
-          <div className="mensaje-contenido">
-            <span className="mensaje-texto">{mensaje.texto}</span>
-            <button
-              className="mensaje-cerrar"
-              onClick={() => setMensaje(null)}
-              aria-label="Cerrar mensaje"
-            >
-              ×
-            </button>
+        <div className={`standard-notification ${mensaje.tipo}`}>
+          <div className="notification-content">
+            <p className="notification-message">{mensaje.texto}</p>
           </div>
+          <button className="btn-close" onClick={() => setMensaje(null)}>×</button>
         </div>
       )}
 
-      {/* Header con botones */}
-      <div className="config-header">
-        <button className="btn-volver" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft size={20} />
-          Volver al Dashboard
-        </button>
-        
-        <div className="config-header-content">
-          <div className="config-title">
-            <Shield size={32} className="config-icon" />
-            <div>
-              <h1>Gestión de Moderadores</h1>
-              <p>Administra los moderadores del sistema</p>
-            </div>
-          </div>
-          <button onClick={handleNuevoModerador} className="btn-nuevo">
-            <Plus size={20} />
-            Nuevo Moderador
-          </button>
+      <StandardPageLayout
+        headerTitle="Gestión de Moderadores"
+        headerSubtitle="Administra los moderadores del sistema"
+        actionButton={{
+          text: 'Nuevo Moderador',
+          icon: <Plus size={20} />,
+          onClick: handleNuevoModerador
+        }}
+        loading={cargando}
+        loadingMessage="Cargando moderadores..."
+        isEmpty={moderadores.length === 0}
+        emptyIcon={<Shield size={64} />}
+        emptyMessage="No hay moderadores registrados."
+      >
+        <div className="standard-cards-grid">
+          {moderadores.map((moderador) => (
+            <StandardCard
+              key={moderador.idmoderador}
+              title={moderador.nombremoderador}
+              fields={[
+                {
+                  label: 'Estado',
+                  value: (
+                    <span style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      color: moderador.estatus === 1 ? '#10b981' : '#ef4444',
+                      fontWeight: 600
+                    }}>
+                      {moderador.estatus === 1 ? <CheckCircle size={14} /> : <XCircle size={14} />}
+                      {moderador.estatus === 1 ? 'Activo' : 'Inactivo'}
+                    </span>
+                  )
+                },
+                {
+                  label: 'Usuario Auditoría',
+                  value: moderador.usuarioauditoria || 'N/A'
+                },
+                {
+                  label: 'Fecha Registro',
+                  value: moderador.fechaRegistroauditoria
+                    ? new Date(moderador.fechaRegistroauditoria).toLocaleDateString('es-MX')
+                    : 'N/A'
+                }
+              ]}
+              actions={[
+                {
+                  label: 'Editar',
+                  icon: <Edit size={16} />,
+                  onClick: () => handleEditarModerador(moderador),
+                  variant: 'edit'
+                },
+                {
+                  label: 'Eliminar',
+                  icon: <Trash2 size={16} />,
+                  onClick: () => handleEliminarModerador(moderador.idmoderador),
+                  variant: 'delete'
+                }
+              ]}
+            />
+          ))}
         </div>
-      </div>
 
-      {/* Contenedor fijo con Lista */}
-      <div className="config-container">
-        {cargando ? (
-          <LoadingSpinner size={48} message="Cargando moderadores..." />
-        ) : (
-          <ListaModeradores
-            moderadores={moderadores}
-            onEdit={handleEditarModerador}
-            onDelete={handleEliminarModerador}
+        {/* Formulario Modal */}
+        {mostrarFormulario && (
+          <FormularioModerador
+            moderador={moderadorEditar}
+            idnegocio={idnegocio}
+            onSave={handleGuardarModerador}
+            onCancel={handleCancelarFormulario}
           />
         )}
-      </div>
-
-      {/* Formulario Modal */}
-      {mostrarFormulario && (
-        <FormularioModerador
-          moderador={moderadorEditar}
-          idnegocio={idnegocio}
-          onSave={handleGuardarModerador}
-          onCancel={handleCancelarFormulario}
-        />
-      )}
-    </div>
+      </StandardPageLayout>
+    </>
   );
 };
 

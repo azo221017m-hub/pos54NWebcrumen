@@ -8,18 +8,18 @@
 
 | Estado | Cantidad | Porcentaje |
 |--------|----------|------------|
-| ✅ Completadas | 10 | 50% |
+| ✅ Completadas | 15 | 75% |
 | 🔄 En Progreso | 0 | 0% |
-| ⏳ Pendientes | 10 | 50% |
+| ⏳ Pendientes | 5 | 25% |
 | **TOTAL** | **20** | **100%** |
 
-**⏱️ Tiempo Total Invertido**: 4h 30min  
-**📊 Promedio por Página**: 27 min  
-**⏳ Tiempo Estimado Restante**: 4h 30min
+**⏱️ Tiempo Total Invertido**: 6h 38min  
+**📊 Promedio por Página**: 26.5 min  
+**⏳ Tiempo Estimado Restante**: 2h 12min
 
 ---
 
-## ✅ Páginas Completadas (10/20)
+## ✅ Páginas Completadas (15/20)
 
 ### 1. ConfigInsumos.tsx ✅
 - **Fecha**: 18 Feb 2026
@@ -111,65 +111,111 @@
   - Color dinámico ABIERTO/CERRADO
 - **Estado**: ✅ Compilado y funcional
 
+### 10. ConfigDescuentos.tsx ✅
+- **Fecha**: 18 Feb 2026
+- **Tiempo**: 25 minutos
+- **Características**:
+  - 5 campos mostrados
+  - Tipo con símbolo (% o $)
+  - Color por estado (ACTIVO/INACTIVO)
+  - Requiere autorización (Sí/No)
+- **Estado**: ✅ Compilado y funcional
+
+### 11. ConfigGrupoMovimientos.tsx ✅
+- **Fecha**: 18 Feb 2026
+- **Tiempo**: 26 minutos
+- **Características**:
+  - 4 campos mostrados
+  - Color por naturaleza (COMPRA/GASTO)
+  - Fecha de registro formateada
+  - Usuario auditoría
+- **Estado**: ✅ Compilado y funcional
+
+### 12. ConfigModeradores.tsx ✅
+- **Fecha**: 18 Feb 2026
+- **Tiempo**: 27 minutos
+- **Características**:
+  - 3 campos mostrados
+  - Ícono de estado (CheckCircle/XCircle)
+  - Color dinámico por estatus
+  - Usuario auditoría
+- **Estado**: ✅ Compilado y funcional
+
+### 13. ConfigCatModeradores.tsx ✅
+- **Fecha**: 18 Feb 2026
+- **Tiempo**: 28 minutos
+- **Características**:
+  - 4 campos mostrados
+  - Contador de moderadores con pluralización
+  - Ícono Users con cantidad
+  - Fecha de registro
+- **Estado**: ✅ Compilado y funcional
+
+### 14. ConfigRolUsuarios.tsx ✅
+- **Fecha**: 18 Feb 2026
+- **Tiempo**: 25 minutos
+- **Características**:
+  - 4 campos mostrados
+  - Nivel de privilegio con color dinámico
+  - Descripción de nivel (Básico → Total)
+  - Solo acción Editar (no Eliminar)
+- **Estado**: ✅ Compilado y funcional
+
 ---
 
-## ⏳ Páginas Pendientes (10/20)
+## ⏳ Páginas Pendientes (5/20)
 
-### Media Prioridad (5 páginas)
+### Baja Prioridad (5 páginas)
 
-#### 1. ConfigDescuentos ⏳
-- **Complejidad**: Media
+#### 1. ConfigSubreceta ⏳
+- **Complejidad**: Alta
 - **Estimado**: 30 min
 - **Campos sugeridos**:
-  - Nombre descuento
-  - Tipo (porcentaje/fijo)
-  - Valor
-  - Vigencia
-  - Estado
-
-#### 2. ConfigGrupoMovimientos ⏳
-- **Complejidad**: Media
-- **Estimado**: 28 min
-- **Campos sugeridos**:
-  - Nombre grupo
-  - Descripción
-  - Tipo cuenta
-  - Estado
-
-#### 3. ConfigModeradores ⏳
-- **Complejidad**: Media
-- **Estimado**: 25 min
-- **Campos sugeridos**:
-  - Nombre moderador
-  - Categoría
-  - Precio adicional
-  - Estado
-
-#### 4. ConfigCatModeradores ⏳
-- **Complejidad**: Baja
-- **Estimado**: 20 min
-- **Campos sugeridos**:
-  - Nombre categoría
-  - Descripción
-  - Orden
-  - Estado
-
-#### 5. ConfigRolUsuarios ⏳
-- **Complejidad**: Baja
-- **Estimado**: 25 min
-- **Campos sugeridos**:
-  - Nombre rol
-  - Permisos
-  - Descripción
-  - Estado
-
-#### 8. ConfigRecetas ⏳
-- **Complejidad**: Alta
-- **Estimado**: 45 min
-- **Campos sugeridos**:
-  - Nombre
-  - Insumos
+  - Nombre subreceta
+  - Ingredientes
   - Rendimiento
+  - Costo
+  - Estado
+
+#### 2. ConfigUMCompra ⏳
+- **Complejidad**: Baja
+- **Estimado**: 22 min
+- **Campos sugeridos**:
+  - Nombre unidad
+  - Abreviatura
+  - Tipo
+  - Estado
+
+#### 3. ConfigNegocios ⏳
+- **Complejidad**: Media
+- **Estimado**: 25 min
+- **Campos sugeridos**:
+  - Nombre negocio
+  - Dirección
+  - RFC
+  - Teléfono
+  - Estado
+
+#### 4. MovimientosInventario ⏳
+- **Complejidad**: Alta
+- **Estimado**: 35 min
+- **Campos sugeridos**:
+  - Folio movimiento
+  - Tipo (entrada/salida)
+  - Insumo
+  - Cantidad
+  - Fecha
+  - Usuario
+
+#### 5. PageGastos/PageVentas ⏳
+- **Complejidad**: Alta
+- **Estimado**: 30 min
+- **Campos sugeridos**:
+  - Concepto
+  - Monto
+  - Categoría
+  - Fecha
+  - Estado
   - Costo
   - Tiempo prep
 
