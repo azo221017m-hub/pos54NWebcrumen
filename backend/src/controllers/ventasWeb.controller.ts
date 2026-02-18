@@ -1168,7 +1168,9 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
           totalOrdenado: 0,
           totalVentasCobradas: 0,
           metaTurno: 0,
-          hasTurnoAbierto: false
+          hasTurnoAbierto: false,
+          ventasPorFormaDePago: [],
+          ventasPorTipoDeVenta: []
         }
       });
       return;
@@ -1193,6 +1195,41 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const totalOrdenado = Number(salesRows[0]?.totalOrdenado) || 0;
     const totalVentasCobradas = Number(salesRows[0]?.totalVentasCobradas) || 0;
 
+    // Get sales grouped by formadepago (payment method)
+    const [formaDePagoRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT 
+        formadepago,
+        COALESCE(SUM(totaldeventa), 0) as total
+       FROM tblposcrumenwebventas 
+       WHERE claveturno = ? AND idnegocio = ? AND estadodeventa = 'COBRADO'
+       GROUP BY formadepago
+       ORDER BY total DESC`,
+      [claveturno, idnegocio]
+    );
+
+    // Get sales grouped by tipodeventa (sale type: MESA, DOMICILIO, LLEVAR, ONLINE)
+    const [tipoDeVentaRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT 
+        tipodeventa,
+        COALESCE(SUM(totaldeventa), 0) as total
+       FROM tblposcrumenwebventas 
+       WHERE claveturno = ? AND idnegocio = ? AND estadodeventa = 'COBRADO'
+       GROUP BY tipodeventa
+       ORDER BY total DESC`,
+      [claveturno, idnegocio]
+    );
+
+    // Format data for charts
+    const ventasPorFormaDePago = formaDePagoRows.map(row => ({
+      formadepago: row.formadepago || 'Sin especificar',
+      total: Number(row.total) || 0
+    }));
+
+    const ventasPorTipoDeVenta = tipoDeVentaRows.map(row => ({
+      tipodeventa: row.tipodeventa || 'Sin especificar',
+      total: Number(row.total) || 0
+    }));
+
     res.json({
       success: true,
       data: {
@@ -1200,7 +1237,9 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
         totalOrdenado,
         totalVentasCobradas,
         metaTurno: metaturno,
-        hasTurnoAbierto: true
+        hasTurnoAbierto: true,
+        ventasPorFormaDePago,
+        ventasPorTipoDeVenta
       }
     });
   } catch (error) {

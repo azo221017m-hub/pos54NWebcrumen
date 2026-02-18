@@ -157,7 +157,9 @@ export const DashboardPage = () => {
     totalOrdenado: 0,
     totalVentasCobradas: 0,
     metaTurno: 0,
-    hasTurnoAbierto: false
+    hasTurnoAbierto: false,
+    ventasPorFormaDePago: [],
+    ventasPorTipoDeVenta: []
   });
   const [saludNegocio, setSaludNegocio] = useState<SaludNegocio>({
     totalVentas: 0,
@@ -1297,6 +1299,168 @@ export const DashboardPage = () => {
                   <div style={{ fontSize: '0.55rem', color: '#9ca3af', textAlign: 'center', fontWeight: '500' }}>
                     {((resumenVentas.totalCobrado / (resumenVentas.metaTurno || 1)) * 100).toFixed(1)}% completado
                   </div>
+                </div>
+              )}
+
+              {/* Gráfico por Forma de Pago (Porcentajes) */}
+              {resumenVentas.ventasPorFormaDePago && resumenVentas.ventasPorFormaDePago.length > 0 && (
+                <div style={{ marginTop: '1rem', borderTop: '1px solid #e5e7eb', paddingTop: '0.75rem' }}>
+                  <h4 style={{ fontSize: '0.65rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                    Por Forma de Pago
+                  </h4>
+                  {(() => {
+                    const totalFormaDePago = resumenVentas.ventasPorFormaDePago.reduce((sum, item) => sum + item.total, 0);
+                    
+                    // Color palette for payment methods
+                    const coloresPago: Record<string, string> = {
+                      'EFECTIVO': '#10b981', // green
+                      'TARJETA': '#3b82f6',   // blue
+                      'TRANSFERENCIA': '#8b5cf6', // purple
+                      'MIXTO': '#f59e0b',     // amber
+                      'sinFP': '#6b7280'      // gray
+                    };
+
+                    return (
+                      <>
+                        {/* Horizontal bar chart */}
+                        <div style={{ 
+                          display: 'flex', 
+                          height: '20px', 
+                          borderRadius: '4px', 
+                          overflow: 'hidden',
+                          marginBottom: '0.5rem',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                        }}>
+                          {resumenVentas.ventasPorFormaDePago.map((item, index) => {
+                            const percentage = totalFormaDePago > 0 ? (item.total / totalFormaDePago) * 100 : 0;
+                            const color = coloresPago[item.formadepago] || '#9ca3af';
+                            
+                            return percentage > 0 ? (
+                              <div 
+                                key={index}
+                                style={{
+                                  width: `${percentage}%`,
+                                  backgroundColor: color,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: 'white',
+                                  fontSize: '0.55rem',
+                                  fontWeight: '600',
+                                  transition: 'width 0.3s ease'
+                                }}
+                                title={`${item.formadepago}: ${percentage.toFixed(1)}%`}
+                              >
+                                {percentage > 12 && `${Math.round(percentage)}%`}
+                              </div>
+                            ) : null;
+                          })}
+                        </div>
+
+                        {/* Legend */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                          {resumenVentas.ventasPorFormaDePago.map((item, index) => {
+                            const percentage = totalFormaDePago > 0 ? (item.total / totalFormaDePago) * 100 : 0;
+                            const color = coloresPago[item.formadepago] || '#9ca3af';
+                            
+                            return (
+                              <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                  <div style={{ 
+                                    width: '8px', 
+                                    height: '8px', 
+                                    borderRadius: '2px', 
+                                    backgroundColor: color
+                                  }}></div>
+                                  <span style={{ fontSize: '0.55rem', color: '#6b7280' }}>
+                                    {item.formadepago}
+                                  </span>
+                                </div>
+                                <span style={{ fontSize: '0.55rem', fontWeight: '600', color: '#374151' }}>
+                                  {percentage.toFixed(1)}%
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* Gráfico por Tipo de Venta (Montos en $) */}
+              {resumenVentas.ventasPorTipoDeVenta && resumenVentas.ventasPorTipoDeVenta.length > 0 && (
+                <div style={{ marginTop: '1rem', borderTop: '1px solid #e5e7eb', paddingTop: '0.75rem' }}>
+                  <h4 style={{ fontSize: '0.65rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                    Por Tipo de Venta
+                  </h4>
+                  {(() => {
+                    const totalTipoVenta = resumenVentas.ventasPorTipoDeVenta.reduce((sum, item) => sum + item.total, 0);
+                    const maxTipoVenta = Math.max(...resumenVentas.ventasPorTipoDeVenta.map(item => item.total), 1);
+                    
+                    // Color palette for sale types
+                    const coloresTipo: Record<string, string> = {
+                      'MESA': '#ef4444',      // red
+                      'DOMICILIO': '#f59e0b', // amber
+                      'LLEVAR': '#10b981',    // green
+                      'ONLINE': '#3b82f6'     // blue
+                    };
+
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                        {resumenVentas.ventasPorTipoDeVenta.map((item, index) => {
+                          const percentage = maxTipoVenta > 0 ? (item.total / maxTipoVenta) * 100 : 0;
+                          const color = coloresTipo[item.tipodeventa] || '#9ca3af';
+                          
+                          return (
+                            <div key={index}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
+                                <span style={{ fontSize: '0.55rem', fontWeight: '600', color: '#374151' }}>
+                                  {item.tipodeventa}
+                                </span>
+                                <span style={{ fontSize: '0.55rem', fontWeight: '700', color: color }}>
+                                  ${item.total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                </span>
+                              </div>
+                              <div style={{ 
+                                width: '100%', 
+                                height: '12px', 
+                                backgroundColor: '#f3f4f6', 
+                                borderRadius: '3px', 
+                                overflow: 'hidden'
+                              }}>
+                                <div style={{
+                                  width: `${percentage}%`,
+                                  height: '100%',
+                                  backgroundColor: color,
+                                  transition: 'width 0.3s ease',
+                                  borderRadius: '3px'
+                                }}></div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                        
+                        {/* Total */}
+                        <div style={{ 
+                          marginTop: '0.3rem', 
+                          paddingTop: '0.4rem', 
+                          borderTop: '1px dashed #d1d5db',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center'
+                        }}>
+                          <span style={{ fontSize: '0.55rem', fontWeight: '600', color: '#6b7280' }}>
+                            TOTAL
+                          </span>
+                          <span style={{ fontSize: '0.65rem', fontWeight: '700', color: '#1f2937' }}>
+                            ${totalTipoVenta.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </div>

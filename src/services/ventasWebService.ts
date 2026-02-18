@@ -189,12 +189,24 @@ export const agregarDetallesAVenta = async (
 };
 
 // Obtener resumen de ventas del turno actual abierto
+export interface VentaPorFormaDePago {
+  formadepago: string;
+  total: number;
+}
+
+export interface VentaPorTipoDeVenta {
+  tipodeventa: string;
+  total: number;
+}
+
 export interface ResumenVentas {
   totalCobrado: number;
   totalOrdenado: number;
   totalVentasCobradas: number;
   metaTurno: number;
   hasTurnoAbierto: boolean;
+  ventasPorFormaDePago: VentaPorFormaDePago[];
+  ventasPorTipoDeVenta: VentaPorTipoDeVenta[];
 }
 
 export const obtenerResumenVentas = async (): Promise<ResumenVentas> => {
@@ -213,7 +225,9 @@ export const obtenerResumenVentas = async (): Promise<ResumenVentas> => {
       totalOrdenado: 0,
       totalVentasCobradas: 0,
       metaTurno: 0,
-      hasTurnoAbierto: false
+      hasTurnoAbierto: false,
+      ventasPorFormaDePago: [],
+      ventasPorTipoDeVenta: []
     };
   }
 };
