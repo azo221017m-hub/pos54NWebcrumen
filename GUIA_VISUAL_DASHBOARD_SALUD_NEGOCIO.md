@@ -22,7 +22,7 @@
 ║  │  ║               ║  ║                   ║           │   ║
 ║  │  ║ $25,000.00    ║  ║ $12,000.00        ║           │   ║
 ║  │  ╚═══════════════╝  ╚═══════════════════╝           │   ║
-║  │   🔵 Azul              🔴 Rojo                       │   ║
+║  │   🔵 Azul              ⚫ Gris (neutro)              │   ║
 ║  │                                                      │   ║
 ║  │  ╔═══════════════╗  ╔═══════════════════╗           │   ║
 ║  │  ║ Margen Bruto  ║  ║ % Margen          ║           │   ║
@@ -64,15 +64,18 @@ Fondo:  #eff6ff (azul muy claro)
 Borde:  #dbeafe (azul claro)
 ```
 
-### 2. Costo de Venta (Rojo)
+### 2. Costo de Venta (Gris Neutro)
 ```
 ┌────────────────────┐
 │ Costo de Venta     │ ← Texto: #6b7280 (gris)
 │                    │
-│ $12,000.00         │ ← Valor: #ef4444 (rojo fuerte)
+│ $12,000.00         │ ← Valor: #475569 (gris oscuro/slate)
 └────────────────────┘
-Fondo:  #fef2f2 (rojo muy claro)
-Borde:  #fecaca (rojo claro)
+Fondo:  #f8fafc (gris azulado muy claro/slate-50)
+Borde:  #e2e8f0 (gris azulado claro/slate-200)
+
+NOTA: Cambio de rojo a gris para evitar confusión 
+      con indicadores negativos. Color neutro profesional.
 ```
 
 ### 3. Margen Bruto (Verde)
@@ -340,7 +343,8 @@ return `${meses[now.getMonth()]} ${now.getFullYear()}`;
 ### Colores = Significado
 ```
 🔵 Azul    → Ingresos (Ventas, Utilidad positiva)
-🔴 Rojo    → Costos (Costo de Venta, Utilidad negativa)
+⚫ Gris    → Costos neutros (Costo de Venta)
+🔴 Rojo    → Indicadores negativos (Utilidad negativa)
 🟢 Verde   → Ganancia (Margen Bruto)
 🟣 Púrpura → Eficiencia (% Margen)
 🟡 Amarillo → Gastos (Operativos)
@@ -457,9 +461,12 @@ color: #3b82f6;             /* Blue-500 */
 
 ### Tarjeta: Costo de Venta
 ```css
-background-color: #fef2f2;  /* Red-50 */
-border: 1px solid #fecaca;  /* Red-100 */
-color: #ef4444;             /* Red-500 */
+background-color: #f8fafc;  /* Slate-50 (gris azulado muy claro) */
+border: 1px solid #e2e8f0;  /* Slate-200 (gris azulado claro) */
+color: #475569;             /* Slate-600 (gris oscuro) */
+
+/* NOTA: Cambio de rojo a gris para evitar confusión 
+   con indicadores negativos. Color neutro profesional. */
 ```
 
 ### Tarjeta: Margen Bruto

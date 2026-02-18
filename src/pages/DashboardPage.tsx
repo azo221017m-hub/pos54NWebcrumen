@@ -1099,14 +1099,14 @@ export const DashboardPage = () => {
                     {/* Costo de Venta */}
                     <div style={{ 
                       padding: '0.75rem', 
-                      backgroundColor: '#fef2f2', 
+                      backgroundColor: '#f8fafc', 
                       borderRadius: '8px',
-                      border: '1px solid #fecaca'
+                      border: '1px solid #e2e8f0'
                     }}>
                       <div style={{ fontSize: '0.55rem', color: '#6b7280', marginBottom: '0.25rem', fontWeight: '500' }}>
                         Costo de Venta
                       </div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#ef4444' }}>
+                      <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#475569' }}>
                         ${saludNegocio.costoVenta.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                     </div>
