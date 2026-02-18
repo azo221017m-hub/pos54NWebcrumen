@@ -232,6 +232,14 @@ export const obtenerResumenVentas = async (): Promise<ResumenVentas> => {
   }
 };
 
+// Alerta de margen financiero
+export interface AlertaMargen {
+  codigo: string;
+  mensaje: string;
+  descripcion: string;
+  accion: string;
+}
+
 // Obtener datos de salud del negocio (Ventas, Costo de Venta, Margen Bruto, % Margen)
 export interface SaludNegocio {
   // New business health metrics
@@ -239,6 +247,13 @@ export interface SaludNegocio {
   costoVenta: number;
   margenBruto: number;
   porcentajeMargen: number;
+  
+  // Margin evaluation and classification
+  clasificacion?: string;
+  descripcionMargen?: string;
+  colorMargen?: string;
+  nivelAlerta?: string;
+  alertas?: AlertaMargen[];
   
   // Legacy metrics for backwards compatibility
   totalVentas: number;

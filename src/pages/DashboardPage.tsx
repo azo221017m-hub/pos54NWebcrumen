@@ -1146,7 +1146,7 @@ export const DashboardPage = () => {
                   {/* Visual Indicator - Margin Health */}
                   <div style={{ marginBottom: '0.75rem' }}>
                     <div style={{ fontSize: '0.6rem', color: '#6b7280', marginBottom: '0.35rem', fontWeight: '500', textAlign: 'center' }}>
-                      Estado del Margen
+                      {saludNegocio.clasificacion ? `Estado: ${saludNegocio.clasificacion}` : 'Estado del Margen'}
                     </div>
                     <div style={{ 
                       display: 'flex', 
@@ -1158,11 +1158,13 @@ export const DashboardPage = () => {
                     }}>
                       <div style={{
                         width: `${Math.min(Math.max(saludNegocio.porcentajeMargen, 0), 100)}%`,
-                        backgroundColor: saludNegocio.porcentajeMargen >= 30 
-                          ? '#10b981' // green - healthy
-                          : saludNegocio.porcentajeMargen >= 15
-                            ? '#f59e0b' // amber - warning
-                            : '#ef4444', // red - critical
+                        backgroundColor: saludNegocio.colorMargen || (
+                          saludNegocio.porcentajeMargen >= 30 
+                            ? '#10b981' // green - healthy
+                            : saludNegocio.porcentajeMargen >= 15
+                              ? '#f59e0b' // amber - warning
+                              : '#ef4444' // red - critical
+                        ),
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -1180,19 +1182,73 @@ export const DashboardPage = () => {
                   <div style={{ 
                     textAlign: 'center', 
                     fontSize: '0.65rem', 
-                    color: saludNegocio.margenBruto > 0 ? '#10b981' : '#ef4444',
+                    color: saludNegocio.colorMargen || (saludNegocio.margenBruto > 0 ? '#10b981' : '#ef4444'),
                     fontWeight: '600',
-                    marginTop: '0.5rem'
+                    marginBottom: saludNegocio.alertas && saludNegocio.alertas.length > 0 ? '0.75rem' : '0.5rem'
                   }}>
-                    {saludNegocio.margenBruto > 0
-                      ? saludNegocio.porcentajeMargen >= 30
-                        ? '✓ Margen saludable'
-                        : saludNegocio.porcentajeMargen >= 15
-                          ? '⚠ Margen aceptable'
-                          : '⚠ Margen bajo'
-                      : '⚠ Sin margen de ganancia'
-                    }
+                    {saludNegocio.descripcionMargen || (
+                      saludNegocio.margenBruto > 0
+                        ? saludNegocio.porcentajeMargen >= 30
+                          ? '✓ Margen saludable'
+                          : saludNegocio.porcentajeMargen >= 15
+                            ? '⚠ Margen aceptable'
+                            : '⚠ Margen bajo'
+                        : '⚠ Sin margen de ganancia'
+                    )}
                   </div>
+
+                  {/* Alertas y Sugerencias */}
+                  {saludNegocio.alertas && saludNegocio.alertas.length > 0 && (
+                    <>
+                      {/* Separador */}
+                      <div style={{ borderTop: '1px solid #e5e7eb', marginBottom: '0.75rem' }}></div>
+                      
+                      <div style={{ marginBottom: '0.5rem' }}>
+                        <div style={{ 
+                          fontSize: '0.6rem', 
+                          fontWeight: '600', 
+                          color: '#374151', 
+                          marginBottom: '0.5rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.25rem'
+                        }}>
+                          <span style={{ fontSize: '0.7rem' }}>⚠️</span>
+                          Sugerencias de Mejora
+                        </div>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                          {saludNegocio.alertas.map((alerta, index) => (
+                            <div 
+                              key={index}
+                              style={{ 
+                                padding: '0.5rem', 
+                                backgroundColor: '#fef3c7', 
+                                borderLeft: '3px solid #f59e0b',
+                                borderRadius: '4px'
+                              }}
+                            >
+                              <div style={{ 
+                                fontSize: '0.55rem', 
+                                fontWeight: '600', 
+                                color: '#92400e',
+                                marginBottom: '0.15rem'
+                              }}>
+                                {alerta.mensaje}
+                              </div>
+                              <div style={{ 
+                                fontSize: '0.5rem', 
+                                color: '#78350f',
+                                lineHeight: '1.3'
+                              }}>
+                                {alerta.descripcion}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="card-stat" style={{ fontSize: '0.65rem', color: '#9ca3af' }}>

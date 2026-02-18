@@ -3,6 +3,7 @@ import { pool } from '../config/db';
 import type { RowDataPacket, ResultSetHeader } from 'mysql2';
 import type { PoolConnection } from 'mysql2/promise';
 import type { AuthRequest } from '../middlewares/auth';
+import { evaluarMargen } from '../utils/margen.utils';
 import type { 
   VentaWeb, 
   DetalleVentaWeb, 
@@ -1317,6 +1318,9 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
     // % Margen = (Margen Bruto / Ventas) * 100
     const porcentajeMargen = ventas > 0 ? (margenBruto / ventas) * 100 : 0;
 
+    // 5. Evaluate margin and get classification with alerts
+    const evaluacion = evaluarMargen(Number(porcentajeMargen.toFixed(2)));
+
     // Get legacy data (gastos y compras) for backwards compatibility
     const [legacyRows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
@@ -1339,6 +1343,13 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
         costoVenta,
         margenBruto,
         porcentajeMargen: Number(porcentajeMargen.toFixed(2)),
+        
+        // Margin evaluation and classification
+        clasificacion: evaluacion.clasificacion,
+        descripcionMargen: evaluacion.descripcion,
+        colorMargen: evaluacion.color,
+        nivelAlerta: evaluacion.nivelAlerta,
+        alertas: evaluacion.alertas,
         
         // Legacy metrics for backwards compatibility
         totalVentas: ventas,
