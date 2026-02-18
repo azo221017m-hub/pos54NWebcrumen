@@ -1337,8 +1337,9 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
     const gastos = Number(gastosRows[0]?.totalGastos) || 0;
 
     // 7. Calculate UTILIDAD OPERATIVA (Operating Profit)
-    // Utilidad Operativa = Margen Bruto - Gastos
-    const utilidadOperativa = margenBruto - gastos;
+    // Utilidad Operativa = Margen Bruto + Gastos
+    // NOTA: Los gastos están almacenados como valores negativos, por eso se suman
+    const utilidadOperativa = margenBruto + gastos;
 
     // Get legacy data (compras) for backwards compatibility
     const [legacyRows] = await pool.execute<RowDataPacket[]>(

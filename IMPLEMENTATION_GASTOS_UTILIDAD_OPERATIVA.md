@@ -32,13 +32,14 @@ WHERE idnegocio = ?
 
 ### 3. ✅ Fórmula de UTILIDAD OPERATIVA
 ```typescript
-const utilidadOperativa = margenBruto - gastos;
+const utilidadOperativa = margenBruto + gastos;
 ```
 
 **Descripción:**
-- Utilidad Operativa = Margen Bruto - Gastos
+- Utilidad Operativa = Margen Bruto + Gastos
 - Margen Bruto = Ventas - Costo de Venta
-- **Fórmula Completa:** `(Ventas - Costo de Venta) - Gastos`
+- **Fórmula Completa:** `(Ventas - Costo de Venta) + Gastos`
+- **NOTA IMPORTANTE:** Los gastos están almacenados como valores NEGATIVOS en la base de datos, por eso se suman en lugar de restar
 
 ### 4. ✅ Visualización en Dashboard
 - Nuevas métricas agregadas al grid de indicadores
@@ -72,8 +73,9 @@ const [gastosRows] = await pool.execute<RowDataPacket[]>(
 const gastos = Number(gastosRows[0]?.totalGastos) || 0;
 
 // 7. Calculate UTILIDAD OPERATIVA (Operating Profit)
-// Utilidad Operativa = Margen Bruto - Gastos
-const utilidadOperativa = margenBruto - gastos;
+// Utilidad Operativa = Margen Bruto + Gastos
+// NOTA: Los gastos están almacenados como valores negativos, por eso se suman
+const utilidadOperativa = margenBruto + gastos;
 ```
 
 **Respuesta del Endpoint Actualizada:**
@@ -320,10 +322,12 @@ const [saludNegocio, setSaludNegocio] = useState<SaludNegocio>({
 5. GASTOS 
    = SUM(totaldeventa) 
    WHERE referencia='GASTO' AND estadodeventa='COBRADO'
+   NOTA: Almacenados como valores NEGATIVOS en la base de datos
 
 6. UTILIDAD OPERATIVA 
-   = MARGEN BRUTO - GASTOS
-   = (VENTAS - COSTO DE VENTA) - GASTOS
+   = MARGEN BRUTO + GASTOS
+   = (VENTAS - COSTO DE VENTA) + GASTOS
+   NOTA: Se suma porque los gastos son negativos
 ```
 
 ### Ejemplo con Números Reales
@@ -334,9 +338,10 @@ Costo de Venta:     $12,000.00
 Margen Bruto:       $13,000.00  (25,000 - 12,000)
 % Margen:           52.00%      ((13,000 / 25,000) × 100)
 
-Gastos:             $3,500.00
+Gastos:             -$3,500.00  ← NEGATIVO en la BD
 ─────────────────────────────
-Utilidad Operativa: $9,500.00   (13,000 - 3,500)
+Utilidad Operativa: $9,500.00   (13,000 + (-3,500))
+                                = 13,000 - 3,500 = 9,500 ✓
 ```
 
 ---

@@ -499,8 +499,8 @@ WHERE tipomovimiento = 'SALIDA'
 ## ✅ Checklist Final de Pruebas
 
 ### Funcionalidad
-- [ ] Gastos se calculan correctamente desde DB
-- [ ] Utilidad Operativa = Margen Bruto - Gastos
+- [ ] Gastos se calculan correctamente desde DB (valores negativos)
+- [ ] Utilidad Operativa = Margen Bruto + Gastos (suma porque gastos son negativos)
 - [ ] Etiqueta de mes/año visible en UI
 - [ ] Colores dinámicos funcionan (azul/rojo)
 - [ ] Formato de moneda correcto ($X,XXX.XX)

@@ -22,8 +22,9 @@
 - **Estado:** ✅ Implementado en backend
 
 ### ✅ 3. Fórmula de Utilidad Operativa
-- **Fórmula:** Margen Bruto - Gastos
-- **Expandido:** (Ventas - Costo de Venta) - Gastos
+- **Fórmula:** Margen Bruto + Gastos
+- **Expandido:** (Ventas - Costo de Venta) + Gastos
+- **NOTA:** Los gastos están almacenados como valores NEGATIVOS, por eso se suman
 - **Estado:** ✅ Implementado en backend
 
 ### ✅ 4. Visualización en Dashboard
@@ -71,8 +72,10 @@
 
 5. GASTOS = SUM(totaldeventa) ◄─ NUEVO
    WHERE referencia='GASTO' AND estadodeventa='COBRADO'
+   NOTA: Almacenados como valores NEGATIVOS
 
-6. UTILIDAD OPERATIVA = MARGEN BRUTO - GASTOS ◄─ NUEVO
+6. UTILIDAD OPERATIVA = MARGEN BRUTO + GASTOS ◄─ NUEVO
+   (Se suma porque los gastos son negativos)
 ```
 
 ### Ejemplo Numérico
@@ -82,9 +85,10 @@ Ventas:             $25,000.00
 ─────────────────────────────
 = Margen Bruto:     $13,000.00 (52% margen)
 
-- Gastos:           $3,500.00  ◄─ NUEVO
++ Gastos:           -$3,500.00  ◄─ NUEVO (NEGATIVO en BD)
 ─────────────────────────────
 = Utilidad Operat.: $9,500.00  ◄─ NUEVO
+  (13,000 + (-3,500) = 9,500)
 ```
 
 ---
