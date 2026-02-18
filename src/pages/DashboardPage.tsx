@@ -1231,7 +1231,8 @@ export const DashboardPage = () => {
               )}
             </div>
 
-            <div className="dashboard-card">
+            {/* Card de Ventas Hoy - Rediseñado según mockup */}
+            <div className="dashboard-card" style={{ position: 'relative' }}>
               <div className="card-icon blue">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="9" cy="21" r="1"/>
@@ -1240,74 +1241,96 @@ export const DashboardPage = () => {
                 </svg>
               </div>
               <h3 className="card-title">Ventas Hoy</h3>
-              
-              {/* Turno Actual */}
-              <div style={{ marginBottom: '0.75rem', textAlign: 'left' }}>
-                <p style={{ fontSize: '0.5rem', color: '#9ca3af', marginBottom: '0.15rem', fontWeight: '500' }}>
-                  Turno Actual
-                </p>
-                <p style={{ fontSize: '1.5rem', fontWeight: '700', color: '#f97316', margin: 0, lineHeight: '1' }}>
-                  {turnoAbierto?.numeroturno || '-'}
-                </p>
-              </div>
-              
-              {/* Cobrado y Ordenado */}
-              <div style={{ marginBottom: '0.75rem' }}>
-                <div style={{ marginBottom: '0.5rem' }}>
-                  <span style={{ fontSize: '0.5rem', color: '#9ca3af', display: 'block', marginBottom: '0.15rem' }}>
-                    Cobrado:
-                  </span>
-                  <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#3b82f6' }}>
-                    ${resumenVentas.totalCobrado.toFixed(2)}
-                  </span>
+
+              {/* Layout: Izquierda (Info) + Derecha (Gráfico Pastel) */}
+              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                {/* Columna Izquierda: Turno Actual */}
+                <div style={{ flex: 1 }}>
+                  <div style={{ marginBottom: '0.5rem' }}>
+                    <p style={{ fontSize: '0.55rem', color: '#9ca3af', marginBottom: '0.25rem', fontWeight: '500' }}>
+                      Turno Actual
+                    </p>
+                    <p style={{ fontSize: '2rem', fontWeight: '700', color: '#3b82f6', margin: 0, lineHeight: '1' }}>
+                      {turnoAbierto?.numeroturno || '6'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <span style={{ fontSize: '0.5rem', color: '#9ca3af', display: 'block', marginBottom: '0.15rem' }}>
-                    Ordenado:
-                  </span>
-                  <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#f97316' }}>
-                    ${resumenVentas.totalOrdenado.toFixed(2)}
-                  </span>
-                </div>
+
+                {/* Columna Derecha: Gráfico de Pastel */}
+                {resumenVentas.ventasPorFormaDePago && resumenVentas.ventasPorFormaDePago.length > 0 && (
+                  <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    {(() => {
+                      const totalFormaDePago = resumenVentas.ventasPorFormaDePago.reduce((sum, item) => sum + item.total, 0);
+                      
+                      const coloresPago: Record<string, string> = {
+                        'EFECTIVO': '#10b981',
+                        'TARJETA': '#3b82f6',
+                        'TRANSFERENCIA': '#8b5cf6',
+                        'MIXTO': '#f59e0b',
+                        'sinFP': '#6b7280'
+                      };
+
+                      let currentAngle = 0;
+                      const segments = resumenVentas.ventasPorFormaDePago.map((item) => {
+                        const percentage = totalFormaDePago > 0 ? (item.total / totalFormaDePago) * 100 : 0;
+                        const angle = (percentage / 100) * 360;
+                        const startAngle = currentAngle;
+                        currentAngle += angle;
+                        
+                        return {
+                          formadepago: item.formadepago,
+                          total: item.total,
+                          percentage,
+                          startAngle,
+                          endAngle: currentAngle,
+                          color: coloresPago[item.formadepago] || '#9ca3af'
+                        };
+                      });
+
+                      const gradientStops = segments.map((seg) => {
+                        const start = seg.startAngle;
+                        const end = seg.endAngle;
+                        return `${seg.color} ${start}deg ${end}deg`;
+                      }).join(', ');
+
+                      return (
+                        <div style={{
+                          width: '100px',
+                          height: '100px',
+                          borderRadius: '50%',
+                          background: `conic-gradient(${gradientStops})`,
+                          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                          position: 'relative'
+                        }}>
+                          <div style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: '50px',
+                            height: '50px',
+                            borderRadius: '50%',
+                            backgroundColor: 'white',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
+                          }}>
+                            <div style={{ fontSize: '0.7rem', fontWeight: '700', color: '#1f2937' }}>
+                              {segments.length > 0 ? `${Math.round(segments[0].percentage)}%` : '0%'}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
 
-              {/* Meta y Barra de Progreso */}
-              {resumenVentas.metaTurno > 0 && (
-                <div style={{ marginTop: '0.75rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.35rem' }}>
-                    <span style={{ fontSize: '0.5rem', color: '#9ca3af', fontWeight: '500' }}>Meta:</span>
-                    <span style={{ fontSize: '0.65rem', fontWeight: '600', color: '#6b7280' }}>
-                      ${resumenVentas.metaTurno.toFixed(2)}
-                    </span>
-                  </div>
-                  <div style={{ 
-                    width: '100%', 
-                    height: '10px', 
-                    backgroundColor: '#e5e7eb', 
-                    borderRadius: '5px', 
-                    overflow: 'hidden',
-                    marginBottom: '0.35rem'
-                  }}>
-                    <div style={{
-                      width: `${Math.min((resumenVentas.totalCobrado / (resumenVentas.metaTurno || 1)) * 100, 100)}%`,
-                      height: '100%',
-                      backgroundColor: '#10b981',
-                      transition: 'width 0.3s ease',
-                      borderRadius: '5px'
-                    }}></div>
-                  </div>
-                  <div style={{ fontSize: '0.55rem', color: '#9ca3af', textAlign: 'center', fontWeight: '500' }}>
-                    {((resumenVentas.totalCobrado / (resumenVentas.metaTurno || 1)) * 100).toFixed(1)}% completado
-                  </div>
-                </div>
-              )}
-
-              {/* Gráfico de Pastel - Forma de Pago */}
+              {/* Leyenda de Formas de Pago */}
               {resumenVentas.ventasPorFormaDePago && resumenVentas.ventasPorFormaDePago.length > 0 && (
-                <div style={{ marginTop: '1rem', borderTop: '1px solid #e5e7eb', paddingTop: '0.75rem' }}>
-                  <h4 style={{ fontSize: '0.65rem', fontWeight: '600', color: '#374151', marginBottom: '0.75rem', textAlign: 'center' }}>
-                    Formas de Pago
-                  </h4>
+                <div style={{ marginBottom: '1rem' }}>
                   {(() => {
                     const totalFormaDePago = resumenVentas.ventasPorFormaDePago.reduce((sum, item) => sum + item.total, 0);
                     
@@ -1319,109 +1342,54 @@ export const DashboardPage = () => {
                       'sinFP': '#6b7280'
                     };
 
-                    // Calculate percentages and create pie chart segments
-                    let currentAngle = 0;
-                    const segments = resumenVentas.ventasPorFormaDePago.map((item) => {
-                      const percentage = totalFormaDePago > 0 ? (item.total / totalFormaDePago) * 100 : 0;
-                      const angle = (percentage / 100) * 360;
-                      const startAngle = currentAngle;
-                      currentAngle += angle;
-                      
-                      return {
-                        formadepago: item.formadepago,
-                        total: item.total,
-                        percentage,
-                        startAngle,
-                        endAngle: currentAngle,
-                        color: coloresPago[item.formadepago] || '#9ca3af'
-                      };
-                    });
-
-                    // Create conic-gradient for pie chart
-                    const gradientStops = segments.map((seg) => {
-                      const start = seg.startAngle;
-                      const end = seg.endAngle;
-                      return `${seg.color} ${start}deg ${end}deg`;
-                    }).join(', ');
-
                     return (
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
-                        {/* Pie Chart */}
-                        <div style={{
-                          width: '120px',
-                          height: '120px',
-                          borderRadius: '50%',
-                          background: `conic-gradient(${gradientStops})`,
-                          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                          position: 'relative'
-                        }}>
-                          {/* Center circle for donut effect */}
-                          <div style={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            width: '60px',
-                            height: '60px',
-                            borderRadius: '50%',
-                            backgroundColor: 'white',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
-                          }}>
-                            <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#1f2937' }}>
-                              ${(totalFormaDePago / 1000).toFixed(0)}k
-                            </div>
-                            <div style={{ fontSize: '0.45rem', color: '#9ca3af' }}>Total</div>
-                          </div>
-                        </div>
-
-                        {/* Legend */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', width: '100%' }}>
-                          {segments.map((seg, index) => (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                        {resumenVentas.ventasPorFormaDePago.map((item, index) => {
+                          const percentage = totalFormaDePago > 0 ? (item.total / totalFormaDePago) * 100 : 0;
+                          const color = coloresPago[item.formadepago] || '#9ca3af';
+                          
+                          return (
                             <div key={index} style={{ 
                               display: 'flex', 
                               justifyContent: 'space-between', 
-                              alignItems: 'center',
-                              padding: '0.25rem 0.5rem',
-                              borderRadius: '4px',
-                              backgroundColor: index % 2 === 0 ? '#f9fafb' : 'transparent'
+                              alignItems: 'center'
                             }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                                 <div style={{ 
-                                  width: '10px', 
-                                  height: '10px', 
+                                  width: '8px', 
+                                  height: '8px', 
                                   borderRadius: '50%', 
-                                  backgroundColor: seg.color,
-                                  boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                                  backgroundColor: color
                                 }}></div>
                                 <span style={{ fontSize: '0.55rem', color: '#4b5563', fontWeight: '500' }}>
-                                  {seg.formadepago}
+                                  {item.formadepago}
                                 </span>
                               </div>
-                              <span style={{ fontSize: '0.6rem', fontWeight: '700', color: seg.color }}>
-                                {seg.percentage.toFixed(1)}%
+                              <span style={{ fontSize: '0.6rem', fontWeight: '700', color: color }}>
+                                {percentage.toFixed(1)}% • ${item.total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                               </span>
                             </div>
-                          ))}
-                        </div>
+                          );
+                        })}
                       </div>
                     );
                   })()}
                 </div>
               )}
 
+              {/* Separador */}
+              <div style={{ borderTop: '1px solid #e5e7eb', marginBottom: '1rem' }}></div>
+
+              {/* Título: Tipo de Venta */}
+              <h4 style={{ fontSize: '0.65rem', fontWeight: '600', color: '#374151', marginBottom: '0.75rem' }}>
+                Tipo de Venta
+              </h4>
+
               {/* Gráfico de Barras Horizontales - Tipo de Venta */}
               {resumenVentas.ventasPorTipoDeVenta && resumenVentas.ventasPorTipoDeVenta.length > 0 && (
-                <div style={{ marginTop: '1rem', borderTop: '1px solid #e5e7eb', paddingTop: '0.75rem' }}>
-                  <h4 style={{ fontSize: '0.65rem', fontWeight: '600', color: '#374151', marginBottom: '0.75rem', textAlign: 'center' }}>
-                    Tipos de Venta
-                  </h4>
+                <div style={{ marginBottom: '1rem' }}>
                   {(() => {
                     const maxTipoVenta = Math.max(...resumenVentas.ventasPorTipoDeVenta.map(item => item.total), 1);
-                    const totalTipoVenta = resumenVentas.ventasPorTipoDeVenta.reduce((sum, item) => sum + item.total, 0);
                     
                     const coloresTipo: Record<string, string> = {
                       'MESA': '#ef4444',
@@ -1430,7 +1398,6 @@ export const DashboardPage = () => {
                       'ONLINE': '#3b82f6'
                     };
 
-                    // Define order for bar chart
                     const ordenTipos = ['MESA', 'DOMICILIO', 'LLEVAR', 'ONLINE'];
                     const datosOrdenados = ordenTipos.map(tipo => {
                       const found = resumenVentas.ventasPorTipoDeVenta.find(item => item.tipodeventa === tipo);
@@ -1442,111 +1409,89 @@ export const DashboardPage = () => {
                     });
 
                     return (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        {/* Horizontal Bar Chart */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                          {datosOrdenados.map((item, index) => {
-                            const percentage = maxTipoVenta > 0 ? (item.total / maxTipoVenta) * 100 : 0;
-                            
-                            return (
-                              <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                {/* Label and Value */}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                                    <div style={{ 
-                                      width: '8px', 
-                                      height: '8px', 
-                                      borderRadius: '2px', 
-                                      backgroundColor: item.color,
-                                      boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
-                                    }}></div>
-                                    <span style={{ fontSize: '0.6rem', color: '#374151', fontWeight: '600' }}>
-                                      {item.tipodeventa}
-                                    </span>
-                                  </div>
-                                  <span style={{ fontSize: '0.6rem', fontWeight: '700', color: item.color }}>
-                                    ${item.total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {datosOrdenados.map((item, index) => {
+                          const percentage = maxTipoVenta > 0 ? (item.total / maxTipoVenta) * 100 : 0;
+                          
+                          return (
+                            <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                  <div style={{ 
+                                    width: '6px', 
+                                    height: '6px', 
+                                    borderRadius: '1px', 
+                                    backgroundColor: item.color
+                                  }}></div>
+                                  <span style={{ fontSize: '0.55rem', color: '#374151', fontWeight: '600' }}>
+                                    {item.tipodeventa}
                                   </span>
                                 </div>
-                                
-                                {/* Horizontal Bar */}
-                                <div style={{ 
-                                  position: 'relative',
-                                  width: '100%', 
-                                  height: '20px', 
-                                  backgroundColor: '#f3f4f6', 
-                                  borderRadius: '10px', 
-                                  overflow: 'hidden',
-                                  boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)'
+                                <span style={{ fontSize: '0.6rem', fontWeight: '700', color: item.color }}>
+                                  ${item.total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                </span>
+                              </div>
+                              
+                              <div style={{ 
+                                width: '100%', 
+                                height: '16px', 
+                                backgroundColor: '#f3f4f6', 
+                                borderRadius: '8px', 
+                                overflow: 'hidden'
+                              }}>
+                                <div style={{
+                                  width: `${percentage}%`,
+                                  height: '100%',
+                                  backgroundColor: item.color,
+                                  borderRadius: '8px',
+                                  transition: 'width 0.3s ease',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'flex-end',
+                                  paddingRight: percentage > 20 ? '0.4rem' : '0'
                                 }}>
-                                  <div style={{
-                                    width: `${percentage}%`,
-                                    height: '100%',
-                                    backgroundColor: item.color,
-                                    borderRadius: '10px',
-                                    transition: 'width 0.3s ease',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'flex-end',
-                                    paddingRight: percentage > 15 ? '0.5rem' : '0',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                  }}>
-                                    {percentage > 15 && (
-                                      <span style={{ 
-                                        fontSize: '0.55rem', 
-                                        fontWeight: '700', 
-                                        color: 'white',
-                                        textShadow: '0 1px 2px rgba(0,0,0,0.2)'
-                                      }}>
-                                        {percentage.toFixed(0)}%
-                                      </span>
-                                    )}
-                                  </div>
-                                  
-                                  {/* Percentage label outside bar if too small */}
-                                  {percentage > 0 && percentage <= 15 && (
+                                  {percentage > 20 && (
                                     <span style={{ 
-                                      position: 'absolute',
-                                      right: '0.5rem',
-                                      top: '50%',
-                                      transform: 'translateY(-50%)',
                                       fontSize: '0.5rem', 
-                                      fontWeight: '600', 
-                                      color: '#9ca3af'
+                                      fontWeight: '700', 
+                                      color: 'white'
                                     }}>
                                       {percentage.toFixed(0)}%
                                     </span>
                                   )}
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
-
-                        {/* Total Summary */}
-                        <div style={{ 
-                          marginTop: '0.25rem', 
-                          paddingTop: '0.5rem', 
-                          borderTop: '2px solid #e5e7eb',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          padding: '0.35rem 0.5rem',
-                          backgroundColor: '#f9fafb',
-                          borderRadius: '6px'
-                        }}>
-                          <span style={{ fontSize: '0.65rem', fontWeight: '700', color: '#1f2937' }}>
-                            TOTAL
-                          </span>
-                          <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#1f2937' }}>
-                            ${totalTipoVenta.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                          </span>
-                        </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     );
                   })()}
                 </div>
               )}
+
+              {/* Separador */}
+              <div style={{ borderTop: '1px solid #e5e7eb', marginBottom: '1rem' }}></div>
+
+              {/* Cobrado y Ordenado en la parte inferior */}
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: '0.55rem', color: '#9ca3af', marginBottom: '0.2rem', fontWeight: '500' }}>
+                    Cobrado:
+                  </p>
+                  <p style={{ fontSize: '1.1rem', fontWeight: '700', color: '#3b82f6', margin: 0 }}>
+                    ${resumenVentas.totalCobrado.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: '0.55rem', color: '#9ca3af', marginBottom: '0.2rem', fontWeight: '500' }}>
+                    Ordenado:
+                  </p>
+                  <p style={{ fontSize: '1.1rem', fontWeight: '700', color: '#f97316', margin: 0 }}>
+                    ${resumenVentas.totalOrdenado.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="dashboard-card">
