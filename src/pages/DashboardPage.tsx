@@ -1134,54 +1134,63 @@ export const DashboardPage = () => {
                 </svg>
               </div>
               <h3 className="card-title">Ventas Hoy</h3>
-              <p className="card-text" style={{ fontSize: '0.55rem', marginBottom: '0.35rem' }}>Turno Actual</p>
               
-              <div style={{ marginBottom: '0.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.2rem' }}>
-                  <span style={{ fontSize: '0.55rem', color: '#718096' }}>Total Ventas:</span>
-                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#3b82f6' }}>
-                    ${resumenVentas.totalVentasCobradas.toFixed(2)}
+              {/* Turno Actual */}
+              <div style={{ marginBottom: '0.75rem', textAlign: 'left' }}>
+                <p style={{ fontSize: '0.5rem', color: '#9ca3af', marginBottom: '0.15rem', fontWeight: '500' }}>
+                  Turno Actual
+                </p>
+                <p style={{ fontSize: '1.5rem', fontWeight: '700', color: '#f97316', margin: 0, lineHeight: '1' }}>
+                  {turnoAbierto?.numeroturno || '-'}
+                </p>
+              </div>
+              
+              {/* Cobrado y Ordenado */}
+              <div style={{ marginBottom: '0.75rem' }}>
+                <div style={{ marginBottom: '0.5rem' }}>
+                  <span style={{ fontSize: '0.5rem', color: '#9ca3af', display: 'block', marginBottom: '0.15rem' }}>
+                    Cobrado:
                   </span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.2rem' }}>
-                  <span style={{ fontSize: '0.55rem', color: '#718096' }}>Cobrado:</span>
-                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#10b981' }}>
+                  <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#3b82f6' }}>
                     ${resumenVentas.totalCobrado.toFixed(2)}
                   </span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.2rem' }}>
-                  <span style={{ fontSize: '0.55rem', color: '#718096' }}>Ordenado:</span>
-                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#f59e0b' }}>
+                <div>
+                  <span style={{ fontSize: '0.5rem', color: '#9ca3af', display: 'block', marginBottom: '0.15rem' }}>
+                    Ordenado:
+                  </span>
+                  <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#f97316' }}>
                     ${resumenVentas.totalOrdenado.toFixed(2)}
                   </span>
                 </div>
               </div>
 
+              {/* Meta y Barra de Progreso */}
               {resumenVentas.metaTurno > 0 && (
-                <div style={{ marginTop: '0.5rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.25rem' }}>
-                    <span style={{ fontSize: '0.55rem', color: '#718096' }}>Meta:</span>
+                <div style={{ marginTop: '0.75rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.35rem' }}>
+                    <span style={{ fontSize: '0.5rem', color: '#9ca3af', fontWeight: '500' }}>Meta:</span>
                     <span style={{ fontSize: '0.65rem', fontWeight: '600', color: '#6b7280' }}>
                       ${resumenVentas.metaTurno.toFixed(2)}
                     </span>
                   </div>
                   <div style={{ 
                     width: '100%', 
-                    height: '8px', 
+                    height: '10px', 
                     backgroundColor: '#e5e7eb', 
-                    borderRadius: '4px', 
+                    borderRadius: '5px', 
                     overflow: 'hidden',
-                    marginBottom: '0.25rem'
+                    marginBottom: '0.35rem'
                   }}>
                     <div style={{
                       width: `${Math.min((resumenVentas.totalCobrado / (resumenVentas.metaTurno || 1)) * 100, 100)}%`,
                       height: '100%',
-                      backgroundColor: resumenVentas.totalCobrado >= resumenVentas.metaTurno ? '#10b981' : '#3b82f6',
+                      backgroundColor: '#10b981',
                       transition: 'width 0.3s ease',
-                      borderRadius: '4px'
+                      borderRadius: '5px'
                     }}></div>
                   </div>
-                  <div style={{ fontSize: '0.55rem', color: '#6b7280', textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.55rem', color: '#9ca3af', textAlign: 'center', fontWeight: '500' }}>
                     {((resumenVentas.totalCobrado / (resumenVentas.metaTurno || 1)) * 100).toFixed(1)}% completado
                   </div>
                 </div>
