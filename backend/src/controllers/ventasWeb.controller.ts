@@ -1171,7 +1171,8 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
           metaTurno: 0,
           hasTurnoAbierto: false,
           ventasPorFormaDePago: [],
-          ventasPorTipoDeVenta: []
+          ventasPorTipoDeVenta: [],
+          descuentosPorTipo: []
         }
       });
       return;
@@ -1223,6 +1224,27 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
       [claveturno, idnegocio]
     );
 
+    // Get discounts grouped by type ($ for fixed amount, % for percentage)
+    const [descuentosRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT 
+        CASE 
+          WHEN detalledescuento LIKE '%$%' OR detalledescuento LIKE '%FIJO%' THEN '$'
+          WHEN detalledescuento LIKE '%\\%%' OR detalledescuento LIKE '%PORCENTAJE%' THEN '%'
+          WHEN detalledescuento IS NOT NULL AND detalledescuento != '' THEN 'OTRO'
+          ELSE 'SIN_TIPO'
+        END as tipodescuento,
+        COUNT(*) as cantidad,
+        COALESCE(SUM(descuentos), 0) as total
+       FROM tblposcrumenwebventas 
+       WHERE claveturno = ? 
+         AND idnegocio = ? 
+         AND estadodeventa = 'COBRADO'
+         AND descuentos > 0
+       GROUP BY tipodescuento
+       ORDER BY total DESC`,
+      [claveturno, idnegocio]
+    );
+
     // Format data for charts
     const ventasPorFormaDePago = formaDePagoRows.map(row => ({
       formadepago: row.formadepago || 'Sin especificar',
@@ -1231,6 +1253,12 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
 
     const ventasPorTipoDeVenta = tipoDeVentaRows.map(row => ({
       tipodeventa: row.tipodeventa || 'Sin especificar',
+      total: Number(row.total) || 0
+    }));
+
+    const descuentosPorTipo = descuentosRows.map(row => ({
+      tipo: row.tipodescuento || 'SIN_TIPO',
+      cantidad: Number(row.cantidad) || 0,
       total: Number(row.total) || 0
     }));
 
@@ -1243,7 +1271,8 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
         metaTurno: metaturno,
         hasTurnoAbierto: true,
         ventasPorFormaDePago,
-        ventasPorTipoDeVenta
+        ventasPorTipoDeVenta,
+        descuentosPorTipo
       }
     });
   } catch (error) {
