@@ -477,6 +477,7 @@
   transition: all 0.2s;
   cursor: pointer;
   border: 1px solid transparent;
+  position: relative;
 }
 
 .dashboard-card:hover {
@@ -492,7 +493,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 0.5rem;
+  flex-shrink: 0;
 }
 
 .card-icon svg {

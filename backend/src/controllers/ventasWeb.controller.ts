@@ -1171,7 +1171,8 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
           metaTurno: 0,
           hasTurnoAbierto: false,
           ventasPorFormaDePago: [],
-          ventasPorTipoDeVenta: []
+          ventasPorTipoDeVenta: [],
+          descuentosPorTipo: []
         }
       });
       return;
@@ -1223,6 +1224,24 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
       [claveturno, idnegocio]
     );
 
+    // Get discounts grouped by type from tblposcrumenwebdescuentos
+    const [descuentosRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT 
+        COALESCE(d.tipodescuento, 'SIN_TIPO') as tipodescuento,
+        COUNT(*) as cantidad,
+        COALESCE(SUM(v.descuentos), 0) as total
+       FROM tblposcrumenwebventas v
+       LEFT JOIN tblposcrumenwebdescuentos d 
+         ON v.detalledescuento = d.nombre AND v.idnegocio = d.idnegocio
+       WHERE v.claveturno = ? 
+         AND v.idnegocio = ? 
+         AND v.estadodeventa = 'COBRADO'
+         AND v.descuentos > 0
+       GROUP BY COALESCE(d.tipodescuento, 'SIN_TIPO')
+       ORDER BY total DESC`,
+      [claveturno, idnegocio]
+    );
+
     // Format data for charts
     const ventasPorFormaDePago = formaDePagoRows.map(row => ({
       formadepago: row.formadepago || 'Sin especificar',
@@ -1231,6 +1250,12 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
 
     const ventasPorTipoDeVenta = tipoDeVentaRows.map(row => ({
       tipodeventa: row.tipodeventa || 'Sin especificar',
+      total: Number(row.total) || 0
+    }));
+
+    const descuentosPorTipo = descuentosRows.map(row => ({
+      tipo: row.tipodescuento || 'SIN_TIPO',
+      cantidad: Number(row.cantidad) || 0,
       total: Number(row.total) || 0
     }));
 
@@ -1243,7 +1268,8 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
         metaTurno: metaturno,
         hasTurnoAbierto: true,
         ventasPorFormaDePago,
-        ventasPorTipoDeVenta
+        ventasPorTipoDeVenta,
+        descuentosPorTipo
       }
     });
   } catch (error) {
