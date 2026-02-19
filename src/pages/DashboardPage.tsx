@@ -1443,8 +1443,31 @@ export const DashboardPage = () => {
                   </h4>
                   <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                     {resumenVentas.descuentosPorTipo.map((descuento, index) => {
-                      const tipoLabel = descuento.tipo === '$' ? 'Fijo' : descuento.tipo === '%' ? 'Porcentaje' : descuento.tipo;
-                      const simbolo = descuento.tipo === '$' ? '$' : descuento.tipo === '%' ? '%' : '';
+                      // Handle all discount types
+                      let tipoLabel: string;
+                      let simbolo: string;
+                      
+                      switch(descuento.tipo) {
+                        case '$':
+                          tipoLabel = 'Fijo';
+                          simbolo = '$';
+                          break;
+                        case '%':
+                          tipoLabel = 'Porcentaje';
+                          simbolo = '%';
+                          break;
+                        case 'OTRO':
+                          tipoLabel = 'Otros';
+                          simbolo = '🎫';
+                          break;
+                        case 'SIN_TIPO':
+                          tipoLabel = 'General';
+                          simbolo = '💰';
+                          break;
+                        default:
+                          tipoLabel = descuento.tipo;
+                          simbolo = '📋';
+                      }
                       
                       return (
                         <div key={index} style={{
