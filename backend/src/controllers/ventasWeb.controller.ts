@@ -1225,22 +1225,30 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     );
 
     // Get discounts grouped by type from tblposcrumenwebdescuentos
-    const [descuentosRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT 
-        COALESCE(d.tipodescuento, 'SIN_TIPO') as tipodescuento,
-        COUNT(*) as cantidad,
-        COALESCE(SUM(v.descuentos), 0) as total
-       FROM tblposcrumenwebventas v
-       LEFT JOIN tblposcrumenwebdescuentos d 
-         ON v.detalledescuento = d.nombre AND v.idnegocio = d.idnegocio
-       WHERE v.claveturno = ? 
-         AND v.idnegocio = ? 
-         AND v.estadodeventa = 'COBRADO'
-         AND v.descuentos > 0
-       GROUP BY COALESCE(d.tipodescuento, 'SIN_TIPO')
-       ORDER BY total DESC`,
-      [claveturno, idnegocio]
-    );
+    let descuentosRows: RowDataPacket[] = [];
+    try {
+      const [rows] = await pool.execute<RowDataPacket[]>(
+        `SELECT 
+          COALESCE(d.tipodescuento, 'SIN_TIPO') as tipodescuento,
+          COUNT(*) as cantidad,
+          COALESCE(SUM(v.descuentos), 0) as total
+         FROM tblposcrumenwebventas v
+         LEFT JOIN tblposcrumenwebdescuentos d 
+           ON v.detalledescuento = d.nombre AND v.idnegocio = d.idnegocio
+         WHERE v.claveturno = ? 
+           AND v.idnegocio = ? 
+           AND v.estadodeventa = 'COBRADO'
+           AND v.descuentos > 0
+         GROUP BY COALESCE(d.tipodescuento, 'SIN_TIPO')
+         ORDER BY total DESC`,
+        [claveturno, idnegocio]
+      );
+      descuentosRows = rows;
+    } catch (descuentosError) {
+      // If tblposcrumenwebdescuentos doesn't exist or has issues, just continue without discounts data
+      console.warn('⚠️ No se pudo obtener descuentos por tipo (tabla puede no existir):', descuentosError);
+      descuentosRows = [];
+    }
 
     // Format data for charts
     const ventasPorFormaDePago = formaDePagoRows.map(row => ({
