@@ -161,7 +161,8 @@ export const DashboardPage = () => {
     metaTurno: 0,
     hasTurnoAbierto: false,
     ventasPorFormaDePago: [],
-    ventasPorTipoDeVenta: []
+    ventasPorTipoDeVenta: [],
+    descuentosPorTipo: []
   });
   const [saludNegocio, setSaludNegocio] = useState<SaludNegocio>({
     ventas: 0,
