@@ -251,7 +251,9 @@ export const DashboardPage = () => {
 
   const cargarResumenVentas = useCallback(async () => {
     try {
+      console.log('🟡 DashboardPage: Llamando cargarResumenVentas...');
       const resumen = await obtenerResumenVentas();
+      console.log('🟡 DashboardPage: Resumen recibido, actualizando estado:', resumen);
       setResumenVentas(resumen);
     } catch (error) {
       console.error('Error al cargar resumen de ventas:', error);
@@ -574,6 +576,7 @@ export const DashboardPage = () => {
 
     // Refresh sales summary, comandas, turno status, and business health periodically
     const intervalId = setInterval(() => {
+      console.log('🟢 INTERVAL: Ejecutando refresh cada 30 segundos...');
       cargarVentasSolicitadas();
       cargarResumenVentas();
       cargarSaludNegocio();
