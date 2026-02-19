@@ -1444,53 +1444,40 @@ export const DashboardPage = () => {
                   </h4>
                   <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                     {resumenVentas.descuentosPorTipo.map((descuento, index) => {
-                      // Handle all discount types
-                      let tipoLabel: string;
-                      let simbolo: string;
+                      // Map discount types from database to display format
+                      let etiqueta: string;
                       
-                      switch(descuento.tipo) {
-                        case '$':
-                          tipoLabel = 'Fijo';
-                          simbolo = '$';
-                          break;
-                        case '%':
-                          tipoLabel = 'Porcentaje';
-                          simbolo = '%';
-                          break;
-                        case 'OTRO':
-                          tipoLabel = 'Otros';
-                          simbolo = '🎫';
-                          break;
-                        case 'SIN_TIPO':
-                          tipoLabel = 'General';
-                          simbolo = '💰';
-                          break;
-                        default:
-                          tipoLabel = descuento.tipo;
-                          simbolo = '📋';
+                      // Check the tipo field from the database
+                      const tipoLower = (descuento.tipo || '').toLowerCase();
+                      
+                      if (tipoLower === 'porcentaje' || tipoLower === 'porcentual') {
+                        etiqueta = 'Descuento %';
+                      } else if (tipoLower === 'efectivo' || tipoLower === 'monto' || tipoLower === 'fijo') {
+                        etiqueta = 'Descuento $';
+                      } else if (tipoLower === 'sin_tipo' || descuento.tipo === 'SIN_TIPO') {
+                        etiqueta = 'Descuento';
+                      } else {
+                        // For any other type, use a generic label
+                        etiqueta = 'Descuento';
                       }
                       
                       return (
                         <div key={index} style={{
                           padding: '0.5rem',
-                          backgroundColor: '#fef3c7',
-                          borderRadius: '6px',
-                          border: '1px solid #fde68a',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.25rem',
                           flex: '1 1 auto',
                           minWidth: '5rem'
                         }}>
                           <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '0.25rem',
-                            marginBottom: '0.25rem'
+                            fontSize: '0.55rem', 
+                            color: '#374151', 
+                            fontWeight: '600'
                           }}>
-                            <span style={{ fontSize: '0.9rem' }}>{simbolo}</span>
-                            <span style={{ fontSize: '0.55rem', color: '#92400e', fontWeight: '600' }}>
-                              {tipoLabel}
-                            </span>
+                            {etiqueta}
                           </div>
-                          <div style={{ fontSize: '0.5rem', color: '#78716c', marginBottom: '0.15rem' }}>
+                          <div style={{ fontSize: '0.5rem', color: '#6b7280', marginBottom: '0.15rem' }}>
                             Cantidad: {descuento.cantidad}
                           </div>
                           <div style={{ fontSize: '0.65rem', fontWeight: '700', color: '#f59e0b' }}>
