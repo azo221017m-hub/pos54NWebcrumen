@@ -1367,7 +1367,7 @@ export const DashboardPage = () => {
 
             {/* Card de Ventas Hoy - Rediseñado según mockup */}
             <div className="dashboard-card" style={{ position: 'relative' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
                 <div className="card-icon blue">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="9" cy="21" r="1"/>
@@ -1381,10 +1381,10 @@ export const DashboardPage = () => {
               {/* Turno Actual - Solo mostrar si hay turno abierto */}
               {turnoAbierto && (
                 <div style={{ marginBottom: '1rem' }}>
-                  <p style={{ fontSize: '0.55rem', color: '#9ca3af', marginBottom: '0.25rem', fontWeight: '500' }}>
+                  <p style={{ fontSize: '0.6rem', color: '#9ca3af', marginBottom: '0.25rem', fontWeight: '500' }}>
                     Turno Actual
                   </p>
-                  <p style={{ fontSize: '2rem', fontWeight: '700', color: '#3b82f6', margin: 0, lineHeight: '1' }}>
+                  <p style={{ fontSize: '2.5rem', fontWeight: '700', color: '#3b82f6', margin: 0, lineHeight: '1' }}>
                     {turnoAbierto.numeroturno}
                   </p>
                 </div>
@@ -1405,7 +1405,7 @@ export const DashboardPage = () => {
                     };
 
                     return (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                         {resumenVentas.ventasPorFormaDePago.map((item, index) => {
                           const percentage = totalFormaDePago > 0 ? (item.total / totalFormaDePago) * 100 : 0;
                           const color = coloresPago[item.formadepago] || '#9ca3af';
@@ -1416,18 +1416,18 @@ export const DashboardPage = () => {
                               justifyContent: 'space-between', 
                               alignItems: 'center'
                             }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                 <div style={{ 
-                                  width: '8px', 
-                                  height: '8px', 
+                                  width: '10px', 
+                                  height: '10px', 
                                   borderRadius: '50%', 
                                   backgroundColor: color
                                 }}></div>
-                                <span style={{ fontSize: '0.55rem', color: '#4b5563', fontWeight: '500' }}>
+                                <span style={{ fontSize: '0.65rem', color: '#4b5563', fontWeight: '500' }}>
                                   {item.formadepago}
                                 </span>
                               </div>
-                              <span style={{ fontSize: '0.6rem', fontWeight: '700', color: color }}>
+                              <span style={{ fontSize: '0.65rem', fontWeight: '700', color: color }}>
                                 {percentage.toFixed(1)}% • ${item.total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                               </span>
                             </div>
@@ -1439,63 +1439,11 @@ export const DashboardPage = () => {
                 </div>
               )}
 
-              {/* Descuentos - Agrupados por tipo */}
-              {resumenVentas.descuentosPorTipo && resumenVentas.descuentosPorTipo.length > 0 && (
-                <div style={{ marginBottom: '1rem', marginTop: '1rem' }}>
-                  <h4 style={{ fontSize: '0.65rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
-                    Descuentos
-                  </h4>
-                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    {resumenVentas.descuentosPorTipo.map((descuento, index) => {
-                      // Map discount types from database to display format
-                      let etiqueta: string;
-                      
-                      // Check the tipo field from the database
-                      const tipoLower = (descuento.tipo || '').toLowerCase();
-                      
-                      if (tipoLower === 'porcentaje' || tipoLower === 'porcentual') {
-                        etiqueta = 'Descuento %';
-                      } else if (tipoLower === 'efectivo' || tipoLower === 'monto' || tipoLower === 'fijo') {
-                        etiqueta = 'Descuento $';
-                      } else {
-                        // For any other type including 'sin_tipo', use a generic label
-                        etiqueta = 'Descuento';
-                      }
-                      
-                      return (
-                        <div key={index} style={{
-                          padding: '0.5rem',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '0.25rem',
-                          flex: '1 1 auto',
-                          minWidth: '5rem'
-                        }}>
-                          <div style={{ 
-                            fontSize: '0.55rem', 
-                            color: '#374151', 
-                            fontWeight: '600'
-                          }}>
-                            {etiqueta}
-                          </div>
-                          <div style={{ fontSize: '0.5rem', color: '#6b7280', marginBottom: '0.15rem' }}>
-                            Cantidad: {descuento.cantidad}
-                          </div>
-                          <div style={{ fontSize: '0.65rem', fontWeight: '700', color: '#f59e0b' }}>
-                            ${descuento.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
               {/* Separador */}
-              <div style={{ borderTop: '1px solid #e5e7eb', marginBottom: '1rem' }}></div>
+              <div style={{ borderTop: '1px solid #e5e7eb', margin: '1rem 0' }}></div>
 
               {/* Título: Tipo de Venta */}
-              <h4 style={{ fontSize: '0.65rem', fontWeight: '600', color: '#374151', marginBottom: '0.75rem' }}>
+              <h4 style={{ fontSize: '0.7rem', fontWeight: '600', color: '#374151', marginBottom: '0.75rem' }}>
                 Tipo de Venta
               </h4>
 
@@ -1523,50 +1471,50 @@ export const DashboardPage = () => {
                     });
 
                     return (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                         {datosOrdenados.map((item, index) => {
                           const percentage = maxTipoVenta > 0 ? (item.total / maxTipoVenta) * 100 : 0;
                           
                           return (
-                            <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                            <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                   <div style={{ 
-                                    width: '6px', 
-                                    height: '6px', 
-                                    borderRadius: '1px', 
+                                    width: '8px', 
+                                    height: '8px', 
+                                    borderRadius: '2px', 
                                     backgroundColor: item.color
                                   }}></div>
-                                  <span style={{ fontSize: '0.55rem', color: '#374151', fontWeight: '600' }}>
+                                  <span style={{ fontSize: '0.65rem', color: '#374151', fontWeight: '600' }}>
                                     {item.tipodeventa}
                                   </span>
                                 </div>
-                                <span style={{ fontSize: '0.6rem', fontWeight: '700', color: item.color }}>
+                                <span style={{ fontSize: '0.7rem', fontWeight: '700', color: item.color }}>
                                   ${item.total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                 </span>
                               </div>
                               
                               <div style={{ 
                                 width: '100%', 
-                                height: '16px', 
+                                height: '20px', 
                                 backgroundColor: '#f3f4f6', 
-                                borderRadius: '8px', 
+                                borderRadius: '10px', 
                                 overflow: 'hidden'
                               }}>
                                 <div style={{
                                   width: `${percentage}%`,
                                   height: '100%',
                                   backgroundColor: item.color,
-                                  borderRadius: '8px',
+                                  borderRadius: '10px',
                                   transition: 'width 0.3s ease',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'flex-end',
-                                  paddingRight: percentage > 20 ? '0.4rem' : '0'
+                                  paddingRight: percentage > 15 ? '0.5rem' : '0'
                                 }}>
-                                  {percentage > 20 && (
+                                  {percentage > 15 && (
                                     <span style={{ 
-                                      fontSize: '0.5rem', 
+                                      fontSize: '0.6rem', 
                                       fontWeight: '700', 
                                       color: 'white'
                                     }}>
@@ -1585,23 +1533,23 @@ export const DashboardPage = () => {
               )}
 
               {/* Separador */}
-              <div style={{ borderTop: '1px solid #e5e7eb', marginBottom: '1rem' }}></div>
+              <div style={{ borderTop: '1px solid #e5e7eb', margin: '1rem 0' }}></div>
 
               {/* Cobrado y Ordenado en la parte inferior */}
-              <div style={{ display: 'flex', gap: '1rem' }}>
+              <div style={{ display: 'flex', gap: '1.5rem' }}>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '0.55rem', color: '#9ca3af', marginBottom: '0.2rem', fontWeight: '500' }}>
+                  <p style={{ fontSize: '0.65rem', color: '#9ca3af', marginBottom: '0.3rem', fontWeight: '500' }}>
                     Cobrado:
                   </p>
-                  <p style={{ fontSize: '1.1rem', fontWeight: '700', color: '#3b82f6', margin: 0 }}>
+                  <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#3b82f6', margin: 0 }}>
                     ${resumenVentas.totalCobrado.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '0.55rem', color: '#9ca3af', marginBottom: '0.2rem', fontWeight: '500' }}>
+                  <p style={{ fontSize: '0.65rem', color: '#9ca3af', marginBottom: '0.3rem', fontWeight: '500' }}>
                     Ordenado:
                   </p>
-                  <p style={{ fontSize: '1.1rem', fontWeight: '700', color: '#f97316', margin: 0 }}>
+                  <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#f97316', margin: 0 }}>
                     ${resumenVentas.totalOrdenado.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
