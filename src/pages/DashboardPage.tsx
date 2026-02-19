@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerSaludNegocio, type ResumenVentas, type SaludNegocio } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import jsPDF from 'jspdf';
@@ -143,6 +143,7 @@ const calcularImporteMostrar = (venta: VentaWebWithDetails, pagosRegistrados: Re
 export const DashboardPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const isInitialMount = useRef(true);
   const [usuario] = useState<Usuario | null>(getUsuarioFromStorage());
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showConfigSubmenu, setShowConfigSubmenu] = useState(false);
@@ -589,6 +590,12 @@ export const DashboardPage = () => {
 
   // Force refresh when navigating back to dashboard (e.g., after creating ORDENADO sale)
   useEffect(() => {
+    // Skip on initial mount to avoid duplicate API calls
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    
     if (location.pathname === '/dashboard') {
       // Immediately refresh sales data to show updated ORDENADO values
       cargarResumenVentas();
