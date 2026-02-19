@@ -1237,7 +1237,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
          AND v.idnegocio = ? 
          AND v.estadodeventa = 'COBRADO'
          AND v.descuentos > 0
-       GROUP BY d.tipodescuento
+       GROUP BY COALESCE(d.tipodescuento, 'SIN_TIPO')
        ORDER BY total DESC`,
       [claveturno, idnegocio]
     );

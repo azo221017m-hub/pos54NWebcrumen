@@ -1454,10 +1454,8 @@ export const DashboardPage = () => {
                         etiqueta = 'Descuento %';
                       } else if (tipoLower === 'efectivo' || tipoLower === 'monto' || tipoLower === 'fijo') {
                         etiqueta = 'Descuento $';
-                      } else if (tipoLower === 'sin_tipo' || descuento.tipo === 'SIN_TIPO') {
-                        etiqueta = 'Descuento';
                       } else {
-                        // For any other type, use a generic label
+                        // For any other type including 'sin_tipo', use a generic label
                         etiqueta = 'Descuento';
                       }
                       
