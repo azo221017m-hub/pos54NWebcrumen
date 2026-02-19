@@ -1224,23 +1224,20 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
       [claveturno, idnegocio]
     );
 
-    // Get discounts grouped by type ($ for fixed amount, % for percentage)
+    // Get discounts grouped by type from tblposcrumenwebdescuentos
     const [descuentosRows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
-        CASE 
-          WHEN detalledescuento LIKE '%$%' OR detalledescuento LIKE '%FIJO%' THEN '$'
-          WHEN detalledescuento LIKE '%\\%%' OR detalledescuento LIKE '%PORCENTAJE%' THEN '%'
-          WHEN detalledescuento IS NOT NULL AND detalledescuento != '' THEN 'OTRO'
-          ELSE 'SIN_TIPO'
-        END as tipodescuento,
+        COALESCE(d.tipodescuento, 'SIN_TIPO') as tipodescuento,
         COUNT(*) as cantidad,
-        COALESCE(SUM(descuentos), 0) as total
-       FROM tblposcrumenwebventas 
-       WHERE claveturno = ? 
-         AND idnegocio = ? 
-         AND estadodeventa = 'COBRADO'
-         AND descuentos > 0
-       GROUP BY tipodescuento
+        COALESCE(SUM(v.descuentos), 0) as total
+       FROM tblposcrumenwebventas v
+       LEFT JOIN tblposcrumenwebdescuentos d 
+         ON v.detalledescuento = d.nombre AND v.idnegocio = d.idnegocio
+       WHERE v.claveturno = ? 
+         AND v.idnegocio = ? 
+         AND v.estadodeventa = 'COBRADO'
+         AND v.descuentos > 0
+       GROUP BY COALESCE(d.tipodescuento, 'SIN_TIPO')
        ORDER BY total DESC`,
       [claveturno, idnegocio]
     );
