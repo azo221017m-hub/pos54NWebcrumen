@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerSaludNegocio, type ResumenVentas, type SaludNegocio } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
@@ -142,6 +142,7 @@ const calcularImporteMostrar = (venta: VentaWebWithDetails, pagosRegistrados: Re
 
 export const DashboardPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [usuario] = useState<Usuario | null>(getUsuarioFromStorage());
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showConfigSubmenu, setShowConfigSubmenu] = useState(false);
@@ -585,6 +586,16 @@ export const DashboardPage = () => {
     return () => clearInterval(intervalId);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas, cargarModeradores, cargarResumenVentas, cargarSaludNegocio, and verificarTurno omitted to prevent infinite refresh loop
   }, [navigate]);
+
+  // Force refresh when navigating back to dashboard (e.g., after creating ORDENADO sale)
+  useEffect(() => {
+    if (location.pathname === '/dashboard') {
+      // Immediately refresh sales data to show updated ORDENADO values
+      cargarResumenVentas();
+      cargarVentasSolicitadas();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Only run when location changes
+  }, [location.pathname]);
 
   // Early return if not authenticated
   const usuarioData = localStorage.getItem('usuario');
