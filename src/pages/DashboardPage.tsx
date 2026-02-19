@@ -1129,13 +1129,15 @@ export const DashboardPage = () => {
           </div>
 
           <div className="cards-grid">
-            <div className="dashboard-card">
-              <div className="card-icon purple">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                </svg>
+            <div className="dashboard-card" style={{ position: 'relative' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <div className="card-icon purple">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                  </svg>
+                </div>
+                <h3 className="card-title" style={{ margin: 0 }}>Salud de mi Negocio</h3>
               </div>
-              <h3 className="card-title">Salud de mi Negocio</h3>
               
               {/* Date display in top right */}
               <div style={{ position: 'absolute', top: '1rem', right: '1rem', fontSize: '0.7rem', color: '#6b7280', fontWeight: '500' }}>
@@ -1361,14 +1363,16 @@ export const DashboardPage = () => {
 
             {/* Card de Ventas Hoy - Rediseñado según mockup */}
             <div className="dashboard-card" style={{ position: 'relative' }}>
-              <div className="card-icon blue">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="9" cy="21" r="1"/>
-                  <circle cx="20" cy="21" r="1"/>
-                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                </svg>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <div className="card-icon blue">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="9" cy="21" r="1"/>
+                    <circle cx="20" cy="21" r="1"/>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                  </svg>
+                </div>
+                <h3 className="card-title" style={{ margin: 0 }}>Ventas Hoy</h3>
               </div>
-              <h3 className="card-title">Ventas Hoy</h3>
 
               {/* Turno Actual - Solo mostrar si hay turno abierto */}
               {turnoAbierto && (
@@ -1428,6 +1432,50 @@ export const DashboardPage = () => {
                       </div>
                     );
                   })()}
+                </div>
+              )}
+
+              {/* Descuentos - Agrupados por tipo */}
+              {resumenVentas.descuentosPorTipo && resumenVentas.descuentosPorTipo.length > 0 && (
+                <div style={{ marginBottom: '1rem', marginTop: '1rem' }}>
+                  <h4 style={{ fontSize: '0.65rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                    Descuentos
+                  </h4>
+                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    {resumenVentas.descuentosPorTipo.map((descuento, index) => {
+                      const tipoLabel = descuento.tipo === '$' ? 'Fijo' : descuento.tipo === '%' ? 'Porcentaje' : descuento.tipo;
+                      const simbolo = descuento.tipo === '$' ? '$' : descuento.tipo === '%' ? '%' : '';
+                      
+                      return (
+                        <div key={index} style={{
+                          padding: '0.5rem',
+                          backgroundColor: '#fef3c7',
+                          borderRadius: '6px',
+                          border: '1px solid #fde68a',
+                          flex: '1 1 auto',
+                          minWidth: '5rem'
+                        }}>
+                          <div style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '0.25rem',
+                            marginBottom: '0.25rem'
+                          }}>
+                            <span style={{ fontSize: '0.9rem' }}>{simbolo}</span>
+                            <span style={{ fontSize: '0.55rem', color: '#92400e', fontWeight: '600' }}>
+                              {tipoLabel}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.5rem', color: '#78716c', marginBottom: '0.15rem' }}>
+                            Cantidad: {descuento.cantidad}
+                          </div>
+                          <div style={{ fontSize: '0.65rem', fontWeight: '700', color: '#f59e0b' }}>
+                            ${descuento.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
@@ -1549,43 +1597,45 @@ export const DashboardPage = () => {
             </div>
 
             <div className="dashboard-card">
-              <div className="card-icon green">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                </svg>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <div className="card-icon green">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                  </svg>
+                </div>
+                <h3 className="card-title" style={{ margin: 0 }}>Inventario</h3>
               </div>
-              <h3 className="card-title">Inventario</h3>
               <p className="card-text">Valor de Inventario</p>
               <div className="card-stat">
                 ${saludNegocio.valorInventario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
               
-              {/* Indicador de Nivel de Inventario */}
+              {/* Indicador de Nivel de Inventario - Más compacto */}
               <div style={{
-                marginTop: '1rem',
-                padding: '0.75rem',
+                marginTop: '0.75rem',
+                padding: '0.5rem',
                 backgroundColor: `${nivelInventario.color}15`,
-                border: `2px solid ${nivelInventario.color}`,
-                borderRadius: '8px',
+                border: `1px solid ${nivelInventario.color}`,
+                borderRadius: '6px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem'
+                gap: '0.35rem'
               }}>
-                <span style={{ fontSize: '1.2rem' }}>{nivelInventario.icono}</span>
+                <span style={{ fontSize: '1rem' }}>{nivelInventario.icono}</span>
                 <div style={{ flex: 1 }}>
                   <div style={{
-                    fontSize: '0.75rem',
+                    fontSize: '0.65rem',
                     fontWeight: '700',
                     color: nivelInventario.color,
                     textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
+                    letterSpacing: '0.3px'
                   }}>
                     {nivelInventario.nivel}
                   </div>
                   <div style={{
-                    fontSize: '0.7rem',
+                    fontSize: '0.6rem',
                     color: '#6b7280',
-                    marginTop: '0.15rem'
+                    marginTop: '0.1rem'
                   }}>
                     {nivelInventario.mensaje}
                   </div>
