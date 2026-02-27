@@ -117,21 +117,40 @@ export const LoginPage = () => {
         <div className="blob blob-3"></div>
       </div>
 
+      {/* Header superior */}
+      <div className="login-top-bar">
+        <div className="login-logo-top">
+          <img src="/logowebposcrumen.svg" alt="Logo Poscrumen" className="logo-image-top" />
+        </div>
+        <div className="login-title-top">
+          <h1 className="title-text">Iniciar Sesión</h1>
+          <p className="subtitle-text">
+            {logoutMessage || 'Ingresa tus credenciales para continuar'}
+          </p>
+        </div>
+        <div className="login-button-top">
+          <button
+            type="submit"
+            form="login-form"
+            className={`submit-button-top ${isLoading ? 'loading' : ''}`}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <span className="spinner"></span>
+                Iniciando sesión...
+              </>
+            ) : (
+              'Ingresar'
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Formulario centrado */}
       <div className="login-container">
         <div className="login-card">
-          <div className="login-header">
-            <div className="login-logo">
-              <img src="/logowebposcrumen.svg" alt="Logo Poscrumen" className="logo-image" />
-            </div>
-            <h1 className="login-title">
-              {logoutMessage ? 'Sesión Expirada' : 'Iniciar Sesión'}
-            </h1>
-            <p className="login-subtitle">
-              {logoutMessage || 'Ingresa tus credenciales para continuar'}
-            </p>
-          </div>
-
-          <form className="login-form" onSubmit={handleSubmit}>
+          <form id="login-form" className="login-form" onSubmit={handleSubmit}>
             {error && (
               <div className="error-message">
                 <svg className="error-icon" viewBox="0 0 20 20" fill="currentColor">
@@ -201,23 +220,6 @@ export const LoginPage = () => {
                 </button>
               </div>
             </div>
-
-            <button
-              type="submit"
-              className={`submit-button ${isLoading ? 'loading' : ''}`}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <span className="spinner"></span>
-                  Iniciando sesión...
-                </>
-              ) : (
-                <>
-               Ingresar
-                </>
-              )}
-            </button>
           </form>
 
           <div className="login-footer">
