@@ -1198,12 +1198,14 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const totalVentasCobradas = Number(salesRows[0]?.totalVentasCobradas) || 0;
 
     // Get sales grouped by formadepago (payment method)
+    // Exclude FONDE de CAJA movements from EFECTIVO totals
     const [formaDePagoRows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
         formadepago,
         COALESCE(SUM(totaldeventa), 0) as total
        FROM tblposcrumenwebventas 
        WHERE claveturno = ? AND idnegocio = ? AND estadodeventa = 'COBRADO'
+         AND NOT (formadepago = 'EFECTIVO' AND referencia = 'FONDE de CAJA')
        GROUP BY formadepago
        ORDER BY total DESC`,
       [claveturno, idnegocio]
