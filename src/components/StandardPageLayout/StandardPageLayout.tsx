@@ -114,10 +114,13 @@ const StandardPageLayout: React.FC<StandardPageLayoutProps> = ({
               <p>{loadingMessage}</p>
             </div>
           ) : isEmpty ? (
-            <div className="standard-empty-state">
-              {emptyIcon}
-              <p>{emptyMessage}</p>
-            </div>
+            <>
+              <div className="standard-empty-state">
+                {emptyIcon}
+                <p>{emptyMessage}</p>
+              </div>
+              {children}
+            </>
           ) : (
             children
           )}
