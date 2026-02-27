@@ -1554,6 +1554,66 @@ export const DashboardPage = () => {
                   </p>
                 </div>
               </div>
+
+              {/* Barra de progreso: Meta de Venta vs Cobrado */}
+              {resumenVentas.metaTurno > 0 && (
+                <>
+                  <div style={{ borderTop: '1px solid #e5e7eb', margin: '1rem 0' }}></div>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                      <span style={{ fontSize: '0.65rem', color: '#374151', fontWeight: '600' }}>
+                        Meta de Venta
+                      </span>
+                      <span style={{ fontSize: '0.65rem', fontWeight: '700', color: '#6b7280' }}>
+                        ${resumenVentas.metaTurno.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    {(() => {
+                      const pct = Math.min((resumenVentas.totalCobrado / Math.max(resumenVentas.metaTurno, 1)) * 100, 100);
+                      const goalReached = resumenVentas.totalCobrado >= resumenVentas.metaTurno;
+                      const barColor = goalReached ? '#10b981' : '#3b82f6';
+                      return (
+                        <>
+                          <div style={{
+                            width: '100%',
+                            height: '18px',
+                            backgroundColor: '#e5e7eb',
+                            borderRadius: '9px',
+                            overflow: 'hidden',
+                            marginBottom: '0.3rem'
+                          }}>
+                            <div style={{
+                              width: `${pct}%`,
+                              height: '100%',
+                              backgroundColor: barColor,
+                              borderRadius: '9px',
+                              transition: 'width 0.4s ease',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-end',
+                              paddingRight: pct > 15 ? '0.4rem' : '0'
+                            }}>
+                              {pct > 15 && (
+                                <span style={{ fontSize: '0.6rem', fontWeight: '700', color: 'white' }}>
+                                  {pct.toFixed(0)}%
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.6rem', color: '#9ca3af' }}>
+                              Cobrado: ${resumenVentas.totalCobrado.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                            <span style={{ fontSize: '0.6rem', fontWeight: '600', color: barColor }}>
+                              {goalReached ? '¡Meta alcanzada!' : `${pct.toFixed(1)}% de la meta`}
+                            </span>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="dashboard-card">
