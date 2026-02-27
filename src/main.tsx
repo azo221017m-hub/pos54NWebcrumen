@@ -31,6 +31,18 @@ window.addEventListener('unhandledrejection', (event) => {
   }
 });
 
+// Evitar que los inputs de tipo número cambien su valor al hacer scroll con el mouse
+document.addEventListener('wheel', (event) => {
+  const target = event.target as Element;
+  if (
+    target instanceof HTMLInputElement &&
+    target.type === 'number' &&
+    document.activeElement === target
+  ) {
+    target.blur();
+  }
+}, { passive: true });
+
 // Crear root y renderizar la aplicación
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
