@@ -1197,19 +1197,50 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const totalOrdenado = Number(salesRows[0]?.totalOrdenado) || 0;
     const totalVentasCobradas = Number(salesRows[0]?.totalVentasCobradas) || 0;
 
-    // Get sales grouped by formadepago (payment method)
-    // Exclude FONDE de CAJA movements from EFECTIVO totals
-    const [formaDePagoRows] = await pool.execute<RowDataPacket[]>(
+    // Get sales grouped by formadepago for EFECTIVO and TRANSFERENCIA directly
+    // Uses importedepago and filters descripcionmov='VENTA'
+    const [directPagoRows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
         formadepago,
-        COALESCE(SUM(totaldeventa), 0) as total
+        COALESCE(SUM(importedepago), 0) as total
        FROM tblposcrumenwebventas 
        WHERE claveturno = ? AND idnegocio = ? AND estadodeventa = 'COBRADO'
-         AND NOT (formadepago = 'EFECTIVO' AND referencia = 'FONDE de CAJA')
-       GROUP BY formadepago
-       ORDER BY total DESC`,
+         AND descripcionmov = 'VENTA'
+         AND formadepago IN ('EFECTIVO', 'TRANSFERENCIA')
+       GROUP BY formadepago`,
       [claveturno, idnegocio]
     );
+
+    // Get MIXTO payment components from tblposcrumenwebdetallepagos
+    // Split MIXTO sales into EFECTIVO and TRANSFERENCIA sub-totals
+    const [mixtoPagoRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT 
+        dp.formadepagodetalle AS formadepago,
+        COALESCE(SUM(dp.totaldepago), 0) as total
+       FROM tblposcrumenwebdetallepagos dp
+       INNER JOIN tblposcrumenwebventas v 
+         ON dp.idfolioventa = v.folioventa AND dp.idnegocio = v.idnegocio
+       WHERE v.claveturno = ? AND v.idnegocio = ? AND v.estadodeventa = 'COBRADO'
+         AND v.descripcionmov = 'VENTA' AND v.formadepago = 'MIXTO'
+         AND dp.formadepagodetalle IN ('EFECTIVO', 'TRANSFERENCIA')
+       GROUP BY dp.formadepagodetalle`,
+      [claveturno, idnegocio]
+    );
+
+    // Merge direct and MIXTO totals by formadepago
+    const pagoTotals: Record<string, number> = {};
+    for (const row of directPagoRows) {
+      const key = row.formadepago as string;
+      pagoTotals[key] = (pagoTotals[key] || 0) + (Number(row.total) || 0);
+    }
+    for (const row of mixtoPagoRows) {
+      const key = row.formadepago as string;
+      pagoTotals[key] = (pagoTotals[key] || 0) + (Number(row.total) || 0);
+    }
+
+    const formaDePagoRows = Object.entries(pagoTotals)
+      .map(([formadepago, total]) => ({ formadepago, total }))
+      .sort((a, b) => b.total - a.total);
 
     // Get sales grouped by tipodeventa (sale type: MESA, DOMICILIO, LLEVAR, ONLINE)
     const [tipoDeVentaRows] = await pool.execute<RowDataPacket[]>(
