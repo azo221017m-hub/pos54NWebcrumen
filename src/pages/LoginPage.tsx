@@ -120,7 +120,10 @@ export const LoginPage = () => {
       {/* Header superior */}
       <div className="login-top-bar">
         <div className="login-logo-top">
-          <img src="/logowebposcrumen.svg" alt="Logo Poscrumen" className="logo-image-top" />
+          <div className="logo-wrapper">
+            <img src="/logowebposcrumen.svg" alt="Logo Poscrumen" className="logo-image-top" />
+            <p className="logo-tagline">Administra tu negocio desde la nube</p>
+          </div>
         </div>
         <div className="login-title-top">
           <h1 className="title-text">Iniciar Sesión</h1>

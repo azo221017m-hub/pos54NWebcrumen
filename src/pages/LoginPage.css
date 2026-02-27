@@ -34,10 +34,26 @@
   align-items: center;
 }
 
+.logo-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
 .logo-image-top {
   height: 210px;
   width: 420px;
   object-fit: contain;
+}
+
+.logo-tagline {
+  font-size: 12pt;
+  color: #f99b13;
+  font-weight: 500;
+  margin: 0;
+  text-align: left;
+  letter-spacing: 0.02em;
 }
 
 .login-title-top {
@@ -518,9 +534,18 @@
     justify-self: center;
   }
 
+  .logo-wrapper {
+    align-items: center;
+  }
+
   .logo-image-top {
     height: 120px;
     width: 240px;
+  }
+
+  .logo-tagline {
+    font-size: 10pt;
+    text-align: center;
   }
 
   .title-text {
