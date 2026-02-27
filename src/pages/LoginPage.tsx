@@ -122,8 +122,7 @@ export const LoginPage = () => {
         <div className="login-logo-top">
           <div className="logo-wrapper">
             <img src="/logowebposcrumen.svg" alt="Logo Poscrumen" className="logo-image-top" />
-            <p className="logo-tagline">Administra tu negocio desde la nube</p>
-          </div>
+            </div>
         </div>
         <div className="login-title-top">
           <h1 className="title-text">Iniciar Sesión</h1>
