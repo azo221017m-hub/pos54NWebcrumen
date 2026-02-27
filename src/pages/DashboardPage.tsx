@@ -1391,53 +1391,58 @@ export const DashboardPage = () => {
               )}
 
               {/* Leyenda de Formas de Pago */}
-              {resumenVentas.ventasPorFormaDePago && resumenVentas.ventasPorFormaDePago.length > 0 && (
-                <div style={{ marginBottom: '1rem' }}>
-                  {(() => {
-                    const totalFormaDePago = resumenVentas.ventasPorFormaDePago.reduce((sum, item) => sum + item.total, 0);
-                    
-                    const coloresPago: Record<string, string> = {
-                      'EFECTIVO': '#10b981',
-                      'TARJETA': '#3b82f6',
-                      'TRANSFERENCIA': '#8b5cf6',
-                      'MIXTO': '#f59e0b',
-                      'sinFP': '#6b7280'
-                    };
+              <div style={{ marginBottom: '1rem' }}>
+                {(() => {
+                  const coloresPago: Record<string, string> = {
+                    'EFECTIVO': '#10b981',
+                    'TARJETA': '#3b82f6',
+                    'TRANSFERENCIA': '#8b5cf6',
+                    'MIXTO': '#f59e0b',
+                    'sinFP': '#6b7280'
+                  };
+                  const tiposPago = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA'];
+                  const apiData = resumenVentas.ventasPorFormaDePago || [];
+                  const datosFormaPago = tiposPago.map(fp => {
+                    const found = apiData.find(item => item.formadepago === fp);
+                    return { formadepago: fp, total: found ? found.total : 0 };
+                  });
+                  const extras = apiData.filter(item => !tiposPago.includes(item.formadepago));
+                  const allFormasPago = [...datosFormaPago, ...extras];
+                  const totalFormaDePago = allFormasPago.reduce((sum, item) => sum + item.total, 0);
 
-                    return (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                        {resumenVentas.ventasPorFormaDePago.map((item, index) => {
-                          const percentage = totalFormaDePago > 0 ? (item.total / totalFormaDePago) * 100 : 0;
-                          const color = coloresPago[item.formadepago] || '#9ca3af';
-                          
-                          return (
-                            <div key={index} style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              alignItems: 'center'
-                            }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                <div style={{ 
-                                  width: '10px', 
-                                  height: '10px', 
-                                  borderRadius: '50%', 
-                                  backgroundColor: color
-                                }}></div>
-                                <span style={{ fontSize: '0.65rem', color: '#4b5563', fontWeight: '500' }}>
-                                  {item.formadepago}
-                                </span>
-                              </div>
-                              <span style={{ fontSize: '0.65rem', fontWeight: '700', color: color }}>
-                                {percentage.toFixed(1)}% • ${item.total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      {allFormasPago.map((item, index) => {
+                        const percentage = totalFormaDePago > 0 ? (item.total / totalFormaDePago) * 100 : 0;
+                        const color = coloresPago[item.formadepago] || '#9ca3af';
+                        
+                        return (
+                          <div key={index} style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                              <div style={{ 
+                                width: '10px', 
+                                height: '10px', 
+                                borderRadius: '50%', 
+                                backgroundColor: color
+                              }}></div>
+                              <span style={{ fontSize: '0.65rem', color: '#4b5563', fontWeight: '500' }}>
+                                {item.formadepago}
                               </span>
                             </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
+                            <span style={{ fontSize: '0.65rem', fontWeight: '700', color: color }}>
+                              {percentage.toFixed(1)}% • ${item.total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </div>
 
               {/* Separador */}
               <div style={{ borderTop: '1px solid #e5e7eb', margin: '1rem 0' }}></div>
@@ -1448,10 +1453,9 @@ export const DashboardPage = () => {
               </h4>
 
               {/* Gráfico de Barras Horizontales - Tipo de Venta */}
-              {resumenVentas.ventasPorTipoDeVenta && resumenVentas.ventasPorTipoDeVenta.length > 0 && (
-                <div style={{ marginBottom: '1rem' }}>
-                  {(() => {
-                    const maxTipoVenta = Math.max(...resumenVentas.ventasPorTipoDeVenta.map(item => item.total), 1);
+              <div style={{ marginBottom: '1rem' }}>
+                {(() => {
+                    const maxTipoVenta = Math.max(...(resumenVentas.ventasPorTipoDeVenta || []).map(item => item.total), 1);
                     
                     const coloresTipo: Record<string, string> = {
                       'MESA': '#ef4444',
@@ -1462,7 +1466,7 @@ export const DashboardPage = () => {
 
                     const ordenTipos = ['MESA', 'DOMICILIO', 'LLEVAR', 'ONLINE'];
                     const datosOrdenados = ordenTipos.map(tipo => {
-                      const found = resumenVentas.ventasPorTipoDeVenta.find(item => item.tipodeventa === tipo);
+                      const found = (resumenVentas.ventasPorTipoDeVenta || []).find(item => item.tipodeventa === tipo);
                       return {
                         tipodeventa: tipo,
                         total: found ? found.total : 0,
@@ -1529,8 +1533,7 @@ export const DashboardPage = () => {
                       </div>
                     );
                   })()}
-                </div>
-              )}
+              </div>
 
               {/* Separador */}
               <div style={{ borderTop: '1px solid #e5e7eb', margin: '1rem 0' }}></div>
