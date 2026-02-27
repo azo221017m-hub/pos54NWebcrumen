@@ -23,6 +23,52 @@ interface Insumo extends RowDataPacket {
   idproveedor: string | null; // Stores provider name instead of ID
 }
 
+// Obtener insumos inventariables y activos por negocio (para formulario de productos)
+export const obtenerInsumosInventariables = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({ message: 'Usuario no autenticado o sin negocio asignado' });
+      return;
+    }
+
+    const [rows] = await pool.query<Insumo[]>(
+      `SELECT 
+        i.id_insumo,
+        i.nombre,
+        i.unidad_medida,
+        i.stock_actual,
+        i.stock_minimo,
+        i.costo_promedio_ponderado,
+        i.precio_venta,
+        i.idinocuidad,
+        i.id_cuentacontable,
+        cc.nombrecuentacontable,
+        i.activo,
+        i.inventariable,
+        i.fechaRegistroauditoria,
+        i.usuarioauditoria,
+        i.fechamodificacionauditoria,
+        i.idnegocio,
+        i.idproveedor
+      FROM tblposcrumenwebinsumos i
+      LEFT JOIN tblposcrumenwebcuentacontable cc ON i.id_cuentacontable = cc.id_cuentacontable
+      WHERE i.idnegocio = ? AND i.activo = 1 AND i.inventariable = 1
+      ORDER BY i.nombre ASC`,
+      [idnegocio]
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error('Error al obtener insumos inventariables:', error);
+    res.status(500).json({
+      message: 'Error al obtener insumos inventariables',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+};
+
 // Obtener todos los insumos por negocio
 export const obtenerInsumos = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
