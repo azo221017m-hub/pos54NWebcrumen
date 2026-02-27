@@ -30,6 +30,27 @@ router.use(apiLimiter);
 router.get('/', getVentasWeb);
 
 /**
+ * @route   GET /api/ventas-web/detalles/estado/:estado
+ * @desc    Obtener todos los detalles de ventas con un estado específico (ESPERAR, ORDENADO, PREPARACION, etc.)
+ * @access  Private
+ */
+router.get('/detalles/estado/:estado', getDetallesByEstado);
+
+/**
+ * @route   GET /api/ventas-web/resumen/turno-actual
+ * @desc    Obtener resumen de ventas del turno actual abierto
+ * @access  Private
+ */
+router.get('/resumen/turno-actual', getSalesSummary);
+
+/**
+ * @route   GET /api/ventas-web/dashboard/salud-negocio
+ * @desc    Obtener datos de salud del negocio (Ventas vs Gastos del mes actual)
+ * @access  Private
+ */
+router.get('/dashboard/salud-negocio', getBusinessHealth);
+
+/**
  * @route   GET /api/ventas-web/:id
  * @desc    Obtener una venta web por ID con sus detalles
  * @access  Private
@@ -70,26 +91,5 @@ router.post('/:id/detalles', addDetallesToVenta);
  * @access  Private
  */
 router.patch('/:id/detalles/:iddetalle/estado', updateDetalleEstado);
-
-/**
- * @route   GET /api/ventas-web/detalles/estado/:estado
- * @desc    Obtener todos los detalles de ventas con un estado específico (ESPERAR, ORDENADO, PREPARACION, etc.)
- * @access  Private
- */
-router.get('/detalles/estado/:estado', getDetallesByEstado);
-
-/**
- * @route   GET /api/ventas-web/resumen/turno-actual
- * @desc    Obtener resumen de ventas del turno actual abierto
- * @access  Private
- */
-router.get('/resumen/turno-actual', getSalesSummary);
-
-/**
- * @route   GET /api/ventas-web/dashboard/salud-negocio
- * @desc    Obtener datos de salud del negocio (Ventas vs Gastos del mes actual)
- * @access  Private
- */
-router.get('/dashboard/salud-negocio', getBusinessHealth);
 
 export default router;
