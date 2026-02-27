@@ -25,6 +25,20 @@ export const obtenerInsumos = async (idnegocio: number): Promise<Insumo[]> => {
   }
 };
 
+// Obtener insumos activos e inventariables de un negocio (activo=1, inventariable=1)
+export const obtenerInsumosInventariables = async (idnegocio: number): Promise<Insumo[]> => {
+  try {
+    const response = await apiClient.get<Insumo[]>(`${API_BASE}/negocio/${idnegocio}/inventariables`);
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    return [];
+  } catch (error) {
+    console.error('❌ insumosService - Error al obtener insumos inventariables:', error);
+    return [];
+  }
+};
+
 // Obtener un insumo por ID
 export const obtenerInsumo = async (id_insumo: number): Promise<Insumo> => {
   const response = await apiClient.get<Insumo>(`${API_BASE}/${id_insumo}`);

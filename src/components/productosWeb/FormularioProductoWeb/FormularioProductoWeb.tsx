@@ -6,7 +6,7 @@ import type { Receta } from '../../../types/receta.types';
 import type { Insumo } from '../../../types/insumo.types';
 import { obtenerCategorias } from '../../../services/categoriasService';
 import { obtenerRecetas } from '../../../services/recetasService';
-import { obtenerInsumos } from '../../../services/insumosService';
+import { obtenerInsumosInventariables } from '../../../services/insumosService';
 import { verificarNombreProducto } from '../../../services/productosWebService';
 import './FormularioProductoWeb.css';
 
@@ -104,7 +104,7 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
       // Cargar insumos
       setCargandoInsumos(true);
       try {
-        const insumosData = await obtenerInsumos(idnegocio);
+        const insumosData = await obtenerInsumosInventariables(idnegocio);
         setInsumos(insumosData);
       } catch (error) {
         console.error('Error al cargar insumos:', error);
