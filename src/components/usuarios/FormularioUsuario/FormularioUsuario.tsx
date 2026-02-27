@@ -180,6 +180,7 @@ export const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({
                 maxLength={100}
                 required
                 placeholder="Nombre de usuario único"
+                autoComplete="off"
               />
             </div>
 
@@ -197,6 +198,7 @@ export const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({
                 maxLength={255}
                 required={!usuarioEditar}
                 placeholder="Ingrese la contraseña"
+                autoComplete="new-password"
               />
             </div>
 
