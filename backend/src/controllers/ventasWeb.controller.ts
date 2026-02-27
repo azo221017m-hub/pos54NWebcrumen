@@ -1185,7 +1185,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     // Use single query with conditional aggregation for better performance
     const [salesRows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
-        COALESCE(SUM(CASE WHEN estadodeventa = 'COBRADO' THEN importedepago ELSE 0 END), 0) as totalCobrado,
+        COALESCE(SUM(CASE WHEN estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalCobrado,
         COALESCE(SUM(CASE WHEN estadodeventa = 'ORDENADO' THEN totaldeventa ELSE 0 END), 0) as totalOrdenado,
         COALESCE(SUM(CASE WHEN descripcionmov = 'VENTA' AND estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalVentasCobradas
        FROM tblposcrumenwebventas 
@@ -1197,22 +1197,22 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const totalOrdenado = Number(salesRows[0]?.totalOrdenado) || 0;
     const totalVentasCobradas = Number(salesRows[0]?.totalVentasCobradas) || 0;
 
-    // Get sales grouped by formadepago for EFECTIVO and TRANSFERENCIA directly
-    // Uses importedepago and filters descripcionmov='VENTA'
+    // Get sales grouped by formadepago for EFECTIVO, TRANSFERENCIA and TARJETA directly
+    // Uses totaldeventa and filters descripcionmov='VENTA'
     const [directPagoRows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
         formadepago,
-        COALESCE(SUM(importedepago), 0) as total
+        COALESCE(SUM(totaldeventa), 0) as total
        FROM tblposcrumenwebventas 
        WHERE claveturno = ? AND idnegocio = ? AND estadodeventa = 'COBRADO'
          AND descripcionmov = 'VENTA'
-         AND formadepago IN ('EFECTIVO', 'TRANSFERENCIA')
+         AND formadepago IN ('EFECTIVO', 'TRANSFERENCIA', 'TARJETA')
        GROUP BY formadepago`,
       [claveturno, idnegocio]
     );
 
     // Get MIXTO payment components from tblposcrumenwebdetallepagos
-    // Split MIXTO sales into EFECTIVO and TRANSFERENCIA sub-totals
+    // Split MIXTO sales into EFECTIVO, TRANSFERENCIA and TARJETA sub-totals
     const [mixtoPagoRows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
         dp.formadepagodetalle AS formadepago,
@@ -1222,7 +1222,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
          ON dp.idfolioventa = v.folioventa AND dp.idnegocio = v.idnegocio
        WHERE v.claveturno = ? AND v.idnegocio = ? AND v.estadodeventa = 'COBRADO'
          AND v.descripcionmov = 'VENTA' AND v.formadepago = 'MIXTO'
-         AND dp.formadepagodetalle IN ('EFECTIVO', 'TRANSFERENCIA')
+         AND dp.formadepagodetalle IN ('EFECTIVO', 'TRANSFERENCIA', 'TARJETA')
        GROUP BY dp.formadepagodetalle`,
       [claveturno, idnegocio]
     );
@@ -1243,6 +1243,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
       .sort((a, b) => b.total - a.total);
 
     // Get sales grouped by tipodeventa (sale type: MESA, DOMICILIO, LLEVAR, ONLINE)
+    // Include both COBRADO and ORDENADO to show current shift activity
     const [tipoDeVentaRows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
         tipodeventa,
@@ -1250,7 +1251,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
        FROM tblposcrumenwebventas 
        WHERE claveturno = ? 
          AND idnegocio = ? 
-         AND estadodeventa = 'COBRADO'
+         AND estadodeventa IN ('COBRADO', 'ORDENADO')
          AND tipodeventa IN ('MESA', 'DOMICILIO', 'ONLINE', 'LLEVAR')
        GROUP BY tipodeventa
        ORDER BY total DESC`,
