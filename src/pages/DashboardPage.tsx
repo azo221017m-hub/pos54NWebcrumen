@@ -1459,11 +1459,11 @@ export const DashboardPage = () => {
                       <p style={{ fontSize: '0.65rem', color: '#9ca3af', textAlign: 'center' }}>Sin ventas registradas</p>
                     );
                   }
-                  const maxTipoVenta = Math.max(...datosTipoVenta.map(item => item.total), 1);
+                  const totalTipoVenta = datosTipoVenta.reduce((sum, item) => sum + item.total, 0) || 1;
                   return (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                       {datosTipoVenta.map((item, index) => {
-                        const percentage = maxTipoVenta > 0 ? (item.total / maxTipoVenta) * 100 : 0;
+                        const percentage = totalTipoVenta > 0 ? (item.total / totalTipoVenta) * 100 : 0;
                         const color = coloresTipoVenta[item.tipodeventa] || '#9ca3af';
                         return (
                           <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
@@ -1525,11 +1525,11 @@ export const DashboardPage = () => {
                     { formadepago: 'EFECTIVO', total: efectivoTotal, color: '#10b981' },
                     { formadepago: 'TRANSFERENCIA', total: transferenciaTotal, color: '#8b5cf6' }
                   ];
-                  const maxFP = Math.max(...datosFP.map(item => item.total), 1);
+                  const totalFP = datosFP.reduce((sum, item) => sum + item.total, 0) || 1;
                   return (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                       {datosFP.map((item, index) => {
-                        const percentage = maxFP > 0 ? (item.total / maxFP) * 100 : 0;
+                        const percentage = totalFP > 0 ? (item.total / totalFP) * 100 : 0;
                         return (
                           <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
