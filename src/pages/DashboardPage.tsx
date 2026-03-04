@@ -164,6 +164,7 @@ export const DashboardPage = () => {
   const [showDashboardSubmenu, setShowDashboardSubmenu] = useState(false);
   const [showMiOperacionSubmenu, setShowMiOperacionSubmenu] = useState(false);
   const [dashboardView, setDashboardView] = useState<'indicadores' | 'comandas'>('indicadores');
+  const [autoSwitchedToComandas, setAutoSwitchedToComandas] = useState(false);
   const [isScreenLocked, setIsScreenLocked] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [ventasSolicitadas, setVentasSolicitadas] = useState<VentaWebWithDetails[]>([]);
@@ -567,6 +568,14 @@ export const DashboardPage = () => {
     return ventasSolicitadas.filter(v => v.tipodeventa === tipoVentaFilter);
   }, [ventasSolicitadas, tipoVentaFilter]);
 
+  // Auto-show comandas dashboard when there are pending orders (only on first load)
+  useEffect(() => {
+    if (ventasSolicitadas.length > 0 && !autoSwitchedToComandas) {
+      setDashboardView('comandas');
+      setAutoSwitchedToComandas(true);
+    }
+  }, [ventasSolicitadas, autoSwitchedToComandas]);
+
   useEffect(() => {
     // Verificar si hay usuario - check localStorage directly to avoid stale state
     const usuarioData = localStorage.getItem('usuario');
@@ -779,23 +788,6 @@ export const DashboardPage = () => {
                   <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
                 </svg>
                 Salud de mi negocio
-              </button>
-              <button
-                className="submenu-item"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setDashboardView('comandas');
-                  setShowDashboardSubmenu(false);
-                  setMobileMenuOpen(false);
-                }}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="9" cy="21" r="1"/>
-                  <circle cx="20" cy="21" r="1"/>
-                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                </svg>
-                Mis Comandas
               </button>
               <button 
                 className="submenu-item"
@@ -1180,6 +1172,38 @@ export const DashboardPage = () => {
                 Panel de control del sistema POS Crumen
               </p>
             </div>
+
+            {/* Comandas del Día label/button */}
+            {(() => {
+              const hasPendingOrders = ventasSolicitadas.length > 0;
+              const accentColor = hasPendingOrders ? '#f97316' : '#6b7280';
+              return (
+                <div
+                  onClick={() => setDashboardView('comandas')}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    cursor: 'pointer',
+                    padding: '0.5rem 1rem',
+                    backgroundColor: hasPendingOrders ? '#fff7ed' : '#f9fafb',
+                    border: `1px solid ${hasPendingOrders ? '#f97316' : '#e5e7eb'}`,
+                    borderRadius: '8px',
+                    marginBottom: '1rem',
+                    userSelect: 'none',
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2" style={{ width: '18px', height: '18px' }}>
+                    <circle cx="9" cy="21" r="1"/>
+                    <circle cx="20" cy="21" r="1"/>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                  </svg>
+                  <span style={{ fontSize: '0.9rem', fontWeight: '600', color: accentColor }}>
+                    Comandas del Día [{ventasSolicitadas.length}]
+                  </span>
+                </div>
+              );
+            })()}
 
             <div className="cards-grid">
             <div className="dashboard-card" style={{ position: 'relative' }}>
