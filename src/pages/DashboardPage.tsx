@@ -663,7 +663,7 @@ export const DashboardPage = () => {
           <div className="business-logo">
             <img src="/logowebposcrumen.svg" alt="Logo" className="logo-icon" />
             <div className="logo-text">
-              <h1>POSWEB Crumen</h1>
+              <h1>Crumen54N</h1>
               <p>Sistema Administrador de Negocios</p>
             </div>
           </div>
@@ -1438,68 +1438,6 @@ export const DashboardPage = () => {
                   </p>
                 </div>
               )}
-
-              {/* Leyenda de Formas de Pago */}
-              <div style={{ marginBottom: '1rem' }}>
-                {(() => {
-                  const coloresPago: Record<string, string> = {
-                    'EFECTIVO': '#10b981',
-                    'TARJETA': '#3b82f6',
-                    'TRANSFERENCIA': '#8b5cf6',
-                    'sinFP': '#6b7280'
-                  };
-                  const apiData = resumenVentas.ventasPorFormaDePago || [];
-                  const efectivoAPI = apiData.find(item => item.formadepago === 'EFECTIVO')?.total || 0;
-                  const transferenciaAPI = apiData.find(item => item.formadepago === 'TRANSFERENCIA')?.total || 0;
-                  const mixtoAPI = apiData.find(item => item.formadepago === 'MIXTO')?.total || 0;
-                  const { efectivo: efectivoAjustado, transferencia: transferenciaAjustada } = distribuirMixto(efectivoAPI, transferenciaAPI, mixtoAPI);
-                  const tiposPago = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA'];
-                  const datosFormaPago = tiposPago.map(fp => {
-                    if (fp === 'EFECTIVO') return { formadepago: fp, total: efectivoAjustado };
-                    if (fp === 'TRANSFERENCIA') return { formadepago: fp, total: transferenciaAjustada };
-                    const found = apiData.find(item => item.formadepago === fp);
-                    return { formadepago: fp, total: found ? found.total : 0 };
-                  });
-                  const extras = apiData.filter(item => !tiposPago.includes(item.formadepago) && item.formadepago !== 'MIXTO');
-                  const allFormasPago = [...datosFormaPago, ...extras];
-                  const totalFormaDePago = allFormasPago.reduce((sum, item) => sum + item.total, 0);
-
-                  return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                      {allFormasPago.map((item, index) => {
-                        const percentage = totalFormaDePago > 0 ? (item.total / totalFormaDePago) * 100 : 0;
-                        const color = coloresPago[item.formadepago] || '#9ca3af';
-                        
-                        return (
-                          <div key={index} style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'center'
-                          }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                              <div style={{ 
-                                width: '10px', 
-                                height: '10px', 
-                                borderRadius: '50%', 
-                                backgroundColor: color
-                              }}></div>
-                              <span style={{ fontSize: '0.65rem', color: '#4b5563', fontWeight: '500' }}>
-                                {item.formadepago}
-                              </span>
-                            </div>
-                            <span style={{ fontSize: '0.65rem', fontWeight: '700', color: color }}>
-                              {percentage.toFixed(1)}% • ${item.total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* Separador */}
-              <div style={{ borderTop: '1px solid #e5e7eb', margin: '1rem 0' }}></div>
 
               {/* Título: Tipo de Venta */}
               <h4 style={{ fontSize: '0.7rem', fontWeight: '600', color: '#374151', marginBottom: '0.75rem' }}>
