@@ -130,6 +130,21 @@ const getTipoVentaColorClass = (tipo: TipoDeVenta): string => {
   return colors[tipo] || 'tipo-mesa';
 };
 
+// Helper to distribute MIXTO total proportionally between EFECTIVO and TRANSFERENCIA
+const distribuirMixto = (efectivoAPI: number, transferenciaAPI: number, mixtoAPI: number): { efectivo: number; transferencia: number } => {
+  const baseTotal = efectivoAPI + transferenciaAPI;
+  if (baseTotal > 0) {
+    return {
+      efectivo: efectivoAPI + mixtoAPI * (efectivoAPI / baseTotal),
+      transferencia: transferenciaAPI + mixtoAPI * (transferenciaAPI / baseTotal)
+    };
+  }
+  return {
+    efectivo: efectivoAPI + mixtoAPI / 2,
+    transferencia: transferenciaAPI + mixtoAPI / 2
+  };
+};
+
 // Helper to calculate display amount for MIXTO sales
 const calcularImporteMostrar = (venta: VentaWebWithDetails, pagosRegistrados: Record<string, number>): number => {
   const total = Number(venta.totaldeventa) || 0;
@@ -1431,16 +1446,21 @@ export const DashboardPage = () => {
                     'EFECTIVO': '#10b981',
                     'TARJETA': '#3b82f6',
                     'TRANSFERENCIA': '#8b5cf6',
-                    'MIXTO': '#f59e0b',
                     'sinFP': '#6b7280'
                   };
-                  const tiposPago = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA'];
                   const apiData = resumenVentas.ventasPorFormaDePago || [];
+                  const efectivoAPI = apiData.find(item => item.formadepago === 'EFECTIVO')?.total || 0;
+                  const transferenciaAPI = apiData.find(item => item.formadepago === 'TRANSFERENCIA')?.total || 0;
+                  const mixtoAPI = apiData.find(item => item.formadepago === 'MIXTO')?.total || 0;
+                  const { efectivo: efectivoAjustado, transferencia: transferenciaAjustada } = distribuirMixto(efectivoAPI, transferenciaAPI, mixtoAPI);
+                  const tiposPago = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA'];
                   const datosFormaPago = tiposPago.map(fp => {
+                    if (fp === 'EFECTIVO') return { formadepago: fp, total: efectivoAjustado };
+                    if (fp === 'TRANSFERENCIA') return { formadepago: fp, total: transferenciaAjustada };
                     const found = apiData.find(item => item.formadepago === fp);
                     return { formadepago: fp, total: found ? found.total : 0 };
                   });
-                  const extras = apiData.filter(item => !tiposPago.includes(item.formadepago));
+                  const extras = apiData.filter(item => !tiposPago.includes(item.formadepago) && item.formadepago !== 'MIXTO');
                   const allFormasPago = [...datosFormaPago, ...extras];
                   const totalFormaDePago = allFormasPago.reduce((sum, item) => sum + item.total, 0);
 
@@ -1486,150 +1506,130 @@ export const DashboardPage = () => {
                 Tipo de Venta
               </h4>
 
-              {/* Gráfico de Barras Horizontales - Por Forma de Pago: EFECTIVO, TRANSFERENCIA, MIXTO */}
+              {/* Gráfico de Barras Horizontales - Por Tipo de Venta */}
               <div style={{ marginBottom: '1rem' }}>
                 {(() => {
-                    const coloresPagoTipo: Record<string, string> = {
-                      'EFECTIVO': '#10b981',
-                      'TRANSFERENCIA': '#8b5cf6',
-                      'MIXTO': '#f59e0b'
-                    };
-
-                    const ordenPagoTipo = ['EFECTIVO', 'TRANSFERENCIA', 'MIXTO'];
-                    const apiDataFP = resumenVentas.ventasPorFormaDePago || [];
-                    const datosPagoTipo = ordenPagoTipo.map(fp => {
-                      const found = apiDataFP.find(item => item.formadepago === fp);
-                      return {
-                        formadepago: fp,
-                        total: found ? found.total : 0,
-                        color: coloresPagoTipo[fp] || '#9ca3af'
-                      };
-                    });
-
-                    const maxPagoTipo = Math.max(...datosPagoTipo.map(item => item.total), 1);
-
-                    const efectivoTotal = datosPagoTipo.find(d => d.formadepago === 'EFECTIVO')?.total || 0;
-                    const transferenciaTotal = datosPagoTipo.find(d => d.formadepago === 'TRANSFERENCIA')?.total || 0;
-                    const mixtoTotal = datosPagoTipo.find(d => d.formadepago === 'MIXTO')?.total || 0;
-                    const mixtoSubtotal = efectivoTotal + transferenciaTotal;
-
+                  const coloresTipoVenta: Record<string, string> = {
+                    'MESA': '#3b82f6',
+                    'DOMICILIO': '#f59e0b',
+                    'LLEVAR': '#f97316',
+                    'ONLINE': '#8b5cf6'
+                  };
+                  const datosTipoVenta = resumenVentas.ventasPorTipoDeVenta || [];
+                  if (datosTipoVenta.length === 0) {
                     return (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                        {datosPagoTipo.map((item, index) => {
-                          const percentage = maxPagoTipo > 0 ? (item.total / maxPagoTipo) * 100 : 0;
-                          
-                          return (
-                            <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                  <div style={{ 
-                                    width: '8px', 
-                                    height: '8px', 
-                                    borderRadius: '2px', 
-                                    backgroundColor: item.color
-                                  }}></div>
-                                  <span style={{ fontSize: '0.65rem', color: '#374151', fontWeight: '600' }}>
-                                    {item.formadepago}
-                                  </span>
-                                </div>
-                                <span style={{ fontSize: '0.7rem', fontWeight: '700', color: item.color }}>
-                                  ${item.total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                      <p style={{ fontSize: '0.65rem', color: '#9ca3af', textAlign: 'center' }}>Sin ventas registradas</p>
+                    );
+                  }
+                  const maxTipoVenta = Math.max(...datosTipoVenta.map(item => item.total), 1);
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                      {datosTipoVenta.map((item, index) => {
+                        const percentage = maxTipoVenta > 0 ? (item.total / maxTipoVenta) * 100 : 0;
+                        const color = coloresTipoVenta[item.tipodeventa] || '#9ca3af';
+                        return (
+                          <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                <div style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: color }}></div>
+                                <span style={{ fontSize: '0.65rem', color: '#374151', fontWeight: '600' }}>
+                                  {item.tipodeventa}
                                 </span>
                               </div>
-                              
-                              <div style={{ 
-                                width: '100%', 
-                                height: '20px', 
-                                backgroundColor: '#f3f4f6', 
-                                borderRadius: '10px', 
-                                overflow: 'hidden'
-                              }}>
-                                <div style={{
-                                  width: `${percentage}%`,
-                                  height: '100%',
-                                  backgroundColor: item.color,
-                                  borderRadius: '10px',
-                                  transition: 'width 0.3s ease',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'flex-end',
-                                  paddingRight: percentage > 15 ? '0.5rem' : '0'
-                                }}>
-                                  {percentage > 15 && (
-                                    <span style={{ 
-                                      fontSize: '0.6rem', 
-                                      fontWeight: '700', 
-                                      color: 'white'
-                                    }}>
-                                      {percentage.toFixed(0)}%
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Sub-barra MIXTO: muestra efectivo vs transferencia */}
-                              {item.formadepago === 'MIXTO' && mixtoTotal > 0 && mixtoSubtotal > 0 && (
-                                <div style={{ paddingLeft: '0.75rem', marginTop: '0.2rem' }}>
-                                  <div style={{ fontSize: '0.55rem', color: '#6b7280', marginBottom: '0.2rem', fontWeight: '500' }}>
-                                    Efectivo vs Transferencia
-                                  </div>
-                                  <div style={{ 
-                                    width: '100%', 
-                                    height: '14px', 
-                                    backgroundColor: '#f3f4f6', 
-                                    borderRadius: '7px', 
-                                    overflow: 'hidden',
-                                    display: 'flex'
-                                  }}>
-                                    <div style={{
-                                      width: `${mixtoSubtotal > 0 ? (efectivoTotal / mixtoSubtotal) * 100 : 0}%`,
-                                      height: '100%',
-                                      backgroundColor: '#10b981',
-                                      transition: 'width 0.3s ease',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center'
-                                    }}>
-                                      {efectivoTotal / mixtoSubtotal > 0.2 && (
-                                        <span style={{ fontSize: '0.5rem', fontWeight: '700', color: 'white' }}>
-                                          ${efectivoTotal.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                        </span>
-                                      )}
-                                    </div>
-                                    <div style={{
-                                      width: `${mixtoSubtotal > 0 ? (transferenciaTotal / mixtoSubtotal) * 100 : 0}%`,
-                                      height: '100%',
-                                      backgroundColor: '#8b5cf6',
-                                      transition: 'width 0.3s ease',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center'
-                                    }}>
-                                      {transferenciaTotal / mixtoSubtotal > 0.2 && (
-                                        <span style={{ fontSize: '0.5rem', fontWeight: '700', color: 'white' }}>
-                                          ${transferenciaTotal.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.15rem' }}>
-                                    <span style={{ fontSize: '0.5rem', color: '#10b981', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                                      <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }}></span>
-                                      Efectivo
-                                    </span>
-                                    <span style={{ fontSize: '0.5rem', color: '#8b5cf6', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                                      Transferencia
-                                      <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#8b5cf6' }}></span>
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
+                              <span style={{ fontSize: '0.7rem', fontWeight: '700', color: color }}>
+                                ${item.total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                              </span>
                             </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })()}
+                            <div style={{ width: '100%', height: '20px', backgroundColor: '#f3f4f6', borderRadius: '10px', overflow: 'hidden' }}>
+                              <div style={{
+                                width: `${percentage}%`,
+                                height: '100%',
+                                backgroundColor: color,
+                                borderRadius: '10px',
+                                transition: 'width 0.3s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'flex-end',
+                                paddingRight: percentage > 15 ? '0.5rem' : '0'
+                              }}>
+                                {percentage > 15 && (
+                                  <span style={{ fontSize: '0.6rem', fontWeight: '700', color: 'white' }}>
+                                    {percentage.toFixed(0)}%
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Separador */}
+              <div style={{ borderTop: '1px solid #e5e7eb', margin: '1rem 0' }}></div>
+
+              {/* Título: Forma de Pago */}
+              <h4 style={{ fontSize: '0.7rem', fontWeight: '600', color: '#374151', marginBottom: '0.75rem' }}>
+                Forma de Pago
+              </h4>
+
+              {/* Gráfico de Barras Horizontales - EFECTIVO y TRANSFERENCIA (MIXTO distribuido) */}
+              <div style={{ marginBottom: '1rem' }}>
+                {(() => {
+                  const apiDataFP = resumenVentas.ventasPorFormaDePago || [];
+                  const efectivoAPI = apiDataFP.find(item => item.formadepago === 'EFECTIVO')?.total || 0;
+                  const transferenciaAPI = apiDataFP.find(item => item.formadepago === 'TRANSFERENCIA')?.total || 0;
+                  const mixtoAPI = apiDataFP.find(item => item.formadepago === 'MIXTO')?.total || 0;
+                  const { efectivo: efectivoTotal, transferencia: transferenciaTotal } = distribuirMixto(efectivoAPI, transferenciaAPI, mixtoAPI);
+                  const datosFP = [
+                    { formadepago: 'EFECTIVO', total: efectivoTotal, color: '#10b981' },
+                    { formadepago: 'TRANSFERENCIA', total: transferenciaTotal, color: '#8b5cf6' }
+                  ];
+                  const maxFP = Math.max(...datosFP.map(item => item.total), 1);
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                      {datosFP.map((item, index) => {
+                        const percentage = maxFP > 0 ? (item.total / maxFP) * 100 : 0;
+                        return (
+                          <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                <div style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: item.color }}></div>
+                                <span style={{ fontSize: '0.65rem', color: '#374151', fontWeight: '600' }}>
+                                  {item.formadepago}
+                                </span>
+                              </div>
+                              <span style={{ fontSize: '0.7rem', fontWeight: '700', color: item.color }}>
+                                ${item.total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                              </span>
+                            </div>
+                            <div style={{ width: '100%', height: '20px', backgroundColor: '#f3f4f6', borderRadius: '10px', overflow: 'hidden' }}>
+                              <div style={{
+                                width: `${percentage}%`,
+                                height: '100%',
+                                backgroundColor: item.color,
+                                borderRadius: '10px',
+                                transition: 'width 0.3s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'flex-end',
+                                paddingRight: percentage > 15 ? '0.5rem' : '0'
+                              }}>
+                                {percentage > 15 && (
+                                  <span style={{ fontSize: '0.6rem', fontWeight: '700', color: 'white' }}>
+                                    {percentage.toFixed(0)}%
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Separador */}
