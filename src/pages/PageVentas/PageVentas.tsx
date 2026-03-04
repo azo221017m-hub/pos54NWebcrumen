@@ -1743,7 +1743,11 @@ const PageVentas: React.FC = () => {
           detallesVenta={comanda.map(item => ({
             comensal: item.comensal,
             precio: Number(item.producto.precio) || 0,
-            cantidad: item.cantidad
+            cantidad: item.cantidad,
+            nombreproducto: item.producto.nombre || '',
+            moderadores: item.moderadoresNames && item.moderadoresNames.length > 0
+              ? item.moderadoresNames.join(', ')
+              : (item.moderadores || null),
           }))}
         />
       )}
