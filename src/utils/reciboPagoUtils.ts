@@ -318,38 +318,54 @@ export function generarTextoWhatsApp(datos: DatosRecibo): string {
   } = datos;
 
   const fmt = (n: number) => `$${Number(n).toFixed(2)}`;
-  const linea = '──────────────────────';
-  const RECEIPT_WIDTH = 22; // character width for 58mm receipt
+  const linea = '────────────────';
+  const RECEIPT_WIDTH = 18; // character width matching divider length
 
   const padRow = (label: string, value: string): string => {
     const spaces = Math.max(1, RECEIPT_WIDTH - label.length - value.length);
     return `${label}${' '.repeat(spaces)}${value}`;
   };
 
-  let texto = `🏪 *${nombredenegocio}*\n`;
+  // Split fechadeventa into date and time parts
+  let fechaParte = fechadeventa || '';
+  let horaParte = '';
+  if (fechadeventa) {
+    const spaceIdx = fechadeventa.lastIndexOf(' ');
+    if (spaceIdx > -1) {
+      fechaParte = fechadeventa.substring(0, spaceIdx);
+      horaParte = fechadeventa.substring(spaceIdx + 1);
+    }
+  }
+
+  let texto = `🏪 ${nombredenegocio}\n`;
   if (rfc) texto += `RFC: ${rfc}\n`;
   if (encabezado) texto += `${encabezado}\n`;
   if (folioventa) texto += `🧾 Ticket #${folioventa}\n`;
-  if (fechadeventa) texto += `📅 ${fechadeventa}\n`;
-  texto += `${linea}\n`;
+  if (fechadeventa) {
+    if (horaParte) {
+      texto += `📅 ${fechaParte}  ⏰ ${horaParte}\n`;
+    } else {
+      texto += `📅 ${fechaParte}\n`;
+    }
+  }
+  texto += `\n${linea}\n\n`;
 
   items.forEach((item) => {
-    texto += `🛒 *${item.nombreproducto}*\n`;
-    const detalle = `  ${item.cantidad} x ${fmt(item.preciounitario)}`;
+    texto += `🏷️ ${item.nombreproducto}\n`;
+    const detalle = `${item.cantidad} x ${fmt(item.preciounitario)}`;
     texto += `${padRow(detalle, fmt(item.subtotal))}\n`;
     if (item.moderadores) texto += `  _${item.moderadores}_\n`;
+    texto += `\n`;
   });
 
-  texto += `${linea}\n`;
+  texto += `${linea}\n\n`;
   if (subtotal !== undefined) texto += `${padRow('Subtotal', fmt(subtotal))}\n`;
-  if (descuentos && descuentos > 0) texto += `${padRow('Descuentos', `-${fmt(descuentos)}`)}\n`;
+  if (descuentos && descuentos > 0) texto += `${padRow('Descuento', `-${fmt(descuentos)}`)}\n`;
   if (impuestos && impuestos > 0) texto += `${padRow('IVA', fmt(impuestos))}\n`;
-  texto += `${linea}\n`;
-  texto += `💰 *${padRow('TOTAL', fmt(total))}*\n`;
-  texto += `${linea}\n`;
+  texto += `💰 ${padRow('TOTAL', fmt(total))}\n`;
+  texto += `\n${linea}\n\n`;
 
-  texto += `\n💳 Pago: ${formadepago}\n`;
-  texto += `💵 Importe: ${fmt(importedepago)}\n`;
+  texto += `💵 Pago: ${formadepago}  ${fmt(importedepago)}\n`;
   if (formadepago.toUpperCase() === 'TRANSFERENCIA' && referencia) {
     texto += `🔑 Referencia: ${referencia}\n`;
   } else if (formadepago.toUpperCase() === 'EFECTIVO' && cambio !== undefined) {
