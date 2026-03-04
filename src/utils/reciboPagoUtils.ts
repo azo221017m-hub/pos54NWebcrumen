@@ -337,21 +337,21 @@ export function generarTextoWhatsApp(datos: DatosRecibo): string {
     }
   }
 
-  let texto = `🏪 ${nombredenegocio}\n`;
+  let texto = `${nombredenegocio}\n`;
   if (rfc) texto += `RFC: ${rfc}\n`;
   if (encabezado) texto += `${encabezado}\n`;
-  if (folioventa) texto += `🧾 Ticket #${folioventa}\n`;
+  if (folioventa) texto += `Ticket #${folioventa}\n`;
   if (fechadeventa) {
     if (horaParte) {
-      texto += `📅 ${fechaParte}  ⏰ ${horaParte}\n`;
+      texto += `${fechaParte}  ${horaParte}\n`;
     } else {
-      texto += `📅 ${fechaParte}\n`;
+      texto += `${fechaParte}\n`;
     }
   }
   texto += `\n${linea}\n\n`;
 
   items.forEach((item) => {
-    texto += `🏷️ ${item.nombreproducto}\n`;
+    texto += `${item.nombreproducto}\n`;
     const detalle = `${item.cantidad} x ${fmt(item.preciounitario)}`;
     texto += `${padRow(detalle, fmt(item.subtotal))}\n`;
     if (item.moderadores) texto += `  _${item.moderadores}_\n`;
@@ -362,17 +362,17 @@ export function generarTextoWhatsApp(datos: DatosRecibo): string {
   if (subtotal !== undefined) texto += `${padRow('Subtotal', fmt(subtotal))}\n`;
   if (descuentos && descuentos > 0) texto += `${padRow('Descuento', `-${fmt(descuentos)}`)}\n`;
   if (impuestos && impuestos > 0) texto += `${padRow('IVA', fmt(impuestos))}\n`;
-  texto += `💰 ${padRow('TOTAL', fmt(total))}\n`;
+  texto += `${padRow('TOTAL', fmt(total))}\n`;
   texto += `\n${linea}\n\n`;
 
-  texto += `💵 Pago: ${formadepago}  ${fmt(importedepago)}\n`;
+  texto += `Pago: ${formadepago}  ${fmt(importedepago)}\n`;
   if (formadepago.toUpperCase() === 'TRANSFERENCIA' && referencia) {
-    texto += `🔑 Referencia: ${referencia}\n`;
+    texto += `Referencia: ${referencia}\n`;
   } else if (formadepago.toUpperCase() === 'EFECTIVO' && cambio !== undefined) {
-    texto += `🔄 Cambio: ${fmt(cambio)}\n`;
+    texto += `Cambio: ${fmt(cambio)}\n`;
   }
 
-  if (telefonopedidos) texto += `\n📞 Tel. Pedidos: ${telefonopedidos}\n`;
+  if (telefonopedidos) texto += `\nTel. Pedidos: ${telefonopedidos}\n`;
   if (pie) texto += `\n${pie}\n`;
 
   return texto;
