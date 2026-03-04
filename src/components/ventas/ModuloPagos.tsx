@@ -2,13 +2,18 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import './ModuloPagos.css';
 import { obtenerDescuentos } from '../../services/descuentosService';
 import { procesarPagoSimple, procesarPagoMixto, obtenerDetallesPagos } from '../../services/pagosService';
+import { negociosService, parametrosService } from '../../services/negociosService';
+import { imprimirRecibo, enviarReciboWhatsApp } from '../../utils/reciboPagoUtils';
 import type { Descuento } from '../../types/descuento.types';
 import type { DetallePago, TipoDeVenta } from '../../types/ventasWeb.types';
+import type { Negocio, ParametrosNegocio } from '../../types/negocio.types';
 
 interface DetalleVentaSimple {
   comensal?: string;
   precio: number;
   cantidad: number;
+  nombreproducto?: string;
+  moderadores?: string | null;
 }
 
 interface ModuloPagosProps {
@@ -23,6 +28,8 @@ interface ModuloPagosProps {
 
 // Constants
 const DEFAULT_SEAT = 'A1'; // Default seat identifier when no seat is assigned
+const DEFAULT_PRODUCT_NAME = 'Producto'; // Fallback product name for receipt when name is unavailable
+const DEFAULT_NEGOCIO_NAME = 'Negocio sin nombre'; // Fallback business name for receipt
 
 // Natural sort function for alphanumeric seat identifiers (e.g., A1, A2, A10)
 const naturalSort = (a: string, b: string): number => {
@@ -59,6 +66,13 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   // Ref for the flash timeout to allow cleanup
   const flashTimeoutRef = useRef<number | null>(null);
 
+  // Estado para acción del recibo de pago
+  const [accionRecibo, setAccionRecibo] = useState<'imprimir' | 'whatsapp'>('imprimir');
+
+  // Estado para datos del negocio (para el recibo)
+  const [negocioData, setNegocioData] = useState<Negocio | null>(null);
+  const [parametrosData, setParametrosData] = useState<ParametrosNegocio | null>(null);
+
   const cargarDescuentos = useCallback(async () => {
     try {
       setCargandoDescuentos(true);
@@ -82,6 +96,27 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
       console.warn('⚠️ ModuloPagos abierto sin ventaId. El usuario debe usar PRODUCIR primero.');
     }
   }, [ventaId, cargarDescuentos]);
+
+  // Cargar datos del negocio para el recibo
+  useEffect(() => {
+    const cargarDatosNegocio = async () => {
+      try {
+        const idNegocioStr = localStorage.getItem('idnegocio');
+        if (!idNegocioStr) return;
+        const idNegocio = parseInt(idNegocioStr, 10);
+        if (isNaN(idNegocio)) return;
+        const [negocioCompleto, parametros] = await Promise.all([
+          negociosService.obtenerNegocioPorId(idNegocio),
+          parametrosService.obtenerParametros(idNegocio),
+        ]);
+        setNegocioData(negocioCompleto.negocio);
+        setParametrosData(parametros);
+      } catch (error) {
+        console.error('Error al cargar datos del negocio para el recibo:', error);
+      }
+    };
+    cargarDatosNegocio();
+  }, []);
 
   // Set default payment method to mixto if sale has MIXTO payment
   useEffect(() => {
@@ -248,6 +283,43 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     }
   };
 
+  // Helper to build receipt data for the current payment
+  const buildDatosRecibo = useCallback((
+    fpago: string,
+    importePago: number,
+    referenciaRecibo?: string | null,
+    cambioRecibo?: number
+  ) => {
+    const fecha = new Date();
+    const fechaStr = fecha.toLocaleDateString('es-MX') + ' ' + fecha.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+    const items = (detallesVenta || []).map(d => ({
+      nombreproducto: d.nombreproducto || DEFAULT_PRODUCT_NAME,
+      cantidad: d.cantidad,
+      preciounitario: d.precio,
+      subtotal: d.precio * d.cantidad,
+      moderadores: d.moderadores ?? undefined,
+    }));
+    const totalAPagar = descuentoSeleccionado ? nuevoTotal : totalCuenta;
+    return {
+      logotipo: negocioData?.logotipo ?? undefined,
+      nombredenegocio: negocioData?.nombreNegocio || DEFAULT_NEGOCIO_NAME,
+      rfc: negocioData?.rfcnegocio || undefined,
+      direccionfiscal: negocioData?.direccionfiscalnegocio || undefined,
+      encabezado: parametrosData?.encabezado || undefined,
+      folioventa: folioventa,
+      fechadeventa: fechaStr,
+      items,
+      subtotal: totalCuenta,
+      descuentos: descuentoSeleccionado ? montoDescuento : undefined,
+      total: totalAPagar,
+      formadepago: fpago,
+      importedepago: importePago,
+      referencia: referenciaRecibo ?? undefined,
+      cambio: cambioRecibo,
+      pie: parametrosData?.pie || undefined,
+    };
+  }, [detallesVenta, descuentoSeleccionado, nuevoTotal, totalCuenta, negocioData, parametrosData, folioventa, montoDescuento]);
+
   const handleCobrar = async () => {
     if (!ventaId) {
       alert('Error: No se ha seleccionado una venta para cobrar');
@@ -306,6 +378,14 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
 
         const cambio = resultado.data?.cambio || 0;
         
+        // Generar recibo según la acción seleccionada
+        const datosRecibo = buildDatosRecibo('EFECTIVO', totalAPagar, null, cambio);
+        if (accionRecibo === 'imprimir') {
+          imprimirRecibo(datosRecibo);
+        } else {
+          enviarReciboWhatsApp(datosRecibo);
+        }
+
         alert(`Pago procesado exitosamente${cambio > 0 ? `\nCAMBIO: $${cambio.toFixed(2)}` : ''}`);
         
         // Close modal and return to dashboard
@@ -333,6 +413,14 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
           alert(resultado.message || 'Error al procesar el pago');
           setProcesandoPago(false);
           return;
+        }
+
+        // Generar recibo según la acción seleccionada
+        const datosRecibo = buildDatosRecibo('TRANSFERENCIA', totalAPagar, numeroReferencia);
+        if (accionRecibo === 'imprimir') {
+          imprimirRecibo(datosRecibo);
+        } else {
+          enviarReciboWhatsApp(datosRecibo);
         }
 
         alert('Pago procesado exitosamente');
@@ -400,6 +488,14 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
           alert(resultado.message || 'Error al procesar el pago mixto');
           setProcesandoPago(false);
           return;
+        }
+
+        // Generar recibo según la acción seleccionada
+        const datosRecibo = buildDatosRecibo('MIXTO', totalAPagar);
+        if (accionRecibo === 'imprimir') {
+          imprimirRecibo(datosRecibo);
+        } else {
+          enviarReciboWhatsApp(datosRecibo);
         }
 
         alert(resultado.message || 'Pago procesado exitosamente');
@@ -559,6 +655,35 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
                 ) : (
                   <p className="pagos-vacio">No hay pagos registrados</p>
                 )}
+              </div>
+            </div>
+
+            {/* Selector de Recibo de Pago */}
+            <div className="pagos-recibo-selector">
+              <span className="pagos-recibo-label">Recibo de Pago:</span>
+              <div className="pagos-recibo-opciones">
+                <label className={`pagos-recibo-opcion ${accionRecibo === 'imprimir' ? 'activo' : ''}`}>
+                  <input
+                    type="radio"
+                    name="accionRecibo"
+                    value="imprimir"
+                    checked={accionRecibo === 'imprimir'}
+                    onChange={() => setAccionRecibo('imprimir')}
+                  />
+                  <span className="pagos-recibo-icono">🖨️</span>
+                  <span>Imprimir</span>
+                </label>
+                <label className={`pagos-recibo-opcion ${accionRecibo === 'whatsapp' ? 'activo' : ''}`}>
+                  <input
+                    type="radio"
+                    name="accionRecibo"
+                    value="whatsapp"
+                    checked={accionRecibo === 'whatsapp'}
+                    onChange={() => setAccionRecibo('whatsapp')}
+                  />
+                  <span className="pagos-recibo-icono">💬</span>
+                  <span>Enviar WhatsApp</span>
+                </label>
               </div>
             </div>
 
