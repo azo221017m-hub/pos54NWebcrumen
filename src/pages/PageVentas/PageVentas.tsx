@@ -1228,7 +1228,7 @@ const PageVentas: React.FC = () => {
           Cancelar
         </button>
 
-        <img src="/logowebposcrumen.svg" alt="Logo POS Crumen" className="header-logo-ventas" />
+        <img src={negocio?.logotipo || "/logowebposcrumen.svg"} alt={negocio?.nombreNegocio ? `${negocio.nombreNegocio} Logo` : 'Logo POS Crumen'} className="header-logo-ventas" />
 
         <FichaDeComanda
           tipoServicio={tipoServicio}
