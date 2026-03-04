@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import './ModuloPagos.css';
 import { obtenerDescuentos } from '../../services/descuentosService';
 import { procesarPagoSimple, procesarPagoMixto, obtenerDetallesPagos } from '../../services/pagosService';
-import { negociosService, parametrosService } from '../../services/negociosService';
+import { negociosService } from '../../services/negociosService';
 import { imprimirRecibo, enviarReciboWhatsApp } from '../../utils/reciboPagoUtils';
 import type { Descuento } from '../../types/descuento.types';
 import type { DetallePago, TipoDeVenta } from '../../types/ventasWeb.types';
@@ -105,12 +105,11 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
         if (!idNegocioStr) return;
         const idNegocio = parseInt(idNegocioStr, 10);
         if (isNaN(idNegocio)) return;
-        const [negocioCompleto, parametros] = await Promise.all([
-          negociosService.obtenerNegocioPorId(idNegocio),
-          parametrosService.obtenerParametros(idNegocio),
-        ]);
+        const negocioCompleto = await negociosService.obtenerNegocioPorId(idNegocio);
         setNegocioData(negocioCompleto.negocio);
-        setParametrosData(parametros);
+        if (negocioCompleto.parametros) {
+          setParametrosData(negocioCompleto.parametros);
+        }
       } catch (error) {
         console.error('Error al cargar datos del negocio para el recibo:', error);
       }
