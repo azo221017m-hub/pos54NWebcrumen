@@ -448,6 +448,14 @@
   margin-bottom: 0.75rem;
 }
 
+.welcome-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .welcome-title {
   font-size: 1.125rem;
   font-weight: 700;
