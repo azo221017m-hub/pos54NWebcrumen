@@ -1183,13 +1183,14 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const metaturno = Number(turnoActual.metaturno) || 0;
 
     // Use single query with conditional aggregation for better performance
+    // Only count sales with descripcionmov='VENTA' per business rules
     const [salesRows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
         COALESCE(SUM(CASE WHEN estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalCobrado,
         COALESCE(SUM(CASE WHEN estadodeventa = 'ORDENADO' THEN totaldeventa ELSE 0 END), 0) as totalOrdenado,
-        COALESCE(SUM(CASE WHEN descripcionmov = 'VENTA' AND estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalVentasCobradas
+        COALESCE(SUM(CASE WHEN estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalVentasCobradas
        FROM tblposcrumenwebventas 
-       WHERE claveturno = ? AND idnegocio = ?`,
+       WHERE claveturno = ? AND idnegocio = ? AND descripcionmov = 'VENTA'`,
       [claveturno, idnegocio]
     );
 
@@ -1197,53 +1198,22 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const totalOrdenado = Number(salesRows[0]?.totalOrdenado) || 0;
     const totalVentasCobradas = Number(salesRows[0]?.totalVentasCobradas) || 0;
 
-    // Get sales grouped by formadepago for EFECTIVO, TRANSFERENCIA and TARJETA directly
-    // Uses totaldeventa and filters descripcionmov='VENTA'
-    const [directPagoRows] = await pool.execute<RowDataPacket[]>(
+    // Get sales grouped by formadepago directly from tblposcrumenwebventas
+    // Criteria: descripcionmov='VENTA', estadodeventa='COBRADO'
+    const [formaDePagoRows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
         formadepago,
         COALESCE(SUM(totaldeventa), 0) as total
        FROM tblposcrumenwebventas 
        WHERE claveturno = ? AND idnegocio = ? AND estadodeventa = 'COBRADO'
          AND descripcionmov = 'VENTA'
-         AND formadepago IN ('EFECTIVO', 'TRANSFERENCIA', 'TARJETA')
-       GROUP BY formadepago`,
+       GROUP BY formadepago
+       ORDER BY total DESC`,
       [claveturno, idnegocio]
     );
-
-    // Get MIXTO payment components from tblposcrumenwebdetallepagos
-    // Split MIXTO sales into EFECTIVO, TRANSFERENCIA and TARJETA sub-totals
-    const [mixtoPagoRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT 
-        dp.formadepagodetalle AS formadepago,
-        COALESCE(SUM(dp.totaldepago), 0) as total
-       FROM tblposcrumenwebdetallepagos dp
-       INNER JOIN tblposcrumenwebventas v 
-         ON dp.idfolioventa = v.folioventa AND dp.idnegocio = v.idnegocio
-       WHERE v.claveturno = ? AND v.idnegocio = ? AND v.estadodeventa = 'COBRADO'
-         AND v.descripcionmov = 'VENTA' AND v.formadepago = 'MIXTO'
-         AND dp.formadepagodetalle IN ('EFECTIVO', 'TRANSFERENCIA', 'TARJETA')
-       GROUP BY dp.formadepagodetalle`,
-      [claveturno, idnegocio]
-    );
-
-    // Merge direct and MIXTO totals by formadepago
-    const pagoTotals: Record<string, number> = {};
-    for (const row of directPagoRows) {
-      const key = row.formadepago as string;
-      pagoTotals[key] = (pagoTotals[key] || 0) + (Number(row.total) || 0);
-    }
-    for (const row of mixtoPagoRows) {
-      const key = row.formadepago as string;
-      pagoTotals[key] = (pagoTotals[key] || 0) + (Number(row.total) || 0);
-    }
-
-    const formaDePagoRows = Object.entries(pagoTotals)
-      .map(([formadepago, total]) => ({ formadepago, total }))
-      .sort((a, b) => b.total - a.total);
 
     // Get sales grouped by tipodeventa (sale type: MESA, DOMICILIO, LLEVAR, ONLINE)
-    // Include both COBRADO and ORDENADO to show current shift activity
+    // Only count COBRADO + descripcionmov='VENTA' per business rules
     const [tipoDeVentaRows] = await pool.execute<RowDataPacket[]>(
       `SELECT 
         tipodeventa,
@@ -1251,7 +1221,8 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
        FROM tblposcrumenwebventas 
        WHERE claveturno = ? 
          AND idnegocio = ? 
-         AND estadodeventa IN ('COBRADO', 'ORDENADO')
+         AND estadodeventa = 'COBRADO'
+         AND descripcionmov = 'VENTA'
          AND tipodeventa IN ('MESA', 'DOMICILIO', 'ONLINE', 'LLEVAR')
        GROUP BY tipodeventa
        ORDER BY total DESC`,
