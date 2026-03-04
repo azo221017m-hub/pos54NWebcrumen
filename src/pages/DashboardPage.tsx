@@ -14,6 +14,8 @@ import CierreTurno from '../components/turnos/CierreTurno/CierreTurno';
 import { showSuccessToast, showErrorToast } from '../components/FeedbackToast';
 import { obtenerInsumos } from '../services/insumosService';
 import type { Insumo } from '../types/insumo.types';
+import { negociosService } from '../services/negociosService';
+import type { Negocio } from '../types/negocio.types';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -199,6 +201,7 @@ export const DashboardPage = () => {
   });
   const [turnoAbierto, setTurnoAbierto] = useState<Turno | null>(null);
   const [showCierreTurnoModal, setShowCierreTurnoModal] = useState(false);
+  const [negocio, setNegocio] = useState<Negocio | null>(null);
   const [nivelInventario, setNivelInventario] = useState<{
     nivel: 'OPTIMO' | 'ADVERTENCIA' | 'CRITICO';
     color: string;
@@ -596,6 +599,12 @@ export const DashboardPage = () => {
     cargarSaludNegocio();
     // Calculate inventory level
     calcularNivelInventario();
+    // Load negocio data for branding
+    if (usuario?.idNegocio) {
+      negociosService.obtenerNegocioPorId(usuario.idNegocio)
+        .then(data => { if (data?.negocio) setNegocio(data.negocio); })
+        .catch(err => { console.error('Error al cargar datos del negocio:', err); });
+    }
 
     // Verify open turno
     verificarTurno();
@@ -1167,43 +1176,43 @@ export const DashboardPage = () => {
         {dashboardView === 'indicadores' ? (
           <div className="content-left">
             <div className="welcome-section">
-              <h2 className="welcome-title">¡Bienvenido, {usuario?.nombre}!</h2>
+              <div className="welcome-header-row">
+                <h2 className="welcome-title">¡Bienvenido, {usuario?.nombre}!</h2>
+                {/* Comandas del Día label/button */}
+                {(() => {
+                  const hasPendingOrders = ventasSolicitadas.length > 0;
+                  const accentColor = hasPendingOrders ? '#f97316' : '#6b7280';
+                  return (
+                    <div
+                      onClick={() => { if (hasPendingOrders) setDashboardView('comandas'); }}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        cursor: hasPendingOrders ? 'pointer' : 'default',
+                        padding: '0.5rem 1rem',
+                        backgroundColor: hasPendingOrders ? '#fff7ed' : '#f9fafb',
+                        border: `1px solid ${hasPendingOrders ? '#f97316' : '#e5e7eb'}`,
+                        borderRadius: '8px',
+                        userSelect: 'none',
+                      }}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2" style={{ width: '18px', height: '18px' }}>
+                        <circle cx="9" cy="21" r="1"/>
+                        <circle cx="20" cy="21" r="1"/>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                      </svg>
+                      <span style={{ fontSize: '0.9rem', fontWeight: '600', color: accentColor }}>
+                        Comandas del Día [{ventasSolicitadas.length}]
+                      </span>
+                    </div>
+                  );
+                })()}
+              </div>
               <p className="welcome-subtitle">
                 Panel de control del sistema POS Crumen
               </p>
             </div>
-
-            {/* Comandas del Día label/button */}
-            {(() => {
-              const hasPendingOrders = ventasSolicitadas.length > 0;
-              const accentColor = hasPendingOrders ? '#f97316' : '#6b7280';
-              return (
-                <div
-                  onClick={() => setDashboardView('comandas')}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    cursor: 'pointer',
-                    padding: '0.5rem 1rem',
-                    backgroundColor: hasPendingOrders ? '#fff7ed' : '#f9fafb',
-                    border: `1px solid ${hasPendingOrders ? '#f97316' : '#e5e7eb'}`,
-                    borderRadius: '8px',
-                    marginBottom: '1rem',
-                    userSelect: 'none',
-                  }}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2" style={{ width: '18px', height: '18px' }}>
-                    <circle cx="9" cy="21" r="1"/>
-                    <circle cx="20" cy="21" r="1"/>
-                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                  </svg>
-                  <span style={{ fontSize: '0.9rem', fontWeight: '600', color: accentColor }}>
-                    Comandas del Día [{ventasSolicitadas.length}]
-                  </span>
-                </div>
-              );
-            })()}
 
             <div className="cards-grid">
             <div className="dashboard-card" style={{ position: 'relative' }}>
@@ -1929,9 +1938,9 @@ export const DashboardPage = () => {
         >
           <div className="screen-lock-content">
             <div className="lock-logo">
-              <img src="/logowebposcrumen.svg" alt="Logo" />
+              <img src={negocio?.logotipo || "/logowebposcrumen.svg"} alt="Logo" />
             </div>
-            <h2 className="lock-title">POSWEB Crumen</h2>
+            <h2 className="lock-title">{negocio?.nombreNegocio || 'POSWEB Crumen'}</h2>
             <p className="lock-subtitle">Pantalla Protegida</p>
             <p className="lock-hint">Haz clic en cualquier lugar para desbloquear</p>
           </div>
