@@ -31,6 +31,7 @@ export interface DatosRecibo {
   referencia?: string | null;
   cambio?: number;
   // Footer
+  telefonopedidos?: string;
   pie?: string;
 }
 
@@ -55,6 +56,7 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
     importedepago,
     referencia,
     cambio,
+    telefonopedidos,
     pie,
   } = datos;
 
@@ -116,6 +118,10 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
   } else if (formadepago.toUpperCase() === 'EFECTIVO' && cambio !== undefined) {
     pagoInfoHtml += `<div class="pago-row"><span>Cambio:</span><span>${fmt(cambio)}</span></div>`;
   }
+
+  const telefonoPedidosHtml = telefonopedidos
+    ? `<div class="telefono-pedidos">Tel. Pedidos: ${escapeHtml(telefonopedidos)}</div>`
+    : '';
 
   const pieHtml = pie
     ? `<div class="pie">${escapeHtml(pie)}</div>`
@@ -228,6 +234,11 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
       margin-top: 6px;
       white-space: pre-wrap;
     }
+    .telefono-pedidos {
+      font-size: 9px;
+      text-align: center;
+      margin-top: 4px;
+    }
     @media print {
       html, body { width: 58mm; }
       @page {
@@ -258,6 +269,7 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
   <div class="pago-section">
     ${pagoInfoHtml}
   </div>
+  ${telefonoPedidosHtml}
   ${pieHtml}
 </body>
 </html>`;
@@ -301,6 +313,7 @@ export function generarTextoWhatsApp(datos: DatosRecibo): string {
     importedepago,
     referencia,
     cambio,
+    telefonopedidos,
     pie,
   } = datos;
 
@@ -313,15 +326,15 @@ export function generarTextoWhatsApp(datos: DatosRecibo): string {
     return `${label}${' '.repeat(spaces)}${value}`;
   };
 
-  let texto = `*${nombredenegocio}*\n`;
+  let texto = `🏪 *${nombredenegocio}*\n`;
   if (rfc) texto += `RFC: ${rfc}\n`;
   if (encabezado) texto += `${encabezado}\n`;
-  if (folioventa) texto += `Ticket #${folioventa}\n`;
-  if (fechadeventa) texto += `${fechadeventa}\n`;
+  if (folioventa) texto += `🧾 Ticket #${folioventa}\n`;
+  if (fechadeventa) texto += `📅 ${fechadeventa}\n`;
   texto += `${linea}\n`;
 
   items.forEach((item) => {
-    texto += `*${item.nombreproducto}*\n`;
+    texto += `🛒 *${item.nombreproducto}*\n`;
     const detalle = `  ${item.cantidad} x ${fmt(item.preciounitario)}`;
     texto += `${padRow(detalle, fmt(item.subtotal))}\n`;
     if (item.moderadores) texto += `  _${item.moderadores}_\n`;
@@ -332,17 +345,18 @@ export function generarTextoWhatsApp(datos: DatosRecibo): string {
   if (descuentos && descuentos > 0) texto += `${padRow('Descuentos', `-${fmt(descuentos)}`)}\n`;
   if (impuestos && impuestos > 0) texto += `${padRow('IVA', fmt(impuestos))}\n`;
   texto += `${linea}\n`;
-  texto += `*${padRow('TOTAL', fmt(total))}*\n`;
+  texto += `💰 *${padRow('TOTAL', fmt(total))}*\n`;
   texto += `${linea}\n`;
 
-  texto += `\nPago: ${formadepago}\n`;
-  texto += `Importe: ${fmt(importedepago)}\n`;
+  texto += `\n💳 Pago: ${formadepago}\n`;
+  texto += `💵 Importe: ${fmt(importedepago)}\n`;
   if (formadepago.toUpperCase() === 'TRANSFERENCIA' && referencia) {
-    texto += `Referencia: ${referencia}\n`;
+    texto += `🔑 Referencia: ${referencia}\n`;
   } else if (formadepago.toUpperCase() === 'EFECTIVO' && cambio !== undefined) {
-    texto += `Cambio: ${fmt(cambio)}\n`;
+    texto += `🔄 Cambio: ${fmt(cambio)}\n`;
   }
 
+  if (telefonopedidos) texto += `\n📞 Tel. Pedidos: ${telefonopedidos}\n`;
   if (pie) texto += `\n${pie}\n`;
 
   return texto;
