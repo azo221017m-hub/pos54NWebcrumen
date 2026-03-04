@@ -316,6 +316,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
       importedepago: importePago,
       referencia: referenciaRecibo ?? undefined,
       cambio: cambioRecibo,
+      telefonopedidos: parametrosData?.telefonoPedidos || undefined,
       pie: parametrosData?.pie || undefined,
     };
   }, [detallesVenta, descuentoSeleccionado, nuevoTotal, totalCuenta, negocioData, parametrosData, folioventa, montoDescuento]);
