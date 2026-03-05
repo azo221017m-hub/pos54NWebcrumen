@@ -24,7 +24,7 @@
   box-shadow: none;
   z-index: 10;
   position: relative;
-  min-height: 250px;
+  min-height: 450px;
 }
 
 .login-logo-top {
@@ -42,8 +42,9 @@
 }
 
 .logo-image-top {
-  height: 210px;
-  width: 420px;
+  height: 420px;
+  width: 840px;
+  max-width: 100%;
   object-fit: contain;
 }
 
@@ -539,8 +540,9 @@
   }
 
   .logo-image-top {
-    height: 120px;
-    width: 240px;
+    height: 240px;
+    width: 480px;
+    max-width: 100%;
   }
 
   .logo-tagline {
