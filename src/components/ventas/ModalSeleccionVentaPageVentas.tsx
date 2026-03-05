@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { clearSession } from '../../services/sessionService';
 import type { TipoServicio } from '../../types/mesa.types';
 import './ModalSeleccionVentaPageVentas.css';
 
@@ -16,7 +15,6 @@ const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps
   onClose
 }) => {
   const navigate = useNavigate();
-  const privilegio = Number(localStorage.getItem('privilegio') || '0');
   
   if (!isOpen) return null;
 
@@ -38,17 +36,6 @@ const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps
   return (
     <div className="modal-seleccion-venta-pageventas-overlay" onClick={handleOverlayClick}>
       <div className="modal-seleccion-venta-pageventas-content floating" onClick={(e) => e.stopPropagation()}>
-        {privilegio === 1 && (
-          <button
-            className="btn-cancelar-sesion-modal"
-            onClick={() => {
-              clearSession();
-              navigate('/login');
-            }}
-          >
-            cancelar
-          </button>
-        )}
         <div className="modal-seleccion-venta-pageventas-header">
           <h2>SELECCIONE tipo de VENTA</h2>
         </div>
