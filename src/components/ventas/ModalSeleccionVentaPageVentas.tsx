@@ -6,11 +6,13 @@ import './ModalSeleccionVentaPageVentas.css';
 interface ModalSeleccionVentaPageVentasProps {
   isOpen: boolean;
   onTipoVentaSelect: (tipoVenta: TipoServicio) => void;
+  onClose?: () => void;
 }
 
 const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps> = ({ 
   isOpen, 
-  onTipoVentaSelect 
+  onTipoVentaSelect,
+  onClose
 }) => {
   const navigate = useNavigate();
   
@@ -23,8 +25,12 @@ const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps
   };
 
   const handleOverlayClick = () => {
-    // Navigate to Dashboard when clicking outside the modal
-    navigate('/dashboard');
+    if (onClose) {
+      onClose();
+    } else {
+      // Navigate to Dashboard when clicking outside the modal
+      navigate('/dashboard');
+    }
   };
 
   return (

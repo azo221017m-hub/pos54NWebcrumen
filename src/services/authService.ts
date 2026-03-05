@@ -78,6 +78,7 @@ export const authService = {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
     localStorage.removeItem('idnegocio');
+    localStorage.removeItem('privilegio');
     
     // Limpiar sessionStorage - excepto el mensaje de logout si existe
     const logoutMessage = sessionStorage.getItem('logoutMessage');

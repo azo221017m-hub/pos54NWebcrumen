@@ -89,6 +89,7 @@ export const clearSession = (): void => {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USUARIO_KEY);
   localStorage.removeItem('idnegocio');
+  localStorage.removeItem('privilegio');
   
   // Limpiar sessionStorage - excepto el mensaje de logout si existe
   const logoutMessage = sessionStorage.getItem('logoutMessage');
@@ -196,6 +197,7 @@ export const setupSessionClearOnReload = (): (() => void) => {
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USUARIO_KEY);
       localStorage.removeItem('idnegocio');
+      localStorage.removeItem('privilegio');
     }
   };
 
