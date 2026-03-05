@@ -121,17 +121,6 @@ const ConfigClientes: React.FC = () => {
     }
   };
 
-  const getCategoriaColor = (categoria: string) => {
-    const colores: Record<string, string> = {
-      'VIP': '#8b5cf6',
-      'FRECUENTE': '#10b981',
-      'RECURRENTE': '#3b82f6',
-      'NUEVO': '#f59e0b',
-      'INACTIVO': '#6b7280'
-    };
-    return colores[categoria] || '#6b7280';
-  };
-
   return (
     <>
       {/* Notificación */}

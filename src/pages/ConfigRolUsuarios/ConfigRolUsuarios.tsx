@@ -120,16 +120,6 @@ export const ConfigRolUsuarios = () => {
     setRolEditar(null);
   };
 
-  const obtenerInfoNivel = (privilegio: string) => {
-    const nivel = parseInt(privilegio) || 1;
-    const colores = ['#94a3b8', '#64748b', '#475569', '#334155', '#1e293b'];
-    const niveles = ['Básico', 'Limitado', 'Intermedio', 'Avanzado', 'Total'];
-    return {
-      color: colores[nivel - 1] || colores[0],
-      texto: niveles[nivel - 1] || niveles[0]
-    };
-  };
-
   return (
     <>
       {/* Mensaje de Notificación */}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Package, AlertTriangle } from 'lucide-react';
+import { Plus, Package } from 'lucide-react';
 import type { Insumo, InsumoCreate } from '../../types/insumo.types';
 import {
   obtenerInsumos,
@@ -122,28 +122,6 @@ const ConfigInsumos: React.FC = () => {
       console.error('Error al eliminar insumo:', error);
       mostrarMensaje('error', 'Error al eliminar el insumo');
     }
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN'
-    }).format(value);
-  };
-
-  const getStockStatus = (actual: number, minimo: number) => {
-    const actualNum = Number(actual);
-    const minimoNum = Number(minimo);
-    
-    if (actualNum <= minimoNum) return 'critico';
-    if (actualNum <= minimoNum * 1.5) return 'bajo';
-    return 'normal';
-  };
-
-  const getStockIcon = (status: string) => {
-    if (status === 'critico') return <AlertTriangle size={16} style={{ color: '#ef4444' }} />;
-    if (status === 'bajo') return <AlertTriangle size={16} style={{ color: '#f59e0b' }} />;
-    return null;
   };
 
   return (

@@ -105,16 +105,6 @@ const ConfigTurnos: React.FC = () => {
     setTurnoEditar(undefined);
   };
 
-  const formatearFecha = (fecha: string) => {
-    return new Date(fecha).toLocaleDateString('es-MX', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
   return (
     <>
       {/* Mensaje de Notificación */}

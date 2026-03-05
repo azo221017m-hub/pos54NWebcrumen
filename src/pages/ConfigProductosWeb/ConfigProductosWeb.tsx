@@ -154,15 +154,6 @@ const ConfigProductosWeb: React.FC = () => {
     setProductoSeleccionado(null);
   };
 
-  const getTipoProductoColor = (tipo: string) => {
-    switch (tipo) {
-      case 'Directo': return '#3b82f6'; // azul
-      case 'Inventario': return '#f59e0b'; // naranja
-      case 'Receta': return '#8b5cf6'; // morado
-      default: return '#6b7280'; // gris
-    }
-  };
-
   return (
     <>
       {/* Mensaje de Notificación */}

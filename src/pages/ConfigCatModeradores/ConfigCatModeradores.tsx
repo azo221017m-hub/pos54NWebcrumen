@@ -94,16 +94,6 @@ const ConfigCatModeradores: React.FC = () => {
     setCatModeradorSeleccionada(null);
   };
 
-  const obtenerCantidadModeradores = (moderadores: string): number => {
-    if (!moderadores || moderadores === '' || moderadores === '0') {
-      return 0;
-    }
-    if (moderadores.includes(',')) {
-      return moderadores.split(',').filter(id => id.trim() !== '0' && id.trim() !== '').length;
-    }
-    return 1;
-  };
-
   return (
     <>
       {/* Mensaje de Notificación */}

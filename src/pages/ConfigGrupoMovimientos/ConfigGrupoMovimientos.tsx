@@ -114,10 +114,6 @@ const ConfigGrupoMovimientos: React.FC = () => {
     setGrupoEditar(null);
   };
 
-  const getNaturalezaColor = (naturaleza: string) => {
-    return naturaleza === 'COMPRA' ? '#3b82f6' : '#8b5cf6';
-  };
-
   return (
     <>
       {/* Mensaje de Notificación */}

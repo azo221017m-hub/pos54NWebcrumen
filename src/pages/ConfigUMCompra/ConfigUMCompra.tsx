@@ -117,15 +117,6 @@ export const ConfigUMCompra: React.FC = () => {
     setUmEditar(null);
   };
 
-  const formatFecha = (fecha?: string) => {
-    if (!fecha) return 'N/A';
-    return new Date(fecha).toLocaleDateString('es-MX', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
   return (
     <>
       {mensaje && (

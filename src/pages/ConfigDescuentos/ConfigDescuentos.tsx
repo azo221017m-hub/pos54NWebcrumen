@@ -100,10 +100,6 @@ const ConfigDescuentos: React.FC = () => {
     setMostrarFormulario(true);
   };
 
-  const getTipoClass = (tipo: string) => {
-    return tipo.toLowerCase() === 'porcentaje' ? '% ' : '$';
-  };
-
   return (
     <>
       {/* Mensaje de Notificación */}

@@ -105,15 +105,6 @@ const ConfigMesas: React.FC = () => {
     setMostrarFormulario(true);
   };
 
-  const getEstatusColor = (estatus: string) => {
-    switch (estatus) {
-      case 'DISPONIBLE': return '#10b981'; // verde
-      case 'OCUPADA': return '#ef4444'; // rojo
-      case 'RESERVADA': return '#f59e0b'; // naranja
-      default: return '#6b7280'; // gris
-    }
-  };
-
   return (
     <>
       {/* Mensaje de Notificación */}

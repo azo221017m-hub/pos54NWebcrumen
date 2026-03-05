@@ -104,11 +104,6 @@ const ConfigSubreceta: React.FC = () => {
     setSubrecetaEditar(null);
   };
 
-  const getCantidadIngredientes = (subreceta: Subreceta) => {
-    const count = subreceta.detalles?.length || 0;
-    return `${count} ingrediente${count !== 1 ? 's' : ''}`;
-  };
-
   const getSubtitle = () => {
     return `${subrecetas.length} subreceta${subrecetas.length !== 1 ? 's' : ''} registrada${subrecetas.length !== 1 ? 's' : ''}`;
   };
