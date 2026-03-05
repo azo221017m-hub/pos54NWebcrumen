@@ -2,13 +2,9 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getLogoutMessage } from '../services/sessionService';
 import { authService } from '../services/authService';
-import { SessionInfoModal } from '../components/common/SessionInfoModal';
+import { rolesService } from '../services/rolesService';
+import { verificarTurnoAbierto } from '../services/turnosService';
 import './LoginPage.css';
-
-interface SessionData {
-  alias: string;
-  idNegocio: number;
-}
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -18,8 +14,6 @@ export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showSessionModal, setShowSessionModal] = useState(false);
-  const [sessionData, setSessionData] = useState<SessionData | null>(null);
 
   // Check for logout message and if user is already logged in
   useEffect(() => {
@@ -33,9 +27,14 @@ export const LoginPage = () => {
     const usuarioData = localStorage.getItem('usuario');
     const token = localStorage.getItem('token');
     
-    // If both user and token exist, redirect to dashboard (already logged in)
+    // If both user and token exist, redirect based on privilege
     if (usuarioData && token) {
-      navigate('/dashboard');
+      const privilegio = localStorage.getItem('privilegio');
+      if (privilegio === '2') {
+        navigate('/ventas');
+      } else {
+        navigate('/dashboard');
+      }
       return;
     }
   }, [navigate]);
@@ -54,13 +53,43 @@ export const LoginPage = () => {
         
         // Guardar token y datos del usuario
         authService.saveAuthData(response.data.token, response.data.usuario);
-        
-        // Mostrar modal con información de sesión
-        setSessionData({
-          alias: response.data.usuario.alias,
-          idNegocio: response.data.usuario.idNegocio
-        });
-        setShowSessionModal(true);
+
+        // Obtener el rol del usuario para conocer el privilegio
+        let privilegio = '0';
+        try {
+          const rol = await rolesService.obtenerRolPorId(response.data.usuario.idRol);
+          privilegio = String(rol.privilegio);
+          localStorage.setItem('privilegio', privilegio);
+        } catch (rolError) {
+          console.error('Error al obtener rol del usuario:', rolError);
+          // If role fetch fails, clear auth and notify user to avoid undefined behavior
+          authService.clearAuthData();
+          setError('Error al obtener perfil de acceso. Por favor, intenta de nuevo.');
+          return;
+        }
+
+        // Redirigir según el privilegio
+        if (privilegio === '2') {
+          // Privilegio 2: verificar turno abierto
+          try {
+            const turno = await verificarTurnoAbierto();
+            if (turno) {
+              // Hay turno abierto: ir a PageVentas
+              navigate('/ventas');
+            } else {
+              // No hay turno abierto: mostrar mensaje y cerrar sesión
+              authService.clearAuthData();
+              setError('Solicité Abrir Turno');
+            }
+          } catch (turnoError) {
+            console.error('Error al verificar turno:', turnoError);
+            authService.clearAuthData();
+            setError('Error al verificar turno. Solicite soporte.');
+          }
+        } else {
+          // Otros privilegios: ir al dashboard
+          navigate('/dashboard');
+        }
       } else {
         // Mostrar mensaje de error
         setError(response.message || 'Error al iniciar sesión');
@@ -94,22 +123,7 @@ export const LoginPage = () => {
     }
   };
 
-  const handleCloseSessionModal = () => {
-    setShowSessionModal(false);
-    // Redirigir al dashboard después de cerrar el modal
-    navigate('/dashboard');
-  };
-
   return (
-    <>
-      {showSessionModal && sessionData && (
-        <SessionInfoModal
-          isOpen={showSessionModal}
-          onClose={handleCloseSessionModal}
-          alias={sessionData.alias}
-          idNegocio={sessionData.idNegocio}
-        />
-      )}
     <div className="login-page">
       <div className="login-background">
         <div className="blob blob-1"></div>
@@ -230,7 +244,6 @@ export const LoginPage = () => {
         </div>
       </div>
     </div>
-    </>
   );
 };
 

@@ -73,6 +73,9 @@ const PageVentas: React.FC = () => {
   const ventaToLoad = (location.state as { ventaToLoad?: VentaWebWithDetails })?.ventaToLoad;
   const tipoServicioPreseleccionado = (location.state as { tipoServicioPreseleccionado?: TipoServicio })?.tipoServicioPreseleccionado;
   const showPaymentModuleFlag = (location.state as { showPaymentModule?: boolean })?.showPaymentModule;
+
+  // Read user privilege to apply profile-based restrictions
+  const privilegio = Number(localStorage.getItem('privilegio') || '0');
   
   // Utility function to safely format prices
   const formatPrice = (price: number | string | undefined | null): string => {
@@ -132,6 +135,25 @@ const PageVentas: React.FC = () => {
 
   // Seat assignment state for MESA sales - tracks current seat for new products
   const [currentSeatAssignment, setCurrentSeatAssignment] = useState<string>(DEFAULT_SEAT_ASSIGNMENT);
+
+  // Helper: navigate to dashboard or reset state for privilege 2 after completing/canceling a venta
+  const handlePostVenta = React.useCallback(() => {
+    if (privilegio === 2) {
+      // Privilege 2 stays on PageVentas - reset state so selection modal shows
+      setComanda([]);
+      setMesaData(null);
+      setLlevarData(null);
+      setDomicilioData(null);
+      setIsServiceConfigured(false);
+      setIsLoadedFromDashboard(false);
+      setCurrentVentaId(null);
+      setCurrentFolioVenta(null);
+      setCurrentFormaDePago(null);
+      setCurrentEstadoDeVenta(null);
+    } else {
+      navigate('/dashboard');
+    }
+  }, [privilegio, navigate]);
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -797,7 +819,7 @@ const PageVentas: React.FC = () => {
             // Mark all items in comanda as ORDENADO using functional update
             setComanda(prevComanda => prevComanda.map(item => ({ ...item, estadodetalle: ESTADO_ORDENADO })));
             
-            navigate('/dashboard');
+            handlePostVenta();
             return;
           } else {
             showErrorToast(`Error: ${resultado.message || 'Error desconocido'}`);
@@ -813,7 +835,7 @@ const PageVentas: React.FC = () => {
       // Normal flow: create or add to existing venta
       const success = await crearVenta(ESTADO_ORDENADO, ESTADO_ORDENADO, 'PENDIENTE');
       if (success) {
-        navigate('/dashboard');
+        handlePostVenta();
       }
     } finally {
       setIsProcessingVenta(false);
@@ -823,7 +845,7 @@ const PageVentas: React.FC = () => {
   const handleEsperar = async () => {
     await crearVenta('ESPERAR', 'ESPERAR', 'ESPERAR');
     // Navigate to dashboard after creating ESPERAR venta
-    navigate('/dashboard');
+    handlePostVenta();
   };
 
   const handleModeradorSelection = (selectedModeradores: number[]) => {
@@ -1103,7 +1125,7 @@ const PageVentas: React.FC = () => {
 
       if (resultado.success) {
         alert('Venta eliminada exitosamente');
-        navigate('/dashboard');
+        handlePostVenta();
       } else {
         alert(`Error al eliminar la venta: ${resultado.message || 'Error desconocido'}`);
       }
@@ -1155,6 +1177,10 @@ const PageVentas: React.FC = () => {
     setDomicilioData(null);
     setIsServiceConfigured(false);
     setIsLoadedFromDashboard(false);
+    // Privilege 2 users stay on PageVentas (no dashboard access)
+    if (privilegio === 2) {
+      return;
+    }
     // Navigate back to dashboard
     navigate('/dashboard');
   };
@@ -1186,6 +1212,10 @@ const PageVentas: React.FC = () => {
 
   const handleModalClose = () => {
     setModalOpen(false);
+    // Privilege 2 users stay on PageVentas (no dashboard access)
+    if (privilegio === 2) {
+      return;
+    }
     // Navigate to Dashboard when canceling service configuration
     navigate('/dashboard');
   };
@@ -1223,10 +1253,12 @@ const PageVentas: React.FC = () => {
 
       {/* Header */}
       <header className="ventas-header">
+        {privilegio !== 2 && (
         <button className="btn-back-dashboard" onClick={handleCancelar}>
           <ArrowLeft size={20} />
           Cancelar
         </button>
+        )}
 
         <img src={negocio?.logotipo || "/logowebposcrumen.svg"} alt={negocio?.nombreNegocio ? `${negocio.nombreNegocio} Logo` : 'Logo POS Crumen'} className="header-logo-ventas" />
 
@@ -1628,9 +1660,11 @@ const PageVentas: React.FC = () => {
       />
 
       {/* Modal para selección de tipo de venta */}
+      {/* For privilege 2 users, provide no-op onClose to prevent overlay-click from navigating to dashboard */}
       <ModalSeleccionVentaPageVentas
         isOpen={showSelectionModal}
         onTipoVentaSelect={handleSelectionModalVentaSelect}
+        onClose={privilegio === 2 ? () => {} : undefined}
       />
 
       {/* Modal para iniciar turno */}
@@ -1639,7 +1673,7 @@ const PageVentas: React.FC = () => {
         onTurnoIniciado={handleTurnoIniciado}
         onCancelar={() => {
           setShowIniciaTurnoModal(false);
-          navigate('/dashboard');
+          handlePostVenta();
         }}
         usuarioAlias={usuario?.alias}
       />
@@ -1733,7 +1767,7 @@ const PageVentas: React.FC = () => {
         <ModuloPagos 
           onClose={() => {
             setShowModuloPagos(false);
-            navigate('/dashboard');
+            handlePostVenta();
           }}
           totalCuenta={calcularTotal()}
           ventaId={currentVentaId}

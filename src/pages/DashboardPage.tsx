@@ -589,6 +589,13 @@ export const DashboardPage = () => {
       return;
     }
 
+    // Privilege 2 users don't have dashboard access
+    const priv = Number(localStorage.getItem('privilegio') || '0');
+    if (priv === 2) {
+      navigate('/ventas');
+      return;
+    }
+
     // Load sales with ORDENADO and ESPERAR status
     cargarVentasSolicitadas();
     // Load moderadores for PDF generation
@@ -628,6 +635,8 @@ export const DashboardPage = () => {
   if (!usuarioData || !usuario) {
     return null;
   }
+
+  const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
   // Pedidos online de ejemplo
   const pedidosOnline: PedidoOnline[] = [
@@ -783,6 +792,7 @@ export const DashboardPage = () => {
 
           {showDashboardSubmenu && (
             <div className="submenu">
+              {privilegio !== 3 && (
               <button
                 className="submenu-item"
                 onClick={(e) => {
@@ -798,6 +808,7 @@ export const DashboardPage = () => {
                 </svg>
                 Salud de mi negocio
               </button>
+              )}
               <button 
                 className="submenu-item"
                 onClick={(e) => {
@@ -895,6 +906,7 @@ export const DashboardPage = () => {
         )}
 
         {/* Menú Configuración Negocio */}
+        {privilegio !== 3 && (
         <div className="nav-item-container">
           <button 
             className={`nav-item ${showConfigNegocioSubmenu ? 'active' : ''}`}
@@ -929,6 +941,7 @@ export const DashboardPage = () => {
           {/* Submenú Configuración Negocio */}
           {showConfigNegocioSubmenu && (
             <div className="submenu">
+              {privilegio !== 4 && (
               <button className="submenu-item" onClick={(e) => { 
                 e.preventDefault(); 
                 e.stopPropagation(); 
@@ -944,6 +957,7 @@ export const DashboardPage = () => {
                 </svg>
                 Usuarios
               </button>
+              )}
 
               <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-cuentas-contables'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1038,6 +1052,7 @@ export const DashboardPage = () => {
                 </svg>
                 Clientes
               </button>
+              {privilegio !== 4 && (
               <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-descuentos'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10"/>
@@ -1046,6 +1061,7 @@ export const DashboardPage = () => {
                 </svg>
                 Descuentos
               </button>
+              )}
               <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-turnos'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10"/>
@@ -1056,6 +1072,7 @@ export const DashboardPage = () => {
             </div>
           )}
         </div>
+        )}
 
         {/* Menú Mi Operación con Submenú */}
         <div className="nav-item-container">
@@ -1132,6 +1149,7 @@ export const DashboardPage = () => {
                 </svg>
                 Gastos
               </button>
+              {privilegio !== 3 && (
               <button 
                 className="submenu-item" 
                 onClick={(e) => { 
@@ -1149,6 +1167,7 @@ export const DashboardPage = () => {
                 </svg>
                 Movimientos
               </button>
+              )}
               <button 
                 className="submenu-item" 
                 disabled={!turnoAbierto}
@@ -1215,6 +1234,7 @@ export const DashboardPage = () => {
             </div>
 
             <div className="cards-grid">
+            {privilegio !== 3 && (
             <div className="dashboard-card" style={{ position: 'relative' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                 <div className="card-icon purple">
@@ -1446,6 +1466,7 @@ export const DashboardPage = () => {
                 </div>
               )}
             </div>
+            )}
 
             {/* Card de Ventas Hoy - Rediseñado según mockup */}
             <div className="dashboard-card" style={{ position: 'relative' }}>
@@ -1687,6 +1708,7 @@ export const DashboardPage = () => {
               )}
             </div>
 
+            {privilegio !== 3 && (
             <div className="dashboard-card">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                 <div className="card-icon green">
@@ -1733,6 +1755,7 @@ export const DashboardPage = () => {
                 </div>
               </div>
             </div>
+            )}
           </div>
           </div>
         ) : (
