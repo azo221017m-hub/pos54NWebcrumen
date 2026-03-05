@@ -1142,7 +1142,8 @@ export const DashboardPage = () => {
                   setMobileMenuOpen(false);
                   setShowMiOperacionSubmenu(false);
                 }}
-                title="Registro de Gastos"
+                disabled={privilegio === 3 && !turnoAbierto}
+                title={privilegio === 3 && !turnoAbierto ? "Requiere turno abierto para registrar gastos" : "Registro de Gastos"}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
