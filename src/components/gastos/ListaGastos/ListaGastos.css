@@ -1,229 +1,107 @@
-/* Contenedor sin gastos */
-.sin-gastos {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: #6b7280;
-}
-
-.sin-gastos p {
-  margin: 0.5rem 0;
-}
-
-.texto-secundario {
-  font-size: 0.875rem;
-  color: #9ca3af;
-}
-
-/* Lista de gastos */
-.lista-gastos {
-  width: 100%;
-}
-
-/* Grupos de gastos */
-.grupos-gastos {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.grupo-gasto {
+/* Contenedor principal */
+.lista-gastos-container {
   background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Tree-like description row (parent node) - replaces gradient header */
-.grupo-descripcion-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.5rem;
-  background: #f9fafb;
-  border-bottom: 2px solid #e5e7eb;
+.tabla-wrapper {
+  overflow-x: auto;
 }
 
-.grupo-descripcion-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex: 1;
+/* Tabla */
+.tabla-gastos {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
 }
 
-.grupo-descripcion-titulo {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0;
+.tabla-gastos thead {
+  background-color: #f5f5f5;
 }
 
-.grupo-cantidad {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin: 0;
+.tabla-gastos th {
+  padding: 0.875rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #ddd;
+  white-space: nowrap;
 }
 
-.grupo-total {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #dc2626;
-}
-
-/* Items del grupo - indented like tree children */
-.grupo-items {
-  padding: 0;
-}
-
-.gasto-item {
-  padding: 1rem 1.5rem 1rem 2.5rem; /* Left indent for tree effect */
-  border-bottom: 1px solid #e5e7eb;
+.tabla-gastos tbody tr {
+  border-bottom: 1px solid #eee;
   transition: background-color 0.2s;
-  position: relative;
 }
 
-/* Tree connector visual */
-.gasto-item::before {
-  content: '';
-  position: absolute;
-  left: 1.5rem;
-  top: 50%;
-  width: 0.5rem;
-  height: 1px;
-  background-color: #d1d5db;
+.tabla-gastos tbody tr:hover {
+  background-color: #f9f9f9;
 }
 
-.gasto-item:last-child {
-  border-bottom: none;
+.tabla-gastos td {
+  padding: 0.875rem 1rem;
+  color: #555;
+  font-size: 0.9rem;
 }
 
-.gasto-item:hover {
-  background-color: #f9fafb;
-}
-
-/* Marca visual para gastos aplicados */
-.gasto-aplicado {
+/* Fila aplicada / pagada */
+.fila-aplicada {
   background-color: #f0fdf4;
-  border-left: 4px solid #22c55e;
 }
 
-.gasto-aplicado:hover {
-  background-color: #dcfce7;
+.fila-aplicada:hover {
+  background-color: #dcfce7 !important;
 }
 
-.gasto-item-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-}
-
-.gasto-item-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex: 1;
-  flex-wrap: wrap;
-}
-
-.gasto-folio {
+/* Columnas especiales */
+.tabla-gastos td.col-folio {
   font-family: monospace;
-  font-size: 0.75rem;
-  color: #6b7280;
-  background-color: #f3f4f6;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-}
-
-.gasto-fecha {
-  font-size: 0.875rem;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.gasto-hora {
-  font-size: 0.875rem;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.gasto-tipo {
-  font-size: 0.875rem;
-  color: #374151;
-  font-weight: 500;
-}
-
-.gasto-usuario {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: #6b7280;
 }
 
-.gasto-item-monto {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.125rem;
+.tabla-gastos td.col-monto {
   font-weight: 600;
   color: #dc2626;
+  white-space: nowrap;
 }
 
-.gasto-aplicado-badge {
+/* Badges de estatus */
+.badge-estatus {
   display: inline-flex;
   align-items: center;
-  color: #22c55e;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.estatus-pagado {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.estatus-pendiente {
+  background-color: #fff3e0;
+  color: #c2410c;
+}
+
+/* Sin datos */
+.sin-datos {
+  text-align: center !important;
+  padding: 3rem !important;
+  color: #999;
+  font-style: italic;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .grupo-descripcion-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
-  .grupo-total {
-    font-size: 1.125rem;
-  }
-
-  .gasto-item {
-    padding: 1rem 1rem 1rem 2rem;
-  }
-
-  .gasto-item-content {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .gasto-item-info {
-    width: 100%;
-    gap: 0.5rem;
-  }
-
-  .gasto-item-monto {
-    width: 100%;
-    justify-content: space-between;
-  }
-}
-
-@media (max-width: 480px) {
-  .grupo-descripcion-row {
-    padding: 1rem;
-  }
-
-  .grupo-descripcion-titulo {
-    font-size: 1rem;
-  }
-
-  .grupo-total {
-    font-size: 1rem;
-  }
-
-  .gasto-item {
-    padding: 0.75rem 0.75rem 0.75rem 1.75rem;
-  }
-
-  .gasto-item-info {
-    flex-direction: column;
-    align-items: flex-start;
+  .tabla-gastos th,
+  .tabla-gastos td {
+    padding: 0.625rem 0.5rem;
+    font-size: 0.85rem;
   }
 }
