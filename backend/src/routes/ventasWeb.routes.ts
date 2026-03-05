@@ -9,7 +9,8 @@ import {
   getDetallesByEstado,
   addDetallesToVenta,
   getSalesSummary,
-  getBusinessHealth
+  getBusinessHealth,
+  getTopProductosTurno
 } from '../controllers/ventasWeb.controller';
 import { authMiddleware } from '../middlewares/auth';
 import { apiLimiter } from '../middlewares/rateLimit';
@@ -49,6 +50,13 @@ router.get('/resumen/turno-actual', getSalesSummary);
  * @access  Private
  */
 router.get('/dashboard/salud-negocio', getBusinessHealth);
+
+/**
+ * @route   GET /api/ventas-web/dashboard/top-productos-turno
+ * @desc    Obtener TOP10 productos con mayor y menor importe de venta del turno actual
+ * @access  Private
+ */
+router.get('/dashboard/top-productos-turno', getTopProductosTurno);
 
 /**
  * @route   GET /api/ventas-web/:id

@@ -315,6 +315,29 @@ export const obtenerSaludNegocio = async (): Promise<SaludNegocio> => {
   }
 };
 
+// Obtener TOP10 productos con mayor y menor importe de venta del turno actual
+export interface TopProductoTurno {
+  nombreproducto: string;
+  importetotal: number;
+}
+
+export interface TopProductosTurno {
+  top10Mayor: TopProductoTurno[];
+  top10Menor: TopProductoTurno[];
+}
+
+export const obtenerTopProductosTurno = async (): Promise<TopProductosTurno> => {
+  try {
+    const response = await apiClient.get<{ success: boolean; data: TopProductosTurno }>(
+      `${API_BASE}/dashboard/top-productos-turno`
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error('🔴 ventasWebService: Error al obtener top productos del turno:', error);
+    return { top10Mayor: [], top10Menor: [] };
+  }
+}; 
+
 // Verificar si una mesa tiene ventas en estado ORDENADO
 export const verificarMesaOcupada = async (nombremesa: string): Promise<boolean> => {
   try {
