@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, User, Edit, Trash2, Shield } from 'lucide-react';
+import { Plus, User } from 'lucide-react';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
+import { ListaUsuarios } from '../../components/usuarios/ListaUsuarios/ListaUsuarios';
 import { FormularioUsuario } from '../../components/usuarios/FormularioUsuario/FormularioUsuario';
 import type { Usuario, UsuarioFormData } from '../../types/usuario.types';
 import {
@@ -161,75 +161,12 @@ export const ConfigUsuarios: React.FC = () => {
           emptyIcon={<User size={80} />}
           emptyMessage="No hay usuarios registrados. Comienza agregando uno nuevo."
         >
-          <div className="standard-cards-grid">
-            {usuarios.map((usuario) => (
-              <StandardCard
-                key={usuario.idUsuario}
-                title={usuario.nombre}
-                fields={[
-                  {
-                    label: 'Alias',
-                    value: (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <User size={14} />
-                        {usuario.alias}
-                      </span>
-                    )
-                  },
-                  {
-                    label: 'Teléfono',
-                    value: usuario.telefono || 'No especificado'
-                  },
-                  {
-                    label: 'Cumpleaños',
-                    value: usuario.cumple ? new Date(usuario.cumple).toLocaleDateString('es-MX') : 'No especificado'
-                  },
-                  {
-                    label: 'Rol ID',
-                    value: (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Shield size={14} />
-                        {usuario.idRol || 'Sin rol'}
-                      </span>
-                    )
-                  },
-                  {
-                    label: 'Desempeño',
-                    value: `${usuario.desempeno || 0}%`
-                  },
-                  {
-                    label: 'Estado',
-                    value: (
-                      <span style={{ 
-                        color: usuario.estatus === 1 ? '#10b981' : '#ef4444',
-                        fontWeight: 600
-                      }}>
-                        {usuario.estatus === 1 ? 'Activo' : 'Inactivo'}
-                      </span>
-                    )
-                  }
-                ]}
-                actions={[
-                  {
-                    label: 'Editar',
-                    icon: <Edit size={16} />,
-                    onClick: () => handleEditarUsuario(usuario),
-                    variant: 'edit'
-                  },
-                  {
-                    label: 'Eliminar',
-                    icon: <Trash2 size={16} />,
-                    onClick: () => {
-                      if (window.confirm(`¿Está seguro de eliminar al usuario "${usuario.nombre}"?\n\nEsta acción no se puede deshacer.`)) {
-                        handleEliminarUsuario(usuario.idUsuario!);
-                      }
-                    },
-                    variant: 'delete'
-                  }
-                ]}
-              />
-            ))}
-          </div>
+          <ListaUsuarios
+            usuarios={usuarios}
+            onEditar={handleEditarUsuario}
+            onEliminar={handleEliminarUsuario}
+            loading={loading}
+          />
         </StandardPageLayout>
       ) : (
         <div className="standard-page-container">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
+import ListaDescuentos from '../../components/descuentos/ListaDescuentos/ListaDescuentos';
 import type { Descuento, DescuentoCreate, DescuentoUpdate } from '../../types/descuento.types';
 import { obtenerDescuentos, crearDescuento, actualizarDescuento, eliminarDescuento } from '../../services/descuentosService';
 import FormularioDescuento from '../../components/descuentos/FormularioDescuento/FormularioDescuento';
@@ -129,57 +129,11 @@ const ConfigDescuentos: React.FC = () => {
         isEmpty={descuentos.length === 0}
         emptyMessage="No hay descuentos registrados."
       >
-        <div className="standard-cards-grid">
-          {descuentos.map((descuento) => (
-            <StandardCard
-              key={descuento.id_descuento}
-              title={descuento.nombre}
-              fields={[
-                {
-                  label: 'Tipo',
-                  value: descuento.tipodescuento
-                },
-                {
-                  label: 'Valor',
-                  value: `${getTipoClass(descuento.tipodescuento)}${descuento.valor}`
-                },
-                {
-                  label: 'Estado',
-                  value: (
-                    <span style={{
-                      color: descuento.estatusdescuento === 'ACTIVO' ? '#10b981' : '#ef4444',
-                      fontWeight: 600
-                    }}>
-                      {descuento.estatusdescuento}
-                    </span>
-                  )
-                },
-                {
-                  label: 'Requiere Autorización',
-                  value: descuento.requiereautorizacion === 'SI' ? 'Sí' : 'No'
-                },
-                {
-                  label: 'Usuario',
-                  value: descuento.UsuarioCreo
-                }
-              ]}
-              actions={[
-                {
-                  label: 'Editar',
-                  icon: <Edit size={16} />,
-                  onClick: () => handleEditarDescuento(descuento),
-                  variant: 'edit'
-                },
-                {
-                  label: 'Eliminar',
-                  icon: <Trash2 size={16} />,
-                  onClick: () => handleEliminarDescuento(descuento.id_descuento),
-                  variant: 'delete'
-                }
-              ]}
-            />
-          ))}
-        </div>
+        <ListaDescuentos
+          descuentos={descuentos}
+          onEdit={handleEditarDescuento}
+          onDelete={handleEliminarDescuento}
+        />
 
         {/* Formulario Modal */}
         {mostrarFormulario && (

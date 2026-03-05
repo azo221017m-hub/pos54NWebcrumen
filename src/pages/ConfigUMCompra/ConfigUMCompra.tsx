@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Scale, Edit, Trash2, Package } from 'lucide-react';
+import { Plus, Scale } from 'lucide-react';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
+import { ListaUMCompra } from '../../components/umcompra/ListaUMCompra/ListaUMCompra';
 import { FormularioUMCompra } from '../../components/umcompra/FormularioUMCompra/FormularioUMCompra';
 import type { UMCompra, UMCompraFormData } from '../../types/umcompra.types';
 import {
@@ -149,56 +149,12 @@ export const ConfigUMCompra: React.FC = () => {
         emptyIcon={<Scale size={80} />}
         emptyMessage="No hay unidades de medida registradas"
       >
-        <div className="standard-cards-grid">
-          {unidades.map((um) => (
-            <StandardCard
-              key={um.idUmCompra}
-              title={um.nombreUmCompra}
-              fields={[
-                {
-                  label: 'Valor',
-                  value: (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Scale size={14} />
-                      {Number(um.valor || 0).toFixed(3)}
-                    </div>
-                  )
-                },
-                {
-                  label: 'Materia Prima',
-                  value: (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Package size={14} />
-                      {um.umMatPrima || 'N/A'}
-                    </div>
-                  )
-                },
-                {
-                  label: 'Valor Convertido',
-                  value: um.valorConvertido ? Number(um.valorConvertido).toFixed(3) : 'N/A'
-                },
-                {
-                  label: 'Fecha Registro',
-                  value: formatFecha(um.fechaRegistroauditoria)
-                }
-              ]}
-              actions={[
-                {
-                  label: 'Editar',
-                  icon: <Edit size={16} />,
-                  onClick: () => handleEditarUnidad(um),
-                  variant: 'edit'
-                },
-                {
-                  label: 'Eliminar',
-                  icon: <Trash2 size={16} />,
-                  onClick: () => handleEliminarUnidad(um.idUmCompra!),
-                  variant: 'delete'
-                }
-              ]}
-            />
-          ))}
-        </div>
+        <ListaUMCompra
+          unidades={unidades}
+          onEditar={handleEditarUnidad}
+          onEliminar={handleEliminarUnidad}
+          loading={loading}
+        />
       </StandardPageLayout>
 
       {/* Formulario Modal */}

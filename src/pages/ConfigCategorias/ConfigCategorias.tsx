@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Plus, Tags, Edit, Trash2, Image } from 'lucide-react';
+import { Plus, Tags } from 'lucide-react';
 import type { Categoria, CategoriaCreate, CategoriaUpdate } from '../../types/categoria.types';
 import { obtenerCategorias, crearCategoria, actualizarCategoria, eliminarCategoria } from '../../services/categoriasService';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
+import ListaCategorias from '../../components/categorias/ListaCategorias/ListaCategorias';
 import FormularioCategoria from '../../components/categorias/FormularioCategoria/FormularioCategoria';
 import './ConfigCategorias.css';
 
@@ -129,62 +129,11 @@ const ConfigCategorias: React.FC = () => {
         emptyIcon={<Tags size={80} />}
         emptyMessage="No hay categorías registradas. Comienza agregando una nueva."
       >
-        <div className="standard-cards-grid">
-          {categorias.map((categoria) => (
-            <StandardCard
-              key={categoria.idCategoria}
-              title={categoria.nombre}
-              fields={[
-                {
-                  label: 'Descripción',
-                  value: categoria.descripcion || 'Sin descripción'
-                },
-                {
-                  label: 'Imagen',
-                  value: categoria.imagencategoria ? (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Image size={14} />
-                      Sí
-                    </span>
-                  ) : 'No'
-                },
-                {
-                  label: 'Orden',
-                  value: categoria.orden
-                },
-                {
-                  label: 'Moderador Def.',
-                  value: categoria.idmoderadordef?.toString() || 'Sin asignar'
-                },
-                {
-                  label: 'Estado',
-                  value: (
-                    <span style={{ 
-                      color: categoria.estatus ? '#10b981' : '#ef4444',
-                      fontWeight: 600
-                    }}>
-                      {categoria.estatus ? 'Activo' : 'Inactivo'}
-                    </span>
-                  )
-                }
-              ]}
-              actions={[
-                {
-                  label: 'Editar',
-                  icon: <Edit size={16} />,
-                  onClick: () => handleEditar(categoria),
-                  variant: 'edit'
-                },
-                {
-                  label: 'Eliminar',
-                  icon: <Trash2 size={16} />,
-                  onClick: () => handleEliminar(categoria.idCategoria),
-                  variant: 'delete'
-                }
-              ]}
-            />
-          ))}
-        </div>
+        <ListaCategorias
+          categorias={categorias}
+          onEditar={handleEditar}
+          onEliminar={handleEliminar}
+        />
       </StandardPageLayout>
 
       {/* Formulario Modal */}

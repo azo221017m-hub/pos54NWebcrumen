@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Users, Edit, Trash2, Phone, Mail, MapPin, Award } from 'lucide-react';
+import { Plus, Users } from 'lucide-react';
 import type { Cliente, ClienteCreate } from '../../types/cliente.types';
 import {
   obtenerClientes,
@@ -8,7 +8,7 @@ import {
   eliminarCliente
 } from '../../services/clientesService';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
+import ListaClientes from '../../components/clientes/ListaClientes/ListaClientes';
 import FormularioCliente from '../../components/clientes/FormularioCliente/FormularioCliente';
 import './ConfigClientes.css';
 
@@ -160,88 +160,11 @@ const ConfigClientes: React.FC = () => {
         emptyIcon={<Users size={80} />}
         emptyMessage="No hay clientes registrados. Comienza agregando uno nuevo."
       >
-        <div className="standard-cards-grid">
-          {clientes.map((cliente) => (
-            <StandardCard
-              key={cliente.idCliente}
-              title={cliente.nombre}
-              fields={[
-                {
-                  label: 'Categoría',
-                  value: (
-                    <span style={{ 
-                      color: getCategoriaColor(cliente.categoriacliente),
-                      fontWeight: 600
-                    }}>
-                      {cliente.categoriacliente}
-                    </span>
-                  )
-                },
-                {
-                  label: 'Teléfono',
-                  value: cliente.telefono ? (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Phone size={14} />
-                      {cliente.telefono}
-                    </span>
-                  ) : 'No especificado'
-                },
-                {
-                  label: 'Email',
-                  value: cliente.email ? (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Mail size={14} />
-                      {cliente.email}
-                    </span>
-                  ) : 'No especificado'
-                },
-                {
-                  label: 'Dirección',
-                  value: cliente.direccion ? (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <MapPin size={14} />
-                      {cliente.direccion}
-                    </span>
-                  ) : 'No especificada'
-                },
-                {
-                  label: 'Puntos Fidelidad',
-                  value: (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#f59e0b', fontWeight: 600 }}>
-                      <Award size={14} />
-                      {cliente.puntosfidelidad}
-                    </span>
-                  )
-                },
-                {
-                  label: 'Estado',
-                  value: (
-                    <span style={{ 
-                      color: cliente.estatus ? '#10b981' : '#ef4444',
-                      fontWeight: 600
-                    }}>
-                      {cliente.estatus ? 'Activo' : 'Inactivo'}
-                    </span>
-                  )
-                }
-              ]}
-              actions={[
-                {
-                  label: 'Editar',
-                  icon: <Edit size={16} />,
-                  onClick: () => handleEditar(cliente),
-                  variant: 'edit'
-                },
-                {
-                  label: 'Eliminar',
-                  icon: <Trash2 size={16} />,
-                  onClick: () => handleEliminar(cliente.idCliente),
-                  variant: 'delete'
-                }
-              ]}
-            />
-          ))}
-        </div>
+        <ListaClientes
+          clientes={clientes}
+          onEdit={handleEditar}
+          onDelete={handleEliminar}
+        />
       </StandardPageLayout>
 
       {/* Formulario Modal */}

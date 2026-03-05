@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Clock, Edit } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
+import ListaTurnos from '../../components/turnos/ListaTurnos/ListaTurnos';
 import type { Turno } from '../../types/turno.types';
 import { EstatusTurno } from '../../types/turno.types';
 import {
@@ -136,51 +136,10 @@ const ConfigTurnos: React.FC = () => {
         emptyIcon={<Clock size={80} />}
         emptyMessage="No hay turnos registrados."
       >
-        <div className="standard-cards-grid">
-          {turnos.map((turno) => (
-            <StandardCard
-              key={turno.idturno}
-              title={`Turno #${turno.numeroturno}`}
-              fields={[
-                {
-                  label: 'Clave',
-                  value: turno.claveturno
-                },
-                {
-                  label: 'Usuario',
-                  value: turno.usuarioturno
-                },
-                {
-                  label: 'Inicio',
-                  value: formatearFecha(turno.fechainicioturno)
-                },
-                {
-                  label: 'Fin',
-                  value: turno.fechafinturno ? formatearFecha(turno.fechafinturno) : 'En curso'
-                },
-                {
-                  label: 'Estado',
-                  value: (
-                    <span style={{ 
-                      color: turno.estatusturno === EstatusTurno.ABIERTO ? '#10b981' : '#6b7280',
-                      fontWeight: 600
-                    }}>
-                      {turno.estatusturno.toUpperCase()}
-                    </span>
-                  )
-                }
-              ]}
-              actions={turno.estatusturno === EstatusTurno.ABIERTO ? [
-                {
-                  label: 'Cerrar Turno',
-                  icon: <Edit size={18} />,
-                  onClick: () => handleEditarTurno(turno),
-                  variant: 'edit'
-                }
-              ] : []}
-            />
-          ))}
-        </div>
+        <ListaTurnos
+          turnos={turnos}
+          onEdit={handleEditarTurno}
+        />
       </StandardPageLayout>
 
       {/* Formulario Modal */}

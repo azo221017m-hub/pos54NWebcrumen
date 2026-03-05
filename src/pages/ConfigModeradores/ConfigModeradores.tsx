@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Shield, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Shield } from 'lucide-react';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
+import ListaModeradores from '../../components/moderadores/ListaModeradores/ListaModeradores';
 import type { Moderador, ModeradorCreate, ModeradorUpdate } from '../../types/moderador.types';
 import {
   obtenerModeradores,
@@ -145,55 +145,11 @@ const ConfigModeradores: React.FC = () => {
         emptyIcon={<Shield size={64} />}
         emptyMessage="No hay moderadores registrados."
       >
-        <div className="standard-cards-grid">
-          {moderadores.map((moderador) => (
-            <StandardCard
-              key={moderador.idmoderador}
-              title={moderador.nombremoderador}
-              fields={[
-                {
-                  label: 'Estado',
-                  value: (
-                    <span style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      color: moderador.estatus === 1 ? '#10b981' : '#ef4444',
-                      fontWeight: 600
-                    }}>
-                      {moderador.estatus === 1 ? <CheckCircle size={14} /> : <XCircle size={14} />}
-                      {moderador.estatus === 1 ? 'Activo' : 'Inactivo'}
-                    </span>
-                  )
-                },
-                {
-                  label: 'Usuario Auditoría',
-                  value: moderador.usuarioauditoria || 'N/A'
-                },
-                {
-                  label: 'Fecha Registro',
-                  value: moderador.fechaRegistroauditoria
-                    ? new Date(moderador.fechaRegistroauditoria).toLocaleDateString('es-MX')
-                    : 'N/A'
-                }
-              ]}
-              actions={[
-                {
-                  label: 'Editar',
-                  icon: <Edit size={16} />,
-                  onClick: () => handleEditarModerador(moderador),
-                  variant: 'edit'
-                },
-                {
-                  label: 'Eliminar',
-                  icon: <Trash2 size={16} />,
-                  onClick: () => handleEliminarModerador(moderador.idmoderador),
-                  variant: 'delete'
-                }
-              ]}
-            />
-          ))}
-        </div>
+        <ListaModeradores
+          moderadores={moderadores}
+          onEdit={handleEditarModerador}
+          onDelete={handleEliminarModerador}
+        />
 
         {/* Formulario Modal */}
         {mostrarFormulario && (
