@@ -1472,3 +1472,78 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
     });
   }
 };
+
+/**
+ * Get TOP10 products by sales amount for the current open shift
+ * @route GET /api/ventas-web/dashboard/top-productos-turno
+ */
+export const getTopProductosTurno = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({ success: false, message: 'Usuario no autenticado' });
+      return;
+    }
+
+    // Get current open shift
+    const [turnoRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT claveturno FROM tblposcrumenwebturnos
+       WHERE idnegocio = ? AND estatusturno = 'abierto'
+       LIMIT 1`,
+      [idnegocio]
+    );
+
+    if (turnoRows.length === 0) {
+      res.json({ success: true, data: { top10Mayor: [], top10Menor: [] } });
+      return;
+    }
+
+    const claveturno = turnoRows[0].claveturno;
+
+    // Query top 10 products with highest total sales amount
+    const [mayorRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT d.nombreproducto, COALESCE(SUM(d.subtotal), 0) as importetotal
+       FROM tblposcrumenwebdetalleventas d
+       INNER JOIN tblposcrumenwebventas v ON d.idventa = v.idventa
+       WHERE v.claveturno = ? AND v.idnegocio = ?
+         AND v.estadodeventa = 'COBRADO'
+         AND v.descripcionmov = 'VENTA'
+       GROUP BY d.nombreproducto
+       ORDER BY importetotal DESC
+       LIMIT 10`,
+      [claveturno, idnegocio]
+    );
+
+    // Query top 10 products with lowest total sales amount
+    const [menorRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT d.nombreproducto, COALESCE(SUM(d.subtotal), 0) as importetotal
+       FROM tblposcrumenwebdetalleventas d
+       INNER JOIN tblposcrumenwebventas v ON d.idventa = v.idventa
+       WHERE v.claveturno = ? AND v.idnegocio = ?
+         AND v.estadodeventa = 'COBRADO'
+         AND v.descripcionmov = 'VENTA'
+       GROUP BY d.nombreproducto
+       ORDER BY importetotal ASC
+       LIMIT 10`,
+      [claveturno, idnegocio]
+    );
+
+    res.json({
+      success: true,
+      data: {
+        top10Mayor: mayorRows.map(r => ({
+          nombreproducto: r.nombreproducto,
+          importetotal: Number(r.importetotal) || 0
+        })),
+        top10Menor: menorRows.map(r => ({
+          nombreproducto: r.nombreproducto,
+          importetotal: Number(r.importetotal) || 0
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Error al obtener top productos del turno:', error);
+    res.status(500).json({ success: false, message: 'Error al obtener top productos' });
+  }
+};

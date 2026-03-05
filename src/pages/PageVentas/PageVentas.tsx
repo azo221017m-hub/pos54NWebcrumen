@@ -805,11 +805,14 @@ const PageVentas: React.FC = () => {
         ? item.moderadoresNames.join(', ')
         : '';
       const obs = item.notas || '';
+      const modObs = [
+        mods ? `<span class="mod-txt">${mods}</span>` : '',
+        obs ? `<span class="obs-txt">${obs}</span>` : ''
+      ].filter(Boolean).join('<br/>');
       return `<tr>
-        <td style="text-align:center;padding:4px 8px;border-bottom:1px solid #ccc;">${item.cantidad}</td>
-        <td style="padding:4px 8px;border-bottom:1px solid #ccc;">${item.producto.nombre}</td>
-        <td style="padding:4px 8px;border-bottom:1px solid #ccc;">${mods}</td>
-        <td style="padding:4px 8px;border-bottom:1px solid #ccc;">${obs}</td>
+        <td class="cant-col">${item.cantidad}</td>
+        <td class="prod-col">${item.producto.nombre}</td>
+        <td class="mod-col">${modObs}</td>
       </tr>`;
     }).join('');
 
@@ -819,33 +822,58 @@ const PageVentas: React.FC = () => {
   <meta charset="UTF-8"/>
   <title>COMANDA DE PREPARACIÓN</title>
   <style>
-    body { font-family: monospace; font-size: 12px; margin: 16px; }
-    h1 { font-size: 16px; text-align: center; margin: 0 0 4px; }
-    .fecha { text-align: center; margin-bottom: 12px; color: #555; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 10px;
+      width: 58mm;
+      max-width: 58mm;
+      padding: 3mm 2mm;
+      color: #000;
+      background: #fff;
+    }
+    h1 { font-size: 12px; text-align: center; margin-bottom: 2px; letter-spacing: 0.5px; }
+    .fecha { font-size: 9px; text-align: center; margin-bottom: 4px; }
+    .divider { border: none; border-top: 1px dashed #000; margin: 3px 0; }
+    .info-line { font-size: 9px; margin-bottom: 2px; }
     table { width: 100%; border-collapse: collapse; }
-    th { background: #f0f0f0; padding: 4px 8px; text-align: left; border-bottom: 2px solid #333; }
-    .footer { margin-top: 16px; border-top: 1px dashed #333; padding-top: 8px; font-size: 11px; }
-    @media print { body { margin: 4mm; } }
+    th {
+      font-size: 9px;
+      text-align: left;
+      border-bottom: 1px solid #000;
+      padding: 1px 2px;
+    }
+    td { font-size: 9px; padding: 2px 2px; vertical-align: top; }
+    .cant-col { width: 12%; text-align: center; }
+    .prod-col { width: 52%; }
+    .mod-col { width: 36%; }
+    .mod-txt { font-size: 8px; font-style: italic; color: #333; }
+    .obs-txt { font-size: 8px; color: #555; }
+    .footer { margin-top: 4px; border-top: 1px dashed #000; padding-top: 3px; font-size: 9px; }
+    @media print {
+      html, body { width: 58mm; }
+      @page { size: 58mm auto; margin: 0; }
+    }
   </style>
 </head>
 <body>
-  <h1>COMANDA DE PREPARACIÓN</h1>
+  <h1>★ COMANDA ★</h1>
   <div class="fecha">${fechaHora}</div>
+  <hr class="divider"/>
+  ${detalleCliente ? `<div class="info-line">${detalleCliente}</div>` : ''}
+  ${detallePreparacion ? `<div class="info-line">${detallePreparacion}</div>` : ''}
+  <hr class="divider"/>
   <table>
     <thead>
       <tr>
-        <th style="text-align:center;">Cant</th>
-        <th>Producto</th>
-        <th>Moderadores</th>
-        <th>Observaciones</th>
+        <th class="cant-col">Cant</th>
+        <th class="prod-col">Producto</th>
+        <th class="mod-col">Mod/Obs</th>
       </tr>
     </thead>
     <tbody>${filas}</tbody>
   </table>
-  <div class="footer">
-    <strong>Detalles de Preparación:</strong><br/>${detallePreparacion}<br/><br/>
-    <strong>Detalle de Cliente:</strong><br/>${detalleCliente}
-  </div>
+  <hr class="divider"/>
   <script>
     window.addEventListener('load', function() { window.print(); });
     window.addEventListener('afterprint', function() { window.close(); });
@@ -855,7 +883,7 @@ const PageVentas: React.FC = () => {
 
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    const ventana = window.open(url, '_blank', 'width=400,height=600');
+    const ventana = window.open(url, '_blank', 'width=260,height=500');
     if (ventana) {
       ventana.addEventListener('unload', () => {
         URL.revokeObjectURL(url);

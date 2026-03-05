@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerSaludNegocio, type ResumenVentas, type SaludNegocio } from '../services/ventasWebService';
+import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerSaludNegocio, obtenerTopProductosTurno, type ResumenVentas, type SaludNegocio, type TopProductoTurno } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import jsPDF from 'jspdf';
 import { SessionTimer } from '../components/common/SessionTimer';
@@ -217,6 +217,8 @@ export const DashboardPage = () => {
     icono: '🟢',
     insumosAfectados: 0
   });
+  const [topProductosMayor, setTopProductosMayor] = useState<TopProductoTurno[]>([]);
+  const [topProductosMenor, setTopProductosMenor] = useState<TopProductoTurno[]>([]);
 
   const handleLogout = useCallback(() => {
     // Limpiar completamente la sesión
@@ -350,6 +352,16 @@ export const DashboardPage = () => {
     } catch (error) {
       console.error('Error al verificar turno abierto:', error);
       setTurnoAbierto(null);
+    }
+  }, []);
+
+  const cargarTopProductosTurno = useCallback(async () => {
+    try {
+      const data = await obtenerTopProductosTurno();
+      setTopProductosMayor(data.top10Mayor);
+      setTopProductosMenor(data.top10Menor);
+    } catch (error) {
+      console.error('Error al cargar top productos del turno:', error);
     }
   }, []);
 
@@ -608,6 +620,8 @@ export const DashboardPage = () => {
     cargarSaludNegocio();
     // Calculate inventory level
     calcularNivelInventario();
+    // Load top products for current shift
+    cargarTopProductosTurno();
     // Load negocio data for branding
     if (usuario?.idNegocio) {
       negociosService.obtenerNegocioPorId(usuario.idNegocio)
@@ -625,6 +639,7 @@ export const DashboardPage = () => {
       cargarResumenVentas();
       cargarSaludNegocio();
       calcularNivelInventario();
+      cargarTopProductosTurno();
       verificarTurno();
     }, SALES_SUMMARY_REFRESH_INTERVAL);
 
@@ -1775,6 +1790,58 @@ export const DashboardPage = () => {
                   </div>
                 </div>
               </div>
+
+              {/* TOP10 productos del turno */}
+              {(topProductosMayor.length > 0 || topProductosMenor.length > 0) && (
+                <div style={{
+                  marginTop: '0.5rem',
+                  display: 'flex',
+                  gap: '0.4rem'
+                }}>
+                  {/* Sección A: Mayor importe */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: '0.55rem',
+                      fontWeight: '700',
+                      color: '#10b981',
+                      textTransform: 'uppercase',
+                      marginBottom: '0.2rem',
+                      letterSpacing: '0.2px'
+                    }}>▲ Top Mayor</div>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.5rem' }}>
+                      <tbody>
+                        {topProductosMayor.map((p, i) => (
+                          <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                            <td style={{ padding: '1px 2px', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '0', width: '70%' }} title={p.nombreproducto}>{p.nombreproducto}</td>
+                            <td style={{ padding: '1px 2px', color: '#10b981', fontWeight: '600', textAlign: 'right', whiteSpace: 'nowrap' }}>${p.importetotal.toFixed(0)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {/* Sección B: Menor importe */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: '0.55rem',
+                      fontWeight: '700',
+                      color: '#f59e0b',
+                      textTransform: 'uppercase',
+                      marginBottom: '0.2rem',
+                      letterSpacing: '0.2px'
+                    }}>▼ Top Menor</div>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.5rem' }}>
+                      <tbody>
+                        {topProductosMenor.map((p, i) => (
+                          <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                            <td style={{ padding: '1px 2px', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '0', width: '70%' }} title={p.nombreproducto}>{p.nombreproducto}</td>
+                            <td style={{ padding: '1px 2px', color: '#f59e0b', fontWeight: '600', textAlign: 'right', whiteSpace: 'nowrap' }}>${p.importetotal.toFixed(0)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
             )}
           </div>

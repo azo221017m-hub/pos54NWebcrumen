@@ -555,13 +555,13 @@
 }
 
 .btn-mod {
-  background: #16a085;
+  background: #7c3aed;
   color: white;
   font-size: 0.531rem; /* 8.5px */
 }
 
 .btn-mod:hover {
-  background: #138d75;
+  background: #6d28d9;
 }
 
 .empty-productos {
