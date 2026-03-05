@@ -688,10 +688,10 @@ export const DashboardPage = () => {
             </svg>
           </button>
           <div className="business-logo">
-            <img src="/logowebposcrumen.svg" alt="Logo" className="logo-icon" />
+            <img src={negocio?.logotipo || "/logowebposcrumen.svg"} alt="Logo" className="logo-icon" />
             <div className="logo-text">
-              <h1>Crumen54N</h1>
-              <p>Sistema Administrador de Negocios</p>
+              <h1>¡Bienvenido, {usuario?.nombre}!</h1>
+              <p>Tablero de {negocio?.nombreNegocio || 'mi Negocio'}</p>
             </div>
           </div>
         </div>
@@ -1191,12 +1191,17 @@ export const DashboardPage = () => {
       </nav>
 
       {/* Contenido Principal */}
-      <div className="dashboard-main-content">
+      <div className="dashboard-main-content" onClick={() => {
+        setShowConfigSubmenu(false);
+        setShowConfigNegocioSubmenu(false);
+        setShowDashboardSubmenu(false);
+        setShowMiOperacionSubmenu(false);
+        setShowUserMenu(false);
+      }}>
         {dashboardView === 'indicadores' ? (
           <div className="content-left">
             <div className="welcome-section">
               <div className="welcome-header-row">
-                <h2 className="welcome-title">¡Bienvenido, {usuario?.nombre}!</h2>
                 {/* Comandas del Día label/button */}
                 {(() => {
                   const hasPendingOrders = ventasSolicitadas.length > 0;
@@ -1228,9 +1233,6 @@ export const DashboardPage = () => {
                   );
                 })()}
               </div>
-              <p className="welcome-subtitle">
-                Panel de control del sistema POS Crumen
-              </p>
             </div>
 
             <div className="cards-grid">
