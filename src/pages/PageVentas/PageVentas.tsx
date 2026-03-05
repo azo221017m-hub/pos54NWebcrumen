@@ -137,6 +137,9 @@ const PageVentas: React.FC = () => {
   // Seat assignment state for MESA sales - tracks current seat for new products
   const [currentSeatAssignment, setCurrentSeatAssignment] = useState<string>(DEFAULT_SEAT_ASSIGNMENT);
 
+  // Imprimir comanda cocina checkbox state
+  const [imprimirChecked, setImprimirChecked] = useState(false);
+
   // Helper: navigate to dashboard or reset state for privilege 2 after completing/canceling a venta
   const handlePostVenta = React.useCallback(() => {
     if (privilegio === 2) {
@@ -770,7 +773,101 @@ const PageVentas: React.FC = () => {
     }, SELECTION_MODAL_DISPLAY_DELAY_MS);
   };
 
+  const imprimirComandaCocina = (items: ItemComanda[]) => {
+    const ahora = new Date();
+    const fechaHora = ahora.toLocaleString('es-MX', {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+
+    // Build client / preparation details for footer
+    let detallePreparacion = '';
+    let detalleCliente = '';
+    if (tipoServicio === 'Mesa' && mesaData) {
+      detallePreparacion = `Tipo: MESA`;
+      detalleCliente = `Mesa: ${mesaData.nombremesa}`;
+    } else if (tipoServicio === 'Llevar' && llevarData) {
+      detallePreparacion = `Tipo: LLEVAR${llevarData.fechaprogramadaventa ? ` | Entrega: ${llevarData.fechaprogramadaventa}` : ''}`;
+      detalleCliente = `Cliente: ${llevarData.cliente || 'mostrador'}`;
+    } else if (tipoServicio === 'Domicilio' && domicilioData) {
+      detallePreparacion = `Tipo: DOMICILIO${domicilioData.fechaprogramadaventa ? ` | Entrega: ${domicilioData.fechaprogramadaventa}` : ''}`;
+      detalleCliente = [
+        `Cliente: ${domicilioData.cliente || 'mostrador'}`,
+        domicilioData.direcciondeentrega ? `Dirección: ${domicilioData.direcciondeentrega}` : '',
+        domicilioData.telefonodeentrega ? `Teléfono: ${domicilioData.telefonodeentrega}` : '',
+        domicilioData.contactodeentrega ? `Contacto: ${domicilioData.contactodeentrega}` : '',
+        domicilioData.observaciones ? `Nota: ${domicilioData.observaciones}` : ''
+      ].filter(Boolean).join('<br/>');
+    }
+
+    const filas = items.map(item => {
+      const mods = item.moderadoresNames && item.moderadoresNames.length > 0
+        ? item.moderadoresNames.join(', ')
+        : '';
+      const obs = item.notas || '';
+      return `<tr>
+        <td style="text-align:center;padding:4px 8px;border-bottom:1px solid #ccc;">${item.cantidad}</td>
+        <td style="padding:4px 8px;border-bottom:1px solid #ccc;">${item.producto.nombre}</td>
+        <td style="padding:4px 8px;border-bottom:1px solid #ccc;">${mods}</td>
+        <td style="padding:4px 8px;border-bottom:1px solid #ccc;">${obs}</td>
+      </tr>`;
+    }).join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>COMANDA DE PREPARACIÓN</title>
+  <style>
+    body { font-family: monospace; font-size: 12px; margin: 16px; }
+    h1 { font-size: 16px; text-align: center; margin: 0 0 4px; }
+    .fecha { text-align: center; margin-bottom: 12px; color: #555; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #f0f0f0; padding: 4px 8px; text-align: left; border-bottom: 2px solid #333; }
+    .footer { margin-top: 16px; border-top: 1px dashed #333; padding-top: 8px; font-size: 11px; }
+    @media print { body { margin: 4mm; } }
+  </style>
+</head>
+<body>
+  <h1>COMANDA DE PREPARACIÓN</h1>
+  <div class="fecha">${fechaHora}</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align:center;">Cant</th>
+        <th>Producto</th>
+        <th>Moderadores</th>
+        <th>Observaciones</th>
+      </tr>
+    </thead>
+    <tbody>${filas}</tbody>
+  </table>
+  <div class="footer">
+    <strong>Detalles de Preparación:</strong><br/>${detallePreparacion}<br/><br/>
+    <strong>Detalle de Cliente:</strong><br/>${detalleCliente}
+  </div>
+  <script>
+    window.addEventListener('load', function() { window.print(); });
+    window.addEventListener('afterprint', function() { window.close(); });
+  </script>
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const ventana = window.open(url, '_blank', 'width=400,height=600');
+    if (ventana) {
+      ventana.addEventListener('unload', () => {
+        URL.revokeObjectURL(url);
+      });
+    } else {
+      URL.revokeObjectURL(url);
+    }
+  };
+
   const handleProducir = async () => {
+    // Capture items to print BEFORE they get marked as ORDENADO
+    const itemsParaImprimir = comanda.filter(item => item.estadodetalle !== ESTADO_ORDENADO);
     try {
       setIsProcessingVenta(true);
       // Check if current venta has ESPERAR status - if so, UPDATE instead of creating new record
@@ -820,6 +917,9 @@ const PageVentas: React.FC = () => {
             // Mark all items in comanda as ORDENADO using functional update
             setComanda(prevComanda => prevComanda.map(item => ({ ...item, estadodetalle: ESTADO_ORDENADO })));
             
+            if (imprimirChecked && itemsParaImprimir.length > 0) {
+              imprimirComandaCocina(itemsParaImprimir);
+            }
             handlePostVenta();
             return;
           } else {
@@ -836,6 +936,9 @@ const PageVentas: React.FC = () => {
       // Normal flow: create or add to existing venta
       const success = await crearVenta(ESTADO_ORDENADO, ESTADO_ORDENADO, 'PENDIENTE');
       if (success) {
+        if (imprimirChecked && itemsParaImprimir.length > 0) {
+          imprimirComandaCocina(itemsParaImprimir);
+        }
         handlePostVenta();
       }
     } finally {
@@ -1213,8 +1316,9 @@ const PageVentas: React.FC = () => {
 
   const handleModalClose = () => {
     setModalOpen(false);
-    // Privilege 2 users stay on PageVentas (no dashboard access)
+    // Privilege 2 users stay on PageVentas and return to type-of-sale selection modal
     if (privilegio === 2) {
+      setShowSelectionModal(true);
       return;
     }
     // Navigate to Dashboard when canceling service configuration
@@ -1514,6 +1618,14 @@ const PageVentas: React.FC = () => {
         {/* Panel derecho - Comanda/Carrito */}
         <div className="comanda-panel">
           <div className="comanda-header">
+            <label className="imprimir-checkbox-label">
+              <input
+                type="checkbox"
+                checked={imprimirChecked}
+                onChange={(e) => setImprimirChecked(e.target.checked)}
+              />
+              Imprimir
+            </label>
             <h2>Total de cuenta</h2>
           </div>
 

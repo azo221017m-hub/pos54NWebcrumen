@@ -39,14 +39,14 @@
 /* Cancel button (upper-left corner, privilege 2) */
 .btn-cancelar-seleccion-venta {
   position: absolute;
-  top: 1rem;
-  left: 1rem;
-  padding: 0.5rem 1.25rem;
+  top: 0.5rem;
+  left: 0.5rem;
+  padding: 0.25rem 0.625rem;
   background: #e53e3e;
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s ease;
