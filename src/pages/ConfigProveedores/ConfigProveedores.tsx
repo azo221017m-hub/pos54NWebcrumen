@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Truck, Edit, Trash2, Phone, Mail, MapPin, CreditCard } from 'lucide-react';
+import { Plus, Truck } from 'lucide-react';
 import type { Proveedor, ProveedorCreate, ProveedorUpdate } from '../../types/proveedor.types';
 import {
   obtenerProveedores,
@@ -8,7 +8,7 @@ import {
   eliminarProveedor
 } from '../../services/proveedoresService';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
+import ListaProveedores from '../../components/proveedores/ListaProveedores/ListaProveedores';
 import FormularioProveedor from '../../components/proveedores/FormularioProveedor/FormularioProveedor';
 import './ConfigProveedores.css';
 
@@ -139,81 +139,11 @@ const ConfigProveedores: React.FC = () => {
         emptyIcon={<Truck size={80} />}
         emptyMessage="No hay proveedores registrados. Comienza agregando uno nuevo."
       >
-        <div className="standard-cards-grid">
-          {proveedores.map((proveedor) => (
-            <StandardCard
-              key={proveedor.id_proveedor}
-              title={proveedor.nombre}
-              fields={[
-                {
-                  label: 'RFC',
-                  value: proveedor.rfc || 'No especificado'
-                },
-                {
-                  label: 'Teléfono',
-                  value: proveedor.telefono ? (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Phone size={14} />
-                      {proveedor.telefono}
-                    </span>
-                  ) : 'No especificado'
-                },
-                {
-                  label: 'Correo',
-                  value: proveedor.correo ? (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Mail size={14} />
-                      {proveedor.correo}
-                    </span>
-                  ) : 'No especificado'
-                },
-                {
-                  label: 'Dirección',
-                  value: proveedor.direccion ? (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <MapPin size={14} />
-                      {proveedor.direccion}
-                    </span>
-                  ) : 'No especificada'
-                },
-                {
-                  label: 'Banco',
-                  value: proveedor.banco ? (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <CreditCard size={14} />
-                      {proveedor.banco}
-                    </span>
-                  ) : 'No especificado'
-                },
-                {
-                  label: 'Estado',
-                  value: (
-                    <span style={{ 
-                      color: proveedor.activo ? '#10b981' : '#ef4444',
-                      fontWeight: 600
-                    }}>
-                      {proveedor.activo ? 'Activo' : 'Inactivo'}
-                    </span>
-                  )
-                }
-              ]}
-              actions={[
-                {
-                  label: 'Editar',
-                  icon: <Edit size={16} />,
-                  onClick: () => handleEditar(proveedor),
-                  variant: 'edit'
-                },
-                {
-                  label: 'Eliminar',
-                  icon: <Trash2 size={16} />,
-                  onClick: () => handleEliminar(proveedor.id_proveedor),
-                  variant: 'delete'
-                }
-              ]}
-            />
-          ))}
-        </div>
+        <ListaProveedores
+          proveedores={proveedores}
+          onEditar={handleEditar}
+          onEliminar={handleEliminar}
+        />
       </StandardPageLayout>
 
       {/* Formulario Modal */}

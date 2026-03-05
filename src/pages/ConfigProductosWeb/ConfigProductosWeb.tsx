@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Package, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Package } from 'lucide-react';
 import type { ProductoWeb, ProductoWebCreate, ProductoWebUpdate } from '../../types/productoWeb.types';
 import {
   obtenerProductosWeb,
@@ -8,7 +8,7 @@ import {
   eliminarProductoWeb
 } from '../../services/productosWebService';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
+import ListaProductosWeb from '../../components/productosWeb/ListaProductosWeb/ListaProductosWeb';
 import FormularioProductoWeb from '../../components/productosWeb/FormularioProductoWeb/FormularioProductoWeb';
 import './ConfigProductosWeb.css';
 
@@ -154,15 +154,6 @@ const ConfigProductosWeb: React.FC = () => {
     setProductoSeleccionado(null);
   };
 
-  const getTipoProductoColor = (tipo: string) => {
-    switch (tipo) {
-      case 'Directo': return '#3b82f6'; // azul
-      case 'Inventario': return '#f59e0b'; // naranja
-      case 'Receta': return '#8b5cf6'; // morado
-      default: return '#6b7280'; // gris
-    }
-  };
-
   return (
     <>
       {/* Mensaje de Notificación */}
@@ -189,72 +180,11 @@ const ConfigProductosWeb: React.FC = () => {
         emptyIcon={<Package size={80} />}
         emptyMessage="No hay productos registrados."
       >
-        <div className="standard-cards-grid">
-          {productos.map((producto) => (
-            <StandardCard
-              key={producto.idProducto}
-              title={producto.nombre}
-              fields={[
-                {
-                  label: 'Categoría',
-                  value: producto.nombreCategoria || 'Sin categoría'
-                },
-                {
-                  label: 'Tipo',
-                  value: (
-                    <span style={{ 
-                      color: getTipoProductoColor(producto.tipoproducto),
-                      fontWeight: 600
-                    }}>
-                      {producto.tipoproducto}
-                    </span>
-                  )
-                },
-                {
-                  label: 'Precio',
-                  value: `$${Number(producto.precio || 0).toFixed(2)}`
-                },
-                {
-                  label: 'Costo',
-                  value: `$${Number(producto.costoproducto || 0).toFixed(2)}`
-                },
-                {
-                  label: 'Imagen',
-                  value: producto.imagenProducto ? 'Sí' : 'No'
-                },
-                {
-                  label: 'Estado',
-                  value: (
-                    <span style={{ 
-                      color: producto.estatus === 1 ? '#10b981' : '#ef4444',
-                      fontWeight: 600,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}>
-                      {producto.estatus === 1 ? <CheckCircle size={16} /> : <XCircle size={16} />}
-                      {producto.estatus === 1 ? 'Activo' : 'Inactivo'}
-                    </span>
-                  )
-                }
-              ]}
-              actions={[
-                {
-                  label: 'Editar',
-                  icon: <Edit size={18} />,
-                  onClick: () => handleEditar(producto),
-                  variant: 'edit'
-                },
-                {
-                  label: 'Eliminar',
-                  icon: <Trash2 size={18} />,
-                  onClick: () => handleEliminar(producto.idProducto),
-                  variant: 'delete'
-                }
-              ]}
-            />
-          ))}
-        </div>
+        <ListaProductosWeb
+          productos={productos}
+          onEditar={handleEditar}
+          onEliminar={handleEliminar}
+        />
       </StandardPageLayout>
 
       {/* Formulario Modal */}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Table2, Edit, Trash2 } from 'lucide-react';
+import { Plus, Table2 } from 'lucide-react';
 import type { Mesa, MesaCreate, MesaUpdate } from '../../types/mesa.types';
 import {
   obtenerMesas,
@@ -8,7 +8,7 @@ import {
   eliminarMesa
 } from '../../services/mesasService';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
+import ListaMesas from '../../components/mesas/ListaMesas/ListaMesas';
 import FormularioMesa from '../../components/mesas/FormularioMesa/FormularioMesa';
 import './ConfigMesas.css';
 
@@ -105,15 +105,6 @@ const ConfigMesas: React.FC = () => {
     setMostrarFormulario(true);
   };
 
-  const getEstatusColor = (estatus: string) => {
-    switch (estatus) {
-      case 'DISPONIBLE': return '#10b981'; // verde
-      case 'OCUPADA': return '#ef4444'; // rojo
-      case 'RESERVADA': return '#f59e0b'; // naranja
-      default: return '#6b7280'; // gris
-    }
-  };
-
   return (
     <>
       {/* Mensaje de Notificación */}
@@ -140,57 +131,11 @@ const ConfigMesas: React.FC = () => {
         emptyIcon={<Table2 size={80} />}
         emptyMessage="No hay mesas registradas."
       >
-        <div className="standard-cards-grid">
-          {mesas.map((mesa) => (
-            <StandardCard
-              key={mesa.idmesa}
-              title={mesa.nombremesa}
-              fields={[
-                {
-                  label: 'Número',
-                  value: `Mesa #${mesa.numeromesa}`
-                },
-                {
-                  label: 'Capacidad',
-                  value: `${mesa.cantcomensales} comensales`
-                },
-                {
-                  label: 'Estado',
-                  value: (
-                    <span style={{ 
-                      color: getEstatusColor(mesa.estatusmesa),
-                      fontWeight: 600
-                    }}>
-                      {mesa.estatusmesa}
-                    </span>
-                  )
-                },
-                {
-                  label: 'Estado Tiempo',
-                  value: mesa.estatustiempo.replace('_', ' ')
-                },
-                {
-                  label: 'Creado por',
-                  value: mesa.UsuarioCreo
-                }
-              ]}
-              actions={[
-                {
-                  label: 'Editar',
-                  icon: <Edit size={18} />,
-                  onClick: () => handleEditarMesa(mesa),
-                  variant: 'edit'
-                },
-                {
-                  label: 'Eliminar',
-                  icon: <Trash2 size={18} />,
-                  onClick: () => handleEliminarMesa(mesa.idmesa),
-                  variant: 'delete'
-                }
-              ]}
-            />
-          ))}
-        </div>
+        <ListaMesas
+          mesas={mesas}
+          onEdit={handleEditarMesa}
+          onDelete={handleEliminarMesa}
+        />
       </StandardPageLayout>
 
       {/* Formulario Modal */}

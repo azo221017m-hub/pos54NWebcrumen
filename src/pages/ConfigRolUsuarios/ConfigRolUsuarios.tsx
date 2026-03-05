@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Shield, Edit } from 'lucide-react';
+import { Plus, Shield } from 'lucide-react';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
+import { ListaRoles } from '../../components/roles/ListaRoles/ListaRoles';
 import { rolesService } from '../../services/rolesService';
 import type { Rol } from '../../types/rol.types';
 import { FormularioRol } from '../../components/roles/FormularioRol/FormularioRol';
@@ -120,16 +120,6 @@ export const ConfigRolUsuarios = () => {
     setRolEditar(null);
   };
 
-  const obtenerInfoNivel = (privilegio: string) => {
-    const nivel = parseInt(privilegio) || 1;
-    const colores = ['#94a3b8', '#64748b', '#475569', '#334155', '#1e293b'];
-    const niveles = ['Básico', 'Limitado', 'Intermedio', 'Avanzado', 'Total'];
-    return {
-      color: colores[nivel - 1] || colores[0],
-      texto: niveles[nivel - 1] || niveles[0]
-    };
-  };
-
   return (
     <>
       {/* Mensaje de Notificación */}
@@ -156,62 +146,11 @@ export const ConfigRolUsuarios = () => {
         emptyIcon={<Shield size={64} />}
         emptyMessage="No hay roles registrados."
       >
-        <div className="standard-cards-grid">
-          {roles.map((rol) => {
-            const infoNivel = obtenerInfoNivel(rol.privilegio);
-            
-            return (
-              <StandardCard
-                key={rol.idRol}
-                title={rol.nombreRol}
-                fields={[
-                  {
-                    label: 'Descripción',
-                    value: rol.descripcion || 'Sin descripción'
-                  },
-                  {
-                    label: 'Nivel de Privilegio',
-                    value: (
-                      <span style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        color: infoNivel.color,
-                        fontWeight: 600
-                      }}>
-                        <Shield size={14} />
-                        Nivel {rol.privilegio} - {infoNivel.texto}
-                      </span>
-                    )
-                  },
-                  {
-                    label: 'Estado',
-                    value: (
-                      <span style={{
-                        color: rol.estatus === 1 ? '#10b981' : '#ef4444',
-                        fontWeight: 600
-                      }}>
-                        {rol.estatus === 1 ? 'Activo' : 'Inactivo'}
-                      </span>
-                    )
-                  },
-                  {
-                    label: 'Usuario Auditoría',
-                    value: rol.usuarioauditoria || 'N/A'
-                  }
-                ]}
-                actions={[
-                  {
-                    label: 'Editar',
-                    icon: <Edit size={16} />,
-                    onClick: () => handleEditarRol(rol),
-                    variant: 'edit'
-                  }
-                ]}
-              />
-            );
-          })}
-        </div>
+        <ListaRoles
+          roles={roles}
+          onEditar={handleEditarRol}
+          loading={loading}
+        />
 
         {/* Formulario Modal */}
         {mostrarFormulario && (

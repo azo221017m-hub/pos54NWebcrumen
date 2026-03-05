@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, ChefHat, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, ChefHat } from 'lucide-react';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
+import ListaRecetas from '../../components/recetas/ListaRecetas/ListaRecetas';
 import FormularioReceta from '../../components/recetas/FormularioReceta/FormularioReceta';
 import type { Receta, RecetaCreate, RecetaUpdate } from '../../types/receta.types';
 import { obtenerRecetas, crearReceta, actualizarReceta, eliminarReceta } from '../../services/recetasService';
@@ -134,61 +134,11 @@ const ConfigRecetas: React.FC = () => {
         emptyIcon={<ChefHat size={80} />}
         emptyMessage="No hay recetas registradas."
       >
-        <div className="standard-cards-grid">
-          {recetas.map((receta) => (
-            <StandardCard
-              key={receta.idReceta}
-              title={receta.nombreReceta}
-              fields={[
-                {
-                  label: 'Costo',
-                  value: `$${Number(receta.costoReceta || 0).toFixed(2)}`
-                },
-                {
-                  label: 'Ingredientes',
-                  value: receta.detalles ? `${receta.detalles.length} ingrediente${receta.detalles.length !== 1 ? 's' : ''}` : '0 ingredientes'
-                },
-                {
-                  label: 'Instrucciones',
-                  value: receta.archivoInstrucciones || 'Sin archivo'
-                },
-                {
-                  label: 'Estado',
-                  value: (
-                    <span style={{ 
-                      color: receta.estatus === 1 ? '#10b981' : '#ef4444',
-                      fontWeight: 600,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}>
-                      {receta.estatus === 1 ? <CheckCircle size={16} /> : <XCircle size={16} />}
-                      {receta.estatus === 1 ? 'Activa' : 'Inactiva'}
-                    </span>
-                  )
-                },
-                {
-                  label: 'Usuario',
-                  value: receta.usuarioauditoria
-                }
-              ]}
-              actions={[
-                {
-                  label: 'Editar',
-                  icon: <Edit size={18} />,
-                  onClick: () => handleEditar(receta),
-                  variant: 'edit'
-                },
-                {
-                  label: 'Eliminar',
-                  icon: <Trash2 size={18} />,
-                  onClick: () => handleEliminar(receta.idReceta),
-                  variant: 'delete'
-                }
-              ]}
-            />
-          ))}
-        </div>
+        <ListaRecetas
+          recetas={recetas}
+          onEditar={handleEditar}
+          onEliminar={handleEliminar}
+        />
       </StandardPageLayout>
 
       {/* Formulario Modal */}

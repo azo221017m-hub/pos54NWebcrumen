@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, FileText, Edit, Trash2, Tag } from 'lucide-react';
+import { Plus, FileText } from 'lucide-react';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
+import ListaGrupoMovimientos from '../../components/grupoMovimientos/ListaGrupoMovimientos/ListaGrupoMovimientos';
 import type { GrupoMovimientos, GrupoMovimientosCreate, GrupoMovimientosUpdate } from '../../types/grupoMovimientos.types';
 import {
   obtenerGrupoMovimientos,
@@ -114,10 +114,6 @@ const ConfigGrupoMovimientos: React.FC = () => {
     setGrupoEditar(null);
   };
 
-  const getNaturalezaColor = (naturaleza: string) => {
-    return naturaleza === 'COMPRA' ? '#3b82f6' : '#8b5cf6';
-  };
-
   return (
     <>
       {/* Mensaje de Notificación */}
@@ -144,56 +140,11 @@ const ConfigGrupoMovimientos: React.FC = () => {
         emptyIcon={<FileText size={64} />}
         emptyMessage="No hay grupos de movimientos registrados."
       >
-        <div className="standard-cards-grid">
-          {grupos.map((grupo) => (
-            <StandardCard
-              key={grupo.id_cuentacontable}
-              title={grupo.nombrecuentacontable}
-              fields={[
-                {
-                  label: 'Naturaleza',
-                  value: (
-                    <span style={{
-                      color: getNaturalezaColor(grupo.naturalezacuentacontable),
-                      fontWeight: 600
-                    }}>
-                      <Tag size={14} style={{ display: 'inline', marginRight: '0.5rem' }} />
-                      {grupo.naturalezacuentacontable}
-                    </span>
-                  )
-                },
-                {
-                  label: 'Tipo de Grupo',
-                  value: grupo.tipocuentacontable
-                },
-                {
-                  label: 'Usuario',
-                  value: grupo.usuarioauditoria || 'N/A'
-                },
-                {
-                  label: 'Fecha Registro',
-                  value: grupo.fechaRegistroauditoria 
-                    ? new Date(grupo.fechaRegistroauditoria).toLocaleDateString('es-MX')
-                    : 'N/A'
-                }
-              ]}
-              actions={[
-                {
-                  label: 'Editar',
-                  icon: <Edit size={16} />,
-                  onClick: () => handleEditarGrupo(grupo),
-                  variant: 'edit'
-                },
-                {
-                  label: 'Eliminar',
-                  icon: <Trash2 size={16} />,
-                  onClick: () => handleEliminarGrupo(grupo.id_cuentacontable),
-                  variant: 'delete'
-                }
-              ]}
-            />
-          ))}
-        </div>
+        <ListaGrupoMovimientos
+          grupos={grupos}
+          onEdit={handleEditarGrupo}
+          onDelete={handleEliminarGrupo}
+        />
 
         {/* Formulario Modal */}
         {mostrarFormulario && (

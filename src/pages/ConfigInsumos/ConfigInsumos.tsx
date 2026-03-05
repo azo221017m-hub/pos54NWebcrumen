@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Package, Edit, Trash2, DollarSign, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Plus, Package } from 'lucide-react';
 import type { Insumo, InsumoCreate } from '../../types/insumo.types';
 import {
   obtenerInsumos,
@@ -8,7 +8,7 @@ import {
   eliminarInsumo
 } from '../../services/insumosService';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
+import ListaInsumos from '../../components/insumos/ListaInsumos/ListaInsumos';
 import FormularioInsumo from '../../components/insumos/FormularioInsumo/FormularioInsumo';
 import './ConfigInsumos.css';
 
@@ -124,28 +124,6 @@ const ConfigInsumos: React.FC = () => {
     }
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN'
-    }).format(value);
-  };
-
-  const getStockStatus = (actual: number, minimo: number) => {
-    const actualNum = Number(actual);
-    const minimoNum = Number(minimo);
-    
-    if (actualNum <= minimoNum) return 'critico';
-    if (actualNum <= minimoNum * 1.5) return 'bajo';
-    return 'normal';
-  };
-
-  const getStockIcon = (status: string) => {
-    if (status === 'critico') return <AlertTriangle size={16} style={{ color: '#ef4444' }} />;
-    if (status === 'bajo') return <AlertTriangle size={16} style={{ color: '#f59e0b' }} />;
-    return null;
-  };
-
   return (
     <>
       {/* Mensaje de Notificación */}
@@ -180,101 +158,11 @@ const ConfigInsumos: React.FC = () => {
         emptyIcon={<Package size={80} />}
         emptyMessage="No hay insumos registrados. Comienza agregando uno nuevo."
       >
-        <div className="standard-cards-grid">
-          {insumos.map((insumo) => {
-            const stockStatus = getStockStatus(insumo.stock_actual, insumo.stock_minimo);
-            
-            return (
-              <StandardCard
-                key={insumo.id_insumo}
-                title={insumo.nombre}
-                fields={[
-                  {
-                    label: 'Unidad Medida',
-                    value: insumo.unidad_medida
-                  },
-                  {
-                    label: 'Proveedor',
-                    value: insumo.idproveedor || 'Sin proveedor'
-                  },
-                  {
-                    label: 'Stock Actual',
-                    value: (
-                      <span style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '0.5rem',
-                        color: stockStatus === 'critico' ? '#ef4444' : stockStatus === 'bajo' ? '#f59e0b' : 'inherit'
-                      }}>
-                        {getStockIcon(stockStatus)}
-                        {insumo.stock_actual}
-                      </span>
-                    )
-                  },
-                  {
-                    label: 'Stock Mínimo',
-                    value: insumo.stock_minimo
-                  },
-                  {
-                    label: 'Costo Promedio',
-                    value: (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                        <DollarSign size={14} />
-                        {formatCurrency(insumo.costo_promedio_ponderado)}
-                      </span>
-                    )
-                  },
-                  {
-                    label: 'Precio Venta',
-                    value: (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                        <DollarSign size={14} />
-                        {formatCurrency(insumo.precio_venta)}
-                      </span>
-                    )
-                  },
-                  {
-                    label: 'Valor Stock',
-                    value: (
-                      <span style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '0.25rem',
-                        fontWeight: 600,
-                        color: '#10b981'
-                      }}>
-                        <TrendingUp size={14} />
-                        {formatCurrency(insumo.stock_actual * insumo.costo_promedio_ponderado)}
-                      </span>
-                    )
-                  },
-                  {
-                    label: 'Inventariable',
-                    value: insumo.inventariable ? 'Sí' : 'No'
-                  },
-                  {
-                    label: 'Estado',
-                    value: insumo.activo ? 'Activo' : 'Inactivo'
-                  }
-                ]}
-                actions={[
-                  {
-                    label: 'Editar',
-                    icon: <Edit size={16} />,
-                    onClick: () => handleEditar(insumo),
-                    variant: 'edit'
-                  },
-                  {
-                    label: 'Eliminar',
-                    icon: <Trash2 size={16} />,
-                    onClick: () => handleEliminar(insumo.id_insumo),
-                    variant: 'delete'
-                  }
-                ]}
-              />
-            );
-          })}
-        </div>
+        <ListaInsumos
+          insumos={insumos}
+          onEdit={handleEditar}
+          onDelete={handleEliminar}
+        />
       </StandardPageLayout>
 
       {/* Formulario Modal */}

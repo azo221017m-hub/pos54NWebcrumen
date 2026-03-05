@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, ChefHat, Edit, Trash2, DollarSign, Package } from 'lucide-react';
+import { Plus, ChefHat } from 'lucide-react';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
+import ListaSubrecetas from '../../components/subrecetas/ListaSubrecetas/ListaSubrecetas';
 import FormularioSubreceta from '../../components/subrecetas/FormularioSubreceta/FormularioSubreceta';
 import type { Subreceta, SubrecetaCreate, SubrecetaUpdate } from '../../types/subreceta.types';
 import { 
@@ -104,11 +104,6 @@ const ConfigSubreceta: React.FC = () => {
     setSubrecetaEditar(null);
   };
 
-  const getCantidadIngredientes = (subreceta: Subreceta) => {
-    const count = subreceta.detalles?.length || 0;
-    return `${count} ingrediente${count !== 1 ? 's' : ''}`;
-  };
-
   const getSubtitle = () => {
     return `${subrecetas.length} subreceta${subrecetas.length !== 1 ? 's' : ''} registrada${subrecetas.length !== 1 ? 's' : ''}`;
   };
@@ -136,67 +131,11 @@ const ConfigSubreceta: React.FC = () => {
         emptyIcon={<ChefHat size={80} />}
         emptyMessage="No hay subrecetas registradas"
       >
-        <div className="standard-cards-grid">
-          {subrecetas.map((subreceta) => (
-            <StandardCard
-              key={subreceta.idSubReceta}
-              title={subreceta.nombreSubReceta}
-              fields={[
-                {
-                  label: 'Costo Total',
-                  value: (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <DollarSign size={14} />
-                      <span style={{ fontWeight: 600, color: '#10b981' }}>
-                        ${Number(subreceta.costoSubReceta || 0).toFixed(2)}
-                      </span>
-                    </div>
-                  )
-                },
-                {
-                  label: 'Ingredientes',
-                  value: (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Package size={14} />
-                      {getCantidadIngredientes(subreceta)}
-                    </div>
-                  )
-                },
-                {
-                  label: 'Instrucciones',
-                  value: subreceta.instruccionesSubr 
-                    ? `${subreceta.instruccionesSubr.substring(0, 50)}...` 
-                    : 'Sin instrucciones'
-                },
-                {
-                  label: 'Estado',
-                  value: (
-                    <span style={{ 
-                      color: subreceta.estatusSubr === 1 ? '#10b981' : '#ef4444',
-                      fontWeight: 600
-                    }}>
-                      {subreceta.estatusSubr === 1 ? 'ACTIVA' : 'INACTIVA'}
-                    </span>
-                  )
-                }
-              ]}
-              actions={[
-                {
-                  label: 'Editar',
-                  icon: <Edit size={16} />,
-                  onClick: () => handleEditar(subreceta),
-                  variant: 'edit'
-                },
-                {
-                  label: 'Eliminar',
-                  icon: <Trash2 size={16} />,
-                  onClick: () => handleEliminar(subreceta.idSubReceta),
-                  variant: 'delete'
-                }
-              ]}
-            />
-          ))}
-        </div>
+        <ListaSubrecetas
+          subrecetas={subrecetas}
+          onEditar={handleEditar}
+          onEliminar={handleEliminar}
+        />
       </StandardPageLayout>
 
       {/* Formulario Modal */}

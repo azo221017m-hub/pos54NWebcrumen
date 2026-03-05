@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Store, Edit, Trash2, Building2, Phone, MapPin } from 'lucide-react';
+import { Plus, Store } from 'lucide-react';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
+import { ListaNegocios } from '../../components/negocios/ListaNegocios/ListaNegocios';
 import { negociosService } from '../../services/negociosService';
 import type { Negocio, NegocioCompleto } from '../../types/negocio.types';
 import { FormularioNegocio } from '../../components/negocios/FormularioNegocio/FormularioNegocio';
@@ -158,76 +158,12 @@ export const ConfigNegocios = () => {
         emptyIcon={<Store size={80} />}
         emptyMessage="No hay negocios registrados"
       >
-        <div className="standard-cards-grid">
-          {negocios.map((negocio) => (
-            <StandardCard
-              key={negocio.idNegocio}
-              title={negocio.nombreNegocio}
-              fields={[
-                {
-                  label: 'Número',
-                  value: `#${negocio.numeronegocio}`
-                },
-                {
-                  label: 'RFC',
-                  value: (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Building2 size={14} />
-                      {negocio.rfcnegocio}
-                    </div>
-                  )
-                },
-                {
-                  label: 'Teléfono',
-                  value: (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Phone size={14} />
-                      {negocio.telefonocontacto}
-                    </div>
-                  )
-                },
-                {
-                  label: 'Dirección',
-                  value: (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <MapPin size={14} />
-                      {negocio.direccionfiscalnegocio.substring(0, 50)}...
-                    </div>
-                  )
-                },
-                {
-                  label: 'Contacto',
-                  value: negocio.contactonegocio
-                },
-                {
-                  label: 'Estado',
-                  value: (
-                    <span style={{ 
-                      color: negocio.estatusnegocio === 1 ? '#10b981' : '#ef4444',
-                      fontWeight: 600
-                    }}>
-                      {negocio.estatusnegocio === 1 ? 'ACTIVO' : 'INACTIVO'}
-                    </span>
-                  )
-                }
-              ]}
-              actions={[
-                {
-                  label: 'Editar',
-                  icon: <Edit size={16} />,
-                  onClick: () => handleEditarNegocio(negocio),
-                  variant: 'edit'
-                },
-                {
-                  label: 'Eliminar',
-                  icon: <Trash2 size={16} />,
-                  onClick: () => handleEliminarNegocio(negocio.idNegocio!),
-                  variant: 'delete'
-                }
-              ]}
-            />
-          ))}
-        </div>
+        <ListaNegocios
+          negocios={negocios}
+          onEditar={handleEditarNegocio}
+          onEliminar={handleEliminarNegocio}
+          loading={loading}
+        />
       </StandardPageLayout>
 
       {/* Formulario Modal */}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Users, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Users } from 'lucide-react';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
+import ListaCatModeradores from '../../components/catModeradores/ListaCatModeradores/ListaCatModeradores';
 import type { CatModerador, CatModeradorCreate, CatModeradorUpdate } from '../../types/catModerador.types';
 import { obtenerCatModeradores, crearCatModerador, actualizarCatModerador, eliminarCatModerador } from '../../services/catModeradoresService';
 import FormularioCatModerador from '../../components/catModeradores/FormularioCatModerador/FormularioCatModerador';
@@ -94,16 +94,6 @@ const ConfigCatModeradores: React.FC = () => {
     setCatModeradorSeleccionada(null);
   };
 
-  const obtenerCantidadModeradores = (moderadores: string): number => {
-    if (!moderadores || moderadores === '' || moderadores === '0') {
-      return 0;
-    }
-    if (moderadores.includes(',')) {
-      return moderadores.split(',').filter(id => id.trim() !== '0' && id.trim() !== '').length;
-    }
-    return 1;
-  };
-
   return (
     <>
       {/* Mensaje de Notificación */}
@@ -130,74 +120,11 @@ const ConfigCatModeradores: React.FC = () => {
         emptyIcon={<Users size={64} />}
         emptyMessage="No hay categorías moderador registradas."
       >
-        <div className="standard-cards-grid">
-          {catModeradores.map((catModerador) => {
-            const cantidadModeradores = obtenerCantidadModeradores(catModerador.moderadores);
-            
-            return (
-              <StandardCard
-                key={catModerador.idmodref}
-                title={catModerador.nombremodref}
-                fields={[
-                  {
-                    label: 'Estado',
-                    value: (
-                      <span style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        color: catModerador.estatus === 1 ? '#10b981' : '#ef4444',
-                        fontWeight: 600
-                      }}>
-                        {catModerador.estatus === 1 ? <CheckCircle size={14} /> : <XCircle size={14} />}
-                        {catModerador.estatus === 1 ? 'Activo' : 'Inactivo'}
-                      </span>
-                    )
-                  },
-                  {
-                    label: 'Moderadores',
-                    value: (
-                      <span style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        color: '#8b5cf6',
-                        fontWeight: 600
-                      }}>
-                        <Users size={14} />
-                        {cantidadModeradores} moderador{cantidadModeradores !== 1 ? 'es' : ''}
-                      </span>
-                    )
-                  },
-                  {
-                    label: 'Usuario',
-                    value: catModerador.usuarioauditoria
-                  },
-                  {
-                    label: 'Fecha Registro',
-                    value: catModerador.fechaRegistroauditoria
-                      ? new Date(catModerador.fechaRegistroauditoria).toLocaleDateString('es-MX')
-                      : 'N/A'
-                  }
-                ]}
-                actions={[
-                  {
-                    label: 'Editar',
-                    icon: <Edit size={16} />,
-                    onClick: () => handleEditar(catModerador),
-                    variant: 'edit'
-                  },
-                  {
-                    label: 'Eliminar',
-                    icon: <Trash2 size={16} />,
-                    onClick: () => handleEliminar(catModerador.idmodref),
-                    variant: 'delete'
-                  }
-                ]}
-              />
-            );
-          })}
-        </div>
+        <ListaCatModeradores
+          catModeradores={catModeradores}
+          onEditar={handleEditar}
+          onEliminar={handleEliminar}
+        />
 
         {/* Formulario Modal */}
         {mostrarFormulario && (
