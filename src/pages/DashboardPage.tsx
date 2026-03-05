@@ -1647,6 +1647,22 @@ export const DashboardPage = () => {
                     ${resumenVentas.totalOrdenado.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: '0.65rem', color: '#9ca3af', marginBottom: '0.3rem', fontWeight: '500' }}>
+                    Gastos:
+                  </p>
+                  <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#ef4444', margin: 0 }}>
+                    ${resumenVentas.totalGastos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: '0.65rem', color: '#9ca3af', marginBottom: '0.3rem', fontWeight: '500' }}>
+                    Descuentos:
+                  </p>
+                  <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#8b5cf6', margin: 0 }}>
+                    ${resumenVentas.totalDescuentos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                </div>
               </div>
 
               {/* Barra de progreso: Meta de Venta vs Cobrado */}
