@@ -17,6 +17,7 @@ export interface Gasto {
 export interface GastoCreate {
   importegasto: number; // Será mapeado a subtotal
   tipodegasto: string; // Será mapeado a descripcionmov
+  claveturno?: string; // Clave del turno abierto (requerido para perfil 3)
 }
 
 export interface GastoUpdate {
