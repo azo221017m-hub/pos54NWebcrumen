@@ -1,277 +1,128 @@
-/* Lista de Moderadores */
-.lista-moderadores {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0.75rem;
-  max-height: calc(100vh - 350px);
-  overflow-y: auto;
-  padding: 0.25rem;
-}
-
-/* Scrollbar personalizada */
-.lista-moderadores::-webkit-scrollbar {
-  width: 6px;
-}
-
-.lista-moderadores::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 6px;
-}
-
-.lista-moderadores::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
-  border-radius: 6px;
-}
-
-.lista-moderadores::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #059669 0%, #1e3a5f 100%);
-}
-
-/* Card de Moderador */
-.moderador-card {
+.lista-moderadores-container {
   background: white;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s;
-  border: 2px solid transparent;
-  display: flex;
-  flex-direction: column;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.moderador-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(16, 185, 129, 0.2);
-  border-color: #a7f3d0;
+.tabla-wrapper {
+  overflow-x: auto;
 }
 
-/* Header del Card */
-.moderador-card-header {
-  padding: 0.75rem;
-  display: flex;
-  gap: 0.5rem;
-  align-items: flex-start;
-  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-  border-bottom: 1px solid #a7f3d0;
+.tabla-moderadores {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
 }
 
-.moderador-title-section {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
+.tabla-moderadores thead {
+  background-color: #f5f5f5;
 }
 
-.moderador-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 7px;
-  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
-}
-
-.moderador-nombre {
-  margin: 0 0 0.12rem 0;
-  font-size: 0.69rem;
-  font-weight: 700;
-  color: #065f46;
-  line-height: 1.3;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.tabla-moderadores th {
+  padding: 0.875rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #ddd;
   white-space: nowrap;
 }
 
-/* Badge de estatus */
-.estatus-badge {
+.tabla-moderadores tbody tr {
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+}
+
+.tabla-moderadores tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.tabla-moderadores td {
+  padding: 0.875rem 1rem;
+  color: #555;
+}
+
+.cell-nombre {
+  font-weight: 500;
+  color: #333;
+}
+
+.sin-datos {
+  text-align: center !important;
+  padding: 3rem !important;
+  color: #999;
+  font-style: italic;
+}
+
+.icono-vacio-inline {
+  display: block;
+  margin: 0 auto 0.5rem;
+  color: #ccc;
+}
+
+.badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.17rem;
-  padding: 0.17rem 0.38rem;
-  border-radius: 5px;
-  font-size: 0.48rem;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
   font-weight: 600;
   white-space: nowrap;
 }
 
-.estatus-badge.activo {
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-  color: #065f46;
-  border: 1px solid #6ee7b7;
+.badge-activo {
+  background-color: #e8f5e9;
+  color: #2e7d32;
 }
 
-.estatus-badge.inactivo {
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  color: #991b1b;
-  border: 1px solid #fca5a5;
+.badge-inactivo {
+  background-color: #ffebee;
+  color: #c62828;
 }
 
-/* Acciones */
-.moderador-acciones {
+.acciones-btns {
   display: flex;
-  gap: 0.25rem;
+  gap: 0.5rem;
+  justify-content: flex-start;
 }
 
 .btn-accion {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0.4rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
   transition: all 0.2s;
+  color: white;
 }
 
 .btn-editar {
-  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
-  color: white;
+  background-color: #2196F3;
 }
 
 .btn-editar:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+  background-color: #1976D2;
 }
 
 .btn-eliminar {
-  background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-  color: white;
+  background-color: #f44336;
 }
 
 .btn-eliminar:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+  background-color: #da190b;
 }
 
-.btn-accion:active {
-  transform: translateY(0);
-}
-
-/* Body */
-.moderador-card-body {
-  padding: 0.75rem;
-  flex: 1;
-}
-
-.moderador-info-row {
-  display: flex;
-  align-items: center;
-  gap: 0.38rem;
-  padding: 0.38rem;
-  background: #f8fafc;
-  border-radius: 6px;
-  transition: all 0.2s;
-}
-
-.moderador-info-row:hover {
-  background: #ecfdf5;
-}
-
-.info-icon {
-  color: #1e3a5f;
-  flex-shrink: 0;
-}
-
-.info-label {
-  font-size: 0.51rem;
-  color: #64748b;
-  font-weight: 600;
-}
-
-.info-value {
-  font-size: 0.57rem;
-  color: #1e293b;
-  font-weight: 700;
-  margin-left: auto;
-}
-
-.info-value.usuario {
-  color: #1e3a5f;
-}
-
-/* Footer */
-.moderador-card-footer {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0.5rem 0.75rem;
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
-  font-size: 0.45rem;
-  color: #64748b;
-}
-
-.fecha-registro,
-.fecha-modificacion {
-  display: flex;
-  align-items: center;
-}
-
-/* Estado vacío */
-.lista-moderadores-vacia {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1rem;
-  text-align: center;
-  color: #64748b;
-}
-
-.icono-vacio {
-  color: #cbd5e1;
-  margin-bottom: 0.75rem;
-}
-
-.lista-moderadores-vacia h3 {
-  margin: 0 0 0.25rem 0;
-  font-size: 0.9rem;
-  color: #475569;
-}
-
-.lista-moderadores-vacia p {
-  margin: 0;
-  font-size: 0.6rem;
-}
-
-/* Responsive */
 @media (max-width: 768px) {
-  .lista-moderadores {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-    max-height: calc(100vh - 300px);
+  .tabla-moderadores th,
+  .tabla-moderadores td {
+    padding: 0.65rem 0.5rem;
+    font-size: 0.85rem;
   }
 
-  .moderador-card-header {
-    flex-wrap: wrap;
-    padding: 0.5rem;
-  }
-
-  .moderador-icon {
-    width: 36px;
-    height: 36px;
-  }
-
-  .moderador-nombre {
-    font-size: 0.6rem;
-  }
-
-  .moderador-acciones {
-    width: 100%;
-    justify-content: flex-end;
-    margin-top: 0.25rem;
-  }
-
-  .moderador-card-body {
-    padding: 0.5rem;
-  }
-
-  .moderador-card-footer {
+  .acciones-btns {
     flex-direction: column;
-    gap: 0.12rem;
   }
 }

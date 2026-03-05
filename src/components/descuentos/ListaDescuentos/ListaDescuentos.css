@@ -1,343 +1,153 @@
-/* Lista de Descuentos */
-.lista-descuentos {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0.75rem;
-  max-height: calc(100vh - 350px);
-  overflow-y: auto;
-  padding: 0.25rem;
-}
-
-/* Scrollbar personalizada */
-.lista-descuentos::-webkit-scrollbar {
-  width: 6px;
-}
-
-.lista-descuentos::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 6px;
-}
-
-.lista-descuentos::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
-  border-radius: 6px;
-}
-
-.lista-descuentos::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #059669 0%, #1e3a5f 100%);
-}
-
-/* Card de Descuento */
-.descuento-card {
+.lista-descuentos-container {
   background: white;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s;
-  border: 2px solid transparent;
-  display: flex;
-  flex-direction: column;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.descuento-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(16, 185, 129, 0.2);
-  border-color: #a7f3d0;
+.tabla-wrapper {
+  overflow-x: auto;
 }
 
-/* Header del Card */
-.descuento-card-header {
-  padding: 0.75rem;
-  display: flex;
-  gap: 0.5rem;
-  align-items: flex-start;
-  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-  border-bottom: 1px solid #a7f3d0;
+.tabla-descuentos {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 750px;
 }
 
-.descuento-icon-wrapper {
-  background: rgba(16, 185, 129, 0.2);
-  padding: 0.38rem;
-  border-radius: 7px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.tabla-descuentos thead {
+  background-color: #f5f5f5;
 }
 
-.descuento-icon {
-  color: #065f46;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-}
-
-.descuento-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.descuento-info h3 {
-  margin: 0 0 0.12rem 0;
-  font-size: 0.69rem;
-  font-weight: 700;
-  color: #065f46;
-  line-height: 1.3;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.tabla-descuentos th {
+  padding: 0.875rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #ddd;
   white-space: nowrap;
 }
 
-.descuento-id {
-  font-size: 0.51rem;
-  color: #059669;
-  font-weight: 500;
+.tabla-descuentos tbody tr {
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
 }
 
-.descuento-badges {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  align-items: flex-end;
+.tabla-descuentos tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.tabla-descuentos td {
+  padding: 0.875rem 1rem;
+  color: #555;
+}
+
+.cell-nombre {
+  font-weight: 500;
+  color: #333;
+}
+
+.cell-valor {
+  font-weight: 600;
+  color: #2e7d32;
+}
+
+.sin-datos {
+  text-align: center !important;
+  padding: 3rem !important;
+  color: #999;
+  font-style: italic;
+}
+
+.icono-vacio-inline {
+  display: block;
+  margin: 0 auto 0.5rem;
+  color: #ccc;
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.17rem;
-  padding: 0.17rem 0.38rem;
-  border-radius: 5px;
-  font-size: 0.48rem;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
   font-weight: 600;
   white-space: nowrap;
-}
-
-.badge-tipo {
-  color: white;
-}
-
-.tipo-porcentaje {
-  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
-}
-
-.tipo-efectivo {
-  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
 }
 
 .badge-activo {
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-  color: #065f46;
-  border: 1px solid #6ee7b7;
+  background-color: #e8f5e9;
+  color: #2e7d32;
 }
 
 .badge-inactivo {
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  color: #991b1b;
-  border: 1px solid #fca5a5;
+  background-color: #ffebee;
+  color: #c62828;
 }
 
-/* Body del Card */
-.descuento-card-body {
-  padding: 0.75rem;
-  flex: 1;
+.badge-porcentaje {
+  background-color: #e3f2fd;
+  color: #1565c0;
 }
 
-.descuento-stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.38rem;
-  margin-bottom: 0.5rem;
+.badge-efectivo {
+  background-color: #e8f5e9;
+  color: #2e7d32;
 }
 
-.stat-item {
+.badge-requiere-si {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+.badge-requiere-no {
+  background-color: #f5f5f5;
+  color: #757575;
+}
+
+.acciones-btns {
   display: flex;
-  align-items: center;
-  gap: 0.38rem;
-  padding: 0.38rem;
-  background: #f8fafc;
-  border-radius: 6px;
-  transition: all 0.2s;
+  gap: 0.5rem;
+  justify-content: flex-start;
 }
 
-.stat-item:hover {
-  background: #ecfdf5;
-}
-
-.stat-item svg {
-  color: #1e3a5f;
-  flex-shrink: 0;
-}
-
-.stat-item.valor svg {
-  color: #059669;
-}
-
-.stat-item.autorizacion svg {
-  color: #6366f1;
-}
-
-.stat-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.stat-label {
-  font-size: 0.45rem;
-  color: #64748b;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.stat-value {
-  font-size: 0.57rem;
-  color: #1e293b;
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.stat-value.requiere-si {
-  color: #dc2626;
-}
-
-.stat-value.requiere-no {
-  color: #059669;
-}
-
-.descuento-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.12rem;
-  padding: 0.38rem;
-  background: #f8fafc;
-  border-radius: 6px;
-  border-left: 3px solid #1e3a5f;
-}
-
-.meta-label {
-  font-size: 0.42rem;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.meta-value {
-  font-size: 0.53rem;
-  color: #1e293b;
-  font-weight: 600;
-}
-
-/* Footer del Card */
-.descuento-card-footer {
-  display: flex;
-  gap: 0.38rem;
-  padding: 0.5rem 0.75rem;
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
-}
-
-.btn-editar,
-.btn-eliminar {
-  flex: 1;
+.btn-accion {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
-  padding: 0.38rem;
+  padding: 0.4rem;
   border: none;
-  border-radius: 6px;
-  font-size: 0.57rem;
-  font-weight: 600;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
+  color: white;
 }
 
 .btn-editar {
-  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
-  color: white;
+  background-color: #2196F3;
 }
 
 .btn-editar:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+  background-color: #1976D2;
 }
 
 .btn-eliminar {
-  background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-  color: white;
+  background-color: #f44336;
 }
 
 .btn-eliminar:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+  background-color: #da190b;
 }
 
-.btn-editar:active,
-.btn-eliminar:active {
-  transform: translateY(0);
-}
-
-/* Estado Vacío */
-.lista-descuentos-vacia {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1rem;
-  text-align: center;
-  color: #64748b;
-}
-
-.icono-vacio {
-  color: #cbd5e1;
-  margin-bottom: 0.75rem;
-}
-
-.lista-descuentos-vacia h3 {
-  margin: 0 0 0.25rem 0;
-  font-size: 0.9rem;
-  color: #475569;
-}
-
-.lista-descuentos-vacia p {
-  margin: 0;
-  font-size: 0.6rem;
-}
-
-/* Responsive */
 @media (max-width: 768px) {
-  .lista-descuentos {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-    max-height: calc(100vh - 300px);
+  .tabla-descuentos th,
+  .tabla-descuentos td {
+    padding: 0.65rem 0.5rem;
+    font-size: 0.85rem;
   }
 
-  .descuento-card-header {
-    flex-wrap: wrap;
-    padding: 0.5rem;
-  }
-
-  .descuento-badges {
-    flex-direction: row;
-    width: 100%;
-    margin-top: 0.25rem;
-  }
-
-  .descuento-card-body {
-    padding: 0.5rem;
-  }
-
-  .descuento-stats {
-    grid-template-columns: 1fr;
-  }
-
-  .descuento-card-footer {
+  .acciones-btns {
     flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .btn-editar,
-  .btn-eliminar {
-    width: 100%;
   }
 }

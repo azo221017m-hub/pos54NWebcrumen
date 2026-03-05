@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Mesa } from '../../../types/mesa.types';
 import { EstatusMesa, EstatusTiempo } from '../../../types/mesa.types';
-import { Users, Table2, Clock, AlertCircle, Edit2, Trash2 } from 'lucide-react';
+import { Table2, Edit2, Trash2 } from 'lucide-react';
 import './ListaMesas.css';
 
 interface ListaMesasProps {
@@ -11,37 +11,28 @@ interface ListaMesasProps {
 }
 
 const ListaMesas: React.FC<ListaMesasProps> = ({ mesas, onEdit, onDelete }) => {
-  // Debug: Verificar que los datos lleguen correctamente
   console.log('ListaMesas - Total mesas:', mesas.length, mesas);
 
   const getEstatusClass = (estatus: EstatusMesa): string => {
     switch (estatus) {
-      case EstatusMesa.DISPONIBLE:
-        return 'estatus-disponible';
-      case EstatusMesa.OCUPADA:
-        return 'estatus-ocupada';
-      case EstatusMesa.RESERVADA:
-        return 'estatus-reservada';
-      default:
-        return '';
+      case EstatusMesa.DISPONIBLE: return 'badge-disponible';
+      case EstatusMesa.OCUPADA: return 'badge-ocupada';
+      case EstatusMesa.RESERVADA: return 'badge-reservada';
+      default: return '';
     }
   };
 
-  const getEstatusTiempoClass = (estatus: EstatusTiempo): string => {
+  const getTiempoClass = (estatus: EstatusTiempo): string => {
     switch (estatus) {
-      case EstatusTiempo.INACTIVA:
-        return 'tiempo-inactiva';
-      case EstatusTiempo.EN_CURSO:
-        return 'tiempo-en-curso';
-      case EstatusTiempo.DEMORA:
-        return 'tiempo-demora';
-      default:
-        return '';
+      case EstatusTiempo.INACTIVA: return 'badge-inactiva';
+      case EstatusTiempo.EN_CURSO: return 'badge-en-curso';
+      case EstatusTiempo.DEMORA: return 'badge-demora';
+      default: return '';
     }
   };
 
-  const formatearEstatusTexto = (estatus: EstatusMesa): string => {
-    const textos = {
+  const formatEstatusMesa = (estatus: EstatusMesa): string => {
+    const textos: Record<string, string> = {
       [EstatusMesa.DISPONIBLE]: 'Disponible',
       [EstatusMesa.OCUPADA]: 'Ocupada',
       [EstatusMesa.RESERVADA]: 'Reservada'
@@ -49,8 +40,8 @@ const ListaMesas: React.FC<ListaMesasProps> = ({ mesas, onEdit, onDelete }) => {
     return textos[estatus] || estatus;
   };
 
-  const formatearTiempoTexto = (estatus: EstatusTiempo): string => {
-    const textos = {
+  const formatEstatusTiempo = (estatus: EstatusTiempo): string => {
+    const textos: Record<string, string> = {
       [EstatusTiempo.INACTIVA]: 'Inactiva',
       [EstatusTiempo.EN_CURSO]: 'En Curso',
       [EstatusTiempo.DEMORA]: 'Demora'
@@ -60,89 +51,72 @@ const ListaMesas: React.FC<ListaMesasProps> = ({ mesas, onEdit, onDelete }) => {
 
   const mesasArray = Array.isArray(mesas) ? mesas : [];
 
-  if (mesasArray.length === 0) {
-    return (
-      <div className="lista-mesas-vacia">
-        <Table2 size={64} className="icono-vacio" />
-        <h3>No hay mesas registradas</h3>
-        <p>Crea tu primera mesa para comenzar</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="lista-mesas">
-      {mesasArray.map((mesa) => (
-        <div key={mesa.idmesa} className="mesa-card">
-          <div className="mesa-card-header">
-            <div className="mesa-icon-wrapper">
-              <Table2 size={24} className="mesa-icon" />
-            </div>
-            <div className="mesa-info">
-              <h3>{mesa.nombremesa}</h3>
-              <span className="mesa-numero">Mesa #{mesa.numeromesa}</span>
-            </div>
-            <div className="mesa-badges">
-              <span className={`badge badge-estatus ${getEstatusClass(mesa.estatusmesa)}`}>
-                {formatearEstatusTexto(mesa.estatusmesa)}
-              </span>
-            </div>
-          </div>
-
-          <div className="mesa-card-body">
-            <div className="mesa-stats">
-              <div className="stat-item capacidad">
-                <Users size={18} />
-                <div className="stat-info">
-                  <span className="stat-label">Capacidad</span>
-                  <span className="stat-value">{mesa.cantcomensales} comensales</span>
-                </div>
-              </div>
-
-              <div className="stat-item tiempo">
-                <Clock size={18} />
-                <div className="stat-info">
-                  <span className="stat-label">Estado Tiempo</span>
-                  <span className={`stat-value ${getEstatusTiempoClass(mesa.estatustiempo)}`}>
-                    {formatearTiempoTexto(mesa.estatustiempo)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {mesa.tiempoactual && (
-              <div className="mesa-tiempo-actual">
-                <AlertCircle size={16} />
-                <span>Tiempo transcurrido: {mesa.tiempoactual}</span>
-              </div>
+    <div className="lista-mesas-container">
+      <div className="tabla-wrapper">
+        <table className="tabla-mesas">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>#</th>
+              <th>Capacidad</th>
+              <th>Estado Mesa</th>
+              <th>Estado Tiempo</th>
+              <th>Usuario</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {mesasArray.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="sin-datos">
+                  <Table2 size={32} className="icono-vacio-inline" />
+                  No hay mesas registradas
+                </td>
+              </tr>
+            ) : (
+              mesasArray.map((mesa) => (
+                <tr key={mesa.idmesa}>
+                  <td>{mesa.idmesa}</td>
+                  <td className="cell-nombre">{mesa.nombremesa}</td>
+                  <td>{mesa.numeromesa}</td>
+                  <td>{mesa.cantcomensales}</td>
+                  <td>
+                    <span className={`badge ${getEstatusClass(mesa.estatusmesa)}`}>
+                      {formatEstatusMesa(mesa.estatusmesa)}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`badge ${getTiempoClass(mesa.estatustiempo)}`}>
+                      {formatEstatusTiempo(mesa.estatustiempo)}
+                    </span>
+                  </td>
+                  <td>{mesa.UsuarioCreo || '-'}</td>
+                  <td>
+                    <div className="acciones-btns">
+                      <button
+                        className="btn-accion btn-editar"
+                        onClick={() => onEdit(mesa)}
+                        title="Editar mesa"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        className="btn-accion btn-eliminar"
+                        onClick={() => onDelete(mesa.idmesa)}
+                        title="Eliminar mesa"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
             )}
-
-            <div className="mesa-meta">
-              <span className="meta-label">Creado por:</span>
-              <span className="meta-value">{mesa.UsuarioCreo || 'Sistema'}</span>
-            </div>
-          </div>
-
-          <div className="mesa-card-footer">
-            <button
-              className="btn-editar"
-              onClick={() => onEdit(mesa)}
-              title="Editar mesa"
-            >
-              <Edit2 size={18} />
-              Editar
-            </button>
-            <button
-              className="btn-eliminar"
-              onClick={() => onDelete(mesa.idmesa)}
-              title="Eliminar mesa"
-            >
-              <Trash2 size={18} />
-              Eliminar
-            </button>
-          </div>
-        </div>
-      ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
