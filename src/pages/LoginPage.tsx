@@ -62,6 +62,10 @@ export const LoginPage = () => {
           localStorage.setItem('privilegio', privilegio);
         } catch (rolError) {
           console.error('Error al obtener rol del usuario:', rolError);
+          // If role fetch fails, clear auth and notify user to avoid undefined behavior
+          authService.clearAuthData();
+          setError('Error al obtener perfil de acceso. Por favor, intenta de nuevo.');
+          return;
         }
 
         // Redirigir según el privilegio

@@ -1660,6 +1660,7 @@ const PageVentas: React.FC = () => {
       />
 
       {/* Modal para selección de tipo de venta */}
+      {/* For privilege 2 users, provide no-op onClose to prevent overlay-click from navigating to dashboard */}
       <ModalSeleccionVentaPageVentas
         isOpen={showSelectionModal}
         onTipoVentaSelect={handleSelectionModalVentaSelect}
