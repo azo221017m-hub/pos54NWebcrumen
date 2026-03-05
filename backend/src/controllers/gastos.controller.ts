@@ -131,7 +131,7 @@ export async function obtenerGastoPorId(req: AuthRequest, res: Response): Promis
 // POST /api/gastos - Crear un nuevo gasto
 export async function crearGasto(req: AuthRequest, res: Response): Promise<void> {
   try {
-    const { importegasto, tipodegasto } = req.body as GastoCreate;
+    const { importegasto, tipodegasto, claveturno: claveTurnoBody } = req.body as GastoCreate;
     const idnegocio = req.user?.idNegocio;
     const usuarioalias = req.user?.alias;
 
@@ -226,7 +226,7 @@ export async function crearGasto(req: AuthRequest, res: Response): Promise<void>
         ?
       )`,
       // Orden de parámetros: folioventa, subtotal, totaldeventa, claveturno, idnegocio, usuarioauditoria, descripcionmov
-      [folioventa, importegasto, importegasto, folioventa, idnegocio, usuarioalias, tipodegasto]
+      [folioventa, importegasto, importegasto, claveTurnoBody || folioventa, idnegocio, usuarioalias, tipodegasto]
     );
 
     // Obtener el gasto creado
