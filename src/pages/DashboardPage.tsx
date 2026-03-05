@@ -177,6 +177,8 @@ export const DashboardPage = () => {
     totalCobrado: 0,
     totalOrdenado: 0,
     totalVentasCobradas: 0,
+    totalGastos: 0,
+    totalDescuentos: 0,
     metaTurno: 0,
     hasTurnoAbierto: false,
     ventasPorFormaDePago: [],
