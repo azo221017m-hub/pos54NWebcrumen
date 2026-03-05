@@ -131,7 +131,7 @@ export async function obtenerGastoPorId(req: AuthRequest, res: Response): Promis
 // POST /api/gastos - Crear un nuevo gasto
 export async function crearGasto(req: AuthRequest, res: Response): Promise<void> {
   try {
-    const { importegasto, tipodegasto } = req.body as GastoCreate;
+    const { importegasto, tipodegasto, claveturno } = req.body as GastoCreate;
     const idnegocio = req.user?.idNegocio;
     const usuarioalias = req.user?.alias;
 
@@ -163,8 +163,10 @@ export async function crearGasto(req: AuthRequest, res: Response): Promise<void>
     // Generar folio
     const folioventa = generarFolioGasto();
 
+    // Determinar claveturno: usar la proporcionada si existe, si no usar el folioventa
+    const claveturnoFinal = claveturno && claveturno.trim() !== '' ? claveturno.trim() : folioventa;
+
     // Insertar el gasto (venta de tipo MOVIMIENTO)
-    // Nota: folioventa se usa tanto para folioventa como para claveturno
     const [result] = await pool.execute<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebventas (
         tipodeventa,
@@ -226,7 +228,7 @@ export async function crearGasto(req: AuthRequest, res: Response): Promise<void>
         ?
       )`,
       // Orden de parámetros: folioventa, subtotal, totaldeventa, claveturno, idnegocio, usuarioauditoria, descripcionmov
-      [folioventa, importegasto, importegasto, folioventa, idnegocio, usuarioalias, tipodegasto]
+      [folioventa, importegasto, importegasto, claveturnoFinal, idnegocio, usuarioalias, tipodegasto]
     );
 
     // Obtener el gasto creado
