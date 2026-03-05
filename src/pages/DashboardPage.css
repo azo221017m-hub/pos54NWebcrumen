@@ -64,8 +64,8 @@
 }
 
 .logo-icon {
-  width: 1.75rem;  /* 28px */
-  height: 1.75rem; /* 28px */
+  width: 140px;
+  height: 140px;
   flex-shrink: 0;
   object-fit: contain;
 }
@@ -979,8 +979,8 @@
   }
 
   .logo-icon {
-    width: 36px;
-    height: 36px;
+    width: 80px;
+    height: 80px;
   }
 
   .logo-text h1 {
@@ -1136,8 +1136,8 @@
 
 @media (max-width: 480px) {
   .logo-icon {
-    width: 32px;
-    height: 32px;
+    width: 60px;
+    height: 60px;
   }
 
   .logo-text h1 {

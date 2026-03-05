@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { clearSession } from '../../services/sessionService';
 import type { TipoServicio } from '../../types/mesa.types';
 import './ModalSeleccionVentaPageVentas.css';
 
@@ -7,12 +8,14 @@ interface ModalSeleccionVentaPageVentasProps {
   isOpen: boolean;
   onTipoVentaSelect: (tipoVenta: TipoServicio) => void;
   onClose?: () => void;
+  privilegio?: number;
 }
 
 const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps> = ({ 
   isOpen, 
   onTipoVentaSelect,
-  onClose
+  onClose,
+  privilegio = 0
 }) => {
   const navigate = useNavigate();
   
@@ -33,9 +36,22 @@ const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps
     }
   };
 
+  const handleCancelarSesion = () => {
+    clearSession();
+    window.location.href = '/login';
+  };
+
   return (
     <div className="modal-seleccion-venta-pageventas-overlay" onClick={handleOverlayClick}>
       <div className="modal-seleccion-venta-pageventas-content floating" onClick={(e) => e.stopPropagation()}>
+        {privilegio === 2 && (
+          <button
+            className="btn-cancelar-seleccion-venta"
+            onClick={handleCancelarSesion}
+          >
+            Cancelar
+          </button>
+        )}
         <div className="modal-seleccion-venta-pageventas-header">
           <h2>SELECCIONE tipo de VENTA</h2>
         </div>
