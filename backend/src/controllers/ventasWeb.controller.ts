@@ -1168,6 +1168,8 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
           totalCobrado: 0,
           totalOrdenado: 0,
           totalVentasCobradas: 0,
+          totalGastos: 0,
+          totalDescuentos: 0,
           metaTurno: 0,
           hasTurnoAbierto: false,
           ventasPorFormaDePago: [],
@@ -1197,6 +1199,29 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const totalCobrado = Number(salesRows[0]?.totalCobrado) || 0;
     const totalOrdenado = Number(salesRows[0]?.totalOrdenado) || 0;
     const totalVentasCobradas = Number(salesRows[0]?.totalVentasCobradas) || 0;
+
+    // Get total gastos: tipodeventa='MOVIMIENTO', estadodeventa='COBRADO', referencia='GASTO'
+    const [gastosRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(totaldeventa), 0) as totalGastos
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? AND idnegocio = ?
+         AND tipodeventa = 'MOVIMIENTO'
+         AND estadodeventa = 'COBRADO'
+         AND referencia = 'GASTO'`,
+      [claveturno, idnegocio]
+    );
+    const totalGastos = Number(gastosRows[0]?.totalGastos) || 0;
+
+    // Get total descuentos: estadodeventa='COBRADO', descripcionmov='VENTA'
+    const [descuentosTotalRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(descuentos), 0) as totalDescuentos
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? AND idnegocio = ?
+         AND estadodeventa = 'COBRADO'
+         AND descripcionmov = 'VENTA'`,
+      [claveturno, idnegocio]
+    );
+    const totalDescuentos = Number(descuentosTotalRows[0]?.totalDescuentos) || 0;
 
     // Get sales grouped by formadepago directly from tblposcrumenwebventas
     // Criteria: descripcionmov='VENTA', estadodeventa='COBRADO'
@@ -1278,6 +1303,8 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
         totalCobrado,
         totalOrdenado,
         totalVentasCobradas,
+        totalGastos,
+        totalDescuentos,
         metaTurno: metaturno,
         hasTurnoAbierto: true,
         ventasPorFormaDePago,
