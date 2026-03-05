@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Receipt, DollarSign, FileText, Calendar, CheckCircle, XCircle } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
-import StandardCard from '../../components/StandardCard/StandardCard';
 import type { Gasto, GastoCreate } from '../../types/gastos.types';
 import {
   obtenerGastos,
@@ -9,6 +8,7 @@ import {
   actualizarGasto
 } from '../../services/gastosService';
 import FormularioGastos from '../../components/gastos/FormularioGastos/FormularioGastos';
+import ListaGastos from '../../components/gastos/ListaGastos/ListaGastos';
 import '../../styles/StandardPageLayout.css';
 
 const PageGastos: React.FC = () => {
@@ -83,21 +83,6 @@ const PageGastos: React.FC = () => {
     setGastoEditar(null);
   };
 
-  const formatFecha = (fecha: Date | string) => {
-    return new Date(fecha).toLocaleDateString('es-MX', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  const getEstadoPago = (estado: string | null) => {
-    if (!estado) return { color: '#94a3b8', text: 'Sin estado' };
-    if (estado === 'PAGADO') return { color: '#10b981', text: 'PAGADO', icon: <CheckCircle size={14} /> };
-    if (estado === 'PENDIENTE') return { color: '#f59e0b', text: 'PENDIENTE', icon: <XCircle size={14} /> };
-    return { color: '#64748b', text: estado };
-  };
-
   return (
     <>
       {mensaje && (
@@ -117,68 +102,8 @@ const PageGastos: React.FC = () => {
         }}
         loading={cargando}
         loadingMessage="Cargando gastos..."
-        isEmpty={gastos.length === 0}
-        emptyIcon={<Receipt size={80} />}
-        emptyMessage="No hay gastos registrados"
       >
-        <div className="standard-cards-grid">
-          {gastos.map((gasto) => {
-            const estadoPago = getEstadoPago(gasto.estatusdepago);
-            return (
-              <StandardCard
-                key={gasto.idventa}
-                title={`Folio: ${gasto.folioventa}`}
-                fields={[
-                  {
-                    label: 'Tipo de Gasto',
-                    value: (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <FileText size={14} />
-                        {gasto.descripcionmov || 'N/A'}
-                      </div>
-                    )
-                  },
-                  {
-                    label: 'Importe',
-                    value: (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <DollarSign size={14} />
-                        <span style={{ fontWeight: 600, color: '#ef4444' }}>
-                          ${Number(gasto.totaldeventa || 0).toFixed(2)}
-                        </span>
-                      </div>
-                    )
-                  },
-                  {
-                    label: 'Fecha',
-                    value: (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Calendar size={14} />
-                        {formatFecha(gasto.fechadeventa)}
-                      </div>
-                    )
-                  },
-                  {
-                    label: 'Estado de Pago',
-                    value: (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        {estadoPago.icon}
-                        <span style={{ color: estadoPago.color, fontWeight: 600 }}>
-                          {estadoPago.text}
-                        </span>
-                      </div>
-                    )
-                  },
-                  {
-                    label: 'Referencia',
-                    value: gasto.referencia || 'Sin referencia'
-                  }
-                ]}
-                actions={[]}
-              />
-            );
-          })}
-        </div>
+        <ListaGastos gastos={gastos} />
       </StandardPageLayout>
 
       {/* Formulario Modal */}
