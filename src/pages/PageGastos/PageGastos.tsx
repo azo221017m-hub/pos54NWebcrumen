@@ -8,12 +8,10 @@ import {
   crearGasto,
   actualizarGasto
 } from '../../services/gastosService';
-import { obtenerTurnoAbiertoActual } from '../../services/turnosService';
 import FormularioGastos from '../../components/gastos/FormularioGastos/FormularioGastos';
 import '../../styles/StandardPageLayout.css';
 
 const PageGastos: React.FC = () => {
-  const privilegio = Number(localStorage.getItem('privilegio') || '0');
   const [gastos, setGastos] = useState<Gasto[]>([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -52,15 +50,6 @@ const PageGastos: React.FC = () => {
   };
 
   const handleGuardar = async (data: GastoCreate) => {
-    // Si perfil = 2, se requiere turno abierto (validación antes de guardar)
-    if (privilegio === 2) {
-      const turnoAbierto = await obtenerTurnoAbiertoActual();
-      if (!turnoAbierto) {
-        throw new Error('Se requiere un turno abierto para guardar gastos');
-      }
-      data = { ...data, claveturno: turnoAbierto.claveturno };
-    }
-
     try {
       if (gastoEditar) {
         // Actualizar

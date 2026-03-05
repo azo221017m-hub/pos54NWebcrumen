@@ -73,7 +73,7 @@ const FormularioGastos: React.FC<Props> = ({ gasto, onGuardar, onCancelar }) => 
       });
     } catch (error: any) {
       console.error('Error al guardar gasto:', error);
-      setError(error?.response?.data?.message || error?.message || 'Error al guardar el gasto');
+      setError(error?.response?.data?.message || 'Error al guardar el gasto');
     } finally {
       setGuardando(false);
     }
