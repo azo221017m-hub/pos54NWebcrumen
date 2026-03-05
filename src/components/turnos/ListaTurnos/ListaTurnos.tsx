@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Turno } from '../../../types/turno.types';
 import { EstatusTurno } from '../../../types/turno.types';
-import { Clock, Calendar, User, Building2, Edit2, CheckCircle, XCircle, DollarSign, Target } from 'lucide-react';
+import { Clock, Edit2, CheckCircle, XCircle } from 'lucide-react';
 import './ListaTurnos.css';
 
 interface ListaTurnosProps {
@@ -12,21 +12,10 @@ interface ListaTurnosProps {
 const ListaTurnos: React.FC<ListaTurnosProps> = ({ turnos, onEdit }) => {
   const getEstatusClass = (estatus: EstatusTurno): string => {
     switch (estatus) {
-      case EstatusTurno.ABIERTO:
-        return 'estatus-abierto';
-      case EstatusTurno.CERRADO:
-        return 'estatus-cerrado';
-      default:
-        return '';
+      case EstatusTurno.ABIERTO: return 'badge-abierto';
+      case EstatusTurno.CERRADO: return 'badge-cerrado';
+      default: return '';
     }
-  };
-
-  const formatearEstatusTexto = (estatus: EstatusTurno): string => {
-    const textos = {
-      [EstatusTurno.ABIERTO]: 'Abierto',
-      [EstatusTurno.CERRADO]: 'Cerrado'
-    };
-    return textos[estatus] || estatus;
   };
 
   const formatearFecha = (fecha: string | null): string => {
@@ -37,21 +26,17 @@ const ListaTurnos: React.FC<ListaTurnosProps> = ({ turnos, onEdit }) => {
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+      minute: '2-digit'
     });
   };
 
   const calcularDuracion = (fechaInicio: string, fechaFin: string | null): string => {
     if (!fechaFin) return 'En curso';
-    
     const inicio = new Date(fechaInicio);
     const fin = new Date(fechaFin);
     const diffMs = fin.getTime() - inicio.getTime();
-    
     const hours = Math.floor(diffMs / (1000 * 60 * 60));
     const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-    
     return `${hours}h ${minutes}m`;
   };
 
@@ -59,120 +44,78 @@ const ListaTurnos: React.FC<ListaTurnosProps> = ({ turnos, onEdit }) => {
     const metaTurnoNum = Number(metaturno) || 0;
     if (metaTurnoNum <= 0) return '0%';
     const totalVentasNum = Number(totalventas) || 0;
-    const porcentaje = (totalVentasNum / metaTurnoNum * 100).toFixed(1);
-    return `${porcentaje}%`;
+    return `${(totalVentasNum / metaTurnoNum * 100).toFixed(1)}%`;
   };
 
   const turnosArray = Array.isArray(turnos) ? turnos : [];
 
-  if (turnosArray.length === 0) {
-    return (
-      <div className="lista-turnos-vacia">
-        <Clock size={64} className="icono-vacio" />
-        <h3>No hay turnos registrados</h3>
-        <p>Inicia tu primer turno para comenzar</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="lista-turnos">
-      {turnosArray.map((turno) => (
-        <div key={turno.idturno} className="turno-card">
-          <div className="turno-card-header">
-            <div className="turno-icon-wrapper">
-              <Clock size={24} className="turno-icon" />
-            </div>
-            <div className="turno-info">
-              <h3>Turno #{turno.numeroturno}</h3>
-              <span className="turno-clave">{turno.claveturno}</span>
-            </div>
-            <div className="turno-badges">
-              <span className={`badge badge-estatus ${getEstatusClass(turno.estatusturno)}`}>
-                {turno.estatusturno === EstatusTurno.ABIERTO ? (
-                  <CheckCircle size={14} />
-                ) : (
-                  <XCircle size={14} />
-                )}
-                {formatearEstatusTexto(turno.estatusturno)}
-              </span>
-            </div>
-          </div>
-
-          <div className="turno-card-body">
-            <div className="turno-stats">
-              <div className="stat-item usuario">
-                <User size={18} />
-                <div className="stat-info">
-                  <span className="stat-label">Usuario</span>
-                  <span className="stat-value">{turno.usuarioturno}</span>
-                </div>
-              </div>
-
-              <div className="stat-item negocio">
-                <Building2 size={18} />
-                <div className="stat-info">
-                  <span className="stat-label">Negocio</span>
-                  <span className="stat-value">ID: {turno.idnegocio}</span>
-                </div>
-              </div>
-
-              <div className="stat-item fecha">
-                <Calendar size={18} />
-                <div className="stat-info">
-                  <span className="stat-label">Inicio</span>
-                  <span className="stat-value">{formatearFecha(turno.fechainicioturno)}</span>
-                </div>
-              </div>
-
-              {turno.fechafinturno && (
-                <div className="stat-item fecha">
-                  <Calendar size={18} />
-                  <div className="stat-info">
-                    <span className="stat-label">Fin</span>
-                    <span className="stat-value">{formatearFecha(turno.fechafinturno)}</span>
-                  </div>
-                </div>
-              )}
-
-              <div className="stat-item duracion">
-                <Clock size={18} />
-                <div className="stat-info">
-                  <span className="stat-label">Duración</span>
-                  <span className="stat-value">{calcularDuracion(turno.fechainicioturno, turno.fechafinturno)}</span>
-                </div>
-              </div>
-
-              <div className="stat-item detalle">
-                <DollarSign size={18} />
-                <div className="stat-info">
-                  <span className="stat-label">Detalle</span>
-                  <div className="stat-value-detalle">
-                    <span className="detalle-line">Ventas: ${(Number(turno.totalventas) || 0).toFixed(2)}</span>
-                    <span className="detalle-line">Meta: ${(Number(turno.metaturno) || 0).toFixed(2)}</span>
-                    <span className="detalle-line">
-                      <Target size={12} style={{ display: 'inline', marginRight: '2px' }} />
-                      {calcularPorcentajeMeta(turno.totalventas, turno.metaturno)} alcanzado
+    <div className="lista-turnos-container">
+      <div className="tabla-wrapper">
+        <table className="tabla-turnos">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Clave</th>
+              <th>Usuario</th>
+              <th>Inicio</th>
+              <th>Fin</th>
+              <th>Duración</th>
+              <th>Ventas</th>
+              <th>Meta</th>
+              <th>% Meta</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {turnosArray.length === 0 ? (
+              <tr>
+                <td colSpan={11} className="sin-datos">
+                  <Clock size={32} className="icono-vacio-inline" />
+                  No hay turnos registrados
+                </td>
+              </tr>
+            ) : (
+              turnosArray.map((turno) => (
+                <tr key={turno.idturno}>
+                  <td>{turno.numeroturno}</td>
+                  <td className="cell-nombre">{turno.claveturno}</td>
+                  <td>{turno.usuarioturno}</td>
+                  <td className="cell-fecha">{formatearFecha(turno.fechainicioturno)}</td>
+                  <td className="cell-fecha">{formatearFecha(turno.fechafinturno)}</td>
+                  <td>{calcularDuracion(turno.fechainicioturno, turno.fechafinturno)}</td>
+                  <td className="cell-monto">${(Number(turno.totalventas) || 0).toFixed(2)}</td>
+                  <td className="cell-monto">${(Number(turno.metaturno) || 0).toFixed(2)}</td>
+                  <td>{calcularPorcentajeMeta(turno.totalventas, turno.metaturno)}</td>
+                  <td>
+                    <span className={`badge ${getEstatusClass(turno.estatusturno)}`}>
+                      {turno.estatusturno === EstatusTurno.ABIERTO ? (
+                        <CheckCircle size={13} />
+                      ) : (
+                        <XCircle size={13} />
+                      )}
+                      {turno.estatusturno === EstatusTurno.ABIERTO ? 'Abierto' : 'Cerrado'}
                     </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="turno-card-footer">
-            <button
-              onClick={() => onEdit(turno)}
-              className="btn-editar"
-              disabled={turno.estatusturno === EstatusTurno.CERRADO}
-              title={turno.estatusturno === EstatusTurno.CERRADO ? "No se pueden editar turnos cerrados" : "Cerrar turno"}
-            >
-              <Edit2 size={16} />
-              Cerrar Turno
-            </button>
-          </div>
-        </div>
-      ))}
+                  </td>
+                  <td>
+                    <div className="acciones-btns">
+                      <button
+                        className="btn-accion btn-editar"
+                        onClick={() => onEdit(turno)}
+                        disabled={turno.estatusturno === EstatusTurno.CERRADO}
+                        title={turno.estatusturno === EstatusTurno.CERRADO ? 'No se pueden editar turnos cerrados' : 'Cerrar turno'}
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

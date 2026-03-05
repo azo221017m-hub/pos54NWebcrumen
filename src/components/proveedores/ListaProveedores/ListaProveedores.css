@@ -1,314 +1,130 @@
-/* Lista de Proveedores */
-.lista-proveedores {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(11.25rem, 1fr));  /* 180px */
-  gap: 0.75rem;
-  /* Adjusted height to better fit viewport - accounts for header and controls */
-  max-height: calc(100vh - 17.5rem);  /* ~280px */
-  overflow-y: auto;
-  padding: 0.25rem;
-}
-
-/* Scrollbar personalizada */
-.lista-proveedores::-webkit-scrollbar {
-  width: 6px;
-}
-
-.lista-proveedores::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 6px;
-}
-
-.lista-proveedores::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
-  border-radius: 6px;
-}
-
-.lista-proveedores::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #059669 0%, #1e3a5f 100%);
-}
-
-/* Card de Proveedor */
-.proveedor-card {
+.lista-proveedores-container {
   background: white;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s;
-  border: 2px solid transparent;
-  display: flex;
-  flex-direction: column;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.proveedor-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(16, 185, 129, 0.2);
-  border-color: #a7f3d0;
+.tabla-wrapper {
+  overflow-x: auto;
 }
 
-/* Header del Card */
-.proveedor-card-header {
-  padding: 0.75rem;
-  display: flex;
-  gap: 0.5rem;
-  align-items: flex-start;
-  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-  border-bottom: 1px solid #a7f3d0;
+.tabla-proveedores {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 750px;
 }
 
-.proveedor-icon {
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
-  border-radius: 7px;
-  border: 2px solid white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  color: white;
-  flex-shrink: 0;
+.tabla-proveedores thead {
+  background-color: #f5f5f5;
 }
 
-.proveedor-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.proveedor-nombre {
-  margin: 0 0 0.12rem 0;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: #065f46;
-  line-height: 1.3;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.tabla-proveedores th {
+  padding: 0.875rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #ddd;
   white-space: nowrap;
 }
 
-.proveedor-rfc {
-  font-size: 0.6875rem;
-  color: #059669;
+.tabla-proveedores tbody tr {
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+}
+
+.tabla-proveedores tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.tabla-proveedores td {
+  padding: 0.875rem 1rem;
+  color: #555;
+}
+
+.cell-nombre {
   font-weight: 500;
+  color: #333;
 }
 
-.proveedor-badges {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  align-items: flex-end;
+.sin-datos {
+  text-align: center !important;
+  padding: 3rem !important;
+  color: #999;
+  font-style: italic;
 }
 
+.icono-vacio-inline {
+  display: block;
+  margin: 0 auto 0.5rem;
+  color: #ccc;
+}
+
+/* Badges */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.2rem 0.4rem;
-  border-radius: 5px;
-  font-size: 0.6875rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
   font-weight: 600;
   white-space: nowrap;
 }
 
 .badge-activo {
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-  color: #065f46;
-  border: 1px solid #6ee7b7;
+  background-color: #e8f5e9;
+  color: #2e7d32;
 }
 
 .badge-inactivo {
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  color: #991b1b;
-  border: 1px solid #fca5a5;
+  background-color: #ffebee;
+  color: #c62828;
 }
 
-/* Body del Card */
-.proveedor-card-body {
-  padding: 0.75rem;
-  flex: 1;
-}
-
-.proveedor-stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.38rem;
-}
-
-.stat-item {
+/* Botones de acción */
+.acciones-btns {
   display: flex;
-  align-items: center;
-  gap: 0.38rem;
-  padding: 0.38rem;
-  background: #f8fafc;
-  border-radius: 6px;
-  transition: all 0.2s;
+  gap: 0.5rem;
+  justify-content: flex-start;
 }
 
-.stat-item:hover {
-  background: #ecfdf5;
-}
-
-.stat-item svg {
-  color: #1e3a5f;
-  flex-shrink: 0;
-}
-
-.stat-item.contacto svg {
-  color: #059669;
-}
-
-.stat-item.direccion svg {
-  color: #f59e0b;
-}
-
-.stat-item.banco svg,
-.stat-item.cuenta svg {
-  color: #6366f1;
-}
-
-.stat-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.stat-label {
-  font-size: 0.45rem;
-  color: #64748b;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.stat-value {
-  font-size: 0.57rem;
-  color: #1e293b;
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Footer del Card */
-.proveedor-card-footer {
-  display: flex;
-  gap: 0.38rem;
-  padding: 0.5rem 0.75rem;
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
-}
-
-.btn-editar,
-.btn-eliminar {
-  flex: 1;
+.btn-accion {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
-  padding: 0.38rem;
+  padding: 0.4rem;
   border: none;
-  border-radius: 6px;
-  font-size: 0.57rem;
-  font-weight: 600;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
+  color: white;
 }
 
 .btn-editar {
-  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
-  color: white;
+  background-color: #2196F3;
 }
 
 .btn-editar:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+  background-color: #1976D2;
 }
 
 .btn-eliminar {
-  background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-  color: white;
+  background-color: #f44336;
 }
 
 .btn-eliminar:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+  background-color: #da190b;
 }
 
-.btn-editar:active,
-.btn-eliminar:active {
-  transform: translateY(0);
-}
-
-/* Estado Vacío */
-.lista-proveedores-vacia {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1rem;
-  text-align: center;
-  color: #64748b;
-}
-
-.icono-vacio {
-  color: #cbd5e1;
-  margin-bottom: 0.75rem;
-}
-
-.lista-proveedores-vacia h3 {
-  margin: 0 0 0.25rem 0;
-  font-size: 0.9rem;
-  color: #475569;
-}
-
-.lista-proveedores-vacia p {
-  margin: 0;
-  font-size: 0.6rem;
-}
-
-/* Responsive */
 @media (max-width: 768px) {
-  .lista-proveedores {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-    max-height: calc(100vh - 300px);
+  .tabla-proveedores th,
+  .tabla-proveedores td {
+    padding: 0.65rem 0.5rem;
+    font-size: 0.85rem;
   }
 
-  .proveedor-card-header {
-    flex-wrap: wrap;
-    padding: 0.5rem;
-  }
-
-  .proveedor-icon {
-    width: 60px;
-    height: 60px;
-  }
-
-  .proveedor-nombre {
-    font-size: 0.6rem;
-  }
-
-  .proveedor-badges {
-    flex-direction: row;
-    width: 100%;
-    margin-top: 0.25rem;
-  }
-
-  .proveedor-card-body {
-    padding: 0.5rem;
-  }
-
-  .proveedor-stats {
-    grid-template-columns: 1fr;
-  }
-
-  .proveedor-card-footer {
+  .acciones-btns {
     flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .btn-editar,
-  .btn-eliminar {
-    width: 100%;
   }
 }
