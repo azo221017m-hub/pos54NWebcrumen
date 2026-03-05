@@ -15,34 +15,35 @@
 
 /* Barra superior con logo, título y botón */
 .login-top-bar {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  padding: 2rem 3rem 1rem;
+  padding: 1rem 3rem;
   background: transparent;
   backdrop-filter: none;
   box-shadow: none;
   z-index: 10;
   position: relative;
+  min-height: 450px;
 }
 
 .login-logo-top {
-  width: 100%;
+  justify-self: start;
+  height: 100%;
   display: flex;
-  justify-content: center;
   align-items: center;
 }
 
 .logo-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
 }
 
 .logo-image-top {
-  height: 200px;
-  width: auto;
+  height: 420px;
+  width: 840px;
   max-width: 100%;
   object-fit: contain;
 }
@@ -52,13 +53,13 @@
   color: #f99b13;
   font-weight: 500;
   margin: 0;
-  text-align: center;
+  text-align: left;
   letter-spacing: 0.02em;
 }
 
 .login-title-top {
   text-align: center;
-  margin-top: 1rem;
+  justify-self: center;
 }
 
 .title-text {
@@ -78,7 +79,7 @@
 }
 
 .login-button-top {
-  margin-top: 1.25rem;
+  justify-self: end;
 }
 
 .submit-button-top {
@@ -522,12 +523,25 @@
 /* Responsive */
 @media (max-width: 768px) {
   .login-top-bar {
+    grid-template-columns: 1fr;
+    gap: 1rem;
     padding: 1rem 1.5rem;
+    min-height: auto;
+  }
+
+  .login-logo-top,
+  .login-title-top,
+  .login-button-top {
+    justify-self: center;
+  }
+
+  .logo-wrapper {
+    align-items: center;
   }
 
   .logo-image-top {
-    height: 160px;
-    width: auto;
+    height: 240px;
+    width: 480px;
     max-width: 100%;
   }
 

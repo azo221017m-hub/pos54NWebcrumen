@@ -918,10 +918,6 @@
   color: #e67e22; /* Orange color for lock button */
 }
 
-.user-dropdown-ventas button.btn-logout-ventas {
-  color: #e74c3c; /* Red color for logout button */
-}
-
 .user-dropdown-ventas button:hover {
   background-color: #f5f5f5;
 }

@@ -50,7 +50,11 @@ const FichaDeComanda: React.FC<FichaDeComandaProps> = ({
   };
 
   if (!isServiceConfigured) {
-    return null;
+    return (
+      <div className="ficha-de-comanda empty">
+        <span className="ficha-empty-text">Configurar Servicio</span>
+      </div>
+    );
   }
 
   const getIcon = () => {
