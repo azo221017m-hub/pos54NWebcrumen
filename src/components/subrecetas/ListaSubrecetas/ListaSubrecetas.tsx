@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit2, Trash2, ChefHat, FileText, DollarSign, CheckCircle, XCircle, ChevronDown, ChevronUp, Package } from 'lucide-react';
+import { Edit2, Trash2, ChefHat, CheckCircle, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Subreceta } from '../../../types/subreceta.types';
 import './ListaSubrecetas.css';
 
@@ -10,158 +10,127 @@ interface Props {
 }
 
 const ListaSubrecetas: React.FC<Props> = ({ subrecetas, onEditar, onEliminar }) => {
-  console.log('🟢 ListaSubrecetas: Renderizando con', subrecetas.length, 'subrecetas');
-  
   const [expandidos, setExpandidos] = useState<Record<number, boolean>>({});
 
   const subrecetasArray = Array.isArray(subrecetas) ? subrecetas : [];
 
   const toggleExpand = (id: number) => {
-    setExpandidos(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
+    setExpandidos(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  if (subrecetasArray.length === 0) {
-    return (
-      <div className="lista-subrecetas-vacia">
-        <ChefHat size={64} className="icono-vacio" />
-        <h3>No hay subrecetas registradas</h3>
-        <p>Crea tu primera subreceta para comenzar</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="lista-subrecetas">
-      {subrecetasArray.map((subreceta) => (
-        <div key={subreceta.idSubReceta} className="subreceta-card">
-          <div className="subreceta-card-header">
-            <ChefHat size={24} />
-            <h3>{subreceta.nombreSubReceta}</h3>
-          </div>
-
-          <div className="subreceta-card-body">
-            {/* Costo */}
-            <div className="subreceta-info-item">
-              <DollarSign size={18} className="info-icon" />
-              <div className="info-content">
-                <span className="info-label">Costo Total</span>
-                <span className="info-value costo">${Number(subreceta.costoSubReceta || 0).toFixed(2)}</span>
-              </div>
-            </div>
-
-            {/* Instrucciones */}
-            {subreceta.instruccionesSubr && (
-              <div className="subreceta-info-item">
-                <FileText size={18} className="info-icon" />
-                <div className="info-content">
-                  <span className="info-label">Instrucciones</span>
-                  <p className="info-text">{subreceta.instruccionesSubr.substring(0, 100)}...</p>
-                </div>
-              </div>
-            )}
-
-            {/* Archivo */}
-            {subreceta.archivoInstruccionesSubr && (
-              <div className="subreceta-info-item">
-                <FileText size={18} className="info-icon" />
-                <div className="info-content">
-                  <span className="info-label">Archivo</span>
-                  <span className="info-value">{subreceta.archivoInstruccionesSubr}</span>
-                </div>
-              </div>
-            )}
-
-            {/* Estatus */}
-            <div className="subreceta-info-item">
-              {subreceta.estatusSubr === 1 ? (
-                <CheckCircle size={18} className="info-icon activo" />
-              ) : (
-                <XCircle size={18} className="info-icon inactivo" />
-              )}
-              <div className="info-content">
-                <span className="info-label">Estatus</span>
-                <span className={`badge ${subreceta.estatusSubr === 1 ? 'activo' : 'inactivo'}`}>
-                  {subreceta.estatusSubr === 1 ? 'Activo' : 'Inactivo'}
-                </span>
-              </div>
-            </div>
-
-            {/* Ingredientes - Sección expandible */}
-            {subreceta.detalles && subreceta.detalles.length > 0 && (
-              <div className="subreceta-ingredientes-section">
-                <button
-                  className="ingredientes-toggle"
-                  onClick={() => toggleExpand(subreceta.idSubReceta)}
-                  type="button"
-                >
-                  <Package size={18} className="info-icon" />
-                  <span className="ingredientes-count">
-                    {subreceta.detalles.length} ingrediente{subreceta.detalles.length !== 1 ? 's' : ''}
-                  </span>
-                  {expandidos[subreceta.idSubReceta] ? (
-                    <ChevronUp size={18} className="toggle-icon" />
-                  ) : (
-                    <ChevronDown size={18} className="toggle-icon" />
+    <div className="lista-subrecetas-container">
+      <div className="tabla-wrapper">
+        <table className="tabla-subrecetas">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Costo</th>
+              <th>Instrucciones</th>
+              <th>Ingredientes</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {subrecetasArray.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="sin-datos">
+                  <ChefHat size={32} className="icono-vacio-inline" />
+                  No hay subrecetas registradas
+                </td>
+              </tr>
+            ) : (
+              subrecetasArray.map((subreceta) => (
+                <React.Fragment key={subreceta.idSubReceta}>
+                  <tr>
+                    <td>{subreceta.idSubReceta}</td>
+                    <td className="cell-nombre">{subreceta.nombreSubReceta}</td>
+                    <td>${Number(subreceta.costoSubReceta || 0).toFixed(2)}</td>
+                    <td className="cell-instrucciones">
+                      {subreceta.instruccionesSubr
+                        ? subreceta.instruccionesSubr.substring(0, 60) + (subreceta.instruccionesSubr.length > 60 ? '…' : '')
+                        : '-'}
+                    </td>
+                    <td>
+                      {subreceta.detalles && subreceta.detalles.length > 0 ? (
+                        <button
+                          className="btn-expandir"
+                          onClick={() => toggleExpand(subreceta.idSubReceta)}
+                          type="button"
+                        >
+                          {subreceta.detalles.length} ing.
+                          {expandidos[subreceta.idSubReceta] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        </button>
+                      ) : '-'}
+                    </td>
+                    <td>
+                      {subreceta.estatusSubr === 1 ? (
+                        <span className="badge badge-activo">
+                          <CheckCircle size={13} /> Activo
+                        </span>
+                      ) : (
+                        <span className="badge badge-inactivo">
+                          <XCircle size={13} /> Inactivo
+                        </span>
+                      )}
+                    </td>
+                    <td>
+                      <div className="acciones-btns">
+                        <button
+                          className="btn-accion btn-editar"
+                          onClick={() => onEditar(subreceta)}
+                          title="Editar subreceta"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          className="btn-accion btn-eliminar"
+                          onClick={() => onEliminar(subreceta.idSubReceta)}
+                          title="Eliminar subreceta"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  {expandidos[subreceta.idSubReceta] && subreceta.detalles && subreceta.detalles.length > 0 && (
+                    <tr className="fila-ingredientes">
+                      <td colSpan={7}>
+                        <table className="tabla-ingredientes-inner">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Ingrediente</th>
+                              <th>Cantidad</th>
+                              <th>U.M.</th>
+                              <th>Costo Unit.</th>
+                              <th>Subtotal</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {subreceta.detalles.map((detalle, index) => (
+                              <tr key={detalle.idDetalleSubReceta || index}>
+                                <td>{index + 1}</td>
+                                <td>{detalle.nombreInsumoSubr}</td>
+                                <td>{Number(detalle.cantidadUsoSubr || 0).toFixed(2)}</td>
+                                <td>{detalle.umInsumoSubr}</td>
+                                <td>${Number(detalle.costoInsumoSubr || 0).toFixed(2)}</td>
+                                <td>${((detalle.cantidadUsoSubr || 0) * (detalle.costoInsumoSubr || 0)).toFixed(2)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
                   )}
-                </button>
-
-                {expandidos[subreceta.idSubReceta] && (
-                  <div className="ingredientes-lista-detalle">
-                    <table className="ingredientes-table">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Ingrediente</th>
-                          <th>Cantidad</th>
-                          <th>U.M.</th>
-                          <th>Costo Unit.</th>
-                          <th>Subtotal</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {subreceta.detalles.map((detalle, index) => (
-                          <tr key={detalle.idDetalleSubReceta || index}>
-                            <td className="td-numero">{index + 1}</td>
-                            <td className="td-ingrediente">{detalle.nombreInsumoSubr}</td>
-                            <td className="td-cantidad">{Number(detalle.cantidadUsoSubr || 0).toFixed(2)}</td>
-                            <td className="td-um">{detalle.umInsumoSubr}</td>
-                            <td className="td-costo">${Number(detalle.costoInsumoSubr || 0).toFixed(2)}</td>
-                            <td className="td-subtotal">
-                              ${((detalle.cantidadUsoSubr || 0) * (detalle.costoInsumoSubr || 0)).toFixed(2)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
+                </React.Fragment>
+              ))
             )}
-          </div>
-
-          <div className="subreceta-card-footer">
-            <button
-              className="btn-editar"
-              onClick={() => onEditar(subreceta)}
-              title="Editar subreceta"
-            >
-              <Edit2 size={18} />
-              Editar
-            </button>
-            <button
-              className="btn-eliminar"
-              onClick={() => onEliminar(subreceta.idSubReceta)}
-              title="Eliminar subreceta"
-            >
-              <Trash2 size={18} />
-              Eliminar
-            </button>
-          </div>
-        </div>
-      ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
