@@ -132,13 +132,9 @@ export const LoginPage = () => {
 
       {/* Header superior */}
       <div className="login-top-bar">
-        <div className="login-logo-top">
-          <div className="logo-wrapper">
-            <img src="/logowebposcrumen.svg" alt="Logo Poscrumen" className="logo-image-top" />
-            </div>
-        </div>
         <div className="login-title-top">
-          <h1 className="title-text">Accede a la Administración de tu Negocio</h1>
+          <img src="/logowebposcrumen.svg" alt="Logo Poscrumen" className="logo-image-top" />
+          <h1 className="title-text">Accede a la Nube y Administra tu Negocio</h1>
           <p className="subtitle-text">
             {logoutMessage || 'Ingresa tus credenciales y presiona ACCEDER para continuar.'}
           </p>
