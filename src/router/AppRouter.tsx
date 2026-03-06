@@ -20,6 +20,7 @@ import ConfigProductosWeb from '../pages/ConfigProductosWeb/ConfigProductosWeb';
 import ConfigProveedores from '../pages/ConfigProveedores/ConfigProveedores';
 import ConfigTurnos from '../pages/ConfigTurnos/ConfigTurnos';
 import PageVentas from '../pages/PageVentas/PageVentas';
+import PageClientes from '../pages/PageClientes/PageClientes';
 import MovimientosInventario from '../pages/MovimientosInventario/MovimientosInventario';
 import PageGastos from '../pages/PageGastos/PageGastos';
 
@@ -107,6 +108,10 @@ const router = createBrowserRouter([
   {
     path: '/ventas',
     element: <PageVentas />,
+  },
+  {
+    path: '/clientes',
+    element: <PageClientes />,
   },
   {
     path: '/movimientos-inventario',

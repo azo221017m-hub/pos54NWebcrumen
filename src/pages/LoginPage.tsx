@@ -4,6 +4,7 @@ import { getLogoutMessage } from '../services/sessionService';
 import { authService } from '../services/authService';
 import { rolesService } from '../services/rolesService';
 import { verificarTurnoAbierto } from '../services/turnosService';
+import { clienteWebService } from '../services/clienteWebService';
 import './LoginPage.css';
 
 type LoginMode = 'selection' | 'cliente' | 'negocio';
@@ -30,8 +31,12 @@ export const LoginPage = () => {
     const usuarioData = localStorage.getItem('usuario');
     const token = localStorage.getItem('token');
     
-    // If both user and token exist, redirect based on privilege
+    // If both user and token exist, redirect based on privilege / mode
     if (usuarioData && token) {
+      if (clienteWebService.isClienteMode()) {
+        navigate('/clientes');
+        return;
+      }
       const privilegio = localStorage.getItem('privilegio');
       if (privilegio === '2') {
         navigate('/ventas');
@@ -63,7 +68,28 @@ export const LoginPage = () => {
     setError(null);
     setIsLoading(true);
 
-    const loginIdentifier = loginMode === 'cliente' ? telefono : alias;
+    // --- Cliente login ---
+    if (loginMode === 'cliente') {
+      try {
+        const response = await clienteWebService.login(telefono, password);
+        if (response.success && response.data) {
+          clienteWebService.saveClienteSession(response.data.token, response.data.cliente);
+          navigate('/clientes');
+        } else {
+          setError(response.message || 'Teléfono o contraseña incorrectos');
+          setTelefono('');
+          setPassword('');
+        }
+      } catch {
+        setError('Error de conexión. Por favor, intenta de nuevo.');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // --- Negocio login ---
+    const loginIdentifier = alias;
 
     try {
       const response = await authService.login(loginIdentifier, password);

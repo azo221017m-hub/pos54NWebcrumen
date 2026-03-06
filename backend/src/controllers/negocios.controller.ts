@@ -120,6 +120,43 @@ export const obtenerNegocios = async (_req: Request, res: Response): Promise<voi
   }
 };
 
+/**
+ * Endpoint público para el portal de clientes.
+ * Devuelve la lista de negocios activos con la información necesaria para la vista de clientes.
+ * No requiere autenticación.
+ */
+export const obtenerNegociosPublico = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const [negocios] = await pool.execute<RowDataPacket[]>(
+      `SELECT idNegocio, nombreNegocio, logotipo,
+              (SELECT tipoNegocio FROM tblposcrumenwebparametrosnegocio WHERE idNegocio = n.idNegocio LIMIT 1) AS tipoNegocio
+       FROM tblposcrumenwebnegocio n
+       WHERE estatusnegocio = 1
+       ORDER BY nombreNegocio ASC`
+    );
+
+    const negociosPublico = negocios.map((negocio: RowDataPacket) => ({
+      idNegocio: negocio.idNegocio,
+      nombreNegocio: negocio.nombreNegocio,
+      tipoNegocio: negocio.tipoNegocio || 'Negocio',
+      logotipo: convertLogotipoToDataUri(negocio.logotipo as Buffer | string | null)
+    }));
+
+    res.json({
+      success: true,
+      message: 'Negocios obtenidos exitosamente',
+      data: negociosPublico
+    });
+  } catch (error) {
+    console.error('Error al obtener negocios públicos:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener negocios',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+};
+
 // Obtener un negocio por ID con sus parámetros
 export const obtenerNegocioPorId = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
