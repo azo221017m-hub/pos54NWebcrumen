@@ -16,6 +16,7 @@ import { obtenerInsumos } from '../services/insumosService';
 import type { Insumo } from '../types/insumo.types';
 import { negociosService } from '../services/negociosService';
 import type { Negocio } from '../types/negocio.types';
+import TableroComandasPagadas from '../components/comandasPagadas/TableroComandasPagadas';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -165,7 +166,7 @@ export const DashboardPage = () => {
   const [showConfigNegocioSubmenu, setShowConfigNegocioSubmenu] = useState(false);
   const [showDashboardSubmenu, setShowDashboardSubmenu] = useState(false);
   const [showMiOperacionSubmenu, setShowMiOperacionSubmenu] = useState(false);
-  const [dashboardView, setDashboardView] = useState<'indicadores' | 'comandas'>('indicadores');
+  const [dashboardView, setDashboardView] = useState<'indicadores' | 'comandas' | 'comandas-pagadas'>('indicadores');
   const [autoSwitchedToComandas, setAutoSwitchedToComandas] = useState(false);
   const [isScreenLocked, setIsScreenLocked] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -1186,6 +1187,23 @@ export const DashboardPage = () => {
                 Movimientos
               </button>
               )}
+              <button
+                className="submenu-item"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDashboardView('comandas-pagadas');
+                  setMobileMenuOpen(false);
+                  setShowMiOperacionSubmenu(false);
+                }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+                  <rect x="9" y="3" width="6" height="4" rx="1"/>
+                  <polyline points="9 12 11 14 15 10"/>
+                </svg>
+                Comandas Pagadas
+              </button>
               <button 
                 className="submenu-item" 
                 disabled={!turnoAbierto}
@@ -1216,7 +1234,9 @@ export const DashboardPage = () => {
         setShowMiOperacionSubmenu(false);
         setShowUserMenu(false);
       }}>
-        {dashboardView === 'indicadores' ? (
+        {dashboardView === 'comandas-pagadas' ? (
+          <TableroComandasPagadas onVolver={() => setDashboardView('indicadores')} />
+        ) : dashboardView === 'indicadores' ? (
           <div className="content-left">
             <div className="welcome-section">
               <div className="welcome-header-row">

@@ -336,6 +336,25 @@ export const obtenerTopProductosTurno = async (): Promise<TopProductosTurno> => 
     console.error('🔴 ventasWebService: Error al obtener top productos del turno:', error);
     return { top10Mayor: [], top10Menor: [] };
   }
+};
+
+// Obtener comandas pagadas del turno actual
+export const obtenerComandasPagadasTurnoActual = async (): Promise<VentaWebWithDetails[]> => {
+  try {
+    console.log('🔵 ventasWebService: Obteniendo comandas pagadas del turno actual');
+    const response = await apiClient.get<{ success: boolean; data: VentaWebWithDetails[] }>(
+      `${API_BASE}/pagadas/turno-actual`
+    );
+    const ventasConDetalles = (response.data.data || []).map(venta => ({
+      ...venta,
+      detalles: venta.detalles || []
+    }));
+    console.log('🔵 ventasWebService: Comandas pagadas obtenidas:', ventasConDetalles.length);
+    return ventasConDetalles;
+  } catch (error) {
+    console.error('🔴 ventasWebService: Error al obtener comandas pagadas del turno:', error);
+    return [];
+  }
 }; 
 
 // Verificar si una mesa tiene ventas en estado ORDENADO
