@@ -156,7 +156,13 @@ export const LoginPage = () => {
       <div className="login-top-bar">
         <div className="login-title-top">
           <img src="/logowebposcrumen.svg" alt="Logo Poscrumen" className="logo-image-top" />
-          <h1 className="title-text">Accede a la Nube y Administra tu Negocio</h1>
+          <h1 className="title-text">
+            {loginMode === 'selection'
+              ? 'Bienvenidx a CRUMEN54N'
+              : loginMode === 'cliente'
+                ? 'Accede a tus compras, beneficios y recompensas.'
+                : 'Accede a la Nube y Administra tu Negocio'}
+          </h1>
           <p className="subtitle-text">
             {logoutMessage || (loginMode === 'selection'
               ? 'Selecciona tu tipo de acceso para continuar.'
