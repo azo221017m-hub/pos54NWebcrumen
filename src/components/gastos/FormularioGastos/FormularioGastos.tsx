@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import type { Gasto, GastoCreate } from '../../../types/gastos.types';
 import type { CuentaContable } from '../../../types/cuentaContable.types';
 import { obtenerCuentasContables } from '../../../services/cuentasContablesService';
-import { obtenerTurnoAbiertoActual } from '../../../services/turnosService';
+import { verificarTurnoAbierto } from '../../../services/turnosService';
 import './FormularioGastos.css';
 
 interface Props {
@@ -66,21 +66,18 @@ const FormularioGastos: React.FC<Props> = ({ gasto, onGuardar, onCancelar }) => 
       return;
     }
 
-    // Si perfil = 3, verificar que existe un turno abierto
-    const privilegio = Number(localStorage.getItem('privilegio') || '0');
+    // Cualquier privilegio: verificar que existe un turno abierto
     let claveturno: string | undefined;
-    if (privilegio === 3) {
-      try {
-        const turnoAbierto = await obtenerTurnoAbiertoActual();
-        if (!turnoAbierto) {
-          setError('Se requiere un turno abierto para registrar gastos');
-          return;
-        }
-        claveturno = turnoAbierto.claveturno;
-      } catch {
-        setError('Error al verificar el turno abierto. Intente nuevamente.');
+    try {
+      const turnoAbierto = await verificarTurnoAbierto();
+      if (!turnoAbierto) {
+        setError('Se requiere un turno abierto para registrar gastos');
         return;
       }
+      claveturno = turnoAbierto.claveturno;
+    } catch {
+      setError('Error al verificar el turno abierto. Intente nuevamente.');
+      return;
     }
 
     setGuardando(true);
