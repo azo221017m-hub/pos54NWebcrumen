@@ -355,6 +355,99 @@
   z-index: 10;
 }
 
+/* Mode selection: two animated floating buttons */
+.login-mode-selection {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  flex: 1;
+  padding: 2rem;
+}
+
+.mode-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 11rem;
+  height: 11rem;
+  border: none;
+  border-radius: 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 8px 30px rgba(6, 123, 137, 0.25);
+}
+
+.mode-button-cliente {
+  background: linear-gradient(135deg, #067b89 0%, #0ea5c0 100%);
+  color: white;
+  animation: floatBtn 3s ease-in-out infinite;
+}
+
+.mode-button-negocio {
+  background: linear-gradient(135deg, #6ca9b7 0%, #a4e9fb 100%);
+  color: #067b89;
+  animation: floatBtn 3s ease-in-out infinite;
+  animation-delay: -1.5s;
+}
+
+.mode-button:hover {
+  transform: translateY(-6px) scale(1.04);
+  box-shadow: 0 16px 40px rgba(6, 123, 137, 0.4);
+}
+
+.mode-button-icon {
+  width: 3rem;
+  height: 3rem;
+}
+
+.mode-button-label {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+@keyframes floatBtn {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Back button */
+.login-back {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 1rem;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: #067b89;
+  font-size: 0.938rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  transition: color 0.2s, transform 0.2s;
+  opacity: 0.8;
+}
+
+.back-button:hover:not(:disabled) {
+  color: #045f6c;
+  opacity: 1;
+  transform: translateX(-3px);
+}
+
+.back-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .version-text {
   font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.9);
@@ -536,5 +629,15 @@
 
   .login-card {
     padding: 0 1rem;
+  }
+
+  .login-mode-selection {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .mode-button {
+    width: 13rem;
+    height: 9rem;
   }
 }
