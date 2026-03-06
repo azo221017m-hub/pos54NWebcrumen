@@ -177,7 +177,7 @@
 }
 
 .logo-image {
-  height: 120px;
+  height: 360px;
   max-width: 100%;
   object-fit: contain;
   margin-bottom: 0.75rem;
@@ -556,7 +556,7 @@
   }
 
   .logo-image {
-    height: 90px;
+    height: 270px;
   }
 
   .title-text {
