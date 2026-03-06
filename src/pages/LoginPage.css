@@ -171,7 +171,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 2rem 1.5rem 1rem;
+  padding: 0.5rem 1.5rem;
   width: 100%;
   max-width: 640px;
 }
@@ -180,7 +180,7 @@
   height: 360px;
   max-width: 100%;
   object-fit: contain;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.25rem;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.18));
 }
 
@@ -218,7 +218,7 @@
   align-items: flex-start;
   justify-content: center;
   gap: 2rem;
-  padding: 1.5rem 1.5rem 0;
+  padding: 0.5rem 1.5rem 0;
   width: 100%;
   max-width: 860px;
   flex-wrap: wrap;
@@ -552,7 +552,7 @@
 /* ---- Responsive ---- */
 @media (max-width: 768px) {
   .login-header {
-    padding: 1.5rem 1.25rem 0.75rem;
+    padding: 0.5rem 1.25rem;
   }
 
   .logo-image {
@@ -571,7 +571,7 @@
     flex-direction: column;
     align-items: center;
     gap: 1.25rem;
-    padding: 1rem 1.25rem 0;
+    padding: 0.5rem 1.25rem 0;
   }
 
   .access-card {
