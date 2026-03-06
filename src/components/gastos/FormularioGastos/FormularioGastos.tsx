@@ -66,18 +66,21 @@ const FormularioGastos: React.FC<Props> = ({ gasto, onGuardar, onCancelar }) => 
       return;
     }
 
-    // Cualquier privilegio: verificar que existe un turno abierto
+    // Solo perfiles con privilegio <= 3 requieren turno abierto
+    const privilegio = Number(localStorage.getItem('privilegio') || '0');
     let claveturno: string | undefined;
-    try {
-      const turnoAbierto = await verificarTurnoAbierto();
-      if (!turnoAbierto) {
-        setError('Se requiere un turno abierto para registrar gastos');
+    if (privilegio <= 3) {
+      try {
+        const turnoAbierto = await verificarTurnoAbierto();
+        if (!turnoAbierto) {
+          setError('Se requiere un turno abierto para registrar gastos');
+          return;
+        }
+        claveturno = turnoAbierto.claveturno;
+      } catch {
+        setError('Error al verificar el turno abierto. Intente nuevamente.');
         return;
       }
-      claveturno = turnoAbierto.claveturno;
-    } catch {
-      setError('Error al verificar el turno abierto. Intente nuevamente.');
-      return;
     }
 
     setGuardando(true);

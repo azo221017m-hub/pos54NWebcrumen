@@ -1547,3 +1547,93 @@ export const getTopProductosTurno = async (req: AuthRequest, res: Response): Pro
     res.status(500).json({ success: false, message: 'Error al obtener top productos' });
   }
 };
+
+/**
+ * Get paid comandas (sales with estatusdepago='PAGADO') for the current open shift
+ * @route GET /api/ventas-web/pagadas/turno-actual
+ */
+export const getComandasPagadasTurnoActual = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
+    // Get the current open shift
+    const [turnoRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT claveturno FROM tblposcrumenwebturnos 
+       WHERE idnegocio = ? AND estatusturno = 'abierto'
+       LIMIT 1`,
+      [idnegocio]
+    );
+
+    if (turnoRows.length === 0) {
+      res.json({
+        success: true,
+        data: []
+      });
+      return;
+    }
+
+    const claveturno = turnoRows[0].claveturno;
+
+    // Get all paid sales for this shift (exclude MOVIMIENTO/GASTO)
+    const [ventasRows] = await pool.execute<(VentaWeb & RowDataPacket)[]>(
+      `SELECT * FROM tblposcrumenwebventas 
+       WHERE claveturno = ? AND idnegocio = ?
+         AND estatusdepago = 'PAGADO'
+         AND descripcionmov = 'VENTA'
+       ORDER BY fechadeventa ASC`,
+      [claveturno, idnegocio]
+    );
+
+    if (ventasRows.length === 0) {
+      res.json({
+        success: true,
+        data: []
+      });
+      return;
+    }
+
+    // Get detalles for all paid sales
+    const ventaIds = ventasRows.map(v => v.idventa);
+    const placeholders = ventaIds.map(() => '?').join(',');
+    const [allDetallesRows] = await pool.execute<(DetalleVentaWeb & RowDataPacket)[]>(
+      `SELECT * FROM tblposcrumenwebdetalleventas 
+       WHERE idventa IN (${placeholders}) AND idnegocio = ?
+       ORDER BY idventa, iddetalleventa ASC`,
+      [...ventaIds, idnegocio]
+    );
+
+    // Group detalles by idventa
+    const detallesPorVenta = new Map<number, DetalleVentaWeb[]>();
+    allDetallesRows.forEach(detalle => {
+      if (!detallesPorVenta.has(detalle.idventa)) {
+        detallesPorVenta.set(detalle.idventa, []);
+      }
+      detallesPorVenta.get(detalle.idventa)!.push(detalle);
+    });
+
+    // Combine sales with their detalles
+    const ventasConDetalles: VentaWebWithDetails[] = ventasRows.map(venta => ({
+      ...venta,
+      detalles: detallesPorVenta.get(venta.idventa) || []
+    }));
+
+    res.json({
+      success: true,
+      data: ventasConDetalles
+    });
+  } catch (error) {
+    console.error('Error al obtener comandas pagadas del turno:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener comandas pagadas del turno'
+    });
+  }
+};

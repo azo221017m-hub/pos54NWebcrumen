@@ -10,7 +10,8 @@ import {
   addDetallesToVenta,
   getSalesSummary,
   getBusinessHealth,
-  getTopProductosTurno
+  getTopProductosTurno,
+  getComandasPagadasTurnoActual
 } from '../controllers/ventasWeb.controller';
 import { authMiddleware } from '../middlewares/auth';
 import { apiLimiter } from '../middlewares/rateLimit';
@@ -57,6 +58,13 @@ router.get('/dashboard/salud-negocio', getBusinessHealth);
  * @access  Private
  */
 router.get('/dashboard/top-productos-turno', getTopProductosTurno);
+
+/**
+ * @route   GET /api/ventas-web/pagadas/turno-actual
+ * @desc    Obtener comandas pagadas del turno actual abierto
+ * @access  Private
+ */
+router.get('/pagadas/turno-actual', getComandasPagadasTurnoActual);
 
 /**
  * @route   GET /api/ventas-web/:id
