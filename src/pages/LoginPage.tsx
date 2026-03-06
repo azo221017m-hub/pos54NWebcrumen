@@ -146,77 +146,68 @@ export const LoginPage = () => {
 
   return (
     <div className="login-page">
+      {/* Animated background */}
       <div className="login-background">
         <div className="blob blob-1"></div>
         <div className="blob blob-2"></div>
         <div className="blob blob-3"></div>
+        <div className="cloud cloud-1"></div>
+        <div className="cloud cloud-2"></div>
+        <div className="cloud cloud-3"></div>
       </div>
 
-      {/* Header superior */}
-      <div className="login-top-bar">
-        <div className="login-title-top">
-          <img src="/logowebposcrumen.svg" alt="Logo Poscrumen" className="logo-image-top" />
-          <h1 className="title-text">
-            {loginMode === 'selection'
-              ? 'Bienvenidx a CRUMEN54N'
-              : loginMode === 'cliente'
-                ? 'Accede a tus compras, beneficios y recompensas.'
-                : 'Accede a la Nube y Administra tu Negocio'}
-          </h1>
-          <p className="subtitle-text">
-            {logoutMessage || (loginMode === 'selection'
-              ? 'Selecciona tu tipo de acceso para continuar.'
-              : loginMode === 'cliente'
-                ? 'Ingresa tu teléfono y contraseña para acceder.'
-                : 'Ingresa tus credenciales y presiona ACCEDER para continuar.')}
-          </p>
-        </div>
-        {loginMode !== 'selection' && (
-          <div className="login-button-top">
-            <button
-              type="submit"
-              form="login-form"
-              className={`submit-button-top ${isLoading ? 'loading' : ''}`}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <span className="spinner"></span>
-                  Accediendo...
-                </>
-              ) : (
-                'Acceder'
-              )}
-            </button>
-          </div>
+      {/* Centered header */}
+      <div className="login-header">
+        <img src="/logowebposcrumen.svg" alt="Logo Poscrumen" className="logo-image" />
+        <h1 className="title-text">
+          {loginMode === 'selection'
+            ? 'Bienvenidxs a CRUMEN54N'
+            : loginMode === 'cliente'
+              ? 'Accede a tus compras, beneficios y recompensas.'
+              : 'Accede a la Nube y Administra tu Negocio'}
+        </h1>
+        <p className="subtitle-text">
+          {loginMode === 'selection'
+            ? 'Gestión de Negocios y Experiencias de Compra en la Nube.'
+            : logoutMessage || (loginMode === 'cliente'
+              ? 'Ingresa tu teléfono y contraseña para acceder.'
+              : 'Ingresa tus credenciales y presiona ACCEDER para continuar.')}
+        </p>
+        {loginMode === 'selection' && (
+          <p className="access-label">Elige cómo deseas acceder</p>
         )}
       </div>
 
-      {/* Selección de modo */}
+      {/* Selection cards */}
       {loginMode === 'selection' && (
-        <div className="login-mode-selection">
-          <button
-            className="mode-button mode-button-cliente"
-            onClick={() => handleModeSelect('cliente')}
-          >
-            <svg className="mode-button-icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
-            </svg>
-            <span className="mode-button-label">Acceso Cliente</span>
-          </button>
-          <button
-            className="mode-button mode-button-negocio"
-            onClick={() => handleModeSelect('negocio')}
-          >
-            <svg className="mode-button-icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/>
-            </svg>
-            <span className="mode-button-label">Acceso Negocio</span>
-          </button>
+        <div className="login-cards-wrapper">
+          {/* Card Cliente — more prominent */}
+          <div className="access-card access-card-cliente" onClick={() => handleModeSelect('cliente')}>
+            <div className="card-icon-wrapper card-icon-cliente">
+              <svg className="card-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+              </svg>
+            </div>
+            <h2 className="card-title">Acceso Cliente</h2>
+            <p className="card-description">Realiza pedidos, gana puntos y beneficios.</p>
+            <span className="card-cta card-cta-cliente">Soy Cliente →</span>
+          </div>
+
+          {/* Card Negocio */}
+          <div className="access-card access-card-negocio" onClick={() => handleModeSelect('negocio')}>
+            <div className="card-icon-wrapper card-icon-negocio">
+              <svg className="card-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/>
+              </svg>
+            </div>
+            <h2 className="card-title">Acceso Negocio</h2>
+            <p className="card-description">Administra tu negocio desde la nube.</p>
+            <span className="card-cta card-cta-negocio">Soy Negocio →</span>
+          </div>
         </div>
       )}
 
-      {/* Formulario centrado */}
+      {/* Login form */}
       {loginMode !== 'selection' && (
         <div className="login-container">
           <div className="login-card">
@@ -295,24 +286,34 @@ export const LoginPage = () => {
               </div>
             </form>
 
-            <div className="login-back">
+            <div className="login-form-actions">
+              <button
+                type="submit"
+                form="login-form"
+                className={`submit-button ${isLoading ? 'loading' : ''}`}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <span className="spinner"></span>
+                    Accediendo...
+                  </>
+                ) : (
+                  'Acceder'
+                )}
+              </button>
               <button className="back-button" onClick={handleBackToSelection} disabled={isLoading}>
                 ← Volver
               </button>
-            </div>
-
-            <div className="login-footer">
-              <p className="version-text">Ver 26.04MRZ-900p</p>
             </div>
           </div>
         </div>
       )}
 
-      {loginMode === 'selection' && (
-        <div className="login-footer">
-          <p className="version-text">Ver 26.04MRZ-900p</p>
-        </div>
-      )}
+      {/* Footer */}
+      <div className="login-footer">
+        <p className="footer-text">Hecho en Texcoco</p>
+      </div>
     </div>
   );
 };
