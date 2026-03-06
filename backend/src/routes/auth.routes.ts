@@ -6,9 +6,12 @@ import {
   checkLoginStatus, 
   unlockUser, 
   ensureSuperuser,
-  refreshToken
+  refreshToken,
+  loginCliente,
+  getClienteTokenForNegocio
 } from '../controllers/auth.controller';
 import { authMiddleware, checkRole } from '../middlewares/auth';
+import { strictLimiter, apiLimiter } from '../middlewares/rateLimit';
 
 const router = Router();
 
@@ -21,6 +24,20 @@ const ADMIN_ROLE = 1;
  * @access  Public
  */
 router.post('/login', login);
+
+/**
+ * @route   POST /api/auth/login-cliente
+ * @desc    Iniciar sesión como cliente del portal web
+ * @access  Public
+ */
+router.post('/login-cliente', strictLimiter, loginCliente);
+
+/**
+ * @route   POST /api/auth/cliente-token-negocio
+ * @desc    Obtener un token de cliente con el idNegocio del negocio seleccionado
+ * @access  Private (requiere token de cliente válido)
+ */
+router.post('/cliente-token-negocio', apiLimiter, authMiddleware, getClienteTokenForNegocio);
 
 /**
  * @route   POST /api/auth/register

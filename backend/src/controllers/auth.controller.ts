@@ -9,6 +9,7 @@ import {
   registrarLoginExitoso,
   desbloquearCuenta
 } from '../services/loginAudit.service';
+import type { AuthRequest } from '../middlewares/auth';
 
 interface Usuario extends RowDataPacket {
   idUsuario: number;
@@ -20,6 +21,15 @@ interface Usuario extends RowDataPacket {
   telefono: string;
   estatus: number;
   frasepersonal?: string;
+}
+
+interface ClienteWeb extends RowDataPacket {
+  idCliente: number;
+  nombre: string;
+  telefono: string;
+  password: string;
+  estatus: number;
+  idnegocio: number;
 }
 
 export const login = async (req: Request, res: Response): Promise<void> => {
@@ -434,6 +444,140 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
         message: 'Error en el servidor'
       });
     }
+  }
+};
+
+/**
+ * Login para clientes del portal web
+ * Valida contra tblposcrumenwebclientes usando telefono + password
+ */
+export const loginCliente = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { telefono, password } = req.body;
+
+    if (!telefono || !password) {
+      res.status(400).json({
+        success: false,
+        message: 'Teléfono y contraseña son requeridos'
+      });
+      return;
+    }
+
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) {
+      res.status(500).json({ success: false, message: 'Error de configuración del servidor' });
+      return;
+    }
+
+    const [rows] = await pool.execute<ClienteWeb[]>(
+      'SELECT idCliente, nombre, telefono, password, estatus, idnegocio FROM tblposcrumenwebclientes WHERE telefono = ? LIMIT 1',
+      [telefono]
+    );
+
+    if (rows.length === 0) {
+      res.status(401).json({ success: false, message: 'Teléfono o contraseña incorrectos' });
+      return;
+    }
+
+    const cliente = rows[0];
+
+    // Validate password: try bcrypt first (for future hashed passwords), then plain text for
+    // backwards compatibility with existing records that may not yet be hashed.
+    let passwordValida = false;
+    try {
+      passwordValida = await bcrypt.compare(password, cliente.password);
+    } catch {
+      // Not a bcrypt hash – fall back to plain text comparison
+    }
+    if (!passwordValida) {
+      passwordValida = cliente.password === password;
+    }
+
+    if (!passwordValida) {
+      res.status(401).json({ success: false, message: 'Teléfono o contraseña incorrectos' });
+      return;
+    }
+
+    // Issue a client JWT with idNegocio=0 (no business selected yet)
+    const token = jwt.sign(
+      {
+        clientId: cliente.idCliente,
+        nombre: cliente.nombre,
+        alias: cliente.telefono,
+        isCliente: true,
+        idNegocio: 0,
+        idRol: 99
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      success: true,
+      message: 'Login exitoso',
+      data: {
+        token,
+        cliente: {
+          idCliente: cliente.idCliente,
+          nombre: cliente.nombre,
+          telefono: cliente.telefono
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error en loginCliente:', error);
+    res.status(500).json({ success: false, message: 'Error en el servidor' });
+  }
+};
+
+/**
+ * Emite un nuevo token de cliente con el idNegocio del negocio seleccionado.
+ * Requiere que el cliente esté autenticado (token de cliente válido).
+ */
+export const getClienteTokenForNegocio = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { idNegocio } = req.body;
+
+    if (!idNegocio) {
+      res.status(400).json({ success: false, message: 'idNegocio es requerido' });
+      return;
+    }
+
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) {
+      res.status(500).json({ success: false, message: 'Error de configuración del servidor' });
+      return;
+    }
+
+    // Verify the negocio exists and is active
+    const [negocioRows] = await pool.execute<RowDataPacket[]>(
+      'SELECT idNegocio FROM tblposcrumenwebnegocio WHERE idNegocio = ? AND estatusnegocio = 1',
+      [idNegocio]
+    );
+
+    if (negocioRows.length === 0) {
+      res.status(404).json({ success: false, message: 'Negocio no encontrado o inactivo' });
+      return;
+    }
+
+    // Re-issue JWT with the selected negocio's idNegocio
+    const token = jwt.sign(
+      {
+        clientId: req.user?.id,
+        nombre: req.user?.nombre,
+        alias: req.user?.alias,
+        isCliente: true,
+        idNegocio: Number(idNegocio),
+        idRol: 99
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.json({ success: true, data: { token } });
+  } catch (error) {
+    console.error('Error en getClienteTokenForNegocio:', error);
+    res.status(500).json({ success: false, message: 'Error en el servidor' });
   }
 };
 

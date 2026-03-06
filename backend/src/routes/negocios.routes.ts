@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middlewares/auth';
+import { apiLimiter } from '../middlewares/rateLimit';
 import {
   obtenerNegocios,
+  obtenerNegociosPublico,
   obtenerNegocioPorId,
   crearNegocio,
   actualizarNegocio,
@@ -13,6 +15,13 @@ import {
 } from '../controllers/negocios.controller';
 
 const router = Router();
+
+/**
+ * @route   GET /api/negocios/publico
+ * @desc    Obtener negocios activos para el portal de clientes (sin autenticación)
+ * @access  Public
+ */
+router.get('/publico', apiLimiter, obtenerNegociosPublico);
 
 /**
  * @route   GET /api/negocios

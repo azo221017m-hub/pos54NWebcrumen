@@ -154,6 +154,8 @@ const PageVentas: React.FC = () => {
       setCurrentFolioVenta(null);
       setCurrentFormaDePago(null);
       setCurrentEstadoDeVenta(null);
+    } else if (localStorage.getItem('clienteMode') === 'true') {
+      navigate('/clientes');
     } else {
       navigate('/dashboard');
     }

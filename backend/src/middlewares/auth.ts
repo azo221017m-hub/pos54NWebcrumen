@@ -19,9 +19,15 @@ interface Usuario extends RowDataPacket {
   estatus: number;
 }
 
+interface ClienteWebRow extends RowDataPacket {
+  idCliente: number;
+  estatus: number;
+}
+
 /**
  * Middleware principal de autenticación JWT
- * Verifica que el token sea válido y que el usuario esté activo
+ * Verifica que el token sea válido y que el usuario esté activo.
+ * Soporta tanto tokens de usuarios normales como tokens de clientes web (isCliente: true).
  */
 export const authMiddleware = async (
   req: AuthRequest,
@@ -56,13 +62,44 @@ export const authMiddleware = async (
       token, 
       process.env.JWT_SECRET || 'secret_key_pos54nwebcrumen_2024'
     ) as {
-      id: number;
+      id?: number;
+      clientId?: number;
       alias: string;
       nombre: string;
       idNegocio: number;
       idRol: number;
+      isCliente?: boolean;
     };
 
+    // --- Client token path ---
+    if (decoded.isCliente && decoded.clientId) {
+      const [clientRows] = await pool.execute<ClienteWebRow[]>(
+        'SELECT idCliente, estatus FROM tblposcrumenwebclientes WHERE idCliente = ? AND estatus = 1',
+        [decoded.clientId]
+      );
+
+      if (clientRows.length === 0) {
+        res.status(401).json({
+          success: false,
+          error: 'Cliente no encontrado o inactivo',
+          message: 'El cliente asociado a este token no existe o está inactivo'
+        });
+        return;
+      }
+
+      req.user = {
+        id: decoded.clientId,
+        alias: decoded.alias,
+        nombre: decoded.nombre,
+        idNegocio: decoded.idNegocio,
+        idRol: 99
+      };
+
+      next();
+      return;
+    }
+
+    // --- Regular user token path ---
     // Verificar que el usuario aún existe y está activo
     const [rows] = await pool.execute<Usuario[]>(
       'SELECT idUsuario, estatus FROM tblposcrumenwebusuarios WHERE idUsuario = ?',
@@ -91,7 +128,7 @@ export const authMiddleware = async (
 
     // Agregar información del usuario al request
     req.user = {
-      id: decoded.id,
+      id: decoded.id!,
       alias: decoded.alias,
       nombre: decoded.nombre,
       idNegocio: decoded.idNegocio,
