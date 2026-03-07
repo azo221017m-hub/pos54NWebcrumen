@@ -4,6 +4,7 @@ export interface ClienteWebData {
   idCliente: number;
   nombre: string;
   telefono: string;
+  direccion?: string;
 }
 
 export interface ClienteLoginResponse {

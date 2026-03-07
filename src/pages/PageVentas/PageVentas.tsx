@@ -467,13 +467,53 @@ const PageVentas: React.FC = () => {
     // - Has open turno (shift)
     // - Not checking turno
     if (!isLoadedFromDashboard && !isServiceConfigured && comanda.length === 0 && hasTurnoAbierto && !isCheckingTurno) {
-      // Show immediately without delay to display modal first
-      setShowSelectionModal(true);
+      if (isClienteMode) {
+        // Auto-configure service with client data from tblposcrumenwebclientes (skip manual modals)
+        const cs = clienteWebService.getClienteSession();
+        if (cs) {
+          const now = new Date();
+          now.setMinutes(now.getMinutes() + 30);
+          const year = now.getFullYear();
+          const month = String(now.getMonth() + 1).padStart(2, '0');
+          const day = String(now.getDate()).padStart(2, '0');
+          const hours = String(now.getHours()).padStart(2, '0');
+          const minutes = String(now.getMinutes()).padStart(2, '0');
+          const fechaHora = `${year}-${month}-${day}T${hours}:${minutes}`;
+          if (cs.direccion) {
+            // Auto-configure Domicilio using client's stored address
+            setTipoServicio('Domicilio');
+            setDomicilioData({
+              cliente: cs.nombre,
+              idcliente: cs.idCliente,
+              fechaprogramadaventa: fechaHora,
+              direcciondeentrega: cs.direccion,
+              telefonodeentrega: cs.telefono,
+              contactodeentrega: cs.nombre,
+              observaciones: ''
+            });
+          } else {
+            // Auto-configure Llevar using client's name
+            setTipoServicio('Llevar');
+            setLlevarData({
+              cliente: cs.nombre,
+              idcliente: cs.idCliente,
+              fechaprogramadaventa: fechaHora
+            });
+          }
+          setIsServiceConfigured(true);
+        } else {
+          // Fallback: show selection modal if no client session found
+          setShowSelectionModal(true);
+        }
+      } else {
+        // Show immediately without delay to display modal first
+        setShowSelectionModal(true);
+      }
     } else {
       // Hide modal if comanda has items or service is configured
       setShowSelectionModal(false);
     }
-  }, [comanda.length, isServiceConfigured, isLoadedFromDashboard, hasTurnoAbierto, isCheckingTurno]);
+  }, [comanda.length, isServiceConfigured, isLoadedFromDashboard, hasTurnoAbierto, isCheckingTurno, isClienteMode]);
 
   // Filtrar productos por búsqueda y categoría
   useEffect(() => {

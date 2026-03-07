@@ -30,6 +30,7 @@ interface ClienteWeb extends RowDataPacket {
   password: string;
   estatus: number;
   idnegocio: number;
+  direccion: string | null;
 }
 
 export const login = async (req: Request, res: Response): Promise<void> => {
@@ -470,7 +471,7 @@ export const loginCliente = async (req: Request, res: Response): Promise<void> =
     }
 
     const [rows] = await pool.execute<ClienteWeb[]>(
-      'SELECT idCliente, nombre, telefono, password, estatus, idnegocio FROM tblposcrumenwebclientes WHERE telefono = ? LIMIT 1',
+      'SELECT idCliente, nombre, telefono, password, estatus, idnegocio, direccion FROM tblposcrumenwebclientes WHERE telefono = ? LIMIT 1',
       [telefono]
     );
 
@@ -520,7 +521,8 @@ export const loginCliente = async (req: Request, res: Response): Promise<void> =
         cliente: {
           idCliente: cliente.idCliente,
           nombre: cliente.nombre,
-          telefono: cliente.telefono
+          telefono: cliente.telefono,
+          direccion: cliente.direccion || undefined
         }
       }
     });
