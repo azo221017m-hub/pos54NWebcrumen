@@ -124,7 +124,40 @@ const PageClientes: React.FC = () => {
         <div className="pc-header-top">
           <div className="pc-logo-area">
             <img src="/logowebposcrumen.svg" alt="CRUMEN54N" className="pc-logo" />
-            <h1 className="pc-brand">CRUMEN54N</h1>
+            <p className="pc-tagline">Explora Negocios en Texcoco, Pide y Obten Beneficios</p>
+          </div>
+
+          <div className="pc-header-center">
+            {/* Search bar */}
+            <div className="pc-search-wrapper">
+              <svg className="pc-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                className="pc-search-input"
+                placeholder="Buscar negocio o producto"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                <button className="pc-search-clear" onClick={() => setSearchTerm('')}>✕</button>
+              )}
+            </div>
+
+            {/* Category filters */}
+            <div className="pc-categorias">
+              {CATEGORIAS.map((cat) => (
+                <button
+                  key={cat}
+                  className={`pc-cat-btn${categoriaActiva === cat ? ' pc-cat-btn--active' : ''}`}
+                  onClick={() => setCategoriaActiva(cat)}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="pc-header-right">
@@ -158,40 +191,7 @@ const PageClientes: React.FC = () => {
 
         {/* Main content area */}
         <main className="pc-main">
-          {/* Search bar */}
-          <div className="pc-search-container">
-            <div className="pc-search-wrapper">
-              <svg className="pc-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <input
-                type="text"
-                className="pc-search-input"
-                placeholder="Buscar negocio o producto"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              {searchTerm && (
-                <button className="pc-search-clear" onClick={() => setSearchTerm('')}>✕</button>
-              )}
-            </div>
-          </div>
-
-          {/* Category filters */}
-          <div className="pc-categorias">
-            {CATEGORIAS.map((cat) => (
-              <button
-                key={cat}
-                className={`pc-cat-btn${categoriaActiva === cat ? ' pc-cat-btn--active' : ''}`}
-                onClick={() => setCategoriaActiva(cat)}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {/* Business cards section with invisible scroll */}
+          {/* Business cards section with vertical scroll */}
           <div className="pc-content">
         {isLoading ? (
           <div className="pc-loading">
