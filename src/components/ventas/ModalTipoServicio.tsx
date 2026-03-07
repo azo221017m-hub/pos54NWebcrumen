@@ -28,12 +28,19 @@ export interface DomicilioFormData {
   observaciones: string;
 }
 
+export interface ClientePreData {
+  idcliente: number;
+  nombre: string;
+  telefono: string;
+}
+
 interface ModalTipoServicioProps {
   tipoServicio: TipoServicio;
   isOpen: boolean;
   onClose: () => void;
   onSave: (data: MesaFormData | LlevarFormData | DomicilioFormData) => void;
   initialData?: MesaFormData | LlevarFormData | DomicilioFormData;
+  clienteData?: ClientePreData;
 }
 
 // Initial form states
@@ -63,7 +70,8 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
   isOpen,
   onClose,
   onSave,
-  initialData
+  initialData,
+  clienteData
 }) => {
   const [mesas, setMesas] = useState<Mesa[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -162,26 +170,32 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
           if (initialData && 'fechaprogramadaventa' in initialData && !('direcciondeentrega' in initialData)) {
             setLlevarFormData(initialData as LlevarFormData);
           } else {
-            // Set default date/time when opening modal
-            setLlevarFormData(prev => ({
-              ...prev,
+            // Pre-fill with client data if available, otherwise default date/time
+            setLlevarFormData({
+              cliente: clienteData?.nombre || '',
+              idcliente: clienteData?.idcliente ?? null,
               fechaprogramadaventa: getCurrentDateTime()
-            }));
+            });
           }
         } else if (tipoServicio === 'Domicilio') {
           if (initialData && 'direcciondeentrega' in initialData) {
             setDomicilioFormData(initialData as DomicilioFormData);
           } else {
-            // Set default date/time when opening modal
-            setDomicilioFormData(prev => ({
-              ...prev,
-              fechaprogramadaventa: getCurrentDateTime()
-            }));
+            // Pre-fill with client data if available, otherwise set default date/time
+            setDomicilioFormData({
+              cliente: clienteData?.nombre || '',
+              idcliente: clienteData?.idcliente ?? null,
+              fechaprogramadaventa: getCurrentDateTime(),
+              direcciondeentrega: '',
+              telefonodeentrega: clienteData?.telefono || '',
+              contactodeentrega: clienteData?.nombre || '',
+              observaciones: ''
+            });
           }
         }
       }
     }
-  }, [isOpen, tipoServicio, initialData]);
+  }, [isOpen, tipoServicio, initialData, clienteData]);
 
   const handleSave = async () => {
     if (tipoServicio === 'Mesa') {
