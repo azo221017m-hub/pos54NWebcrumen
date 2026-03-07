@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { clienteWebService } from '../../services/clienteWebService';
 import type { NegocioPublico } from '../../services/clienteWebService';
-import { obtenerTurnoAbiertoActual } from '../../services/turnosService';
+import { verificarTurnoAbierto } from '../../services/turnosService';
 import './PageClientes.css';
 
 const CATEGORIAS = ['Todos', 'Comida', 'Café', 'Postres', 'Bebidas'];
@@ -101,7 +101,7 @@ const PageClientes: React.FC = () => {
       clienteWebService.updateNegocioToken(newToken, negocio.idNegocio);
 
       // Validate that an open shift (turno) exists for the selected business
-      const turnoAbierto = await obtenerTurnoAbiertoActual();
+      const turnoAbierto = await verificarTurnoAbierto();
       if (!turnoAbierto) {
         setTurnoError(`${negocio.nombreNegocio} no tiene un turno abierto en este momento. Por favor intenta más tarde.`);
         return;
