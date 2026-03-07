@@ -1408,7 +1408,7 @@ const PageVentas: React.FC = () => {
 
       {/* Header */}
       <header className="ventas-header">
-        {(privilegio !== 2 || isClienteMode) && (
+        {privilegio !== 2 && (
         <button className="btn-back-dashboard" onClick={handleCancelar}>
           <ArrowLeft size={20} />
           {isClienteMode ? 'Regresar' : 'Cancelar'}
