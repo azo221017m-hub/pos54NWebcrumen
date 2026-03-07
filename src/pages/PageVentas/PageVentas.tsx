@@ -10,6 +10,7 @@ import { obtenerModeradoresRef } from '../../services/moderadoresRefService';
 import { verificarTurnoAbierto } from '../../services/turnosService';
 import { cambiarEstatusMesa } from '../../services/mesasService';
 import { clearSession } from '../../services/sessionService';
+import { clienteWebService } from '../../services/clienteWebService';
 import { showSuccessToast, showErrorToast } from '../../components/FeedbackToast';
 import ModalTipoServicio from '../../components/ventas/ModalTipoServicio';
 import ModalSeleccionVentaPageVentas from '../../components/ventas/ModalSeleccionVentaPageVentas';
@@ -77,6 +78,9 @@ const PageVentas: React.FC = () => {
 
   // Read user privilege to apply profile-based restrictions
   const privilegio = Number(localStorage.getItem('privilegio') || '0');
+
+  // Detect client portal mode (logged in as a web customer)
+  const isClienteMode = clienteWebService.isClienteMode();
   
   // Utility function to safely format prices
   const formatPrice = (price: number | string | undefined | null): string => {
@@ -388,12 +392,18 @@ const PageVentas: React.FC = () => {
           const hasTurno = turnoAbierto !== null;
           setHasTurnoAbierto(hasTurno);
           
-          // If no open turno, show IniciaTurno modal
+          // If no open turno, show IniciaTurno modal (or redirect client to business list)
           if (!hasTurno) {
-            console.log('No hay turno abierto, mostrando modal Inicia Turno');
-            setTimeout(() => {
-              setShowIniciaTurnoModal(true);
-            }, SELECTION_MODAL_DISPLAY_DELAY_MS);
+            if (isClienteMode) {
+              // Clients cannot open a shift; redirect back to business selection
+              console.log('No hay turno abierto en modo cliente, regresando a PageClientes');
+              navigate('/clientes');
+            } else {
+              console.log('No hay turno abierto, mostrando modal Inicia Turno');
+              setTimeout(() => {
+                setShowIniciaTurnoModal(true);
+              }, SELECTION_MODAL_DISPLAY_DELAY_MS);
+            }
           }
         } catch (error) {
           console.error('Error al verificar turno:', error);
@@ -1315,6 +1325,11 @@ const PageVentas: React.FC = () => {
     if (privilegio === 2) {
       return;
     }
+    // Client-mode users return to the business list
+    if (isClienteMode) {
+      navigate('/clientes');
+      return;
+    }
     // Navigate back to dashboard
     navigate('/dashboard');
   };
@@ -1348,6 +1363,11 @@ const PageVentas: React.FC = () => {
     setModalOpen(false);
     // Privilege 2 users stay on PageVentas and return to type-of-sale selection modal
     if (privilegio === 2) {
+      setShowSelectionModal(true);
+      return;
+    }
+    // Client-mode users also return to type-of-sale selection modal
+    if (isClienteMode) {
       setShowSelectionModal(true);
       return;
     }
@@ -1391,7 +1411,7 @@ const PageVentas: React.FC = () => {
         {privilegio !== 2 && (
         <button className="btn-back-dashboard" onClick={handleCancelar}>
           <ArrowLeft size={20} />
-          Cancelar
+          {isClienteMode ? 'Regresar' : 'Cancelar'}
         </button>
         )}
 
@@ -1817,6 +1837,10 @@ const PageVentas: React.FC = () => {
         onClose={handleModalClose}
         onSave={handleModalSave}
         initialData={getInitialModalData()}
+        clienteData={isClienteMode ? (() => {
+          const cs = clienteWebService.getClienteSession();
+          return cs ? { idcliente: cs.idCliente, nombre: cs.nombre, telefono: cs.telefono } : undefined;
+        })() : undefined}
       />
 
       {/* Modal para selección de tipo de venta */}
@@ -1826,6 +1850,7 @@ const PageVentas: React.FC = () => {
         onTipoVentaSelect={handleSelectionModalVentaSelect}
         onClose={privilegio === 2 ? () => {} : undefined}
         privilegio={privilegio}
+        isClienteMode={isClienteMode}
       />
 
       {/* Modal para iniciar turno */}

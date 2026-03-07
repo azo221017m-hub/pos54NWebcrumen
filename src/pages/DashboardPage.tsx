@@ -604,6 +604,12 @@ export const DashboardPage = () => {
       return;
     }
 
+    // Client-mode users don't have dashboard access - redirect to business selection
+    if (localStorage.getItem('clienteMode') === 'true') {
+      navigate('/clientes');
+      return;
+    }
+
     // Privilege 2 users don't have dashboard access
     const priv = Number(localStorage.getItem('privilegio') || '0');
     if (priv === 2) {

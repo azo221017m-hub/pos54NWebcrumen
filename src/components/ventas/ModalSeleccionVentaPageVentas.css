@@ -293,3 +293,43 @@
     font-size: 1.125rem;
   }
 }
+
+/* Description text for client mode */
+.tipo-venta-desc-pv {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #64748b;
+  display: block;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+.btn-tipo-venta-pv {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.btn-tipo-venta-pv .tipo-venta-label-pv {
+  flex: 1;
+}
+
+.btn-domicilio-pv .tipo-venta-desc-pv {
+  color: #1e40af;
+  opacity: 0.8;
+  width: 100%;
+  flex-basis: 100%;
+  padding-left: 80px;
+  margin-top: -4px;
+  font-style: italic;
+}
+
+.btn-llevar-pv .tipo-venta-desc-pv {
+  color: #92400e;
+  opacity: 0.8;
+  width: 100%;
+  flex-basis: 100%;
+  padding-left: 80px;
+  margin-top: -4px;
+  font-style: italic;
+}

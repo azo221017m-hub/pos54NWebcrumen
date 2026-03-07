@@ -9,13 +9,15 @@ interface ModalSeleccionVentaPageVentasProps {
   onTipoVentaSelect: (tipoVenta: TipoServicio) => void;
   onClose?: () => void;
   privilegio?: number;
+  isClienteMode?: boolean;
 }
 
 const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps> = ({ 
   isOpen, 
   onTipoVentaSelect,
   onClose,
-  privilegio = 0
+  privilegio = 0,
+  isClienteMode = false
 }) => {
   const navigate = useNavigate();
   
@@ -28,6 +30,10 @@ const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps
   };
 
   const handleOverlayClick = () => {
+    if (isClienteMode) {
+      navigate('/clientes');
+      return;
+    }
     if (onClose) {
       onClose();
     } else {
@@ -41,10 +47,22 @@ const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps
     window.location.href = '/login';
   };
 
+  const handleRegresarClientes = () => {
+    navigate('/clientes');
+  };
+
   return (
     <div className="modal-seleccion-venta-pageventas-overlay" onClick={handleOverlayClick}>
       <div className="modal-seleccion-venta-pageventas-content floating" onClick={(e) => e.stopPropagation()}>
-        {privilegio === 2 && (
+        {isClienteMode && (
+          <button
+            className="btn-cancelar-seleccion-venta"
+            onClick={handleRegresarClientes}
+          >
+            ← Regresar
+          </button>
+        )}
+        {!isClienteMode && privilegio === 2 && (
           <button
             className="btn-cancelar-seleccion-venta"
             onClick={handleCancelarSesion}
@@ -68,6 +86,9 @@ const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps
               </svg>
             </div>
             <span className="tipo-venta-label-pv">DOMICILIO</span>
+            {isClienteMode && (
+              <span className="tipo-venta-desc-pv">El repartidor entrega en tu domicilio</span>
+            )}
           </button>
 
           <button 
@@ -81,22 +102,27 @@ const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps
                 <path d="M16 10a4 4 0 0 1-8 0"/>
               </svg>
             </div>
-            <span className="tipo-venta-label-pv">LLEVAR</span>
+            <span className="tipo-venta-label-pv">{isClienteMode ? 'RECOGER' : 'LLEVAR'}</span>
+            {isClienteMode && (
+              <span className="tipo-venta-desc-pv">Preparamos tu pedido y pasas al negocio por el pedido</span>
+            )}
           </button>
 
-          <button 
-            className="btn-tipo-venta-pv btn-mesa-pv"
-            onClick={() => handleTipoVentaSelect('Mesa')}
-          >
-            <div className="tipo-venta-icon-pv">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="8" width="18" height="12" rx="2"/>
-                <line x1="8" y1="8" x2="8" y2="4"/>
-                <line x1="16" y1="8" x2="16" y2="4"/>
-              </svg>
-            </div>
-            <span className="tipo-venta-label-pv">MESA</span>
-          </button>
+          {!isClienteMode && (
+            <button 
+              className="btn-tipo-venta-pv btn-mesa-pv"
+              onClick={() => handleTipoVentaSelect('Mesa')}
+            >
+              <div className="tipo-venta-icon-pv">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="8" width="18" height="12" rx="2"/>
+                  <line x1="8" y1="8" x2="8" y2="4"/>
+                  <line x1="16" y1="8" x2="16" y2="4"/>
+                </svg>
+              </div>
+              <span className="tipo-venta-label-pv">MESA</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

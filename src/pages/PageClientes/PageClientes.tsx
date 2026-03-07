@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { clienteWebService } from '../../services/clienteWebService';
 import type { NegocioPublico } from '../../services/clienteWebService';
+import { obtenerTurnoAbiertoActual } from '../../services/turnosService';
 import './PageClientes.css';
 
 const CATEGORIAS = ['Todos', 'Comida', 'Café', 'Postres', 'Bebidas'];
@@ -28,6 +29,7 @@ const PageClientes: React.FC = () => {
   const [clienteNombre, setClienteNombre] = useState<string>('');
   const [pedidosActivos, setPedidosActivos] = useState<Set<number>>(new Set());
   const [seleccionandoNegocio, setSeleccionandoNegocio] = useState<number | null>(null);
+  const [turnoError, setTurnoError] = useState<string | null>(null);
 
   useEffect(() => {
     const clienteSession = clienteWebService.getClienteSession();
@@ -93,12 +95,24 @@ const PageClientes: React.FC = () => {
   const handleSeleccionarNegocio = async (negocio: NegocioPublico) => {
     if (seleccionandoNegocio) return;
     setSeleccionandoNegocio(negocio.idNegocio);
+    setTurnoError(null);
     try {
       const newToken = await clienteWebService.seleccionarNegocio(negocio.idNegocio);
       clienteWebService.updateNegocioToken(newToken, negocio.idNegocio);
+
+      // Validate that an open shift (turno) exists for the selected business
+      const turnoAbierto = await obtenerTurnoAbiertoActual();
+      if (!turnoAbierto) {
+        setTurnoError(`${negocio.nombreNegocio} no tiene un turno abierto en este momento. Por favor intenta más tarde.`);
+        return;
+      }
+
+      // Assign privilegio=1 for client-mode sales access
+      localStorage.setItem('privilegio', '1');
       navigate('/ventas');
     } catch (error) {
       console.error('Error al seleccionar negocio:', error);
+      setTurnoError('Ocurrió un error al conectar con el negocio. Por favor intenta de nuevo.');
     } finally {
       setSeleccionandoNegocio(null);
     }
@@ -176,6 +190,19 @@ const PageClientes: React.FC = () => {
           </div>
         </div>
       </header>
+
+      {/* Turno error banner */}
+      {turnoError && (
+        <div className="pc-turno-error" role="alert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="pc-turno-error-icon">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span>{turnoError}</span>
+          <button className="pc-turno-error-close" onClick={() => setTurnoError(null)} aria-label="Cerrar">✕</button>
+        </div>
+      )}
 
       {/* Main content with sidebar */}
       <div className="pc-layout">
