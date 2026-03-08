@@ -37,6 +37,14 @@ export const LandingPage = () => {
 
   return (
     <div className="landing-page">
+      <div className="landing-background">
+        <div className="blob blob-1"></div>
+        <div className="blob blob-2"></div>
+        <div className="blob blob-3"></div>
+        <div className="cloud cloud-1"></div>
+        <div className="cloud cloud-2"></div>
+        <div className="cloud cloud-3"></div>
+      </div>
       <div className="landing-content">
         <div className="logo-container">
           <div >
