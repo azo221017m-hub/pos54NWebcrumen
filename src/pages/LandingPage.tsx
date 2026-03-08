@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import './LandingPage.css';
 
 const phrases = [
-  'Gestiona tu negocio con inteligencia',
-  'Control total de inventario en tiempo real',
-  'Ventas rápidas y eficientes',
-  'Reportes detallados al instante',
-  'La mejor solución como tu punto de venta'
+  'Únete a Comunidad Digital de Texcoco.',
+  'Más Negocios cerca de ti.',
+  'Negocio y Clientes de Texcoco.',
+  'Mejor Experiencia de Compra-Venta en CRUMENCDT.',
+  'Beneficios para Clientes y Negocios de CRUMENCDT.'
 ];
 
 export const LandingPage = () => {
