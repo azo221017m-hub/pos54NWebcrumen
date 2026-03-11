@@ -56,6 +56,15 @@ const ConfigCategorias: React.FC = () => {
   const handleGuardar = async (data: CategoriaCreate | CategoriaUpdate) => {
     try {
       if (categoriaEditar) {
+        const nombreDuplicado = categorias.some(
+          cat =>
+            cat.nombre.toLowerCase().trim() === data.nombre.toLowerCase().trim() &&
+            cat.idCategoria !== categoriaEditar.idCategoria
+        );
+        if (nombreDuplicado) {
+          mostrarMensaje('error', 'Ya existe una categoría con ese nombre');
+          return;
+        }
         const categoriaActualizada = await actualizarCategoria(categoriaEditar.idCategoria, data as CategoriaUpdate);
         mostrarMensaje('success', 'Categoría actualizada exitosamente');
         setMostrarFormulario(false);
@@ -66,6 +75,13 @@ const ConfigCategorias: React.FC = () => {
           )
         );
       } else {
+        const nombreDuplicado = categorias.some(
+          cat => cat.nombre.toLowerCase().trim() === data.nombre.toLowerCase().trim()
+        );
+        if (nombreDuplicado) {
+          mostrarMensaje('error', 'Ya existe una categoría con ese nombre');
+          return;
+        }
         const nuevaCategoria = await crearCategoria(data as CategoriaCreate);
         mostrarMensaje('success', 'Categoría creada exitosamente');
         setMostrarFormulario(false);
