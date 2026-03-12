@@ -79,6 +79,9 @@ export const authService = {
     localStorage.removeItem('usuario');
     localStorage.removeItem('idnegocio');
     localStorage.removeItem('privilegio');
+    // Limpiar datos de sesión de cliente web para evitar redirección a PageClientes
+    localStorage.removeItem('clienteMode');
+    localStorage.removeItem('clienteWebSession');
     
     // Limpiar sessionStorage - excepto el mensaje de logout si existe
     const logoutMessage = sessionStorage.getItem('logoutMessage');
