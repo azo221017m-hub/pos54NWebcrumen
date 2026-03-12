@@ -26,19 +26,11 @@ const PageClientes: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoriaActiva, setCategoriaActiva] = useState('Todos');
   const [isLoading, setIsLoading] = useState(true);
-  const [clienteNombre, setClienteNombre] = useState<string>('');
   const [pedidosActivos, setPedidosActivos] = useState<Set<number>>(new Set());
   const [seleccionandoNegocio, setSeleccionandoNegocio] = useState<number | null>(null);
   const [turnoError, setTurnoError] = useState<string | null>(null);
 
   useEffect(() => {
-    const clienteSession = clienteWebService.getClienteSession();
-    if (!clienteSession) {
-      navigate('/login');
-      return;
-    }
-    setClienteNombre(clienteSession.nombre);
-
     // Load active orders from localStorage (keys: pedidoActivo_{idNegocio})
     const activos = new Set<number>();
     for (let i = 0; i < localStorage.length; i++) {
@@ -51,7 +43,7 @@ const PageClientes: React.FC = () => {
     setPedidosActivos(activos);
 
     cargarNegocios();
-  }, [navigate]);
+  }, []);
 
   const cargarNegocios = async () => {
     setIsLoading(true);
@@ -126,18 +118,13 @@ const PageClientes: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
-    clienteWebService.clearClienteSession();
-    navigate('/login');
-  };
-
   return (
     <div className="pc-page">
       {/* Header */}
       <header className="pc-header">
         <div className="pc-header-top">
           <div className="pc-logo-area">
-            <img src="/logowebposcrumen.svg" alt="CRUMEN54N" className="pc-logo" />
+            <img src="/logowebposcrumencdt.svg" alt="CRUMEN54N" className="pc-logo" />
             <p className="pc-tagline">Explora Negocios en Texcoco, Pide y Obten Beneficios</p>
           </div>
 
@@ -175,18 +162,6 @@ const PageClientes: React.FC = () => {
           </div>
 
           <div className="pc-header-right">
-            {clienteNombre && (
-              <span className="pc-cliente-greeting">
-                Hola, <strong>{clienteNombre}</strong>
-              </span>
-            )}
-            <button className="pc-logout-btn" onClick={handleLogout} title="Cerrar sesión">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="pc-logout-icon">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-            </button>
           </div>
         </div>
       </header>
