@@ -1,5 +1,24 @@
 import { api } from './api';
 
+export interface ClienteRegistroData {
+  nombre?: string;
+  referencia: string;
+  cumple?: string;
+  satisfaccion?: number;
+  comentarios?: string;
+  puntosfidelidad?: number;
+  telefono?: string;
+  email?: string;
+  direccion?: string;
+  password: string;
+}
+
+export interface ClienteRegistroResponse {
+  success: boolean;
+  message: string;
+  data?: { idCliente: number };
+}
+
 export interface ClienteWebData {
   idCliente: number;
   nombre: string;
@@ -42,6 +61,21 @@ export const clienteWebService = {
         telefono,
         password
       });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  },
+
+  /**
+   * Registra un nuevo cliente públicamente en tblposcrumenwebclientes
+   */
+  registrarCliente: async (data: ClienteRegistroData): Promise<ClienteRegistroResponse> => {
+    try {
+      const response = await api.post<ClienteRegistroResponse>('/auth/registro-cliente', data);
       return response.data;
     } catch (error: any) {
       if (error.response?.data) {

@@ -8,7 +8,8 @@ import {
   ensureSuperuser,
   refreshToken,
   loginCliente,
-  getClienteTokenForNegocio
+  getClienteTokenForNegocio,
+  registroClientePublico
 } from '../controllers/auth.controller';
 import { authMiddleware, checkRole } from '../middlewares/auth';
 import { strictLimiter, apiLimiter } from '../middlewares/rateLimit';
@@ -38,6 +39,13 @@ router.post('/login-cliente', strictLimiter, loginCliente);
  * @access  Private (requiere token de cliente válido)
  */
 router.post('/cliente-token-negocio', apiLimiter, authMiddleware, getClienteTokenForNegocio);
+
+/**
+ * @route   POST /api/auth/registro-cliente
+ * @desc    Registro público de nuevos clientes del portal web
+ * @access  Public
+ */
+router.post('/registro-cliente', apiLimiter, registroClientePublico);
 
 /**
  * @route   POST /api/auth/register
