@@ -552,7 +552,7 @@ export const registroClientePublico = async (req: Request, res: Response): Promi
     } = req.body;
 
     if (!referencia || !password) {
-      res.status(400).json({ success: false, message: 'El campo referencia y contraseña son obligatorios' });
+      res.status(400).json({ success: false, message: 'Los campos referencia y contraseña son obligatorios' });
       return;
     }
 
