@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { clienteWebService } from '../../services/clienteWebService';
-import type { NegocioPublico } from '../../services/clienteWebService';
+import type { NegocioPublico, ClienteWebData } from '../../services/clienteWebService';
 import { verificarTurnoAbierto } from '../../services/turnosService';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../../components/FeedbackToast';
 import './PageClientes.css';
@@ -33,6 +33,11 @@ const PageClientes: React.FC = () => {
 
   // Client login state
   const [clienteLogueado, setClienteLogueado] = useState(false);
+  const [clienteData, setClienteData] = useState<ClienteWebData | null>(null);
+
+  // Avatar dropdown
+  const [mostrarMenuAvatar, setMostrarMenuAvatar] = useState(false);
+  const avatarRef = useRef<HTMLDivElement>(null);
 
   // Login modal
   const [mostrarModalLogin, setMostrarModalLogin] = useState(false);
@@ -69,7 +74,11 @@ const PageClientes: React.FC = () => {
     setPedidosActivos(activos);
 
     // Check if a client is already logged in
-    setClienteLogueado(clienteWebService.isClienteMode());
+    const logueado = clienteWebService.isClienteMode();
+    setClienteLogueado(logueado);
+    if (logueado) {
+      setClienteData(clienteWebService.getClienteSession());
+    }
 
     cargarNegocios();
   }, []);
@@ -170,6 +179,7 @@ const PageClientes: React.FC = () => {
       if (result.success && result.data) {
         clienteWebService.saveClienteSession(result.data.token, result.data.cliente);
         setClienteLogueado(true);
+        setClienteData(result.data.cliente);
         setMostrarModalLogin(false);
         showSuccessToast(`¡Bienvenido${result.data.cliente.nombre ? ', ' + result.data.cliente.nombre : ''}! Ya puedes ver los productos.`);
       } else {
@@ -242,6 +252,26 @@ const PageClientes: React.FC = () => {
     }
   };
 
+  const handleLogout = () => {
+    clienteWebService.clearClienteSession();
+    setClienteLogueado(false);
+    setClienteData(null);
+    setMostrarMenuAvatar(false);
+    showSuccessToast('Has cerrado sesión. ¡Hasta pronto!');
+  };
+
+  // Close avatar dropdown when clicking outside
+  useEffect(() => {
+    if (!mostrarMenuAvatar) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
+        setMostrarMenuAvatar(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [mostrarMenuAvatar]);
+
   return (
     <div className="pc-page">
       {/* Header */}
@@ -286,6 +316,50 @@ const PageClientes: React.FC = () => {
           </div>
 
           <div className="pc-header-right">
+            {clienteLogueado && clienteData && (
+              <div className="pc-avatar-container" ref={avatarRef}>
+                <button
+                  className="pc-avatar-btn"
+                  onClick={() => setMostrarMenuAvatar(!mostrarMenuAvatar)}
+                  aria-label="Menú de usuario"
+                  aria-expanded={mostrarMenuAvatar}
+                >
+                  <span className="pc-avatar-initial">
+                    {(clienteData.nombre || clienteData.telefono || '?').charAt(0).toUpperCase()}
+                  </span>
+                  <span className="pc-avatar-name">
+                    {clienteData.nombre || clienteData.telefono || '—'}
+                  </span>
+                  <svg className="pc-avatar-chevron" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                {mostrarMenuAvatar && (
+                  <div className="pc-avatar-menu" role="menu">
+                    <div className="pc-avatar-menu-header">
+                      <span className="pc-avatar-menu-initial">
+                        {(clienteData.nombre || clienteData.telefono || '?').charAt(0).toUpperCase()}
+                      </span>
+                      <span className="pc-avatar-menu-name">
+                        {clienteData.nombre || clienteData.telefono || '—'}
+                      </span>
+                    </div>
+                    <button
+                      className="pc-avatar-menu-logout"
+                      onClick={handleLogout}
+                      role="menuitem"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="pc-avatar-menu-icon">
+                        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                      </svg>
+                      Cerrar sesión
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </header>
