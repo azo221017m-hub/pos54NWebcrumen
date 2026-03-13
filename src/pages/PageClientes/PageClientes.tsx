@@ -573,44 +573,30 @@ const PageClientes: React.FC = () => {
               <div className="pc-form-row">
                 <div className="pc-form-group">
                   <label className="pc-form-label">Nombre</label>
-                  <input type="text" className="pc-form-input" placeholder="Tu nombre" value={registroData.nombre} onChange={(e) => handleRegistroChange('nombre', e.target.value)} />
+                  <input type="text" className="pc-form-input" placeholder="Tu nombre" autoComplete="off" value={registroData.nombre} onChange={(e) => handleRegistroChange('nombre', e.target.value)} />
                 </div>
                 <div className="pc-form-group">
                   <label className="pc-form-label pc-form-label--required">Referencia (nombre o alias)</label>
-                  <input type="text" className="pc-form-input" placeholder="Nombre o alias" value={registroData.referencia} onChange={(e) => handleRegistroChange('referencia', e.target.value)} />
+                  <input type="text" className="pc-form-input" placeholder="Nombre o alias" autoComplete="off" value={registroData.referencia} onChange={(e) => handleRegistroChange('referencia', e.target.value)} />
                 </div>
               </div>
               <div className="pc-form-row">
                 <div className="pc-form-group">
                   <label className="pc-form-label">Teléfono</label>
-                  <input type="tel" className="pc-form-input" placeholder="Tu teléfono" value={registroData.telefono} onChange={(e) => handleRegistroChange('telefono', e.target.value)} />
+                  <input type="tel" className="pc-form-input" placeholder="Tu teléfono" autoComplete="off" value={registroData.telefono} onChange={(e) => handleRegistroChange('telefono', e.target.value)} />
                 </div>
-                <div className="pc-form-group">
-                  <label className="pc-form-label">Email</label>
-                  <input type="email" className="pc-form-input" placeholder="Tu correo" value={registroData.email} onChange={(e) => handleRegistroChange('email', e.target.value)} />
-                </div>
-              </div>
-              <div className="pc-form-row">
                 <div className="pc-form-group">
                   <label className="pc-form-label">Cumpleaños</label>
-                  <input type="date" className="pc-form-input" value={registroData.cumple} onChange={(e) => handleRegistroChange('cumple', e.target.value)} />
-                </div>
-                <div className="pc-form-group">
-                  <label className="pc-form-label">Satisfacción (1-5)</label>
-                  <input type="number" className="pc-form-input" placeholder="1-5" min={1} max={5} value={registroData.satisfaccion} onChange={(e) => handleRegistroChange('satisfaccion', e.target.value)} />
+                  <input type="date" className="pc-form-input" autoComplete="off" value={registroData.cumple} onChange={(e) => handleRegistroChange('cumple', e.target.value)} />
                 </div>
               </div>
               <div className="pc-form-group">
                 <label className="pc-form-label">Dirección</label>
-                <input type="text" className="pc-form-input" placeholder="Tu dirección" value={registroData.direccion} onChange={(e) => handleRegistroChange('direccion', e.target.value)} />
-              </div>
-              <div className="pc-form-group">
-                <label className="pc-form-label">Comentarios</label>
-                <textarea className="pc-form-textarea" placeholder="Comentarios opcionales" value={registroData.comentarios} onChange={(e) => handleRegistroChange('comentarios', e.target.value)} />
+                <input type="text" className="pc-form-input" placeholder="Agrega tu dirección desde googlemaps" autoComplete="off" value={registroData.direccion} onChange={(e) => handleRegistroChange('direccion', e.target.value)} />
               </div>
               <div className="pc-form-group">
                 <label className="pc-form-label pc-form-label--required">Clave secreta</label>
-                <input type="password" className="pc-form-input" placeholder="E5cr1b3 un* c1aV3 5ecre7a" value={registroData.password} onChange={(e) => handleRegistroChange('password', e.target.value)} />
+                <input type="password" className="pc-form-input" placeholder="E5cr1b3 un* c1aV3 5ecre7a" autoComplete="new-password" value={registroData.password} onChange={(e) => handleRegistroChange('password', e.target.value)} />
               </div>
               <button
                 className="pc-modal-btn"
