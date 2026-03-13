@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { clienteWebService } from '../../services/clienteWebService';
 import type { NegocioPublico } from '../../services/clienteWebService';
 import { verificarTurnoAbierto } from '../../services/turnosService';
+import { showSuccessToast, showErrorToast, showInfoToast } from '../../components/FeedbackToast';
 import './PageClientes.css';
 
 const CATEGORIAS = ['Todos', 'Comida', 'Café', 'Postres', 'Bebidas'];
@@ -30,6 +31,31 @@ const PageClientes: React.FC = () => {
   const [seleccionandoNegocio, setSeleccionandoNegocio] = useState<number | null>(null);
   const [turnoError, setTurnoError] = useState<string | null>(null);
 
+  // Client login state
+  const [clienteLogueado, setClienteLogueado] = useState(false);
+
+  // Login modal
+  const [mostrarModalLogin, setMostrarModalLogin] = useState(false);
+  const [loginTelefono, setLoginTelefono] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginCargando, setLoginCargando] = useState(false);
+
+  // Register modal
+  const [mostrarModalRegistro, setMostrarModalRegistro] = useState(false);
+  const [registroCargando, setRegistroCargando] = useState(false);
+  const [registroData, setRegistroData] = useState({
+    nombre: '',
+    referencia: '',
+    cumple: '',
+    satisfaccion: '',
+    comentarios: '',
+    puntosfidelidad: '',
+    telefono: '',
+    email: '',
+    direccion: '',
+    password: ''
+  });
+
   useEffect(() => {
     // Load active orders from localStorage (keys: pedidoActivo_{idNegocio})
     const activos = new Set<number>();
@@ -41,6 +67,9 @@ const PageClientes: React.FC = () => {
       }
     }
     setPedidosActivos(activos);
+
+    // Check if a client is already logged in
+    setClienteLogueado(clienteWebService.isClienteMode());
 
     cargarNegocios();
   }, []);
@@ -115,6 +144,101 @@ const PageClientes: React.FC = () => {
     if (currentToken) {
       clienteWebService.updateNegocioToken(currentToken, idNegocio);
       navigate('/ventas');
+    }
+  };
+
+  const handleAbrirModalLogin = () => {
+    setLoginTelefono('');
+    setLoginPassword('');
+    setMostrarModalLogin(true);
+  };
+
+  const handleCerrarModalLogin = () => {
+    setMostrarModalLogin(false);
+    setLoginTelefono('');
+    setLoginPassword('');
+  };
+
+  const handleLoginCliente = async () => {
+    if (!loginTelefono.trim() || !loginPassword.trim()) {
+      showInfoToast('Por favor ingresa tu teléfono y clave de acceso');
+      return;
+    }
+    setLoginCargando(true);
+    try {
+      const result = await clienteWebService.login(loginTelefono.trim(), loginPassword);
+      if (result.success && result.data) {
+        clienteWebService.saveClienteSession(result.data.token, result.data.cliente);
+        setClienteLogueado(true);
+        setMostrarModalLogin(false);
+        showSuccessToast(`¡Bienvenido${result.data.cliente.nombre ? ', ' + result.data.cliente.nombre : ''}! Ya puedes ver los productos.`);
+      } else {
+        showErrorToast(result.message || 'Teléfono o clave de acceso incorrectos');
+      }
+    } catch {
+      showErrorToast('Error de conexión. Intenta de nuevo.');
+    } finally {
+      setLoginCargando(false);
+    }
+  };
+
+  const handleAbrirModalRegistro = () => {
+    setMostrarModalLogin(false);
+    setRegistroData({
+      nombre: '',
+      referencia: '',
+      cumple: '',
+      satisfaccion: '',
+      comentarios: '',
+      puntosfidelidad: '',
+      telefono: '',
+      email: '',
+      direccion: '',
+      password: ''
+    });
+    setMostrarModalRegistro(true);
+  };
+
+  const handleCerrarModalRegistro = () => {
+    setMostrarModalRegistro(false);
+  };
+
+  const handleRegistroChange = (field: string, value: string) => {
+    setRegistroData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleRegistroCliente = async () => {
+    if (!registroData.referencia.trim() || !registroData.password.trim()) {
+      showInfoToast('Los campos referencia y contraseña son obligatorios');
+      return;
+    }
+    setRegistroCargando(true);
+    try {
+      const result = await clienteWebService.registrarCliente({
+        nombre: registroData.nombre || undefined,
+        referencia: registroData.referencia.trim(),
+        cumple: registroData.cumple || undefined,
+        satisfaccion: registroData.satisfaccion ? Number(registroData.satisfaccion) : undefined,
+        comentarios: registroData.comentarios || undefined,
+        puntosfidelidad: registroData.puntosfidelidad ? Number(registroData.puntosfidelidad) : undefined,
+        telefono: registroData.telefono || undefined,
+        email: registroData.email || undefined,
+        direccion: registroData.direccion || undefined,
+        password: registroData.password
+      });
+      if (result.success) {
+        showSuccessToast('¡Registro exitoso! Ahora inicia sesión para comenzar a pedir.');
+        setMostrarModalRegistro(false);
+        setLoginTelefono(registroData.telefono || '');
+        setLoginPassword('');
+        setMostrarModalLogin(true);
+      } else {
+        showErrorToast(result.message || 'No se pudo completar el registro');
+      }
+    } catch {
+      showErrorToast('Error de conexión. Intenta de nuevo.');
+    } finally {
+      setRegistroCargando(false);
     }
   };
 
@@ -275,20 +399,29 @@ const PageClientes: React.FC = () => {
 
                     {/* Card footer */}
                     <div className="pc-card-footer">
-                      <button
-                        className={`pc-ver-btn${cargando ? ' pc-ver-btn--loading' : ''}`}
-                        onClick={() => handleSeleccionarNegocio(negocio)}
-                        disabled={!!seleccionandoNegocio}
-                      >
-                        {cargando ? (
-                          <>
-                            <span className="pc-btn-spinner" />
-                            Cargando...
-                          </>
-                        ) : (
-                          'Ver productos'
-                        )}
-                      </button>
+                      {clienteLogueado ? (
+                        <button
+                          className={`pc-ver-btn${cargando ? ' pc-ver-btn--loading' : ''}`}
+                          onClick={() => handleSeleccionarNegocio(negocio)}
+                          disabled={!!seleccionandoNegocio}
+                        >
+                          {cargando ? (
+                            <>
+                              <span className="pc-btn-spinner" />
+                              Cargando...
+                            </>
+                          ) : (
+                            'Ver productos'
+                          )}
+                        </button>
+                      ) : (
+                        <button
+                          className="pc-ver-btn pc-iniciar-btn"
+                          onClick={handleAbrirModalLogin}
+                        >
+                          INiCIaR PeDIDoS
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
@@ -304,6 +437,118 @@ const PageClientes: React.FC = () => {
       <footer className="pc-footer">
         <p>Hecho en Texcoco · CRUMEN54N</p>
       </footer>
+
+      {/* Login Modal */}
+      {mostrarModalLogin && (
+        <div className="pc-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) handleCerrarModalLogin(); }}>
+          <div className="pc-modal" role="dialog" aria-modal="true" aria-labelledby="login-modal-title">
+            <div className="pc-modal-header">
+              <h2 className="pc-modal-title" id="login-modal-title">INiCIaR PeDIDoS</h2>
+              <button className="pc-modal-close" onClick={handleCerrarModalLogin} aria-label="Cerrar">✕</button>
+            </div>
+            <div className="pc-modal-body">
+              <div className="pc-form-group">
+                <label className="pc-form-label">Teléfono cliente</label>
+                <input
+                  type="tel"
+                  className="pc-form-input"
+                  placeholder="Tu número de teléfono"
+                  value={loginTelefono}
+                  onChange={(e) => setLoginTelefono(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleLoginCliente()}
+                  autoFocus
+                />
+              </div>
+              <div className="pc-form-group">
+                <label className="pc-form-label">Clave de acceso secreta</label>
+                <input
+                  type="password"
+                  className="pc-form-input"
+                  placeholder="Tu clave secreta"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleLoginCliente()}
+                />
+              </div>
+              <button
+                className="pc-modal-btn"
+                onClick={handleLoginCliente}
+                disabled={loginCargando}
+              >
+                {loginCargando ? <><span className="pc-btn-spinner" /> Verificando...</> : 'Comenzar a Pedir'}
+              </button>
+              <div className="pc-unirse-link">
+                <button className="pc-unirse-btn" onClick={handleAbrirModalRegistro}>
+                  Únirme a la Comunidad
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Register Modal */}
+      {mostrarModalRegistro && (
+        <div className="pc-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) handleCerrarModalRegistro(); }}>
+          <div className="pc-modal pc-modal--wide" role="dialog" aria-modal="true" aria-labelledby="registro-modal-title">
+            <div className="pc-modal-header">
+              <h2 className="pc-modal-title" id="registro-modal-title">Únirme a la Comunidad</h2>
+              <button className="pc-modal-close" onClick={handleCerrarModalRegistro} aria-label="Cerrar">✕</button>
+            </div>
+            <div className="pc-modal-body">
+              <div className="pc-form-row">
+                <div className="pc-form-group">
+                  <label className="pc-form-label">Nombre</label>
+                  <input type="text" className="pc-form-input" placeholder="Tu nombre" value={registroData.nombre} onChange={(e) => handleRegistroChange('nombre', e.target.value)} />
+                </div>
+                <div className="pc-form-group">
+                  <label className="pc-form-label pc-form-label--required">Referencia (nombre o alias)</label>
+                  <input type="text" className="pc-form-input" placeholder="Nombre o alias" value={registroData.referencia} onChange={(e) => handleRegistroChange('referencia', e.target.value)} />
+                </div>
+              </div>
+              <div className="pc-form-row">
+                <div className="pc-form-group">
+                  <label className="pc-form-label">Teléfono</label>
+                  <input type="tel" className="pc-form-input" placeholder="Tu teléfono" value={registroData.telefono} onChange={(e) => handleRegistroChange('telefono', e.target.value)} />
+                </div>
+                <div className="pc-form-group">
+                  <label className="pc-form-label">Email</label>
+                  <input type="email" className="pc-form-input" placeholder="Tu correo" value={registroData.email} onChange={(e) => handleRegistroChange('email', e.target.value)} />
+                </div>
+              </div>
+              <div className="pc-form-row">
+                <div className="pc-form-group">
+                  <label className="pc-form-label">Cumpleaños</label>
+                  <input type="date" className="pc-form-input" value={registroData.cumple} onChange={(e) => handleRegistroChange('cumple', e.target.value)} />
+                </div>
+                <div className="pc-form-group">
+                  <label className="pc-form-label">Satisfacción (1-5)</label>
+                  <input type="number" className="pc-form-input" placeholder="1-5" min={1} max={5} value={registroData.satisfaccion} onChange={(e) => handleRegistroChange('satisfaccion', e.target.value)} />
+                </div>
+              </div>
+              <div className="pc-form-group">
+                <label className="pc-form-label">Dirección</label>
+                <input type="text" className="pc-form-input" placeholder="Tu dirección" value={registroData.direccion} onChange={(e) => handleRegistroChange('direccion', e.target.value)} />
+              </div>
+              <div className="pc-form-group">
+                <label className="pc-form-label">Comentarios</label>
+                <textarea className="pc-form-textarea" placeholder="Comentarios opcionales" value={registroData.comentarios} onChange={(e) => handleRegistroChange('comentarios', e.target.value)} />
+              </div>
+              <div className="pc-form-group">
+                <label className="pc-form-label pc-form-label--required">Clave secreta</label>
+                <input type="password" className="pc-form-input" placeholder="E5cr1b3 un* c1aV3 5ecre7a" value={registroData.password} onChange={(e) => handleRegistroChange('password', e.target.value)} />
+              </div>
+              <button
+                className="pc-modal-btn"
+                onClick={handleRegistroCliente}
+                disabled={registroCargando}
+              >
+                {registroCargando ? <><span className="pc-btn-spinner" /> Registrando...</> : 'Registrarme'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -471,7 +471,7 @@ export const loginCliente = async (req: Request, res: Response): Promise<void> =
     }
 
     const [rows] = await pool.execute<ClienteWeb[]>(
-      'SELECT idCliente, nombre, telefono, password, estatus, idnegocio, direccion FROM tblposcrumenwebclientes WHERE telefono = ? LIMIT 1',
+      'SELECT idCliente, nombre, telefono, password, estatus, idnegocio, direccion FROM tblposcrumenwebclientes WHERE telefono = ? AND estatus = 1 LIMIT 1',
       [telefono]
     );
 
@@ -529,6 +529,92 @@ export const loginCliente = async (req: Request, res: Response): Promise<void> =
   } catch (error) {
     console.error('Error en loginCliente:', error);
     res.status(500).json({ success: false, message: 'Error en el servidor' });
+  }
+};
+
+/**
+ * Registro público de nuevos clientes del portal web
+ * Inserta en tblposcrumenwebclientes sin requerir autenticación
+ */
+export const registroClientePublico = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const {
+      nombre,
+      referencia,
+      cumple,
+      satisfaccion,
+      comentarios,
+      puntosfidelidad,
+      telefono,
+      email,
+      direccion,
+      password
+    } = req.body;
+
+    if (!referencia || !password) {
+      res.status(400).json({ success: false, message: 'Los campos referencia y contraseña son obligatorios' });
+      return;
+    }
+
+    // Verificar si ya existe un cliente con el mismo teléfono
+    if (telefono) {
+      const [existing] = await pool.execute<RowDataPacket[]>(
+        'SELECT idCliente FROM tblposcrumenwebclientes WHERE telefono = ? LIMIT 1',
+        [telefono]
+      );
+      if ((existing as RowDataPacket[]).length > 0) {
+        res.status(409).json({ success: false, message: 'Ya existe un cliente registrado con ese número de teléfono' });
+        return;
+      }
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const [result] = await pool.execute<ResultSetHeader>(
+      `INSERT INTO tblposcrumenwebclientes (
+        nombre,
+        referencia,
+        cumple,
+        categoriacliente,
+        satisfaccion,
+        comentarios,
+        puntosfidelidad,
+        estatus_seguimiento,
+        medio_contacto,
+        fechaultimoseguimiento,
+        telefono,
+        email,
+        direccion,
+        estatus,
+        password,
+        fecharegistroauditoria,
+        usuarioauditoria,
+        fehamodificacionauditoria,
+        idnegocio
+      ) VALUES (?, ?, ?, 'NUEVO', ?, ?, ?, 'EN_PROSPECCIÓN', 'OTRO', NOW(), ?, ?, ?, 1, ?, NOW(), ?, NOW(), 0)`,
+      [
+        nombre || null,
+        referencia,
+        cumple || null,
+        satisfaccion || null,
+        comentarios || null,
+        puntosfidelidad || 0,
+        telefono || null,
+        email || null,
+        direccion || null,
+        hashedPassword,
+        telefono || 'cliente'
+      ]
+    );
+
+    res.status(201).json({
+      success: true,
+      message: 'Registro exitoso. Ahora puedes iniciar sesión.',
+      data: { idCliente: result.insertId }
+    });
+  } catch (error) {
+    console.error('Error en registroClientePublico:', error);
+    res.status(500).json({ success: false, message: 'Error en el servidor al registrar el cliente' });
   }
 };
 
