@@ -4,6 +4,7 @@ import { clienteWebService } from '../../services/clienteWebService';
 import type { NegocioPublico, ClienteWebData } from '../../services/clienteWebService';
 import { verificarTurnoAbierto } from '../../services/turnosService';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../../components/FeedbackToast';
+import GoogleMapsSelector from '../../components/common/GoogleMapsSelector/GoogleMapsSelector';
 import './PageClientes.css';
 
 const CATEGORIAS = ['Todos', 'Comida', 'Café', 'Postres', 'Bebidas'];
@@ -592,7 +593,10 @@ const PageClientes: React.FC = () => {
               </div>
               <div className="pc-form-group">
                 <label className="pc-form-label">Dirección</label>
-                <input type="text" className="pc-form-input" placeholder="Agrega tu dirección desde googlemaps" autoComplete="off" value={registroData.direccion} onChange={(e) => handleRegistroChange('direccion', e.target.value)} />
+                <GoogleMapsSelector
+                  value={registroData.direccion}
+                  onChange={(url) => handleRegistroChange('direccion', url)}
+                />
               </div>
               <div className="pc-form-group">
                 <label className="pc-form-label pc-form-label--required">Clave secreta</label>
