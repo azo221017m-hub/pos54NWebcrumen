@@ -14,7 +14,7 @@ const router = Router();
 
 /**
  * @route   GET /api/anuncios/vigentes
- * @desc    Obtener anuncios con fechaDeVigencia <= hoy (sin autenticación)
+ * @desc    Obtener anuncios con fechaDeVigencia >= hoy o sin fecha (sin autenticación)
  * @access  Public
  */
 router.get('/vigentes', apiLimiter, obtenerAnunciosVigentes);
