@@ -7,16 +7,19 @@ const PORT = process.env.PORT || 3000;
 // even on fresh deployments where the migration script has not been run yet.
 const ensureAnunciosTable = async (): Promise<void> => {
   try {
-    await pool.execute(`
+    // Use pool.query() instead of pool.execute() because pool.execute() uses
+    // prepared statements with binary protocol, which has known issues with
+    // LONGBLOB/LONGTEXT columns in mysql2.
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS \`tblposcrumenwebanuncios\` (
         \`idAnuncio\` INT NOT NULL AUTO_INCREMENT,
-        \`tituloDeAnuncio\` VARCHAR(255) NOT NULL,
+        \`tituloDeAnuncio\` VARCHAR(250) NOT NULL,
         \`detalleAnuncio\` TEXT NULL,
-        \`imagen1Anuncio\` LONGTEXT NULL,
-        \`imagen2Anuncio\` LONGTEXT NULL,
-        \`imagen3Anuncio\` LONGTEXT NULL,
-        \`imagen4Anuncio\` LONGTEXT NULL,
-        \`imagen5Anuncio\` LONGTEXT NULL,
+        \`imagen1Anuncio\` LONGBLOB NULL,
+        \`imagen2Anuncio\` LONGBLOB NULL,
+        \`imagen3Anuncio\` LONGBLOB NULL,
+        \`imagen4Anuncio\` LONGBLOB NULL,
+        \`imagen5Anuncio\` LONGBLOB NULL,
         \`fechaDeVigencia\` DATE NULL,
         \`usuarioauditoria\` VARCHAR(100) NULL,
         \`fechamodificacionauditoria\` DATETIME NULL,
