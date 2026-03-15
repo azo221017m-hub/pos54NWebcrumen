@@ -5,6 +5,8 @@ import type { NegocioPublico, ClienteWebData } from '../../services/clienteWebSe
 import { verificarTurnoAbierto } from '../../services/turnosService';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../../components/FeedbackToast';
 import GoogleMapsSelector from '../../components/common/GoogleMapsSelector/GoogleMapsSelector';
+import { obtenerAnunciosVigentes } from '../../services/anunciosService';
+import type { Anuncio } from '../../types/anuncio.types';
 import './PageClientes.css';
 
 const CATEGORIAS = ['Todos', 'Alimentos', 'Bebidas Calientes', 'Cuidado Personal', 'Bebidas Frías'];
@@ -59,6 +61,11 @@ const PageClientes: React.FC = () => {
   const [mostrarMenuAvatar, setMostrarMenuAvatar] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
 
+  // Anuncios vigentes sidebar
+  const [anuncios, setAnuncios] = useState<Anuncio[]>([]);
+  const [anuncioActivo, setAnuncioActivo] = useState(0);
+  const [imagenActivaIdx, setImagenActivaIdx] = useState(0);
+
   // Login modal
   const [mostrarModalLogin, setMostrarModalLogin] = useState(false);
   const [loginTelefono, setLoginTelefono] = useState('');
@@ -101,6 +108,7 @@ const PageClientes: React.FC = () => {
     }
 
     cargarNegocios();
+    cargarAnunciosVigentes();
   }, []);
 
   const cargarNegocios = async () => {
@@ -113,6 +121,41 @@ const PageClientes: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  const cargarAnunciosVigentes = async () => {
+    try {
+      const data = await obtenerAnunciosVigentes();
+      setAnuncios(data);
+      setAnuncioActivo(0);
+      setImagenActivaIdx(0);
+    } catch {
+      // Silently fail — anuncios are optional in the sidebar
+    }
+  };
+
+  // Helper: collect non-null images from an anuncio
+  const getImagenes = (anuncio: Anuncio): string[] =>
+    [
+      anuncio.imagen1Anuncio,
+      anuncio.imagen2Anuncio,
+      anuncio.imagen3Anuncio,
+      anuncio.imagen4Anuncio,
+      anuncio.imagen5Anuncio
+    ].filter((img): img is string => img !== null && img !== '');
+
+  // Auto-advance the carousel every 3 seconds; reset image index when active anuncio changes
+  useEffect(() => {
+    setImagenActivaIdx(0);
+    if (anuncios.length === 0) return;
+    const currentAnuncio = anuncios[anuncioActivo];
+    if (!currentAnuncio) return;
+    const imagenes = getImagenes(currentAnuncio);
+    if (imagenes.length <= 1) return;
+    const timer = setInterval(() => {
+      setImagenActivaIdx((prev) => (prev + 1) % imagenes.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [anuncios, anuncioActivo]);
 
   const aplicarFiltros = useCallback(
     (search: string, categoria: string) => {
@@ -422,6 +465,61 @@ const PageClientes: React.FC = () => {
 
       {/* Main content with sidebar */}
       <div className="pc-layout">
+
+        {/* Left sidebar — Anuncios vigentes */}
+        {anuncios.length > 0 && (() => {
+          const anuncio = anuncios[anuncioActivo];
+          const imagenes = getImagenes(anuncio);
+          return (
+            <aside className="pc-sidebar">
+              <div className="pc-banner-promo">
+                <div className="pc-carousel">
+                  {imagenes.length > 0 ? (
+                    <div className="pc-carousel-track">
+                      <img
+                        src={`data:image/jpeg;base64,${imagenes[imagenActivaIdx]}`}
+                        alt={anuncio.tituloDeAnuncio}
+                        className="pc-carousel-img"
+                      />
+                    </div>
+                  ) : (
+                    <div className="pc-carousel-track" />
+                  )}
+                  {anuncio.tituloDeAnuncio && (
+                    <p className="pc-banner-small">{anuncio.tituloDeAnuncio}</p>
+                  )}
+                  {anuncio.detalleAnuncio && (
+                    <p className="pc-carousel-detalle">{anuncio.detalleAnuncio}</p>
+                  )}
+                  {imagenes.length > 1 && (
+                    <div className="pc-carousel-dots pc-carousel-dots--imagenes">
+                      {imagenes.map((_, idx) => (
+                        <button
+                          key={idx}
+                          className={`pc-carousel-dot${idx === imagenActivaIdx ? ' pc-carousel-dot--active' : ''}`}
+                          onClick={() => setImagenActivaIdx(idx)}
+                          aria-label={`Imagen ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {anuncios.length > 1 && (
+                    <div className="pc-carousel-dots pc-carousel-dots--anuncios">
+                      {anuncios.map((_, idx) => (
+                        <button
+                          key={idx}
+                          className={`pc-carousel-dot${idx === anuncioActivo ? ' pc-carousel-dot--active' : ''}`}
+                          onClick={() => { setAnuncioActivo(idx); setImagenActivaIdx(0); }}
+                          aria-label={`Anuncio ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </aside>
+          );
+        })()}
 
         {/* Main content area */}
         <main className="pc-main">

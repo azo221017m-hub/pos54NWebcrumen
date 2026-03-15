@@ -236,6 +236,27 @@
   padding: 0 4px;
 }
 
+/* Image dots — slightly larger, white */
+.pc-carousel-dots--imagenes {
+  margin-top: 4px;
+}
+
+/* Anuncio selector dots — smaller, distinguished with different color */
+.pc-carousel-dots--anuncios {
+  margin-top: 2px;
+}
+
+.pc-carousel-dots--anuncios .pc-carousel-dot {
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.pc-carousel-dots--anuncios .pc-carousel-dot--active {
+  background: #0ea5c0;
+  transform: scale(1.4);
+}
+
 .pc-carousel-dot {
   width: 8px;
   height: 8px;

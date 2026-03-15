@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   obtenerAnuncios,
+  obtenerAnunciosVigentes,
   obtenerAnuncioPorId,
   crearAnuncio,
   actualizarAnuncio,
@@ -11,7 +12,14 @@ import { apiLimiter } from '../middlewares/rateLimit';
 
 const router = Router();
 
-// Aplicar rate limiting y autenticación a todas las rutas
+/**
+ * @route   GET /api/anuncios/vigentes
+ * @desc    Obtener anuncios con fechaDeVigencia <= hoy (sin autenticación)
+ * @access  Public
+ */
+router.get('/vigentes', apiLimiter, obtenerAnunciosVigentes);
+
+// Aplicar rate limiting y autenticación a todas las rutas restantes
 router.use(apiLimiter);
 router.use(authMiddleware);
 
