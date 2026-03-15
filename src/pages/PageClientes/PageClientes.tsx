@@ -467,12 +467,12 @@ const PageClientes: React.FC = () => {
       <div className="pc-layout">
 
         {/* Left sidebar — Anuncios vigentes */}
-        {anuncios.length > 0 && (() => {
-          const anuncio = anuncios[anuncioActivo];
-          const imagenes = getImagenes(anuncio);
-          return (
-            <aside className="pc-sidebar">
-              <div className="pc-banner-promo">
+        <aside className="pc-sidebar">
+          <div className="pc-banner-promo">
+            {anuncios.length > 0 ? (() => {
+              const anuncio = anuncios[anuncioActivo];
+              const imagenes = getImagenes(anuncio);
+              return (
                 <div className="pc-carousel">
                   {imagenes.length > 0 ? (
                     <div className="pc-carousel-track">
@@ -516,10 +516,18 @@ const PageClientes: React.FC = () => {
                     </div>
                   )}
                 </div>
+              );
+            })() : (
+              <div className="pc-banner-content">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="pc-banner-placeholder-icon">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                </svg>
+                <p className="pc-banner-small">Anuncios</p>
+                <p className="pc-carousel-detalle">Próximamente promociones y novedades para ti</p>
               </div>
-            </aside>
-          );
-        })()}
+            )}
+          </div>
+        </aside>
 
         {/* Main content area */}
         <main className="pc-main">
