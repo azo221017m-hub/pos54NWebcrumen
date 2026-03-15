@@ -5,6 +5,8 @@ import type { NegocioPublico, ClienteWebData } from '../../services/clienteWebSe
 import { verificarTurnoAbierto } from '../../services/turnosService';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../../components/FeedbackToast';
 import GoogleMapsSelector from '../../components/common/GoogleMapsSelector/GoogleMapsSelector';
+import { obtenerAnunciosVigentes } from '../../services/anunciosService';
+import type { Anuncio } from '../../types/anuncio.types';
 import './PageClientes.css';
 
 const CATEGORIAS = ['Todos', 'Alimentos', 'Bebidas Calientes', 'Cuidado Personal', 'Bebidas Frías'];
@@ -80,6 +82,57 @@ const PageClientes: React.FC = () => {
     direccion: '',
     password: ''
   });
+
+  // Anuncios banner carousel
+  const [anuncioImages, setAnuncioImages] = useState<{ src: string; titulo: string; detalle: string | null }[]>([]);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const carouselTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const anuncioImagesLengthRef = useRef(0);
+
+  useEffect(() => {
+    obtenerAnunciosVigentes().then((anuncios: Anuncio[]) => {
+      const images: { src: string; titulo: string; detalle: string | null }[] = [];
+      const imageKeys: (keyof Anuncio)[] = [
+        'imagen1Anuncio', 'imagen2Anuncio', 'imagen3Anuncio', 'imagen4Anuncio', 'imagen5Anuncio'
+      ];
+      anuncios.forEach((anuncio) => {
+        imageKeys.forEach((key) => {
+          const val = anuncio[key];
+          if (val && typeof val === 'string') {
+            images.push({
+              src: `data:image/jpeg;base64,${val}`,
+              titulo: anuncio.tituloDeAnuncio,
+              detalle: anuncio.detalleAnuncio
+            });
+          }
+        });
+      });
+      anuncioImagesLengthRef.current = images.length;
+      setAnuncioImages(images);
+      setCarouselIndex(0);
+    });
+  }, []);
+
+  useEffect(() => {
+    anuncioImagesLengthRef.current = anuncioImages.length;
+    if (anuncioImages.length <= 1) return;
+    carouselTimerRef.current = setInterval(() => {
+      setCarouselIndex((prev) => (prev + 1) % anuncioImagesLengthRef.current);
+    }, 4000);
+    return () => {
+      if (carouselTimerRef.current) clearInterval(carouselTimerRef.current);
+    };
+  }, [anuncioImages]);
+
+  const handleCarouselDot = (idx: number) => {
+    setCarouselIndex(idx);
+    if (carouselTimerRef.current) clearInterval(carouselTimerRef.current);
+    if (anuncioImagesLengthRef.current > 1) {
+      carouselTimerRef.current = setInterval(() => {
+        setCarouselIndex((prev) => (prev + 1) % anuncioImagesLengthRef.current);
+      }, 4000);
+    }
+  };
 
   useEffect(() => {
     // Load active orders from localStorage (keys: pedidoActivo_{idNegocio})
@@ -422,6 +475,43 @@ const PageClientes: React.FC = () => {
 
       {/* Main content with sidebar */}
       <div className="pc-layout">
+
+        {/* Sidebar: Anuncios banner */}
+        {anuncioImages.length > 0 && (
+          <aside className="pc-sidebar">
+            <div className="pc-banner-promo">
+              <div className="pc-banner-content">
+                <div className="pc-carousel">
+                  <div className="pc-carousel-track">
+                    <img
+                      src={anuncioImages[carouselIndex].src}
+                      alt={anuncioImages[carouselIndex].titulo}
+                      className="pc-carousel-img"
+                    />
+                  </div>
+                  <p className="pc-banner-small">{anuncioImages[carouselIndex].titulo}</p>
+                  {anuncioImages[carouselIndex].detalle && (
+                    <p className="pc-carousel-detalle">{anuncioImages[carouselIndex].detalle}</p>
+                  )}
+                  {anuncioImages.length > 1 && (
+                    <div className="pc-carousel-dots" role="tablist" aria-label="Imágenes de anuncio">
+                      {anuncioImages.map((_, idx) => (
+                        <button
+                          key={idx}
+                          className={`pc-carousel-dot${idx === carouselIndex ? ' pc-carousel-dot--active' : ''}`}
+                          onClick={() => handleCarouselDot(idx)}
+                          role="tab"
+                          aria-selected={idx === carouselIndex}
+                          aria-label={`Imagen ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </aside>
+        )}
 
         {/* Main content area */}
         <main className="pc-main">
