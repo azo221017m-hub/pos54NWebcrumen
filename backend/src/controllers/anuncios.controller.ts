@@ -9,7 +9,7 @@ const IMAGE_FIELD_PREFIX = 'imagen';
 // GET /api/anuncios/publico - Obtener anuncios vigentes (sin autenticación)
 export async function obtenerAnunciosPublico(_req: Request, res: Response): Promise<void> {
   try {
-    const [rows] = await pool.execute<(Anuncio & RowDataPacket)[]>(
+    const [rows] = await pool.query<(Anuncio & RowDataPacket)[]>(
       `SELECT
         idAnuncio,
         tituloDeAnuncio,
@@ -30,6 +30,16 @@ export async function obtenerAnunciosPublico(_req: Request, res: Response): Prom
       message: 'Anuncios públicos obtenidos correctamente'
     });
   } catch (error) {
+    const mysqlCode = (error as any)?.code;
+    if (mysqlCode === 'ER_NO_SUCH_TABLE') {
+      console.warn('Tabla tblposcrumenwebanuncios no encontrada. Retornando lista vacía.');
+      res.json({
+        success: true,
+        data: [],
+        message: 'No hay anuncios registrados'
+      });
+      return;
+    }
     console.error('Error al obtener anuncios públicos:', error);
     res.status(500).json({
       success: false,
@@ -42,7 +52,7 @@ export async function obtenerAnunciosPublico(_req: Request, res: Response): Prom
 // GET /api/anuncios - Obtener todos los anuncios
 export async function obtenerAnuncios(_req: AuthRequest, res: Response): Promise<void> {
   try {
-    const [rows] = await pool.execute<(Anuncio & RowDataPacket)[]>(
+    const [rows] = await pool.query<(Anuncio & RowDataPacket)[]>(
       `SELECT
         idAnuncio,
         tituloDeAnuncio,
@@ -90,7 +100,7 @@ export async function obtenerAnuncioPorId(req: AuthRequest, res: Response): Prom
   try {
     const { id } = req.params;
 
-    const [rows] = await pool.execute<(Anuncio & RowDataPacket)[]>(
+    const [rows] = await pool.query<(Anuncio & RowDataPacket)[]>(
       `SELECT
         idAnuncio,
         tituloDeAnuncio,
@@ -122,6 +132,15 @@ export async function obtenerAnuncioPorId(req: AuthRequest, res: Response): Prom
       message: 'Anuncio obtenido correctamente'
     });
   } catch (error) {
+    const mysqlCode = (error as any)?.code;
+    if (mysqlCode === 'ER_NO_SUCH_TABLE') {
+      console.warn('Tabla tblposcrumenwebanuncios no encontrada.');
+      res.status(404).json({
+        success: false,
+        message: 'Anuncio no encontrado'
+      });
+      return;
+    }
     console.error('Error al obtener anuncio:', error);
     res.status(500).json({
       success: false,
@@ -173,7 +192,7 @@ export async function crearAnuncio(req: AuthRequest, res: Response): Promise<voi
     }
 
     console.log('  → Ejecutando INSERT en tblposcrumenwebanuncios...');
-    const [result] = await pool.execute<ResultSetHeader>(
+    const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebanuncios (
         tituloDeAnuncio,
         detalleAnuncio,
@@ -201,7 +220,7 @@ export async function crearAnuncio(req: AuthRequest, res: Response): Promise<voi
 
     console.log(`✅ [crearAnuncio] INSERT exitoso → insertId=${result.insertId}`);
 
-    const [anuncioCreado] = await pool.execute<(Anuncio & RowDataPacket)[]>(
+    const [anuncioCreado] = await pool.query<(Anuncio & RowDataPacket)[]>(
       `SELECT
         idAnuncio,
         tituloDeAnuncio,
@@ -244,6 +263,20 @@ export async function crearAnuncio(req: AuthRequest, res: Response): Promise<voi
       });
       return;
     }
+    if (mysqlCode === 'ER_DATA_TOO_LONG') {
+      res.status(400).json({
+        success: false,
+        message: 'Los datos enviados exceden el tamaño permitido. Verifique las imágenes y el contenido.'
+      });
+      return;
+    }
+    if (mysqlCode === 'ER_NET_PACKET_TOO_LARGE') {
+      res.status(413).json({
+        success: false,
+        message: 'El tamaño de los datos es demasiado grande. Reduzca el tamaño de las imágenes.'
+      });
+      return;
+    }
     res.status(500).json({
       success: false,
       message: 'Error al crear anuncio',
@@ -281,7 +314,7 @@ export async function actualizarAnuncio(req: AuthRequest, res: Response): Promis
       return;
     }
 
-    const [anuncioRows] = await pool.execute<RowDataPacket[]>(
+    const [anuncioRows] = await pool.query<RowDataPacket[]>(
       'SELECT idAnuncio FROM tblposcrumenwebanuncios WHERE idAnuncio = ?',
       [id]
     );
@@ -302,7 +335,7 @@ export async function actualizarAnuncio(req: AuthRequest, res: Response): Promis
       return;
     }
 
-    await pool.execute(
+    await pool.query(
       `UPDATE tblposcrumenwebanuncios SET
         tituloDeAnuncio = ?,
         detalleAnuncio = ?,
@@ -329,7 +362,7 @@ export async function actualizarAnuncio(req: AuthRequest, res: Response): Promis
       ]
     );
 
-    const [anuncioActualizado] = await pool.execute<(Anuncio & RowDataPacket)[]>(
+    const [anuncioActualizado] = await pool.query<(Anuncio & RowDataPacket)[]>(
       `SELECT
         idAnuncio,
         tituloDeAnuncio,
@@ -363,6 +396,27 @@ export async function actualizarAnuncio(req: AuthRequest, res: Response): Promis
     console.error('  → Errno MySQL:', mysqlErrno || 'N/A');
     console.error('  → Usuario auditoria:', req.user?.alias || 'no disponible');
     console.error('  → Stack:', error instanceof Error ? error.stack : 'N/A');
+    if (mysqlCode === 'ER_NO_SUCH_TABLE') {
+      res.status(500).json({
+        success: false,
+        message: 'La tabla de anuncios no existe. Por favor, contacte al administrador del sistema.'
+      });
+      return;
+    }
+    if (mysqlCode === 'ER_DATA_TOO_LONG') {
+      res.status(400).json({
+        success: false,
+        message: 'Los datos enviados exceden el tamaño permitido. Verifique las imágenes y el contenido.'
+      });
+      return;
+    }
+    if (mysqlCode === 'ER_NET_PACKET_TOO_LARGE') {
+      res.status(413).json({
+        success: false,
+        message: 'El tamaño de los datos es demasiado grande. Reduzca el tamaño de las imágenes.'
+      });
+      return;
+    }
     res.status(500).json({
       success: false,
       message: 'Error al actualizar anuncio',
@@ -376,7 +430,7 @@ export async function eliminarAnuncio(req: AuthRequest, res: Response): Promise<
   try {
     const { id } = req.params;
 
-    const [anuncioRows] = await pool.execute<RowDataPacket[]>(
+    const [anuncioRows] = await pool.query<RowDataPacket[]>(
       'SELECT idAnuncio FROM tblposcrumenwebanuncios WHERE idAnuncio = ?',
       [id]
     );
@@ -389,7 +443,7 @@ export async function eliminarAnuncio(req: AuthRequest, res: Response): Promise<
       return;
     }
 
-    await pool.execute(
+    await pool.query(
       'DELETE FROM tblposcrumenwebanuncios WHERE idAnuncio = ?',
       [id]
     );
@@ -399,6 +453,14 @@ export async function eliminarAnuncio(req: AuthRequest, res: Response): Promise<
       message: 'Anuncio eliminado correctamente'
     });
   } catch (error) {
+    const mysqlCode = (error as any)?.code;
+    if (mysqlCode === 'ER_NO_SUCH_TABLE') {
+      res.status(404).json({
+        success: false,
+        message: 'Anuncio no encontrado'
+      });
+      return;
+    }
     console.error('Error al eliminar anuncio:', error);
     res.status(500).json({
       success: false,

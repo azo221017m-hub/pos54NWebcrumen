@@ -4,6 +4,9 @@ import type { Anuncio, AnuncioCreate, AnuncioUpdate } from '../types/anuncio.typ
 
 const API_BASE = '/anuncios';
 
+// Timeout extendido para operaciones con imágenes base64 (30 segundos)
+const EXTENDED_TIMEOUT = 30000;
+
 interface AnuncioResponse {
   success: boolean;
   data: Anuncio;
@@ -55,7 +58,9 @@ export const obtenerAnuncioPorId = async (id: number): Promise<Anuncio> => {
 // Crear un nuevo anuncio
 export const crearAnuncio = async (anuncio: AnuncioCreate): Promise<Anuncio> => {
   try {
-    const response = await apiClient.post<AnuncioResponse>(API_BASE, anuncio);
+    const response = await apiClient.post<AnuncioResponse>(API_BASE, anuncio, {
+      timeout: EXTENDED_TIMEOUT
+    });
     if (!response.data.data) {
       throw new Error('No se pudo crear el anuncio');
     }
@@ -69,7 +74,9 @@ export const crearAnuncio = async (anuncio: AnuncioCreate): Promise<Anuncio> => 
 // Actualizar un anuncio existente
 export const actualizarAnuncio = async (id: number, anuncio: AnuncioUpdate): Promise<Anuncio> => {
   try {
-    const response = await apiClient.put<AnuncioResponse>(`${API_BASE}/${id}`, anuncio);
+    const response = await apiClient.put<AnuncioResponse>(`${API_BASE}/${id}`, anuncio, {
+      timeout: EXTENDED_TIMEOUT
+    });
     if (!response.data.data) {
       throw new Error('No se pudo actualizar el anuncio');
     }
