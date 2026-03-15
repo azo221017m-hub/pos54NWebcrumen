@@ -9,16 +9,35 @@ import './PageClientes.css';
 
 const CATEGORIAS = ['Todos', 'Comida', 'Café', 'Postres', 'Bebidas'];
 
-// Placeholder rating and prep-time generators based on business ID.
-// These are used until actual rating/time fields are added to the database.
-function getPseudoRating(id: number): string {
-  const base = ((id * 17 + 3) % 15) / 10 + 3.5;
-  return base.toFixed(1);
-}
-
 function getPrepTime(id: number): string {
   const mins = ((id * 7 + 5) % 20) + 10;
   return `${mins}-${mins + 5} min`;
+}
+
+// Renders 5 filled/empty stars for a 1-5 integer rating.
+function renderStars(calificacion: number | null) {
+  const rating = calificacion != null && calificacion >= 1 && calificacion <= 5
+    ? Math.round(calificacion)
+    : null;
+  return (
+    <span
+      className="pc-card-rating"
+      aria-label={rating != null ? `Calificación: ${rating} de 5 estrellas` : 'Sin calificación'}
+    >
+      {[1, 2, 3, 4, 5].map((star) => (
+        <svg
+          key={star}
+          viewBox="0 0 20 20"
+          fill={rating != null && star <= rating ? '#f59e0b' : '#d1d5db'}
+          className="pc-star-icon"
+          aria-hidden="true"
+        >
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+      ))}
+      {rating != null && <span className="pc-rating-value">{rating}</span>}
+    </span>
+  );
 }
 
 const PageClientes: React.FC = () => {
@@ -443,12 +462,7 @@ const PageClientes: React.FC = () => {
                       <p className="pc-card-tipo">{negocio.tipoNegocio || 'Negocio'}</p>
 
                       <div className="pc-card-meta">
-                        <span className="pc-card-rating">
-                          <svg viewBox="0 0 20 20" fill="#f59e0b" className="pc-star-icon">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                          {getPseudoRating(negocio.idNegocio)}
-                        </span>
+                        {renderStars(negocio.calificacion)}
                         <span className="pc-card-separator">·</span>
                         <span className="pc-card-time">
                           ⏱ {getPrepTime(negocio.idNegocio)}
