@@ -14,7 +14,7 @@ export const obtenerAnuncios = async (): Promise<Anuncio[]> => {
   }
 };
 
-// Obtener anuncios vigentes (fechaDeVigencia <= hoy) — público, sin autenticación
+// Obtener anuncios vigentes (fechaDeVigencia >= hoy o sin fecha) — público, sin autenticación
 export const obtenerAnunciosVigentes = async (): Promise<Anuncio[]> => {
   try {
     const response = await apiClient.get<Anuncio[]>(`${API_BASE}/vigentes`);

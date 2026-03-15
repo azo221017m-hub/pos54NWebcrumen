@@ -15,7 +15,7 @@ interface Anuncio extends RowDataPacket {
   fechaDeVigencia: Date | string | null;
 }
 
-// Obtener anuncios vigentes (fechaDeVigencia <= hoy) — ruta pública para PageClientes
+// Obtener anuncios vigentes (fechaDeVigencia >= hoy o sin fecha) — ruta pública para PageClientes
 export const obtenerAnunciosVigentes = async (_req: Request, res: Response): Promise<void> => {
   try {
     const [rows] = await pool.query<Anuncio[]>(
@@ -30,7 +30,7 @@ export const obtenerAnunciosVigentes = async (_req: Request, res: Response): Pro
         TO_BASE64(imagen5Anuncio) AS imagen5Anuncio,
         DATE_FORMAT(fechaDeVigencia, '%Y-%m-%d') AS fechaDeVigencia
       FROM tblposcrumenwebanuncios
-      WHERE fechaDeVigencia <= CURDATE()
+      WHERE fechaDeVigencia >= CURDATE() OR fechaDeVigencia IS NULL
       ORDER BY idAnuncio DESC`
     );
     res.status(200).json(rows);
