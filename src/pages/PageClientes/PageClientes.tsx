@@ -134,14 +134,14 @@ const PageClientes: React.FC = () => {
   };
 
   // Helper: collect non-null images from an anuncio
-  const getImagenes = (anuncio: Anuncio): string[] =>
+  const getImagenes = useCallback((anuncio: Anuncio): string[] =>
     [
       anuncio.imagen1Anuncio,
       anuncio.imagen2Anuncio,
       anuncio.imagen3Anuncio,
       anuncio.imagen4Anuncio,
       anuncio.imagen5Anuncio
-    ].filter((img): img is string => img !== null && img !== '');
+    ].filter((img): img is string => img !== null && img !== ''), []);
 
   // Auto-advance the carousel every 3 seconds; reset image index when active anuncio changes
   useEffect(() => {
@@ -155,7 +155,21 @@ const PageClientes: React.FC = () => {
       setImagenActivaIdx((prev) => (prev + 1) % imagenes.length);
     }, 3000);
     return () => clearInterval(timer);
-  }, [anuncios, anuncioActivo]);
+  }, [anuncios, anuncioActivo, getImagenes]);
+
+  // Auto-advance between anuncios after all images of the current one have been shown
+  useEffect(() => {
+    if (anuncios.length <= 1) return;
+    const currentAnuncio = anuncios[anuncioActivo];
+    if (!currentAnuncio) return;
+    const imagenes = getImagenes(currentAnuncio);
+    const delay = imagenes.length > 1 ? imagenes.length * 3000 : 5000;
+    const timer = setTimeout(() => {
+      setAnuncioActivo((prev) => (prev + 1) % anuncios.length);
+      setImagenActivaIdx(0);
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [anuncios, anuncioActivo, getImagenes]);
 
   const aplicarFiltros = useCallback(
     (search: string, categoria: string) => {
