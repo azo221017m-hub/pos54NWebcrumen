@@ -1,4 +1,5 @@
 import apiClient from './api';
+import { api } from './api';
 import type { Anuncio, AnuncioCreate, AnuncioUpdate } from '../types/anuncio.types';
 
 const API_BASE = '/anuncios';
@@ -14,6 +15,17 @@ interface AnunciosListResponse {
   data: Anuncio[];
   message: string;
 }
+
+// Obtener anuncios vigentes para el portal de clientes (sin autenticación)
+export const obtenerAnunciosPublico = async (): Promise<Anuncio[]> => {
+  try {
+    const response = await api.get<AnunciosListResponse>(`${API_BASE}/publico`);
+    return response.data.data || [];
+  } catch (error) {
+    console.error('Error al obtener anuncios públicos:', error);
+    return [];
+  }
+};
 
 // Obtener todos los anuncios
 export const obtenerAnuncios = async (): Promise<Anuncio[]> => {

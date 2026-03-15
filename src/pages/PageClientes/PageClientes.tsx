@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { clienteWebService } from '../../services/clienteWebService';
 import type { NegocioPublico, ClienteWebData } from '../../services/clienteWebService';
 import { verificarTurnoAbierto } from '../../services/turnosService';
+import { obtenerAnunciosPublico } from '../../services/anunciosService';
+import type { Anuncio } from '../../types/anuncio.types';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../../components/FeedbackToast';
 import GoogleMapsSelector from '../../components/common/GoogleMapsSelector/GoogleMapsSelector';
 import './PageClientes.css';
@@ -59,6 +61,10 @@ const PageClientes: React.FC = () => {
   const [mostrarMenuAvatar, setMostrarMenuAvatar] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
 
+  // Anuncios carousel
+  const [anunciosPublicos, setAnunciosPublicos] = useState<Anuncio[]>([]);
+  const [carouselSlide, setCarouselSlide] = useState(0);
+
   // Login modal
   const [mostrarModalLogin, setMostrarModalLogin] = useState(false);
   const [loginTelefono, setLoginTelefono] = useState('');
@@ -101,6 +107,7 @@ const PageClientes: React.FC = () => {
     }
 
     cargarNegocios();
+    cargarAnunciosPublicos();
   }, []);
 
   const cargarNegocios = async () => {
@@ -113,6 +120,44 @@ const PageClientes: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  const cargarAnunciosPublicos = async () => {
+    try {
+      const data = await obtenerAnunciosPublico();
+      setAnunciosPublicos(data);
+    } catch {
+      // Silent fail — carousel is decorative
+    }
+  };
+
+  // Flatten all non-null images across active ads into carousel slides
+  const carouselSlides = useMemo(() => {
+    const slides: { src: string; detalle: string | null }[] = [];
+    for (const anuncio of anunciosPublicos) {
+      const imgs = [
+        anuncio.imagen1Anuncio,
+        anuncio.imagen2Anuncio,
+        anuncio.imagen3Anuncio,
+        anuncio.imagen4Anuncio,
+        anuncio.imagen5Anuncio,
+      ];
+      for (const img of imgs) {
+        if (img) {
+          slides.push({ src: img, detalle: anuncio.detalleAnuncio });
+        }
+      }
+    }
+    return slides;
+  }, [anunciosPublicos]);
+
+  // Auto-advance carousel
+  useEffect(() => {
+    if (carouselSlides.length <= 1) return;
+    const timer = setInterval(() => {
+      setCarouselSlide((prev) => (prev + 1) % carouselSlides.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [carouselSlides.length]);
 
   const aplicarFiltros = useCallback(
     (search: string, categoria: string) => {
@@ -422,13 +467,41 @@ const PageClientes: React.FC = () => {
 
       {/* Main content with sidebar */}
       <div className="pc-layout">
-        {/* Sidebar Banner */}
+        {/* Sidebar Banner / Carousel */}
         <aside className="pc-sidebar">
           <div className="pc-banner-promo">
-            <div className="pc-banner-content">
-              <p className="pc-banner-small">SECCION PARA ANUNCIOS, VIDEOS, FOTOS</p>
-              <p className="pc-banner-small">INTERCAMBIABLES</p>
-            </div>
+            {carouselSlides.length > 0 ? (
+              <div className="pc-carousel">
+                <div className="pc-carousel-track">
+                  <img
+                    src={carouselSlides[carouselSlide].src}
+                    alt={carouselSlides[carouselSlide].detalle ?? 'Anuncio'}
+                    className="pc-carousel-img"
+                  />
+                </div>
+                {carouselSlides[carouselSlide].detalle && (
+                  <p className="pc-carousel-detalle">
+                    {carouselSlides[carouselSlide].detalle}
+                  </p>
+                )}
+                {carouselSlides.length > 1 && (
+                  <div className="pc-carousel-dots">
+                    {carouselSlides.map((_, i) => (
+                      <button
+                        key={i}
+                        className={`pc-carousel-dot${i === carouselSlide ? ' pc-carousel-dot--active' : ''}`}
+                        onClick={() => setCarouselSlide(i)}
+                        aria-label={`Ir al anuncio ${i + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="pc-banner-content">
+                <p className="pc-banner-small">SECCIÓN PARA ANUNCIOS</p>
+              </div>
+            )}
           </div>
         </aside>
 

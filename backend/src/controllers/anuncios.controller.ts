@@ -1,8 +1,40 @@
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { pool } from '../config/db';
 import type { RowDataPacket, ResultSetHeader } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
 import type { Anuncio, AnuncioCreate, AnuncioUpdate } from '../types/anuncios.types';
+
+// GET /api/anuncios/publico - Obtener anuncios vigentes (sin autenticación)
+export async function obtenerAnunciosPublico(_req: Request, res: Response): Promise<void> {
+  try {
+    const [rows] = await pool.execute<(Anuncio & RowDataPacket)[]>(
+      `SELECT
+        idAnuncio,
+        detalleAnuncio,
+        CAST(imagen1Anuncio AS CHAR) AS imagen1Anuncio,
+        CAST(imagen2Anuncio AS CHAR) AS imagen2Anuncio,
+        CAST(imagen3Anuncio AS CHAR) AS imagen3Anuncio,
+        CAST(imagen4Anuncio AS CHAR) AS imagen4Anuncio,
+        CAST(imagen5Anuncio AS CHAR) AS imagen5Anuncio
+      FROM tblposcrumenwebanuncios
+      WHERE fechaDeVigencia < CURDATE()
+      ORDER BY idAnuncio DESC`
+    );
+
+    res.json({
+      success: true,
+      data: rows,
+      message: 'Anuncios públicos obtenidos correctamente'
+    });
+  } catch (error) {
+    console.error('Error al obtener anuncios públicos:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener anuncios',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+}
 
 // GET /api/anuncios - Obtener todos los anuncios
 export async function obtenerAnuncios(_req: AuthRequest, res: Response): Promise<void> {
