@@ -7,10 +7,12 @@ import {
   eliminarAnuncio
 } from '../controllers/anuncios.controller';
 import { authMiddleware } from '../middlewares/auth';
+import { apiLimiter } from '../middlewares/rateLimit';
 
 const router = Router();
 
-// Aplicar middleware de autenticación a todas las rutas
+// Aplicar rate limiting y autenticación a todas las rutas
+router.use(apiLimiter);
 router.use(authMiddleware);
 
 // Rutas CRUD para anuncios (tblposcrumenwebanuncios)
