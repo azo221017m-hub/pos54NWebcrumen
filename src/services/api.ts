@@ -33,12 +33,26 @@ apiClient.interceptors.request.use(
 // Endpoints de autenticación que no deben disparar auto-logout en 401
 const AUTH_ENDPOINTS = ['/auth/login', '/auth/register'];
 
+// Estructura estándar de respuesta de error del servidor
+interface ApiErrorResponse {
+  success: boolean;
+  message: string;
+  error?: string;
+}
+
 // Interceptor para manejar respuestas y errores
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
     const requestUrl = error.config?.url || '';
     
+    // Extraer el mensaje de error del servidor si está disponible,
+    // para reemplazar el mensaje genérico de Axios (e.g. "Request failed with status code 500")
+    const responseData = error.response?.data as ApiErrorResponse | undefined;
+    if (responseData?.message && typeof responseData.message === 'string') {
+      error.message = responseData.message;
+    }
+
     // Manejar errores de autenticación
     if (error.response?.status === 401) {
       // No hacer auto-logout para endpoints de autenticación (login/register)
