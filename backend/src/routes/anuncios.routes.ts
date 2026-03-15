@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   obtenerAnuncios,
+  obtenerAnunciosPublico,
   obtenerAnuncioPorId,
   crearAnuncio,
   actualizarAnuncio,
@@ -11,7 +12,14 @@ import { apiLimiter } from '../middlewares/rateLimit';
 
 const router = Router();
 
-// Aplicar rate limiting y autenticación a todas las rutas
+/**
+ * @route   GET /api/anuncios/publico
+ * @desc    Obtener anuncios vigentes para el portal de clientes (sin autenticación)
+ * @access  Public
+ */
+router.get('/publico', apiLimiter, obtenerAnunciosPublico);
+
+// Aplicar rate limiting y autenticación a las rutas protegidas
 router.use(apiLimiter);
 router.use(authMiddleware);
 
