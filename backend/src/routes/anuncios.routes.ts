@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middlewares/auth';
+import { apiLimiter } from '../middlewares/rateLimit';
 import {
   obtenerAnuncios,
   obtenerAnuncioPorId,
@@ -10,7 +11,8 @@ import {
 
 const router = Router();
 
-// Todas las rutas requieren autenticación
+// Todas las rutas requieren rate limiting y autenticación
+router.use(apiLimiter);
 router.use(authMiddleware);
 
 // GET /api/anuncios - Obtener todos los anuncios

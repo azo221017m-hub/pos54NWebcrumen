@@ -3,6 +3,8 @@ import { X, Save, Megaphone, CalendarDays } from 'lucide-react';
 import type { Anuncio, AnuncioCreate, AnuncioUpdate } from '../../../types/anuncio.types';
 import './FormularioAnuncio.css';
 
+const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
+
 interface ImagePreviewProps {
   index: number;
   value: string;
@@ -17,8 +19,7 @@ const ImagenAnuncio: React.FC<ImagePreviewProps> = ({ index, value, onChange }) 
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const maxSize = 2 * 1024 * 1024; // 2MB
-    if (file.size > maxSize) {
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
       setError('La imagen no debe superar 2MB');
       return;
     }
@@ -129,13 +130,13 @@ const FormularioAnuncio: React.FC<FormularioAnuncioProps> = ({
     try {
       const payload = {
         tituloDeAnuncio: formData.tituloDeAnuncio.trim(),
-        detalleAnuncio: formData.detalleAnuncio || undefined,
-        imagen1Anuncio: formData.imagen1Anuncio || undefined,
-        imagen2Anuncio: formData.imagen2Anuncio || undefined,
-        imagen3Anuncio: formData.imagen3Anuncio || undefined,
-        imagen4Anuncio: formData.imagen4Anuncio || undefined,
-        imagen5Anuncio: formData.imagen5Anuncio || undefined,
-        fechaDeVigencia: formData.fechaDeVigencia || undefined
+        detalleAnuncio: formData.detalleAnuncio.trim() !== '' ? formData.detalleAnuncio.trim() : undefined,
+        imagen1Anuncio: formData.imagen1Anuncio !== '' ? formData.imagen1Anuncio : undefined,
+        imagen2Anuncio: formData.imagen2Anuncio !== '' ? formData.imagen2Anuncio : undefined,
+        imagen3Anuncio: formData.imagen3Anuncio !== '' ? formData.imagen3Anuncio : undefined,
+        imagen4Anuncio: formData.imagen4Anuncio !== '' ? formData.imagen4Anuncio : undefined,
+        imagen5Anuncio: formData.imagen5Anuncio !== '' ? formData.imagen5Anuncio : undefined,
+        fechaDeVigencia: formData.fechaDeVigencia !== '' ? formData.fechaDeVigencia : undefined
       };
       await onSubmit(payload);
     } finally {

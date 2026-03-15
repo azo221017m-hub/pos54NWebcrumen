@@ -24,7 +24,7 @@ export interface AnuncioCreate {
 }
 
 export interface AnuncioUpdate {
-  tituloDeAnuncio?: string;
+  tituloDeAnuncio: string;
   detalleAnuncio?: string;
   imagen1Anuncio?: string;
   imagen2Anuncio?: string;

@@ -14,7 +14,9 @@ const ListaAnuncios: React.FC<ListaAnunciosProps> = ({ anuncios, onEdit, onDelet
 
   const formatFecha = (fecha: string | null) => {
     if (!fecha) return '-';
-    const [year, month, day] = fecha.split('-');
+    const parts = fecha.split('-');
+    if (parts.length !== 3) return fecha;
+    const [year, month, day] = parts;
     return `${day}/${month}/${year}`;
   };
 

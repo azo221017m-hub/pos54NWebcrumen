@@ -214,10 +214,10 @@ export async function actualizarAnuncio(req: AuthRequest, res: Response): Promis
       return;
     }
 
-    if (tituloDeAnuncio !== undefined && tituloDeAnuncio.trim() === '') {
+    if (!tituloDeAnuncio || tituloDeAnuncio.trim() === '') {
       res.status(400).json({
         success: false,
-        message: 'El título del anuncio no puede estar vacío'
+        message: 'El título del anuncio es requerido'
       });
       return;
     }
@@ -236,14 +236,14 @@ export async function actualizarAnuncio(req: AuthRequest, res: Response): Promis
         fechamodificacionauditoria = NOW()
       WHERE idAnuncio = ?`,
       [
-        tituloDeAnuncio?.trim() ?? null,
-        detalleAnuncio ?? null,
-        imagen1Anuncio ?? null,
-        imagen2Anuncio ?? null,
-        imagen3Anuncio ?? null,
-        imagen4Anuncio ?? null,
-        imagen5Anuncio ?? null,
-        fechaDeVigencia ?? null,
+        tituloDeAnuncio.trim(),
+        detalleAnuncio || null,
+        imagen1Anuncio || null,
+        imagen2Anuncio || null,
+        imagen3Anuncio || null,
+        imagen4Anuncio || null,
+        imagen5Anuncio || null,
+        fechaDeVigencia || null,
         usuarioauditoria,
         id
       ]
