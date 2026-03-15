@@ -40,6 +40,7 @@ export interface NegocioPublico {
   nombreNegocio: string;
   tipoNegocio: string;
   logotipo: string | null;
+  calificacion: number | null;
 }
 
 const CLIENTE_SESSION_KEY = 'clienteWebSession';

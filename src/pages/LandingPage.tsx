@@ -26,7 +26,7 @@ export const LandingPage = () => {
     }, 1500);
 
     const redirectTimer = setTimeout(() => {
-      navigate('/login');
+      navigate('/clientes');
     }, phrases.length * 1500 + 500);
 
     return () => {

@@ -375,6 +375,12 @@
   height: 14px;
 }
 
+.pc-rating-value {
+  margin-left: 2px;
+  font-size: 0.82rem;
+  color: #374151;
+}
+
 .pc-card-separator {
   color: #d1d5db;
 }
