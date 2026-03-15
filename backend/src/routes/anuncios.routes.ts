@@ -3,6 +3,7 @@ import { authMiddleware } from '../middlewares/auth';
 import { apiLimiter } from '../middlewares/rateLimit';
 import {
   obtenerAnuncios,
+  obtenerAnunciosPublico,
   obtenerAnuncioPorId,
   crearAnuncio,
   actualizarAnuncio,
@@ -11,7 +12,10 @@ import {
 
 const router = Router();
 
-// Todas las rutas requieren rate limiting y autenticación
+// GET /api/anuncios/publico - Anuncios vigentes para el portal de clientes (sin autenticación)
+router.get('/publico', apiLimiter, obtenerAnunciosPublico);
+
+// Las demás rutas requieren rate limiting y autenticación
 router.use(apiLimiter);
 router.use(authMiddleware);
 

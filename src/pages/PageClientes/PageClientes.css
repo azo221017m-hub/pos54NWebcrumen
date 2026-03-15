@@ -171,7 +171,7 @@
 .pc-banner-promo {
   background: linear-gradient(180deg, #1e3a8a 0%, #3b82f6 100%);
   border-radius: 16px;
-  padding: 40px 20px;
+  padding: 20px 16px;
   height: calc(100vh - 200px);
   display: flex;
   align-items: center;
@@ -179,6 +179,7 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 100px;
+  overflow: hidden;
 }
 
 .pc-banner-content {
@@ -192,6 +193,67 @@
   margin: 4px 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+/* ---- Ad carousel ---- */
+.pc-carousel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.pc-carousel-track {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.pc-carousel-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pc-carousel-detalle {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+  margin: 0;
+  line-height: 1.4;
+  padding: 0 4px;
+}
+
+.pc-carousel-dots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 0 4px;
+}
+
+.pc-carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.pc-carousel-dot--active {
+  background: #fff;
+  transform: scale(1.3);
+}
+
+.pc-carousel-dot:hover {
+  background: rgba(255, 255, 255, 0.75);
 }
 
 /* ---- Search bar (in header) ---- */
