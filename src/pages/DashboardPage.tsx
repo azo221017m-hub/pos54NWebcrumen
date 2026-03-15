@@ -924,13 +924,6 @@ export const DashboardPage = () => {
                 </svg>
                 Usuarios
               </button>
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-anuncios'); setMobileMenuOpen(false); }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/>
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                </svg>
-                Anuncios
-              </button>
             </div>
           )}
         </div>
