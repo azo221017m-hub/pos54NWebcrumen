@@ -31,8 +31,9 @@ export async function obtenerAnunciosPublico(_req: Request, res: Response): Prom
     });
   } catch (error) {
     const mysqlCode = (error as any)?.code;
-    if (mysqlCode === 'ER_NO_SUCH_TABLE') {
-      console.warn('Tabla tblposcrumenwebanuncios no encontrada. Retornando lista vacía.');
+    // If the table does not exist or has schema issues, return an empty list instead of a 500 error
+    if (mysqlCode === 'ER_NO_SUCH_TABLE' || mysqlCode === 'ER_BAD_FIELD_ERROR') {
+      console.warn('Tabla tblposcrumenwebanuncios no encontrada o con esquema incompatible. Retornando lista vacía.');
       res.json({
         success: true,
         data: [],
@@ -76,9 +77,9 @@ export async function obtenerAnuncios(_req: AuthRequest, res: Response): Promise
     });
   } catch (error) {
     const mysqlCode = (error as any)?.code;
-    // If the table does not exist yet, return an empty list instead of a 500 error
-    if (mysqlCode === 'ER_NO_SUCH_TABLE') {
-      console.warn('Tabla tblposcrumenwebanuncios no encontrada. Retornando lista vacía.');
+    // If the table does not exist or has schema issues, return an empty list instead of a 500 error
+    if (mysqlCode === 'ER_NO_SUCH_TABLE' || mysqlCode === 'ER_BAD_FIELD_ERROR') {
+      console.warn('Tabla tblposcrumenwebanuncios no encontrada o con esquema incompatible. Retornando lista vacía.');
       res.json({
         success: true,
         data: [],
@@ -133,8 +134,8 @@ export async function obtenerAnuncioPorId(req: AuthRequest, res: Response): Prom
     });
   } catch (error) {
     const mysqlCode = (error as any)?.code;
-    if (mysqlCode === 'ER_NO_SUCH_TABLE') {
-      console.warn('Tabla tblposcrumenwebanuncios no encontrada.');
+    if (mysqlCode === 'ER_NO_SUCH_TABLE' || mysqlCode === 'ER_BAD_FIELD_ERROR') {
+      console.warn('Tabla tblposcrumenwebanuncios no encontrada o con esquema incompatible.');
       res.status(404).json({
         success: false,
         message: 'Anuncio no encontrado'
@@ -256,10 +257,10 @@ export async function crearAnuncio(req: AuthRequest, res: Response): Promise<voi
     console.error('  → Campos recibidos:', Object.keys(req.body || {}).filter(k => !k.startsWith(IMAGE_FIELD_PREFIX)).join(', ') || 'ninguno');
     console.error('  → tituloDeAnuncio:', (req.body as AnuncioCreate)?.tituloDeAnuncio || '(vacío)');
     console.error('  → Stack:', error instanceof Error ? error.stack : 'N/A');
-    if (mysqlCode === 'ER_NO_SUCH_TABLE') {
+    if (mysqlCode === 'ER_NO_SUCH_TABLE' || mysqlCode === 'ER_BAD_FIELD_ERROR') {
       res.status(500).json({
         success: false,
-        message: 'La tabla de anuncios no existe. Por favor, contacte al administrador del sistema.'
+        message: 'La tabla de anuncios no existe o tiene un esquema incompatible. Por favor, contacte al administrador del sistema.'
       });
       return;
     }
@@ -396,10 +397,10 @@ export async function actualizarAnuncio(req: AuthRequest, res: Response): Promis
     console.error('  → Errno MySQL:', mysqlErrno || 'N/A');
     console.error('  → Usuario auditoria:', req.user?.alias || 'no disponible');
     console.error('  → Stack:', error instanceof Error ? error.stack : 'N/A');
-    if (mysqlCode === 'ER_NO_SUCH_TABLE') {
+    if (mysqlCode === 'ER_NO_SUCH_TABLE' || mysqlCode === 'ER_BAD_FIELD_ERROR') {
       res.status(500).json({
         success: false,
-        message: 'La tabla de anuncios no existe. Por favor, contacte al administrador del sistema.'
+        message: 'La tabla de anuncios no existe o tiene un esquema incompatible. Por favor, contacte al administrador del sistema.'
       });
       return;
     }
@@ -454,7 +455,7 @@ export async function eliminarAnuncio(req: AuthRequest, res: Response): Promise<
     });
   } catch (error) {
     const mysqlCode = (error as any)?.code;
-    if (mysqlCode === 'ER_NO_SUCH_TABLE') {
+    if (mysqlCode === 'ER_NO_SUCH_TABLE' || mysqlCode === 'ER_BAD_FIELD_ERROR') {
       res.status(404).json({
         success: false,
         message: 'Anuncio no encontrado'

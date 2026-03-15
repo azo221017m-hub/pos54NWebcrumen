@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 // even on fresh deployments where the migration script has not been run yet.
 const ensureAnunciosTable = async (): Promise<void> => {
   try {
-    await pool.execute(`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS \`tblposcrumenwebanuncios\` (
         \`idAnuncio\` INT NOT NULL AUTO_INCREMENT,
         \`tituloDeAnuncio\` VARCHAR(255) NOT NULL,
