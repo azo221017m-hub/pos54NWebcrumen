@@ -42,7 +42,7 @@ const ConfigAnuncios: React.FC = () => {
       setAnuncios(data);
     } catch (error) {
       console.error('Error al cargar anuncios:', error);
-      mostrarMensaje('error', 'Error al cargar los anuncios');
+      setAnuncios([]);
     } finally {
       setCargando(false);
     }

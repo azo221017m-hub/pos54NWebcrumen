@@ -63,6 +63,17 @@ export async function obtenerAnuncios(_req: AuthRequest, res: Response): Promise
       message: 'Anuncios obtenidos correctamente'
     });
   } catch (error) {
+    const mysqlCode = (error as any)?.code;
+    // If the table does not exist yet, return an empty list instead of a 500 error
+    if (mysqlCode === 'ER_NO_SUCH_TABLE') {
+      console.warn('Tabla tblposcrumenwebanuncios no encontrada. Retornando lista vacía.');
+      res.json({
+        success: true,
+        data: [],
+        message: 'No hay anuncios registrados'
+      });
+      return;
+    }
     console.error('Error al obtener anuncios:', error);
     res.status(500).json({
       success: false,
@@ -200,7 +211,12 @@ export async function crearAnuncio(req: AuthRequest, res: Response): Promise<voi
       message: 'Anuncio creado correctamente'
     });
   } catch (error) {
+    const mysqlCode = (error as any)?.code;
+    const IMAGE_FIELD_PREFIX = 'imagen';
     console.error('Error al crear anuncio:', error);
+    console.error('  → Código MySQL:', mysqlCode || 'N/A');
+    console.error('  → Usuario auditoria:', req.user?.alias || 'no disponible');
+    console.error('  → Campos recibidos:', Object.keys(req.body || {}).filter(k => !k.startsWith(IMAGE_FIELD_PREFIX)).join(', ') || 'ninguno');
     res.status(500).json({
       success: false,
       message: 'Error al crear anuncio',
