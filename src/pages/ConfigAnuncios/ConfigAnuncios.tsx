@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 import { Plus } from 'lucide-react';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
 import ListaAnuncios from '../../components/anuncios/ListaAnuncios/ListaAnuncios';
@@ -22,6 +23,16 @@ const ConfigAnuncios: React.FC = () => {
   const mostrarMensaje = (tipo: 'success' | 'error', texto: string) => {
     setMensaje({ tipo, texto });
     setTimeout(() => setMensaje(null), 4000);
+  };
+
+  const extraerMensajeError = (error: unknown, fallback: string): string => {
+    if (axios.isAxiosError(error) && error.response?.data?.message) {
+      return error.response.data.message;
+    }
+    if (error instanceof Error) {
+      return error.message;
+    }
+    return fallback;
   };
 
   const cargarAnuncios = useCallback(async () => {
@@ -49,7 +60,7 @@ const ConfigAnuncios: React.FC = () => {
       setAnuncios(prev => [nuevoAnuncio, ...prev]);
     } catch (error) {
       console.error('Error al crear anuncio:', error);
-      mostrarMensaje('error', 'Error al crear el anuncio');
+      mostrarMensaje('error', extraerMensajeError(error, 'Error al crear el anuncio'));
     }
   };
 
@@ -65,7 +76,7 @@ const ConfigAnuncios: React.FC = () => {
       );
     } catch (error) {
       console.error('Error al actualizar anuncio:', error);
-      mostrarMensaje('error', 'Error al actualizar el anuncio');
+      mostrarMensaje('error', extraerMensajeError(error, 'Error al actualizar el anuncio'));
     }
   };
 
@@ -77,7 +88,7 @@ const ConfigAnuncios: React.FC = () => {
       setAnuncios(prev => prev.filter(a => a.idAnuncio !== idAnuncio));
     } catch (error) {
       console.error('Error al eliminar anuncio:', error);
-      mostrarMensaje('error', 'Error al eliminar el anuncio');
+      mostrarMensaje('error', extraerMensajeError(error, 'Error al eliminar el anuncio'));
     }
   };
 

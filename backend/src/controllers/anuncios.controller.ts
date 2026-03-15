@@ -10,6 +10,7 @@ export async function obtenerAnunciosPublico(_req: Request, res: Response): Prom
     const [rows] = await pool.execute<(Anuncio & RowDataPacket)[]>(
       `SELECT
         idAnuncio,
+        tituloDeAnuncio,
         detalleAnuncio,
         CAST(imagen1Anuncio AS CHAR) AS imagen1Anuncio,
         CAST(imagen2Anuncio AS CHAR) AS imagen2Anuncio,
@@ -17,7 +18,7 @@ export async function obtenerAnunciosPublico(_req: Request, res: Response): Prom
         CAST(imagen4Anuncio AS CHAR) AS imagen4Anuncio,
         CAST(imagen5Anuncio AS CHAR) AS imagen5Anuncio
       FROM tblposcrumenwebanuncios
-      WHERE fechaDeVigencia < CURDATE()
+      WHERE (fechaDeVigencia IS NULL OR fechaDeVigencia >= CURDATE())
       ORDER BY idAnuncio DESC`
     );
 
