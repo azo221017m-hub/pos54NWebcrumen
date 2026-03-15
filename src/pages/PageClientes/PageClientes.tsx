@@ -124,7 +124,9 @@ const PageClientes: React.FC = () => {
           (n) =>
             n.nombreNegocio.toLowerCase().includes(term) ||
             (n.tipoNegocio || '').toLowerCase().includes(term) ||
-            (n.etiquetas || '').toLowerCase().includes(term)
+            (n.etiquetas || '')
+              .split(',')
+              .some((e) => e.trim().toLowerCase().includes(term))
         );
       }
 
@@ -134,7 +136,7 @@ const PageClientes: React.FC = () => {
           const etiquetasList = (n.etiquetas || '')
             .split(',')
             .map((e) => e.trim().toLowerCase());
-          return etiquetasList.includes(catLower);
+          return etiquetasList.some((e) => e.includes(catLower));
         });
       }
 
