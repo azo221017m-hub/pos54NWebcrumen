@@ -4,6 +4,8 @@ import type { RowDataPacket, ResultSetHeader } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
 import type { Anuncio, AnuncioCreate, AnuncioUpdate } from '../types/anuncios.types';
 
+const IMAGE_FIELD_PREFIX = 'imagen';
+
 // GET /api/anuncios/publico - Obtener anuncios vigentes (sin autenticación)
 export async function obtenerAnunciosPublico(_req: Request, res: Response): Promise<void> {
   try {
@@ -131,6 +133,13 @@ export async function obtenerAnuncioPorId(req: AuthRequest, res: Response): Prom
 
 // POST /api/anuncios - Crear un nuevo anuncio
 export async function crearAnuncio(req: AuthRequest, res: Response): Promise<void> {
+  console.log('📢 [crearAnuncio] Solicitud recibida para guardar anuncio');
+  console.log('  → Usuario:', req.user?.alias || 'no autenticado');
+  console.log('  → Campos recibidos:', Object.keys(req.body || {}).filter(k => !k.startsWith(IMAGE_FIELD_PREFIX)).join(', ') || 'ninguno');
+  console.log('  → tituloDeAnuncio:', (req.body as AnuncioCreate)?.tituloDeAnuncio || '(vacío)');
+  console.log('  → fechaDeVigencia:', (req.body as AnuncioCreate)?.fechaDeVigencia || '(sin fecha)');
+  console.log('  → Imágenes incluidas:', Object.keys(req.body || {}).filter(k => k.startsWith(IMAGE_FIELD_PREFIX) && (req.body as any)[k]).length);
+
   try {
     const {
       tituloDeAnuncio,
@@ -146,6 +155,7 @@ export async function crearAnuncio(req: AuthRequest, res: Response): Promise<voi
     const usuarioauditoria = req.user?.alias;
 
     if (!usuarioauditoria) {
+      console.warn('⚠️  [crearAnuncio] Usuario auditoria no encontrado en el token');
       res.status(400).json({
         success: false,
         message: 'Información de usuario no encontrada'
@@ -154,6 +164,7 @@ export async function crearAnuncio(req: AuthRequest, res: Response): Promise<voi
     }
 
     if (!tituloDeAnuncio || tituloDeAnuncio.trim() === '') {
+      console.warn('⚠️  [crearAnuncio] Título del anuncio vacío o no enviado');
       res.status(400).json({
         success: false,
         message: 'El título del anuncio es requerido'
@@ -161,6 +172,7 @@ export async function crearAnuncio(req: AuthRequest, res: Response): Promise<voi
       return;
     }
 
+    console.log('  → Ejecutando INSERT en tblposcrumenwebanuncios...');
     const [result] = await pool.execute<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebanuncios (
         tituloDeAnuncio,
@@ -187,6 +199,8 @@ export async function crearAnuncio(req: AuthRequest, res: Response): Promise<voi
       ]
     );
 
+    console.log(`✅ [crearAnuncio] INSERT exitoso → insertId=${result.insertId}`);
+
     const [anuncioCreado] = await pool.execute<(Anuncio & RowDataPacket)[]>(
       `SELECT
         idAnuncio,
@@ -205,6 +219,7 @@ export async function crearAnuncio(req: AuthRequest, res: Response): Promise<voi
       [result.insertId]
     );
 
+    console.log(`✅ [crearAnuncio] Anuncio creado correctamente → idAnuncio=${result.insertId}`);
     res.status(201).json({
       success: true,
       data: anuncioCreado[0],
@@ -212,11 +227,16 @@ export async function crearAnuncio(req: AuthRequest, res: Response): Promise<voi
     });
   } catch (error) {
     const mysqlCode = (error as any)?.code;
-    const IMAGE_FIELD_PREFIX = 'imagen';
-    console.error('Error al crear anuncio:', error);
+    const mysqlErrno = (error as any)?.errno;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('❌ [crearAnuncio] Error al guardar anuncio:');
+    console.error('  → Mensaje:', errorMessage);
     console.error('  → Código MySQL:', mysqlCode || 'N/A');
+    console.error('  → Errno MySQL:', mysqlErrno || 'N/A');
     console.error('  → Usuario auditoria:', req.user?.alias || 'no disponible');
     console.error('  → Campos recibidos:', Object.keys(req.body || {}).filter(k => !k.startsWith(IMAGE_FIELD_PREFIX)).join(', ') || 'ninguno');
+    console.error('  → tituloDeAnuncio:', (req.body as AnuncioCreate)?.tituloDeAnuncio || '(vacío)');
+    console.error('  → Stack:', error instanceof Error ? error.stack : 'N/A');
     if (mysqlCode === 'ER_NO_SUCH_TABLE') {
       res.status(500).json({
         success: false,
@@ -227,13 +247,17 @@ export async function crearAnuncio(req: AuthRequest, res: Response): Promise<voi
     res.status(500).json({
       success: false,
       message: 'Error al crear anuncio',
-      error: error instanceof Error ? error.message : 'Error desconocido'
+      error: errorMessage
     });
   }
 }
 
 // PUT /api/anuncios/:id - Actualizar un anuncio
 export async function actualizarAnuncio(req: AuthRequest, res: Response): Promise<void> {
+  console.log(`📢 [actualizarAnuncio] Solicitud recibida para actualizar anuncio id=${req.params.id}`);
+  console.log('  → Usuario:', req.user?.alias || 'no autenticado');
+  console.log('  → Campos recibidos:', Object.keys(req.body || {}).filter(k => !k.startsWith(IMAGE_FIELD_PREFIX)).join(', ') || 'ninguno');
+
   try {
     const { id } = req.params;
     const {
@@ -323,17 +347,26 @@ export async function actualizarAnuncio(req: AuthRequest, res: Response): Promis
       [id]
     );
 
+    console.log(`✅ [actualizarAnuncio] Anuncio actualizado correctamente → idAnuncio=${id}`);
     res.json({
       success: true,
       data: anuncioActualizado[0],
       message: 'Anuncio actualizado correctamente'
     });
   } catch (error) {
-    console.error('Error al actualizar anuncio:', error);
+    const mysqlCode = (error as any)?.code;
+    const mysqlErrno = (error as any)?.errno;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [actualizarAnuncio] Error al actualizar anuncio id=${req.params.id}:`);
+    console.error('  → Mensaje:', errorMessage);
+    console.error('  → Código MySQL:', mysqlCode || 'N/A');
+    console.error('  → Errno MySQL:', mysqlErrno || 'N/A');
+    console.error('  → Usuario auditoria:', req.user?.alias || 'no disponible');
+    console.error('  → Stack:', error instanceof Error ? error.stack : 'N/A');
     res.status(500).json({
       success: false,
       message: 'Error al actualizar anuncio',
-      error: error instanceof Error ? error.message : 'Error desconocido'
+      error: errorMessage
     });
   }
 }
