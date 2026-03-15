@@ -187,6 +187,13 @@
   color: #fff;
 }
 
+.pc-banner-placeholder-icon {
+  width: 56px;
+  height: 56px;
+  margin-bottom: 12px;
+  opacity: 0.6;
+}
+
 .pc-banner-small {
   font-size: 0.9rem;
   font-weight: 600;
