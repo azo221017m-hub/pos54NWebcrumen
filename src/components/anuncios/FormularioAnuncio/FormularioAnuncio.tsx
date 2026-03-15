@@ -117,6 +117,8 @@ const FormularioAnuncio: React.FC<FormularioAnuncioProps> = ({
     const nuevosErrores: { [key: string]: string } = {};
     if (!formData.tituloDeAnuncio.trim()) {
       nuevosErrores.tituloDeAnuncio = 'El título del anuncio es requerido';
+    } else if (formData.tituloDeAnuncio.trim().length > 255) {
+      nuevosErrores.tituloDeAnuncio = 'El título no puede superar 255 caracteres';
     }
     setErrores(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
