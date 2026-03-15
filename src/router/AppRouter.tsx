@@ -24,8 +24,10 @@ import PageClientes from '../pages/PageClientes/PageClientes';
 import MovimientosInventario from '../pages/MovimientosInventario/MovimientosInventario';
 import PageGastos from '../pages/PageGastos/PageGastos';
 import ConfigAnuncios from '../pages/ConfigAnuncios/ConfigAnuncios';
+import ProtectedRoute from './ProtectedRoute';
 
 const router = createBrowserRouter([
+  // Rutas públicas (no requieren autenticación)
   {
     path: '/',
     element: <LandingPage />,
@@ -35,96 +37,97 @@ const router = createBrowserRouter([
     element: <LoginPage />,
   },
   {
-    path: '/dashboard',
-    element: <DashboardPage />,
-  },
-  {
-    path: '/config-negocios',
-    element: <ConfigNegocios />,
-  },
-  {
-    path: '/config-roles',
-    element: <ConfigRolUsuarios />,
-  },
-  {
-    path: '/config-usuarios',
-    element: <ConfigUsuarios />,
-  },
-  {
-    path: '/config-um-compra',
-    element: <ConfigUMCompra />,
-  },
-  {
-    path: '/config-mesas',
-    element: <ConfigMesas />,
-  },
-  {
-    path: '/config-descuentos',
-    element: <ConfigDescuentos />,
-  },
-  {
-    path: '/config-insumos',
-    element: <ConfigInsumos />,
-  },
-  {
-    path: '/config-clientes',
-    element: <ConfigClientes />,
-  },
-  {
-    path: '/config-cuentas-contables',
-    element: <ConfigGrupoMovimientos />,
-  },
-  {
-    path: '/config-moderadores',
-    element: <ConfigModeradores />,
-  },
-  {
-    path: '/config-subrecetas',
-    element: <ConfigSubreceta />,
-  },
-  {
-    path: '/config-recetas',
-    element: <ConfigRecetas />,
-  },
-  {
-    path: '/config-categorias',
-    element: <ConfigCategorias />,
-  },
-  {
-    path: '/config-cat-moderadores',
-    element: <ConfigCatModeradores />,
-  },
-  {
-    path: '/config-productos',
-    element: <ConfigProductosWeb />,
-  },
-  {
-    path: '/config-proveedores',
-    element: <ConfigProveedores />,
-  },
-  {
-    path: '/config-turnos',
-    element: <ConfigTurnos />,
-  },
-  {
-    path: '/ventas',
-    element: <PageVentas />,
-  },
-  {
     path: '/clientes',
     element: <PageClientes />,
   },
+  // Rutas protegidas (requieren sesión activa)
+  {
+    path: '/dashboard',
+    element: <ProtectedRoute><DashboardPage /></ProtectedRoute>,
+  },
+  {
+    path: '/config-negocios',
+    element: <ProtectedRoute><ConfigNegocios /></ProtectedRoute>,
+  },
+  {
+    path: '/config-roles',
+    element: <ProtectedRoute><ConfigRolUsuarios /></ProtectedRoute>,
+  },
+  {
+    path: '/config-usuarios',
+    element: <ProtectedRoute><ConfigUsuarios /></ProtectedRoute>,
+  },
+  {
+    path: '/config-um-compra',
+    element: <ProtectedRoute><ConfigUMCompra /></ProtectedRoute>,
+  },
+  {
+    path: '/config-mesas',
+    element: <ProtectedRoute><ConfigMesas /></ProtectedRoute>,
+  },
+  {
+    path: '/config-descuentos',
+    element: <ProtectedRoute><ConfigDescuentos /></ProtectedRoute>,
+  },
+  {
+    path: '/config-insumos',
+    element: <ProtectedRoute><ConfigInsumos /></ProtectedRoute>,
+  },
+  {
+    path: '/config-clientes',
+    element: <ProtectedRoute><ConfigClientes /></ProtectedRoute>,
+  },
+  {
+    path: '/config-cuentas-contables',
+    element: <ProtectedRoute><ConfigGrupoMovimientos /></ProtectedRoute>,
+  },
+  {
+    path: '/config-moderadores',
+    element: <ProtectedRoute><ConfigModeradores /></ProtectedRoute>,
+  },
+  {
+    path: '/config-subrecetas',
+    element: <ProtectedRoute><ConfigSubreceta /></ProtectedRoute>,
+  },
+  {
+    path: '/config-recetas',
+    element: <ProtectedRoute><ConfigRecetas /></ProtectedRoute>,
+  },
+  {
+    path: '/config-categorias',
+    element: <ProtectedRoute><ConfigCategorias /></ProtectedRoute>,
+  },
+  {
+    path: '/config-cat-moderadores',
+    element: <ProtectedRoute><ConfigCatModeradores /></ProtectedRoute>,
+  },
+  {
+    path: '/config-productos',
+    element: <ProtectedRoute><ConfigProductosWeb /></ProtectedRoute>,
+  },
+  {
+    path: '/config-proveedores',
+    element: <ProtectedRoute><ConfigProveedores /></ProtectedRoute>,
+  },
+  {
+    path: '/config-turnos',
+    element: <ProtectedRoute><ConfigTurnos /></ProtectedRoute>,
+  },
+  {
+    path: '/ventas',
+    element: <ProtectedRoute><PageVentas /></ProtectedRoute>,
+  },
   {
     path: '/movimientos-inventario',
-    element: <MovimientosInventario />,
+    element: <ProtectedRoute><MovimientosInventario /></ProtectedRoute>,
   },
   {
     path: '/gastos',
-    element: <PageGastos />,
+    element: <ProtectedRoute><PageGastos /></ProtectedRoute>,
   },
   {
     path: '/config-anuncios',
-    element: <ConfigAnuncios />,
+    element: <ProtectedRoute><ConfigAnuncios /></ProtectedRoute>,
   },
 ]);
 
