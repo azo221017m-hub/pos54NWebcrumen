@@ -217,6 +217,13 @@ export async function crearAnuncio(req: AuthRequest, res: Response): Promise<voi
     console.error('  → Código MySQL:', mysqlCode || 'N/A');
     console.error('  → Usuario auditoria:', req.user?.alias || 'no disponible');
     console.error('  → Campos recibidos:', Object.keys(req.body || {}).filter(k => !k.startsWith(IMAGE_FIELD_PREFIX)).join(', ') || 'ninguno');
+    if (mysqlCode === 'ER_NO_SUCH_TABLE') {
+      res.status(500).json({
+        success: false,
+        message: 'La tabla de anuncios no existe. Por favor, contacte al administrador del sistema.'
+      });
+      return;
+    }
     res.status(500).json({
       success: false,
       message: 'Error al crear anuncio',
