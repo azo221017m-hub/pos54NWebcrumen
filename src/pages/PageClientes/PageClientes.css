@@ -38,12 +38,15 @@
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
+  overflow: visible;
 }
 
 .pc-logo {
   width: 90px;
   height: 90px;
   object-fit: contain;
+  transform: scale(1.5);
+  transform-origin: center;
 }
 
 .pc-tagline {
@@ -70,6 +73,51 @@
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
+}
+
+.pc-header-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.pc-header-iniciar-btn {
+  background: #fff;
+  color: #0d4f8a;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.1s;
+  letter-spacing: 0.03em;
+}
+
+.pc-header-iniciar-btn:hover {
+  background: #e0f0ff;
+  transform: translateY(-1px);
+}
+
+.pc-header-comunidad-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.1s;
+  letter-spacing: 0.03em;
+}
+
+.pc-header-comunidad-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
 }
 
 .pc-cliente-greeting {

@@ -7,7 +7,7 @@ import { showSuccessToast, showErrorToast, showInfoToast } from '../../component
 import GoogleMapsSelector from '../../components/common/GoogleMapsSelector/GoogleMapsSelector';
 import './PageClientes.css';
 
-const CATEGORIAS = ['Todos', 'Comida', 'Café', 'Postres', 'Bebidas'];
+const CATEGORIAS = ['Todos', 'Alimentos', 'Bebidas Calientes', 'Cuidado Personal', 'Bebidas Frías'];
 
 function getPrepTime(id: number): string {
   const mins = ((id * 7 + 5) % 20) + 10;
@@ -123,14 +123,19 @@ const PageClientes: React.FC = () => {
         resultado = resultado.filter(
           (n) =>
             n.nombreNegocio.toLowerCase().includes(term) ||
-            (n.tipoNegocio || '').toLowerCase().includes(term)
+            (n.tipoNegocio || '').toLowerCase().includes(term) ||
+            (n.etiquetas || '').toLowerCase().includes(term)
         );
       }
 
       if (categoria !== 'Todos') {
-        resultado = resultado.filter((n) =>
-          (n.tipoNegocio || '').toLowerCase().includes(categoria.toLowerCase())
-        );
+        const catLower = categoria.toLowerCase();
+        resultado = resultado.filter((n) => {
+          const etiquetasList = (n.etiquetas || '')
+            .split(',')
+            .map((e) => e.trim().toLowerCase());
+          return etiquetasList.includes(catLower);
+        });
       }
 
       setFilteredNegocios(resultado);
@@ -336,6 +341,22 @@ const PageClientes: React.FC = () => {
           </div>
 
           <div className="pc-header-right">
+            {!clienteLogueado && (
+              <div className="pc-header-actions">
+                <button
+                  className="pc-header-iniciar-btn"
+                  onClick={handleAbrirModalLogin}
+                >
+                  INiCIaR PeDIDoS
+                </button>
+                <button
+                  className="pc-header-comunidad-btn"
+                  onClick={handleAbrirModalRegistro}
+                >
+                  UNIRME A LA COMUNIDAD
+                </button>
+              </div>
+            )}
             {clienteLogueado && clienteData && (
               <div className="pc-avatar-container" ref={avatarRef}>
                 <button
@@ -469,8 +490,8 @@ const PageClientes: React.FC = () => {
                         </span>
                       </div>
 
-                      {/* Active order indicator */}
-                      {tieneActivo && (
+                      {/* Active order indicator - only show when client is logged in */}
+                      {tieneActivo && clienteLogueado && (
                         <div className="pc-active-order">
                           <svg viewBox="0 0 20 20" fill="#16a34a" className="pc-active-icon">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -488,7 +509,7 @@ const PageClientes: React.FC = () => {
 
                     {/* Card footer */}
                     <div className="pc-card-footer">
-                      {clienteLogueado ? (
+                      {clienteLogueado && (
                         <button
                           className={`pc-ver-btn${cargando ? ' pc-ver-btn--loading' : ''}`}
                           onClick={() => handleSeleccionarNegocio(negocio)}
@@ -502,13 +523,6 @@ const PageClientes: React.FC = () => {
                           ) : (
                             'Ver productos'
                           )}
-                        </button>
-                      ) : (
-                        <button
-                          className="pc-ver-btn pc-iniciar-btn"
-                          onClick={handleAbrirModalLogin}
-                        >
-                          INiCIaR PeDIDoS
                         </button>
                       )}
                     </div>
