@@ -23,6 +23,7 @@ import PageVentas from '../pages/PageVentas/PageVentas';
 import PageClientes from '../pages/PageClientes/PageClientes';
 import MovimientosInventario from '../pages/MovimientosInventario/MovimientosInventario';
 import PageGastos from '../pages/PageGastos/PageGastos';
+import ConfigAnuncios from '../pages/ConfigAnuncios/ConfigAnuncios';
 
 const router = createBrowserRouter([
   {
@@ -120,6 +121,10 @@ const router = createBrowserRouter([
   {
     path: '/gastos',
     element: <PageGastos />,
+  },
+  {
+    path: '/config-anuncios',
+    element: <ConfigAnuncios />,
   },
 ]);
 
