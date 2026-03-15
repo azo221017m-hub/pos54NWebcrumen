@@ -15,34 +15,6 @@ interface Anuncio extends RowDataPacket {
   fechaDeVigencia: Date | string | null;
 }
 
-// Obtener anuncios vigentes (fechaDeVigencia <= hoy) para el portal público
-export const obtenerAnunciosPublico = async (_req: Request, res: Response): Promise<void> => {
-  try {
-    const [rows] = await pool.query<Anuncio[]>(
-      `SELECT
-        idAnuncio,
-        tituloDeAnuncio,
-        detalleAnuncio,
-        TO_BASE64(imagen1Anuncio) AS imagen1Anuncio,
-        TO_BASE64(imagen2Anuncio) AS imagen2Anuncio,
-        TO_BASE64(imagen3Anuncio) AS imagen3Anuncio,
-        TO_BASE64(imagen4Anuncio) AS imagen4Anuncio,
-        TO_BASE64(imagen5Anuncio) AS imagen5Anuncio,
-        DATE_FORMAT(fechaDeVigencia, '%Y-%m-%d') AS fechaDeVigencia
-      FROM tblposcrumenwebanuncios
-      WHERE fechaDeVigencia <= CURDATE()
-      ORDER BY idAnuncio DESC`
-    );
-    res.status(200).json(rows);
-  } catch (error) {
-    console.error('Error al obtener anuncios públicos:', error);
-    res.status(500).json({
-      mensaje: 'Error al obtener anuncios',
-      error: error instanceof Error ? error.message : 'Error desconocido'
-    });
-  }
-};
-
 // Obtener todos los anuncios
 export const obtenerAnuncios = async (_req: Request, res: Response): Promise<void> => {
   try {

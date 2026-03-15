@@ -1,20 +1,7 @@
 import apiClient from './api';
-import axios from 'axios';
-import config from '../config/api.config';
 import type { Anuncio, AnuncioCreate, AnuncioUpdate } from '../types/anuncio.types';
 
 const API_BASE = '/anuncios';
-
-// Obtener anuncios vigentes para el portal público (no requiere autenticación)
-export const obtenerAnunciosVigentes = async (): Promise<Anuncio[]> => {
-  try {
-    const response = await axios.get<Anuncio[]>(`${config.apiUrl}/anuncios/publico`);
-    return response.data;
-  } catch (error) {
-    console.error('anunciosService: Error al obtener anuncios vigentes:', error);
-    return [];
-  }
-};
 
 // Obtener todos los anuncios
 export const obtenerAnuncios = async (): Promise<Anuncio[]> => {
