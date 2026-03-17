@@ -80,7 +80,7 @@ const PageClientes: React.FC = () => {
   const [mostrarModalAgradecimiento, setMostrarModalAgradecimiento] = useState(false);
 
   // "Quiero mostrar mi negocio" modal
-  const NEGOCIO_CTA_INITIAL = { nombreNegocio: '', tipoNegocio: '', dudasComentarios: '' };
+  const NEGOCIO_CTA_INITIAL = { nombreNegocio: '', tipoNegocio: '', dudasComentarios: '', interes: 'Vender' };
   const [mostrarModalNegocioCta, setMostrarModalNegocioCta] = useState(false);
   const [negocioCtaData, setNegocioCtaData] = useState(NEGOCIO_CTA_INITIAL);
   const [registroData, setRegistroData] = useState({
@@ -375,7 +375,8 @@ const PageClientes: React.FC = () => {
       showInfoToast('Por favor completa todos los campos antes de enviar');
       return;
     }
-    const mensaje = `Nombre de Negocio: ${nombreNegocio.trim()}\nTipo de Negocio: ${tipoNegocio.trim()}\nDudas o Comentarios: ${dudasComentarios.trim()}`;
+    const { interes } = negocioCtaData;
+    const mensaje = `Interés: ${interes}\nNombre de Negocio: ${nombreNegocio.trim()}\nTipo de Negocio: ${tipoNegocio.trim()}\nDudas o Comentarios: ${dudasComentarios.trim()}`;
     const url = `https://wa.me/5527618631?text=${encodeURIComponent(mensaje)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
     setMostrarModalNegocioCta(false);
@@ -702,6 +703,11 @@ const PageClientes: React.FC = () => {
       {/* Footer */}
       <footer className="pc-footer">
         <p>Hecho en Texcoco · CRUMEN54N</p>
+        <div className="pc-footer-badges">
+          <span className="pc-footer-badge">✔ Negocios locales verificados</span>
+          <span className="pc-footer-badge">✔ Pedidos rápidos</span>
+          <span className="pc-footer-badge">✔ Beneficios por comunidad</span>
+        </div>
       </footer>
 
       {/* Login Modal */}
@@ -834,6 +840,31 @@ const PageClientes: React.FC = () => {
               <button className="pc-modal-close" onClick={handleCerrarModalNegocioCta} aria-label="Cerrar">✕</button>
             </div>
             <div className="pc-modal-body">
+              <div className="pc-form-group">
+                <label className="pc-form-label">Me interesa</label>
+                <div className="pc-radio-group">
+                  <label className="pc-radio-option">
+                    <input
+                      type="radio"
+                      name="interes"
+                      value="Vender"
+                      checked={negocioCtaData.interes === 'Vender'}
+                      onChange={() => setNegocioCtaData(prev => ({ ...prev, interes: 'Vender' }))}
+                    />
+                    <span>Vender</span>
+                  </label>
+                  <label className="pc-radio-option">
+                    <input
+                      type="radio"
+                      name="interes"
+                      value="Anunciarme"
+                      checked={negocioCtaData.interes === 'Anunciarme'}
+                      onChange={() => setNegocioCtaData(prev => ({ ...prev, interes: 'Anunciarme' }))}
+                    />
+                    <span>Anunciarme</span>
+                  </label>
+                </div>
+              </div>
               <div className="pc-form-group">
                 <label className="pc-form-label">Nombre de Negocio</label>
                 <input
