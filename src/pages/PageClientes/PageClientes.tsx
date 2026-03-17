@@ -78,6 +78,11 @@ const PageClientes: React.FC = () => {
 
   // Thank-you modal (shown after successful registration)
   const [mostrarModalAgradecimiento, setMostrarModalAgradecimiento] = useState(false);
+
+  // "Quiero mostrar mi negocio" modal
+  const NEGOCIO_CTA_INITIAL = { nombreNegocio: '', tipoNegocio: '', dudasComentarios: '' };
+  const [mostrarModalNegocioCta, setMostrarModalNegocioCta] = useState(false);
+  const [negocioCtaData, setNegocioCtaData] = useState(NEGOCIO_CTA_INITIAL);
   const [registroData, setRegistroData] = useState({
     nombre: '',
     referencia: '',
@@ -355,6 +360,28 @@ const PageClientes: React.FC = () => {
     showSuccessToast('Has cerrado sesión. ¡Hasta pronto!');
   };
 
+  const handleAbrirModalNegocioCta = () => {
+    setNegocioCtaData(NEGOCIO_CTA_INITIAL);
+    setMostrarModalNegocioCta(true);
+  };
+
+  const handleCerrarModalNegocioCta = () => {
+    setMostrarModalNegocioCta(false);
+  };
+
+  const handleEnviarWhatsappNegocio = () => {
+    const { nombreNegocio, tipoNegocio, dudasComentarios } = negocioCtaData;
+    if (!nombreNegocio.trim() || !tipoNegocio.trim() || !dudasComentarios.trim()) {
+      showInfoToast('Por favor completa todos los campos antes de enviar');
+      return;
+    }
+    const mensaje = `Nombre de Negocio: ${nombreNegocio.trim()}\nTipo de Negocio: ${tipoNegocio.trim()}\nDudas o Comentarios: ${dudasComentarios.trim()}`;
+    const url = `https://wa.me/5527618631?text=${encodeURIComponent(mensaje)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+    setMostrarModalNegocioCta(false);
+    setNegocioCtaData(NEGOCIO_CTA_INITIAL);
+  };
+
   // Close avatar dropdown when clicking outside
   useEffect(() => {
     if (!mostrarMenuAvatar) return;
@@ -560,7 +587,7 @@ const PageClientes: React.FC = () => {
           {/* CTA — Promote your business */}
           <div className="pc-negocio-cta">
             <p className="pc-negocio-cta-label">¿Tienes Negocio en Texcoco?</p>
-            <button type="button" className="pc-negocio-cta-btn">
+            <button type="button" className="pc-negocio-cta-btn" onClick={handleAbrirModalNegocioCta}>
               Quiero Mostrar mi Negocio Aquí
             </button>
           </div>
@@ -794,6 +821,61 @@ const PageClientes: React.FC = () => {
               alt="¡Gracias por unirte a la comunidad!"
               className="pc-agradecimiento-img"
             />
+          </div>
+        </div>
+      )}
+
+      {/* Modal — Quiero Mostrar mi Negocio Aquí */}
+      {mostrarModalNegocioCta && (
+        <div className="pc-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) handleCerrarModalNegocioCta(); }}>
+          <div className="pc-modal" role="dialog" aria-modal="true" aria-labelledby="negocio-cta-modal-title">
+            <div className="pc-modal-header">
+              <h2 className="pc-modal-title" id="negocio-cta-modal-title">Quiero Mostrar mi Negocio Aquí</h2>
+              <button className="pc-modal-close" onClick={handleCerrarModalNegocioCta} aria-label="Cerrar">✕</button>
+            </div>
+            <div className="pc-modal-body">
+              <div className="pc-form-group">
+                <label className="pc-form-label">Nombre de Negocio</label>
+                <input
+                  type="text"
+                  className="pc-form-input"
+                  placeholder="Nombre de tu negocio"
+                  value={negocioCtaData.nombreNegocio}
+                  onChange={(e) => setNegocioCtaData(prev => ({ ...prev, nombreNegocio: e.target.value }))}
+                  autoFocus
+                />
+              </div>
+              <div className="pc-form-group">
+                <label className="pc-form-label">Tipo de Negocio</label>
+                <input
+                  type="text"
+                  className="pc-form-input"
+                  placeholder="Ej. Restaurante, Papelería, Farmacia..."
+                  value={negocioCtaData.tipoNegocio}
+                  onChange={(e) => setNegocioCtaData(prev => ({ ...prev, tipoNegocio: e.target.value }))}
+                />
+              </div>
+              <div className="pc-form-group">
+                <label className="pc-form-label">Dudas o Comentarios</label>
+                <textarea
+                  className="pc-form-input pc-form-textarea"
+                  placeholder="Escribe tus dudas o comentarios..."
+                  rows={3}
+                  value={negocioCtaData.dudasComentarios}
+                  onChange={(e) => setNegocioCtaData(prev => ({ ...prev, dudasComentarios: e.target.value }))}
+                />
+              </div>
+              <button
+                className="pc-modal-btn pc-whatsapp-btn"
+                onClick={handleEnviarWhatsappNegocio}
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" className="pc-whatsapp-icon" aria-hidden="true">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                  <path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.554 4.118 1.524 5.849L.057 23.516a.5.5 0 00.612.612l5.637-1.476A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.655-.502-5.184-1.381l-.372-.218-3.845 1.007 1.023-3.738-.24-.386A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" />
+                </svg>
+                Enviar Whatsapp
+              </button>
+            </div>
           </div>
         </div>
       )}

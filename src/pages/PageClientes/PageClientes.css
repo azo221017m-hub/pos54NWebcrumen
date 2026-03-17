@@ -1250,3 +1250,28 @@
   background: #f3f4f6;
   transform: scale(1.1);
 }
+
+/* WhatsApp button */
+.pc-whatsapp-btn {
+  background: #25d366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.pc-whatsapp-btn:hover:not(:disabled) {
+  background: #1ebe5d;
+}
+
+.pc-whatsapp-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+/* Textarea inside modal form */
+.pc-form-textarea {
+  resize: vertical;
+  min-height: 5rem;
+}
