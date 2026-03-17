@@ -145,17 +145,17 @@ const ConfigGrupoMovimientos: React.FC = () => {
           onEdit={handleEditarGrupo}
           onDelete={handleEliminarGrupo}
         />
-
-        {/* Formulario Modal */}
-        {mostrarFormulario && (
-          <FormularioGrupoMovimientos
-            grupo={grupoEditar}
-            idnegocio={idnegocio}
-            onSave={handleGuardarGrupo}
-            onCancel={handleCancelarFormulario}
-          />
-        )}
       </StandardPageLayout>
+
+      {/* Formulario Modal */}
+      {mostrarFormulario && (
+        <FormularioGrupoMovimientos
+          grupo={grupoEditar}
+          idnegocio={idnegocio}
+          onSave={handleGuardarGrupo}
+          onCancel={handleCancelarFormulario}
+        />
+      )}
     </>
   );
 };

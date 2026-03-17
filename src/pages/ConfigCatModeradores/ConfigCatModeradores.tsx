@@ -125,17 +125,17 @@ const ConfigCatModeradores: React.FC = () => {
           onEditar={handleEditar}
           onEliminar={handleEliminar}
         />
-
-        {/* Formulario Modal */}
-        {mostrarFormulario && (
-          <FormularioCatModerador
-            catModerador={catModeradorSeleccionada}
-            idnegocio={idnegocio}
-            onSubmit={handleSubmit}
-            onCancel={handleCancelar}
-          />
-        )}
       </StandardPageLayout>
+
+      {/* Formulario Modal */}
+      {mostrarFormulario && (
+        <FormularioCatModerador
+          catModerador={catModeradorSeleccionada}
+          idnegocio={idnegocio}
+          onSubmit={handleSubmit}
+          onCancel={handleCancelar}
+        />
+      )}
     </>
   );
 };
