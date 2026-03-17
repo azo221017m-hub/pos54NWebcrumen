@@ -84,13 +84,11 @@ const ConfigModeradores: React.FC = () => {
         setModeradorEditar(null);
         setModeradores(prev => [...prev, nuevoModerador]);
       }
-    } catch (error: any) {
-      console.error('❌ Error al guardar moderador:', {
-        message: error?.response?.data?.message || error?.response?.data?.mensaje || error?.message || 'Error desconocido',
-        status: error?.response?.status,
-        data: error?.response?.data
-      });
-      const errorMessage = error?.response?.data?.message || error?.response?.data?.mensaje || error?.message || 'Error al guardar el moderador';
+    } catch (error: unknown) {
+      interface ApiError { response?: { data?: { message?: string; mensaje?: string }; status?: number }; message?: string; }
+      const apiError = error as ApiError;
+      const errorMessage = apiError?.response?.data?.message || apiError?.response?.data?.mensaje || apiError?.message || 'Error al guardar el moderador';
+      console.error('❌ Error al guardar moderador:', { message: errorMessage, status: apiError?.response?.status, data: apiError?.response?.data });
       mostrarMensaje('error', errorMessage);
     }
   };
@@ -150,17 +148,17 @@ const ConfigModeradores: React.FC = () => {
           onEdit={handleEditarModerador}
           onDelete={handleEliminarModerador}
         />
-
-        {/* Formulario Modal */}
-        {mostrarFormulario && (
-          <FormularioModerador
-            moderador={moderadorEditar}
-            idnegocio={idnegocio}
-            onSave={handleGuardarModerador}
-            onCancel={handleCancelarFormulario}
-          />
-        )}
       </StandardPageLayout>
+
+      {/* Formulario Modal */}
+      {mostrarFormulario && (
+        <FormularioModerador
+          moderador={moderadorEditar}
+          idnegocio={idnegocio}
+          onSave={handleGuardarModerador}
+          onCancel={handleCancelarFormulario}
+        />
+      )}
     </>
   );
 };

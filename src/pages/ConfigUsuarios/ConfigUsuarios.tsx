@@ -13,11 +13,9 @@ import {
 } from '../../services/usuariosService';
 import './ConfigUsuarios.css';
 
-type Vista = 'lista' | 'formulario';
-
 export const ConfigUsuarios: React.FC = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-  const [vista, setVista] = useState<Vista>('lista');
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [usuarioEditar, setUsuarioEditar] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
@@ -54,12 +52,12 @@ export const ConfigUsuarios: React.FC = () => {
 
   const handleNuevoUsuario = () => {
     setUsuarioEditar(null);
-    setVista('formulario');
+    setMostrarFormulario(true);
   };
 
   const handleEditarUsuario = (usuario: Usuario) => {
     setUsuarioEditar(usuario);
-    setVista('formulario');
+    setMostrarFormulario(true);
   };
 
   const handleEliminarUsuario = async (id: number) => {
@@ -111,7 +109,7 @@ export const ConfigUsuarios: React.FC = () => {
         setUsuarios(prev => [...prev, nuevoUsuario]);
       }
 
-      setVista('lista');
+      setMostrarFormulario(false);
       setUsuarioEditar(null);
     } catch (error) {
       console.error('Error al guardar usuario:', error);
@@ -122,7 +120,7 @@ export const ConfigUsuarios: React.FC = () => {
   };
 
   const handleCancelarFormulario = () => {
-    setVista('lista');
+    setMostrarFormulario(false);
     setUsuarioEditar(null);
   };
 
@@ -144,53 +142,41 @@ export const ConfigUsuarios: React.FC = () => {
         </div>
       )}
 
-      {vista === 'lista' ? (
-        <StandardPageLayout
-          headerTitle="Configuración de Usuarios"
-          headerSubtitle="Administra los usuarios del sistema"
-          backButtonText="Regresa a DASHBOARD"
-          backButtonPath="/dashboard"
-          actionButton={{
-            text: 'Nuevo Usuario',
-            icon: <Plus size={20} />,
-            onClick: handleNuevoUsuario
-          }}
+      <StandardPageLayout
+        headerTitle="Configuración de Usuarios"
+        headerSubtitle="Administra los usuarios del sistema"
+        backButtonText="Regresa a DASHBOARD"
+        backButtonPath="/dashboard"
+        actionButton={{
+          text: 'Nuevo Usuario',
+          icon: <Plus size={20} />,
+          onClick: handleNuevoUsuario
+        }}
+        loading={loading}
+        loadingMessage="Cargando usuarios..."
+        isEmpty={usuarios.length === 0}
+        emptyIcon={<User size={80} />}
+        emptyMessage="No hay usuarios registrados. Comienza agregando uno nuevo."
+      >
+        <ListaUsuarios
+          usuarios={usuarios}
+          onEditar={handleEditarUsuario}
+          onEliminar={handleEliminarUsuario}
           loading={loading}
-          loadingMessage="Cargando usuarios..."
-          isEmpty={usuarios.length === 0}
-          emptyIcon={<User size={80} />}
-          emptyMessage="No hay usuarios registrados. Comienza agregando uno nuevo."
-        >
-          <ListaUsuarios
-            usuarios={usuarios}
-            onEditar={handleEditarUsuario}
-            onEliminar={handleEliminarUsuario}
-            loading={loading}
-          />
-        </StandardPageLayout>
-      ) : (
-        <div className="standard-page-container">
-          <header className="standard-page-header">
-            <div className="header-title-section">
-              <User size={50} />
-              <div>
-                <h1 className="header-title">
-                  {usuarioEditar ? 'Editar Usuario' : 'Nuevo Usuario'}
-                </h1>
-                <p className="header-subtitle">Complete el formulario</p>
-              </div>
-            </div>
-          </header>
-          <main className="standard-page-main">
-            <div className="standard-page-content">
-              <FormularioUsuario
-                usuarioEditar={usuarioEditar}
-                onSubmit={handleSubmitFormulario}
-                onCancelar={handleCancelarFormulario}
-                loading={loading}
-              />
-            </div>
-          </main>
+        />
+      </StandardPageLayout>
+
+      {/* Formulario Modal */}
+      {mostrarFormulario && (
+        <div className="usuario-formulario-overlay" onClick={handleCancelarFormulario}>
+          <div className="usuario-formulario-modal" onClick={(e) => e.stopPropagation()}>
+            <FormularioUsuario
+              usuarioEditar={usuarioEditar}
+              onSubmit={handleSubmitFormulario}
+              onCancelar={handleCancelarFormulario}
+              loading={loading}
+            />
+          </div>
         </div>
       )}
     </>

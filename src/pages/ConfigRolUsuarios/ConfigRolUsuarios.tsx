@@ -151,17 +151,17 @@ export const ConfigRolUsuarios = () => {
           onEditar={handleEditarRol}
           loading={loading}
         />
-
-        {/* Formulario Modal */}
-        {mostrarFormulario && (
-          <FormularioRol
-            rolEditar={rolEditar}
-            rolesExistentes={roles}
-            onSubmit={handleSubmitFormulario}
-            onCancel={handleCancelar}
-          />
-        )}
       </StandardPageLayout>
+
+      {/* Formulario Modal */}
+      {mostrarFormulario && (
+        <FormularioRol
+          rolEditar={rolEditar}
+          rolesExistentes={roles}
+          onSubmit={handleSubmitFormulario}
+          onCancel={handleCancelar}
+        />
+      )}
     </>
   );
 };
