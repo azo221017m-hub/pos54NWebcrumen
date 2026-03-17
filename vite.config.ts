@@ -39,6 +39,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        globIgnores: ['**/agradecimientocdt.png'], // Exclude large image (2.49 MB) from precache; served on demand
         // Exclude API endpoints from caching to always fetch fresh data
         navigateFallbackDenylist: [/^\/api/],
         // Configuración de auto-actualización
