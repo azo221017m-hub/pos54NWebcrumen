@@ -118,6 +118,7 @@
   padding: 7px 14px;
   font-size: 0.8rem;
   font-weight: 700;
+  font-family: 'Poppins', sans-serif;
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.2s, transform 0.1s;
@@ -137,6 +138,7 @@
   padding: 6px 14px;
   font-size: 0.75rem;
   font-weight: 600;
+  font-family: 'Poppins', sans-serif;
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.2s, transform 0.1s;
@@ -1161,7 +1163,7 @@
   position: relative;
   background: transparent;
   border-radius: 20px;
-  max-width: 480px;
+  max-width: 240px;
   width: 100%;
 }
 
