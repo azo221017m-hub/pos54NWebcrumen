@@ -694,7 +694,7 @@ const PageClientes: React.FC = () => {
 
                     {/* Card footer */}
                     <div className="pc-card-footer">
-                      {clienteLogueado && (
+                      {clienteLogueado && negocio.abiertoahoraweb === 1 && (
                         <button
                           className={`pc-ver-btn${cargando ? ' pc-ver-btn--loading' : ''}`}
                           onClick={() => handleSeleccionarNegocio(negocio)}
