@@ -95,7 +95,9 @@ const convertDataUriToBuffer = (dataUri: string | null | undefined): Buffer | nu
 // Obtener todos los negocios
 export const obtenerNegocios = async (_req: Request, res: Response): Promise<void> => {
   try {
-    const [negocios] = await pool.execute<RowDataPacket[]>(
+    // pool.query() is used instead of pool.execute() because logotipo is LONGBLOB
+    // pool.execute() (prepared statements / binary protocol) has issues with LONGBLOB in mysql2
+    const [negocios] = await pool.query<RowDataPacket[]>(
       'SELECT * FROM tblposcrumenwebnegocio ORDER BY nombreNegocio ASC'
     );
 
@@ -127,7 +129,9 @@ export const obtenerNegocios = async (_req: Request, res: Response): Promise<voi
  */
 export const obtenerNegociosPublico = async (_req: Request, res: Response): Promise<void> => {
   try {
-    const [negocios] = await pool.execute<RowDataPacket[]>(
+    // pool.query() is used instead of pool.execute() because logotipo is LONGBLOB
+    // pool.execute() (prepared statements / binary protocol) has issues with LONGBLOB in mysql2
+    const [negocios] = await pool.query<RowDataPacket[]>(
       `SELECT idNegocio, nombreNegocio, logotipo, calificacion, etiquetas,
               abiertoahoraweb, promocionhoyweb, entregarapidaweb, nuevoweb,
               (SELECT tipoNegocio FROM tblposcrumenwebparametrosnegocio WHERE idNegocio = n.idNegocio LIMIT 1) AS tipoNegocio
@@ -169,8 +173,9 @@ export const obtenerNegocioPorId = async (req: Request, res: Response): Promise<
   const { id } = req.params;
 
   try {
-    // Obtener negocio
-    const [negocios] = await pool.execute<RowDataPacket[]>(
+    // pool.query() is used instead of pool.execute() because logotipo is LONGBLOB
+    // pool.execute() (prepared statements / binary protocol) has issues with LONGBLOB in mysql2
+    const [negocios] = await pool.query<RowDataPacket[]>(
       'SELECT * FROM tblposcrumenwebnegocio WHERE idNegocio = ?',
       [id]
     );
@@ -240,8 +245,9 @@ export const crearNegocio = async (req: Request, res: Response): Promise<void> =
     await conn.beginTransaction();
 
     try {
-      // Insertar negocio con numeronegocio temporal
-      const [resultNegocio] = await conn.execute<ResultSetHeader>(
+      // pool.query() / conn.query() is used instead of conn.execute() because logotipo is LONGBLOB
+      // conn.execute() (prepared statements / binary protocol) has issues with LONGBLOB in mysql2
+      const [resultNegocio] = await conn.query<ResultSetHeader>(
         `INSERT INTO tblposcrumenwebnegocio 
         (numeronegocio, nombreNegocio, rfcnegocio, direccionfiscalnegocio, contactonegocio, 
          logotipo, telefonocontacto, estatusnegocio, fechaRegistroauditoria, usuarioauditoria)
@@ -347,8 +353,9 @@ export const actualizarNegocio = async (req: Request, res: Response): Promise<vo
     await conn.beginTransaction();
 
     try {
-      // Actualizar negocio
-      await conn.execute(
+      // conn.query() is used instead of conn.execute() because logotipo is LONGBLOB
+      // conn.execute() (prepared statements / binary protocol) has issues with LONGBLOB in mysql2
+      await conn.query(
         `UPDATE tblposcrumenwebnegocio 
         SET numeronegocio = ?, nombreNegocio = ?, rfcnegocio = ?, 
             direccionfiscalnegocio = ?, contactonegocio = ?, logotipo = ?,
@@ -505,7 +512,9 @@ export const subirLogotipo = async (req: Request, res: Response): Promise<void> 
   try {
     const { logotipo } = req.body;
 
-    await pool.execute(
+    // pool.query() is used instead of pool.execute() because logotipo is LONGBLOB
+    // pool.execute() (prepared statements / binary protocol) has issues with LONGBLOB in mysql2
+    await pool.query(
       'UPDATE tblposcrumenwebnegocio SET logotipo = ?, fehamodificacionauditoria = NOW() WHERE idNegocio = ?',
       [convertDataUriToBuffer(logotipo), id]
     );

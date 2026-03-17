@@ -16,12 +16,14 @@ import {
 
 const router = Router();
 
+router.use(apiLimiter);
+
 /**
  * @route   GET /api/negocios/publico
  * @desc    Obtener negocios activos para el portal de clientes (sin autenticación)
  * @access  Public
  */
-router.get('/publico', apiLimiter, obtenerNegociosPublico);
+router.get('/publico', obtenerNegociosPublico);
 
 /**
  * @route   GET /api/negocios
