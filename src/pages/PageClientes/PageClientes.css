@@ -188,7 +188,6 @@
   width: 100%;
   gap: 20px;
   padding: 20px;
-  align-items: flex-start;
   min-height: 0;
   overflow: hidden;
 }
@@ -200,8 +199,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  position: sticky;
-  top: 140px;
+  align-self: flex-start;
 }
 
 .pc-banner-promo {
