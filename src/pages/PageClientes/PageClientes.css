@@ -82,6 +82,34 @@
   gap: 6px;
 }
 
+.pc-btn-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.pc-btn-hint {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
+  font-style: italic;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  animation: pc-hint-pulse 2.2s ease-in-out infinite;
+  pointer-events: none;
+  user-select: none;
+}
+
+.pc-btn-hint--comunidad {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+@keyframes pc-hint-pulse {
+  0%, 100% { opacity: 0.75; transform: translateX(0); }
+  50% { opacity: 1; transform: translateX(2px); }
+}
+
 .pc-header-iniciar-btn {
   background: #fff;
   color: #0d4f8a;
