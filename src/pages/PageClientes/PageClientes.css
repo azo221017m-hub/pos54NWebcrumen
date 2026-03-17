@@ -196,20 +196,71 @@
 .pc-sidebar {
   width: 280px;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: calc(100vh - 200px);
+  position: sticky;
+  top: 100px;
 }
 
 .pc-banner-promo {
   background: linear-gradient(180deg, #1e3a8a 0%, #3b82f6 100%);
   border-radius: 16px;
   padding: 20px 16px;
-  height: calc(100vh - 200px);
+  flex: 1;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 100px;
   overflow: hidden;
+}
+
+/* ---- CTA — Promote your business ---- */
+.pc-negocio-cta {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 2px 12px rgba(13, 79, 138, 0.08);
+  flex-shrink: 0;
+}
+
+.pc-negocio-cta-label {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: center;
+  margin: 0;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+.pc-negocio-cta-btn {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #0d4f8a 0%, #0ea5c0 100%);
+  border: none;
+  border-radius: 10px;
+  padding: 9px 14px;
+  cursor: pointer;
+  width: 100%;
+  letter-spacing: 0.02em;
+  transition: opacity 0.2s, transform 0.15s;
+  line-height: 1.3;
+}
+
+.pc-negocio-cta-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .pc-banner-content {

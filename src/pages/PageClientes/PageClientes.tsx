@@ -556,6 +556,14 @@ const PageClientes: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* CTA — Promote your business */}
+          <div className="pc-negocio-cta">
+            <p className="pc-negocio-cta-label">¿Tienes Negocio en Texcoco?</p>
+            <button type="button" className="pc-negocio-cta-btn">
+              Quiero Mostrar mi Negocio Aquí
+            </button>
+          </div>
         </aside>
 
         {/* Main content area */}
