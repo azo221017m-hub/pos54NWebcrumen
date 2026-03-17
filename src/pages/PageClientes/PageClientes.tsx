@@ -639,6 +639,12 @@ const PageClientes: React.FC = () => {
                           </svg>
                         </div>
                       )}
+                      {/* NUEVO badge — top-right corner, animated */}
+                      {negocio.nuevoweb === 1 && (
+                        <span className="pc-badge pc-badge--nuevo" aria-label="Nuevo negocio">
+                          NUEVO
+                        </span>
+                      )}
                     </div>
 
                     {/* Card body */}
@@ -653,6 +659,21 @@ const PageClientes: React.FC = () => {
                           ⏱ {getPrepTime(negocio.idNegocio)}
                         </span>
                       </div>
+
+                      {/* Property badges */}
+                      {(negocio.abiertoahoraweb === 1 || negocio.promocionhoyweb === 1 || negocio.entregarapidaweb === 1) && (
+                        <div className="pc-badges-row">
+                          {negocio.abiertoahoraweb === 1 && (
+                            <span className="pc-badge pc-badge--abierto">🟢 Abierto ahora</span>
+                          )}
+                          {negocio.promocionhoyweb === 1 && (
+                            <span className="pc-badge pc-badge--promocion">🏷️ Promoción Hoy</span>
+                          )}
+                          {negocio.entregarapidaweb === 1 && (
+                            <span className="pc-badge pc-badge--entrega">⚡ Entrega Rápida</span>
+                          )}
+                        </div>
+                      )}
 
                       {/* Active order indicator - only show when client is logged in */}
                       {tieneActivo && clienteLogueado && (

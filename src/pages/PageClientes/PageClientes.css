@@ -529,6 +529,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  position: relative;
 }
 
 .pc-card-logo {
@@ -606,6 +607,73 @@
 
 .pc-card-time {
   color: #6b7280;
+}
+
+/* ---- Business property badges ---- */
+@keyframes pc-nuevo-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5); }
+  50% { transform: scale(1.08); box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+}
+
+@keyframes pc-nuevo-shake {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-5deg); }
+  40% { transform: rotate(5deg); }
+  60% { transform: rotate(-3deg); }
+  80% { transform: rotate(3deg); }
+}
+
+.pc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.pc-badge--abierto {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.pc-badge--promocion {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
+.pc-badge--entrega {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.pc-badge--nuevo {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  font-size: 0.68rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  z-index: 2;
+  animation: pc-nuevo-pulse 1.8s ease-in-out infinite, pc-nuevo-shake 3.5s ease-in-out infinite;
+  animation-delay: 0s, 0.9s;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+}
+
+.pc-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 8px;
 }
 
 /* ---- Active order indicator ---- */
