@@ -792,6 +792,21 @@ const PageVentas: React.FC = () => {
       if (resultado.success) {
         showSuccessToast(`Venta registrada - Folio: ${resultado.folioventa}`);
         
+        // Notify dashboard when client places a SOLICITADO order via BroadcastChannel
+        if (estadodeventa === 'SOLICITADO') {
+          try {
+            const channel = new BroadcastChannel('pos_pedidos_channel');
+            channel.postMessage({
+              type: 'nuevo_pedido_solicitado',
+              folio: resultado.folioventa,
+              idventa: resultado.idventa
+            });
+            channel.close();
+          } catch {
+            // BroadcastChannel not available; dashboard will refresh via polling
+          }
+        }
+
         // Mark newly inserted items as ORDENADO
         setComanda(comanda.map(item => 
           item.estadodetalle !== ESTADO_ORDENADO 
@@ -1030,6 +1045,13 @@ const PageVentas: React.FC = () => {
     await crearVenta('ESPERAR', 'ESPERAR', 'ESPERAR');
     // Navigate to dashboard after creating ESPERAR venta
     handlePostVenta();
+  };
+
+  const handleSolicitarPedido = async () => {
+    const success = await crearVenta('SOLICITADO', 'SOLICITADO', 'PENDIENTE');
+    if (success) {
+      handlePostVenta();
+    }
   };
 
   const handleModeradorSelection = (selectedModeradores: number[]) => {
@@ -1708,34 +1730,49 @@ const PageVentas: React.FC = () => {
         {/* Panel derecho - Comanda/Carrito */}
         <div className="comanda-panel">
           <div className="comanda-header">
-            <label className="imprimir-checkbox-label">
-              <input
-                type="checkbox"
-                checked={imprimirChecked}
-                onChange={(e) => setImprimirChecked(e.target.checked)}
-              />
-              Imprimir
-            </label>
+            {!isClienteMode && (
+              <label className="imprimir-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={imprimirChecked}
+                  onChange={(e) => setImprimirChecked(e.target.checked)}
+                />
+                Imprimir
+              </label>
+            )}
             <h2>Total de cuenta</h2>
           </div>
 
           <div className="comanda-buttons">
-            <button 
-              className="btn-producir" 
-              onClick={handleProducir} 
-              disabled={!isServiceConfigured || comanda.length === 0 || isProcessingVenta}
-            >
-              {isProcessingVenta ? 'Procesando...' : 'Producir'}
-            </button>
-            <button 
-              className="btn-esperar" 
-              onClick={handleEsperar} 
-              disabled={!isServiceConfigured || comanda.length === 0 || hasOrdenadoItems(comanda) || currentEstadoDeVenta === 'ESPERAR' || isProcessingVenta}
-            >
-              Esperar
-            </button>
-            {currentEstadoDeVenta === 'ESPERAR' && (
-              <button className="btn-eliminar-espera" onClick={handleEliminarEspera} disabled={!isServiceConfigured}>ELIMINAR ESPERA</button>
+            {!isClienteMode && (
+              <>
+                <button 
+                  className="btn-producir" 
+                  onClick={handleProducir} 
+                  disabled={!isServiceConfigured || comanda.length === 0 || isProcessingVenta}
+                >
+                  {isProcessingVenta ? 'Procesando...' : 'Producir'}
+                </button>
+                <button 
+                  className="btn-esperar" 
+                  onClick={handleEsperar} 
+                  disabled={!isServiceConfigured || comanda.length === 0 || hasOrdenadoItems(comanda) || currentEstadoDeVenta === 'ESPERAR' || isProcessingVenta}
+                >
+                  Esperar
+                </button>
+                {currentEstadoDeVenta === 'ESPERAR' && (
+                  <button className="btn-eliminar-espera" onClick={handleEliminarEspera} disabled={!isServiceConfigured}>ELIMINAR ESPERA</button>
+                )}
+              </>
+            )}
+            {isClienteMode && (
+              <button
+                className="btn-solicitar-pedido"
+                onClick={handleSolicitarPedido}
+                disabled={!isServiceConfigured || comanda.length === 0 || isProcessingVenta}
+              >
+                {isProcessingVenta ? 'Procesando...' : 'Solicitar Pedido'}
+              </button>
             )}
           </div>
 
