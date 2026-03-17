@@ -314,6 +314,10 @@ const PageClientes: React.FC = () => {
       showInfoToast('Los campos referencia y contraseña son obligatorios');
       return;
     }
+    if (!registroData.telefono.trim()) {
+      showInfoToast('El campo Teléfono es obligatorio');
+      return;
+    }
     setRegistroCargando(true);
     try {
       const result = await clienteWebService.registrarCliente({
@@ -323,7 +327,7 @@ const PageClientes: React.FC = () => {
         satisfaccion: registroData.satisfaccion ? Number(registroData.satisfaccion) : undefined,
         comentarios: registroData.comentarios || undefined,
         puntosfidelidad: registroData.puntosfidelidad ? Number(registroData.puntosfidelidad) : undefined,
-        telefono: registroData.telefono || undefined,
+        telefono: registroData.telefono.trim(),
         email: registroData.email || undefined,
         direccion: registroData.direccion || undefined,
         password: registroData.password
@@ -410,21 +414,19 @@ const PageClientes: React.FC = () => {
             {!clienteLogueado && (
               <div className="pc-header-actions">
                 <div className="pc-btn-row">
-                  <span className="pc-btn-hint">Click para iniciar sesión ➜</span>
                   <button
                     className="pc-header-iniciar-btn"
                     onClick={handleAbrirModalLogin}
                   >
-                    INiCIaR PeDIDoS
+                    HACER PEDIDO AHORA
                   </button>
                 </div>
                 <div className="pc-btn-row">
-                  <span className="pc-btn-hint pc-btn-hint--comunidad">Click para registrarse ➜</span>
                   <button
                     className="pc-header-comunidad-btn"
                     onClick={handleAbrirModalRegistro}
                   >
-                    UNIRME A LA COMUNIDAD
+                    CREAR MI ACCESO Gratis
                   </button>
                 </div>
               </div>
@@ -731,17 +733,17 @@ const PageClientes: React.FC = () => {
                   <input type="text" className="pc-form-input" placeholder="Tu nombre" autoComplete="off" value={registroData.nombre} onChange={(e) => handleRegistroChange('nombre', e.target.value)} />
                 </div>
                 <div className="pc-form-group">
-                  <label className="pc-form-label pc-form-label--required">Referencia (nombre o alias)</label>
+                  <label className="pc-form-label pc-form-label--required">Alias como Cliente (¿A nombre de quién hacemos los pedidos?)</label>
                   <input type="text" className="pc-form-input" placeholder="Nombre o alias" autoComplete="off" value={registroData.referencia} onChange={(e) => handleRegistroChange('referencia', e.target.value)} />
                 </div>
               </div>
               <div className="pc-form-row">
                 <div className="pc-form-group">
-                  <label className="pc-form-label">Teléfono</label>
+                  <label className="pc-form-label pc-form-label--required">Teléfono</label>
                   <input type="tel" className="pc-form-input" placeholder="Tu teléfono" autoComplete="off" value={registroData.telefono} onChange={(e) => handleRegistroChange('telefono', e.target.value)} />
                 </div>
                 <div className="pc-form-group">
-                  <label className="pc-form-label">Cumpleaños</label>
+                  <label className="pc-form-label">Fecha de Nacimiento (Para tener presente tu día especial)</label>
                   <input type="date" className="pc-form-input" autoComplete="off" value={registroData.cumple} onChange={(e) => handleRegistroChange('cumple', e.target.value)} />
                 </div>
               </div>
