@@ -75,6 +75,9 @@ const PageClientes: React.FC = () => {
   // Register modal
   const [mostrarModalRegistro, setMostrarModalRegistro] = useState(false);
   const [registroCargando, setRegistroCargando] = useState(false);
+
+  // Thank-you modal (shown after successful registration)
+  const [mostrarModalAgradecimiento, setMostrarModalAgradecimiento] = useState(false);
   const [registroData, setRegistroData] = useState({
     nombre: '',
     referencia: '',
@@ -297,6 +300,11 @@ const PageClientes: React.FC = () => {
     setMostrarModalRegistro(false);
   };
 
+  const handleCerrarModalAgradecimiento = () => {
+    setMostrarModalAgradecimiento(false);
+    setMostrarModalLogin(true);
+  };
+
   const handleRegistroChange = (field: string, value: string) => {
     setRegistroData(prev => ({ ...prev, [field]: value }));
   };
@@ -321,11 +329,10 @@ const PageClientes: React.FC = () => {
         password: registroData.password
       });
       if (result.success) {
-        showSuccessToast('¡Registro exitoso! Ahora inicia sesión para comenzar a pedir.');
         setMostrarModalRegistro(false);
         setLoginTelefono(registroData.telefono || '');
         setLoginPassword('');
-        setMostrarModalLogin(true);
+        setMostrarModalAgradecimiento(true);
       } else {
         showErrorToast(result.message || 'No se pudo completar el registro');
       }
@@ -751,6 +758,26 @@ const PageClientes: React.FC = () => {
                 {registroCargando ? <><span className="pc-btn-spinner" /> Registrando...</> : 'Registrarme'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Thank-you modal after successful registration */}
+      {mostrarModalAgradecimiento && (
+        <div className="pc-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) handleCerrarModalAgradecimiento(); }}>
+          <div className="pc-agradecimiento-modal" role="dialog" aria-modal="true" aria-label="Gracias por registrarte">
+            <button
+              className="pc-agradecimiento-close"
+              onClick={handleCerrarModalAgradecimiento}
+              aria-label="Cerrar"
+            >
+              ✕
+            </button>
+            <img
+              src="/agradecimientocdt.png"
+              alt="¡Gracias por unirte a la comunidad!"
+              className="pc-agradecimiento-img"
+            />
           </div>
         </div>
       )}
