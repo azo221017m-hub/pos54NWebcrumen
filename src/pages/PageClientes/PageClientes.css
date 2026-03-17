@@ -857,13 +857,24 @@
 
 /* ---- Responsive ---- */
 @media (max-width: 900px) {
+  /* Allow page to scroll naturally on tablet/mobile */
+  .pc-page {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
   .pc-layout {
     flex-direction: column;
+    overflow: visible;
+    height: auto;
   }
 
   .pc-sidebar {
     width: 100%;
     order: -1;
+    height: auto;
+    position: static;
   }
 
   .pc-banner-promo {
@@ -874,6 +885,13 @@
 
   .pc-main {
     width: 100%;
+    overflow: visible;
+    height: auto;
+  }
+
+  .pc-content {
+    overflow: visible;
+    height: auto;
   }
 }
 
