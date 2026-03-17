@@ -409,18 +409,24 @@ const PageClientes: React.FC = () => {
           <div className="pc-header-right">
             {!clienteLogueado && (
               <div className="pc-header-actions">
-                <button
-                  className="pc-header-iniciar-btn"
-                  onClick={handleAbrirModalLogin}
-                >
-                  INiCIaR PeDIDoS
-                </button>
-                <button
-                  className="pc-header-comunidad-btn"
-                  onClick={handleAbrirModalRegistro}
-                >
-                  UNIRME A LA COMUNIDAD
-                </button>
+                <div className="pc-btn-row">
+                  <span className="pc-btn-hint">Click para iniciar sesión ➜</span>
+                  <button
+                    className="pc-header-iniciar-btn"
+                    onClick={handleAbrirModalLogin}
+                  >
+                    INiCIaR PeDIDoS
+                  </button>
+                </div>
+                <div className="pc-btn-row">
+                  <span className="pc-btn-hint pc-btn-hint--comunidad">Click para registrarse ➜</span>
+                  <button
+                    className="pc-header-comunidad-btn"
+                    onClick={handleAbrirModalRegistro}
+                  >
+                    UNIRME A LA COMUNIDAD
+                  </button>
+                </div>
               </div>
             )}
             {clienteLogueado && clienteData && (
