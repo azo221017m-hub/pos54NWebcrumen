@@ -56,10 +56,10 @@ export const negociosService = {
   actualizarNegocio: async (id: number, data: NegocioCompleto): Promise<Negocio> => {
     try {
       const response = await api.put<NegocioResponse>(`/negocios/${id}`, data);
-      if (response.data.success && response.data.data) {
-        return response.data.data as Negocio;
+      if (response.data.success) {
+        return (response.data.data as Negocio) ?? ({ ...data.negocio, idNegocio: id } as Negocio);
       }
-      throw new Error('Respuesta inválida del servidor');
+      throw new Error(response.data.message || 'Respuesta inválida del servidor');
     } catch (error: unknown) {
       console.error('Error al actualizar negocio:', error);
       if (error && typeof error === 'object' && 'response' in error) {

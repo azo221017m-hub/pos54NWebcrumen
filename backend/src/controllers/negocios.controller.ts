@@ -396,6 +396,7 @@ export const actualizarNegocio = async (req: Request, res: Response): Promise<vo
       res.json({
         success: true,
         message: 'Negocio actualizado exitosamente',
+        data: { ...negocio, idNegocio: Number(id) },
       });
     } catch (error) {
       // Revertir transacción en caso de error
