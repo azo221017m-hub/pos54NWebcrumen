@@ -11,7 +11,7 @@ import { obtenerDetallesPagos } from '../services/pagosService';
 import { verificarTurnoAbierto, cerrarTurnoActual } from '../services/turnosService';
 import type { Turno } from '../types/turno.types';
 import CierreTurno from '../components/turnos/CierreTurno/CierreTurno';
-import { showSuccessToast, showErrorToast } from '../components/FeedbackToast';
+import { showSuccessToast, showErrorToast, showInfoToast } from '../components/FeedbackToast';
 import { obtenerInsumos } from '../services/insumosService';
 import type { Insumo } from '../types/insumo.types';
 import { negociosService } from '../services/negociosService';
@@ -238,9 +238,9 @@ export const DashboardPage = () => {
   const cargarVentasSolicitadas = useCallback(async () => {
     try {
       const ventas = await obtenerVentasWeb();
-      // Filter sales with ORDENADO and ESPERAR status
+      // Filter sales with ORDENADO, ESPERAR and SOLICITADO status
       const ventasFiltradas = ventas.filter(venta => 
-        venta.estadodeventa === 'ORDENADO' || venta.estadodeventa === 'ESPERAR'
+        venta.estadodeventa === 'ORDENADO' || venta.estadodeventa === 'ESPERAR' || venta.estadodeventa === 'SOLICITADO'
       );
       
       // Fetch registered payments for MIXTO sales in parallel
@@ -599,6 +599,23 @@ export const DashboardPage = () => {
     }
   }, [ventasSolicitadas, autoSwitchedToComandas]);
 
+  // Listen for new SOLICITADO orders placed by clients via BroadcastChannel
+  useEffect(() => {
+    let channel: BroadcastChannel | null = null;
+    try {
+      channel = new BroadcastChannel('pos_pedidos_channel');
+      channel.onmessage = (event) => {
+        if (event.data?.type === 'nuevo_pedido_solicitado') {
+          cargarVentasSolicitadas();
+          showInfoToast(`🛎 Pedido entrante: ${event.data.folio}`);
+        }
+      };
+    } catch {
+      // BroadcastChannel not supported; dashboard refreshes via polling
+    }
+    return () => { channel?.close(); };
+  }, [cargarVentasSolicitadas]);
+
   useEffect(() => {
     // Verificar si hay usuario - check localStorage directly to avoid stale state
     const usuarioData = localStorage.getItem('usuario');
@@ -667,12 +684,19 @@ export const DashboardPage = () => {
 
   const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
-  // Pedidos online de ejemplo
-  const pedidosOnline: PedidoOnline[] = [
-    { id: 1, cliente: 'Juan Pérez', productos: '2x Hamburguesa, 1x Refresco', total: 150.00, estado: 'pendiente', hora: '10:30 AM' },
-    { id: 2, cliente: 'María García', productos: '1x Pizza Grande, 2x Cerveza', total: 280.00, estado: 'preparando', hora: '10:25 AM' },
-    { id: 3, cliente: 'Carlos López', productos: '3x Tacos, 1x Agua', total: 95.00, estado: 'listo', hora: '10:15 AM' },
-  ];
+  // Real pedidos online: SOLICITADO orders from client portal
+  const pedidosOnline: PedidoOnline[] = ventasSolicitadas
+    .filter(v => v.estadodeventa === 'SOLICITADO')
+    .map(v => ({
+      id: v.idventa,
+      cliente: v.cliente,
+      productos: v.detalles
+        .map(d => `${d.cantidad}x ${d.nombreproducto}`)
+        .join(', '),
+      total: Number(v.totaldeventa) || 0,
+      estado: 'pendiente' as const,
+      hora: new Date(v.fechadeventa).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
+    }));
 
   const getEstadoBadgeClass = (estado: string) => {
     switch(estado) {
