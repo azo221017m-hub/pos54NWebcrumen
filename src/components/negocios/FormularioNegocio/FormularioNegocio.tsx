@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import type { Negocio, ParametrosNegocio, NegocioCompleto } from '../../../types/negocio.types';
 import { negociosService } from '../../../services/negociosService';
 import './FormularioNegocio.css';
-import { Store, Building2, Phone, FileText, Printer, MessageSquare, Check, X, Upload, Image as ImageIcon } from 'lucide-react';
+import { Store, Building2, Phone, FileText, Printer, MessageSquare, Check, X, Upload, Image as ImageIcon, Tag } from 'lucide-react';
 
 interface FormularioNegocioProps {
   negocioEditar?: NegocioCompleto | null;
@@ -25,6 +25,13 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
       logotipo: null,
       telefonocontacto: '',
       estatusnegocio: 1,
+      plancontratado: undefined,
+      calificacion: null,
+      etiquetas: null,
+      abiertoahoraweb: 0,
+      promohoyweb: 0,
+      entregarapidaweb: 0,
+      nuevoweb: 0,
     },
     parametros: {
       idNegocio: 0,
@@ -107,7 +114,7 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
     }
   };
 
-  const handleNegocioChange = (field: keyof Negocio, value: string | number) => {
+  const handleNegocioChange = (field: keyof Negocio, value: string | number | null) => {
     setFormData((prev) => ({
       ...prev,
       negocio: {
@@ -485,6 +492,107 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
               <label htmlFor="envioMensaje">
                 <Check size={16} />
                 Envío de Mensajes
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Sección: Propiedades Web (etiquetas visibles en PageClientes) */}
+        <div className="formulario-seccion">
+          <h3 className="seccion-titulo">
+            <Tag size={20} />
+            Propiedades Web
+          </h3>
+
+          <div className="formulario-grid">
+            <div className="form-group">
+              <label htmlFor="plancontratado">Plan Contratado</label>
+              <select
+                id="plancontratado"
+                value={formData.negocio.plancontratado || ''}
+                onChange={(e) => handleNegocioChange('plancontratado', e.target.value as 'EMPRENDEDOR' | 'EMPRESARIO' | 'EJECUTIVO')}
+              >
+                <option value="">— Sin plan —</option>
+                <option value="EMPRENDEDOR">Emprendedor</option>
+                <option value="EMPRESARIO">Empresario</option>
+                <option value="EJECUTIVO">Ejecutivo</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="calificacion">Calificación (1-5)</label>
+              <input
+                id="calificacion"
+                type="number"
+                min={1}
+                max={5}
+                value={formData.negocio.calificacion ?? ''}
+                onChange={(e) => handleNegocioChange('calificacion', e.target.value === '' ? null : parseInt(e.target.value))}
+                placeholder="Ej: 4"
+              />
+            </div>
+
+            <div className="form-group full-width">
+              <label htmlFor="etiquetas">Etiquetas (separadas por coma)</label>
+              <input
+                id="etiquetas"
+                type="text"
+                value={formData.negocio.etiquetas || ''}
+                onChange={(e) => handleNegocioChange('etiquetas', e.target.value)}
+                placeholder="Ej: Alimentos, Bebidas Calientes, Desayunos"
+              />
+              <small className="form-hint">Estas etiquetas se usan para el buscador y filtros de categoría.</small>
+            </div>
+
+            <div className="form-group-checkbox">
+              <input
+                id="abiertoahoraweb"
+                type="checkbox"
+                checked={formData.negocio.abiertoahoraweb === 1}
+                onChange={(e) => handleNegocioChange('abiertoahoraweb', e.target.checked ? 1 : 0)}
+              />
+              <label htmlFor="abiertoahoraweb">
+                <Check size={16} />
+                🟢 Abierto Ahora
+              </label>
+            </div>
+
+            <div className="form-group-checkbox">
+              <input
+                id="promohoyweb"
+                type="checkbox"
+                checked={formData.negocio.promohoyweb === 1}
+                onChange={(e) => handleNegocioChange('promohoyweb', e.target.checked ? 1 : 0)}
+              />
+              <label htmlFor="promohoyweb">
+                <Check size={16} />
+                🏷️ Promoción Hoy
+              </label>
+            </div>
+
+            <div className="form-group-checkbox">
+              <input
+                id="entregarapidaweb"
+                type="checkbox"
+                checked={formData.negocio.entregarapidaweb === 1}
+                onChange={(e) => handleNegocioChange('entregarapidaweb', e.target.checked ? 1 : 0)}
+              />
+              <label htmlFor="entregarapidaweb">
+                <Check size={16} />
+                ⚡ Entrega Rápida
+              </label>
+            </div>
+
+            <div className="form-group-checkbox">
+              <input
+                id="nuevoweb"
+                type="checkbox"
+                checked={formData.negocio.nuevoweb === 1}
+                onChange={(e) => handleNegocioChange('nuevoweb', e.target.checked ? 1 : 0)}
+              />
+              <label htmlFor="nuevoweb">
+                <Check size={16} />
+                🆕 NUEVO (etiqueta animada en esquina superior derecha)
               </label>
             </div>
           </div>

@@ -131,9 +131,11 @@ export const obtenerNegociosPublico = async (_req: Request, res: Response): Prom
   try {
     // pool.query() is used instead of pool.execute() because logotipo is LONGBLOB
     // pool.execute() (prepared statements / binary protocol) has issues with LONGBLOB in mysql2
+    // Note: the DB column is named "promohoyweb" (not "promocionhoyweb").
+    // We alias it so the frontend interface NegocioPublico.promocionhoyweb stays consistent.
     const [negocios] = await pool.query<RowDataPacket[]>(
       `SELECT idNegocio, nombreNegocio, logotipo, calificacion, etiquetas,
-              abiertoahoraweb, promocionhoyweb, entregarapidaweb, nuevoweb,
+              abiertoahoraweb, promohoyweb AS promocionhoyweb, entregarapidaweb, nuevoweb,
               (SELECT tipoNegocio FROM tblposcrumenwebparametrosnegocio WHERE idNegocio = n.idNegocio LIMIT 1) AS tipoNegocio
        FROM tblposcrumenwebnegocio n
        WHERE estatusnegocio = 1
@@ -250,8 +252,10 @@ export const crearNegocio = async (req: Request, res: Response): Promise<void> =
       const [resultNegocio] = await conn.query<ResultSetHeader>(
         `INSERT INTO tblposcrumenwebnegocio 
         (numeronegocio, nombreNegocio, rfcnegocio, direccionfiscalnegocio, contactonegocio, 
-         logotipo, telefonocontacto, estatusnegocio, fechaRegistroauditoria, usuarioauditoria)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
+         logotipo, telefonocontacto, estatusnegocio, plancontratado,
+         calificacion, etiquetas, abiertoahoraweb, promohoyweb, entregarapidaweb, nuevoweb,
+         fechaRegistroauditoria, usuarioauditoria)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
         [
           'TEMP', // Valor temporal que será actualizado inmediatamente
           negocio.nombreNegocio,
@@ -261,6 +265,13 @@ export const crearNegocio = async (req: Request, res: Response): Promise<void> =
           convertDataUriToBuffer(negocio.logotipo),
           negocio.telefonocontacto,
           negocio.estatusnegocio,
+          negocio.plancontratado || null,
+          negocio.calificacion ?? null,
+          negocio.etiquetas || null,
+          negocio.abiertoahoraweb ?? 0,
+          negocio.promohoyweb ?? 0,
+          negocio.entregarapidaweb ?? 0,
+          negocio.nuevoweb ?? 0,
           negocio.usuarioauditoria || 'sistema',
         ]
       );
@@ -359,7 +370,9 @@ export const actualizarNegocio = async (req: Request, res: Response): Promise<vo
         `UPDATE tblposcrumenwebnegocio 
         SET numeronegocio = ?, nombreNegocio = ?, rfcnegocio = ?, 
             direccionfiscalnegocio = ?, contactonegocio = ?, logotipo = ?,
-            telefonocontacto = ?, estatusnegocio = ?, 
+            telefonocontacto = ?, estatusnegocio = ?, plancontratado = ?,
+            calificacion = ?, etiquetas = ?,
+            abiertoahoraweb = ?, promohoyweb = ?, entregarapidaweb = ?, nuevoweb = ?,
             fehamodificacionauditoria = NOW(), usuarioauditoria = ?
         WHERE idNegocio = ?`,
         [
@@ -371,6 +384,13 @@ export const actualizarNegocio = async (req: Request, res: Response): Promise<vo
           convertDataUriToBuffer(negocio.logotipo),
           negocio.telefonocontacto,
           negocio.estatusnegocio,
+          negocio.plancontratado || null,
+          negocio.calificacion ?? null,
+          negocio.etiquetas || null,
+          negocio.abiertoahoraweb ?? 0,
+          negocio.promohoyweb ?? 0,
+          negocio.entregarapidaweb ?? 0,
+          negocio.nuevoweb ?? 0,
           negocio.usuarioauditoria || 'sistema',
           id,
         ]
