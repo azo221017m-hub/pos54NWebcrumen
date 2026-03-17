@@ -199,14 +199,15 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  align-self: flex-start;
+  overflow: hidden;
 }
 
 .pc-banner-promo {
   background: linear-gradient(180deg, #1e3a8a 0%, #3b82f6 100%);
   border-radius: 16px;
   padding: 16px;
-  height: 420px;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -317,7 +318,7 @@
 }
 
 .pc-carousel-dots {
-  display: flex;
+  display: none;
   gap: 6px;
   justify-content: center;
   flex-wrap: wrap;
@@ -869,6 +870,7 @@
   }
 
   .pc-banner-promo {
+    flex: none;
     height: 200px;
   }
 }
@@ -923,6 +925,7 @@
   }
 
   .pc-banner-promo {
+    flex: none;
     height: 160px;
   }
 }
