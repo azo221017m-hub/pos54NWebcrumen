@@ -133,6 +133,11 @@ const getTipoVentaColorClass = (tipo: TipoDeVenta): string => {
   return colors[tipo] || 'tipo-mesa';
 };
 
+// Helper to get the short sale folio: first letter of tipodeventa + idventa
+const getShortFolio = (tipodeventa: TipoDeVenta, idventa: number): string => {
+  return `${tipodeventa.charAt(0)}${idventa}`;
+};
+
 // Helper to distribute MIXTO total proportionally between EFECTIVO and TRANSFERENCIA
 const distribuirMixto = (efectivoAPI: number, transferenciaAPI: number, mixtoAPI: number): { efectivo: number; transferencia: number } => {
   const baseTotal = efectivoAPI + transferenciaAPI;
@@ -464,7 +469,7 @@ export const DashboardPage = () => {
       // Sale info
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
-      doc.text(`Folio: ${venta.folioventa}`, 5, yPos);
+      doc.text(`Folio: ${getShortFolio(venta.tipodeventa, venta.idventa)}`, 5, yPos);
       yPos += lineHeight;
       doc.text(`Tipo: ${venta.tipodeventa}`, 5, yPos);
       yPos += lineHeight;
@@ -1916,16 +1921,21 @@ export const DashboardPage = () => {
                   </div>
                   <div className="ventas-solicitadas-grid">
                     {ventasFiltradas.map((venta) => (
-                      <div key={venta.idventa} className="venta-solicitada-card">
+                      <div key={venta.idventa} className={`venta-solicitada-card ${getTipoVentaColorClass(venta.tipodeventa)}`}>
+                        {/* Card Header: short folio + tipo label */}
                         <div className="venta-card-header">
-                          <span className="venta-folio">{venta.folioventa}</span>
-                          <div className="venta-tipo-badge">
-                            <span className={`tipo-venta-icon ${getTipoVentaColorClass(venta.tipodeventa)}`}>
+                          <span className="venta-folio">
+                            {getShortFolio(venta.tipodeventa, venta.idventa)}
+                          </span>
+                          <span className={`venta-tipo-chip ${getTipoVentaColorClass(venta.tipodeventa)}`}>
+                            <span className="venta-tipo-chip-icon">
                               <TipoVentaIcon tipo={venta.tipodeventa} />
                             </span>
-                            <span className="tipo-venta-label">{venta.tipodeventa}</span>
-                          </div>
+                            {venta.tipodeventa}
+                          </span>
                         </div>
+
+                        {/* Card Body */}
                         <div className="venta-card-body">
                           <p className="venta-cliente">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1958,6 +1968,8 @@ export const DashboardPage = () => {
                             </div>
                           )}
                         </div>
+
+                        {/* Card Footer */}
                         <div className="venta-card-footer">
                           <span className="venta-total">
                             ${calcularImporteMostrar(venta, pagosRegistrados).toFixed(2)}
