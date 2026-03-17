@@ -3,8 +3,7 @@
    ============================================= */
 
 .pc-page {
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   background: #f8fafc;
   display: flex;
   flex-direction: column;
@@ -188,8 +187,7 @@
   width: 100%;
   gap: 20px;
   padding: 20px;
-  min-height: 0;
-  overflow: hidden;
+  align-items: flex-start;
 }
 
 /* ---- Sidebar Banner ---- */
@@ -199,18 +197,17 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  height: calc(100vh - 200px);
   position: sticky;
-  top: 100px;
+  top: 140px;
 }
 
 .pc-banner-promo {
   background: linear-gradient(180deg, #1e3a8a 0%, #3b82f6 100%);
   border-radius: 16px;
-  padding: 20px 16px;
-  flex: 1;
-  min-height: 0;
+  padding: 16px;
+  height: 420px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -286,17 +283,19 @@
 /* ---- Ad carousel ---- */
 .pc-carousel {
   width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .pc-carousel-track {
   width: 100%;
   border-radius: 12px;
   overflow: hidden;
-  aspect-ratio: 3 / 4;
+  flex: 1;
+  min-height: 0;
   background: rgba(0, 0, 0, 0.2);
 }
 
@@ -470,22 +469,12 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
+  min-width: 0;
 }
 
 .pc-content {
   flex: 1;
-  overflow-y: auto;
   padding-right: 4px;
-  min-height: 0;
-  /* SCROLL INVISIBLE - Solo funcional, no se muestra la barra */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* Internet Explorer y Edge */
-}
-
-.pc-content::-webkit-scrollbar {
-  display: none; /* Chrome, Safari y Opera */
 }
 
 .pc-results-count {
@@ -857,41 +846,18 @@
 
 /* ---- Responsive ---- */
 @media (max-width: 900px) {
-  /* Allow page to scroll naturally on tablet/mobile */
-  .pc-page {
-    height: auto;
-    min-height: 100vh;
-    overflow: visible;
-  }
-
   .pc-layout {
     flex-direction: column;
-    overflow: visible;
-    height: auto;
   }
 
   .pc-sidebar {
     width: 100%;
     order: -1;
-    height: auto;
     position: static;
   }
 
   .pc-banner-promo {
     height: 200px;
-    position: relative;
-    top: 0;
-  }
-
-  .pc-main {
-    width: 100%;
-    overflow: visible;
-    height: auto;
-  }
-
-  .pc-content {
-    overflow: visible;
-    height: auto;
   }
 }
 
