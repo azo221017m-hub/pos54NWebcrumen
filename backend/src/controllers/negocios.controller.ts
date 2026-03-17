@@ -129,6 +129,7 @@ export const obtenerNegociosPublico = async (_req: Request, res: Response): Prom
   try {
     const [negocios] = await pool.execute<RowDataPacket[]>(
       `SELECT idNegocio, nombreNegocio, logotipo, calificacion, etiquetas,
+              abiertoahoraweb, promocionhoyweb, entregarapidaweb, nuevoweb,
               (SELECT tipoNegocio FROM tblposcrumenwebparametrosnegocio WHERE idNegocio = n.idNegocio LIMIT 1) AS tipoNegocio
        FROM tblposcrumenwebnegocio n
        WHERE estatusnegocio = 1
@@ -141,7 +142,11 @@ export const obtenerNegociosPublico = async (_req: Request, res: Response): Prom
       tipoNegocio: negocio.tipoNegocio || 'Negocio',
       logotipo: convertLogotipoToDataUri(negocio.logotipo as Buffer | string | null),
       calificacion: negocio.calificacion != null ? Number(negocio.calificacion) : null,
-      etiquetas: negocio.etiquetas || null
+      etiquetas: negocio.etiquetas || null,
+      abiertoahoraweb: Number(negocio.abiertoahoraweb) || 0,
+      promocionhoyweb: Number(negocio.promocionhoyweb) || 0,
+      entregarapidaweb: Number(negocio.entregarapidaweb) || 0,
+      nuevoweb: Number(negocio.nuevoweb) || 0,
     }));
 
     res.json({
