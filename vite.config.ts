@@ -11,9 +11,9 @@ export default defineConfig({
       injectRegister: null, // No inyectar automáticamente, lo haremos manualmente
       includeAssets: ['vite.svg', 'logocrumenpos.svg', 'logowebposcrumen.svg'],
       manifest: {
-        name: 'POS54N Web Crumen - Sistema POS y Comanda Digital',
-        short_name: 'POS54N Crumen',
-        description: 'Sistema de Punto de Venta (POS) profesional con comanda digital para restaurantes. Gestión de ventas, inventario, comandas digitales y control de mesas.',
+        name: 'CRUMENCDT -Comunidad Digital Texcoco | Pedidos en Texcoco | Conectándo Negocios y Clientes',
+        short_name: 'CRUMENCDT',
+        description: 'CRUMENCDT - Comunidad Digital Texcoco. Pedidos en Texcoco, conectando negocios y clientes de la región.',
         theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
