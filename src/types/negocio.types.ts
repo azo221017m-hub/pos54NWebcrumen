@@ -9,6 +9,14 @@ export interface Negocio {
   logotipo?: string | null; // Base64 string o null
   telefonocontacto: string;
   estatusnegocio: number; // 0 = inactivo, 1 = activo
+  plancontratado?: 'EMPRENDEDOR' | 'EMPRESARIO' | 'EJECUTIVO';
+  calificacion?: number | null; // 1-5
+  etiquetas?: string | null; // Comma-separated tags, e.g. "Alimentos,Bebidas"
+  // Propiedades web (etiquetas visibles en PageClientes)
+  abiertoahoraweb?: number; // 1 = Abierto ahora
+  promohoyweb?: number;     // 1 = Promoción Hoy  (DB column name: promohoyweb)
+  entregarapidaweb?: number; // 1 = Entrega Rápida
+  nuevoweb?: number;         // 1 = NUEVO (animado, esquina superior derecha)
   fechaRegistroauditoria?: string;
   usuarioauditoria?: string;
   fehamodificacionauditoria?: string;
