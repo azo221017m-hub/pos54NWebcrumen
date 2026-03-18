@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerSaludNegocio, obtenerTopProductosTurno, type ResumenVentas, type SaludNegocio, type TopProductoTurno } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import jsPDF from 'jspdf';
@@ -240,6 +240,9 @@ export const DashboardPage = () => {
   });
   const [topProductosMayor, setTopProductosMayor] = useState<TopProductoTurno[]>([]);
   const [topProductosMenor, setTopProductosMenor] = useState<TopProductoTurno[]>([]);
+
+  // Track already-notified order IDs to avoid duplicate sound alerts
+  const notifiedOrdersRef = useRef<Set<number>>(new Set());
 
   const handleLogout = useCallback(() => {
     // Limpiar completamente la sesión
@@ -648,6 +651,12 @@ export const DashboardPage = () => {
   useWebSocket({
     onMessage: (data) => {
       if (data.type === 'nuevo_pedido_web') {
+        const orderId = data.idventa as number;
+        if (!notifiedOrdersRef.current.has(orderId)) {
+          notifiedOrdersRef.current.add(orderId);
+          const audio = new Audio('/notificacion.wav');
+          audio.play().catch((err) => { console.debug('Audio playback blocked:', err); });
+        }
         cargarVentasSolicitadas();
         showInfoToast(`🛎 Pedido WEB entrante: ${data.folioventa}`);
       }

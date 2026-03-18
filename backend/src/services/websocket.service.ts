@@ -45,6 +45,18 @@ class WebSocketService {
       timestamp: new Date().toISOString()
     });
   }
+
+  // Notify clients about a WEB order state change (ORDENADO, EN_CAMINO, etc.)
+  notifyEstadoCambioWeb(idventa: number, estado: string, origen: string, idnegocio: number): void {
+    this.broadcast({
+      type: 'estado_cambio_web',
+      idventa,
+      estado,
+      origen,
+      idnegocio,
+      timestamp: new Date().toISOString()
+    });
+  }
 }
 
 export const websocketService = new WebSocketService();

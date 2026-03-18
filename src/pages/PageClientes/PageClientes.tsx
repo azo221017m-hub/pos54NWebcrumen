@@ -7,6 +7,7 @@ import { showSuccessToast, showErrorToast, showInfoToast } from '../../component
 import GoogleMapsSelector from '../../components/common/GoogleMapsSelector/GoogleMapsSelector';
 import { obtenerAnunciosVigentes } from '../../services/anunciosService';
 import type { Anuncio } from '../../types/anuncio.types';
+import { useWebSocket } from '../../hooks/useWebSocket';
 import './PageClientes.css';
 
 const CATEGORIAS = ['Todos', 'Alimentos', 'Bebidas Calientes', 'Cuidado Personal', 'Bebidas Frías'];
@@ -52,6 +53,9 @@ const PageClientes: React.FC = () => {
   const [pedidosActivos, setPedidosActivos] = useState<Set<number>>(new Set());
   const [seleccionandoNegocio, setSeleccionandoNegocio] = useState<number | null>(null);
   const [turnoError, setTurnoError] = useState<string | null>(null);
+
+  // Track already-processed (idventa_estado) pairs to avoid duplicate sound alerts
+  const processedStatesRef = useRef<Set<string>>(new Set());
 
   // Client login state
   const [clienteLogueado, setClienteLogueado] = useState(false);
@@ -118,6 +122,37 @@ const PageClientes: React.FC = () => {
     cargarNegocios();
     cargarAnunciosVigentes();
   }, []);
+
+  // Listen for WEB order state changes via WebSocket to notify the client in real-time
+  useWebSocket({
+    onMessage: (data) => {
+      if (data.type !== 'estado_cambio_web') return;
+
+      const idventa = data.idventa as number;
+      const estado = data.estado as string;
+      const stateKey = `${idventa}_${estado}`;
+
+      // Only process each (idventa, estado) pair once
+      if (processedStatesRef.current.has(stateKey)) return;
+
+      // Check if the client has this order stored as active
+      const idNegocio = localStorage.getItem('idnegocio');
+      if (!idNegocio) return;
+      const activeVentaId = localStorage.getItem(`pedidoActivo_${idNegocio}`);
+      if (!activeVentaId || Number(activeVentaId) !== idventa) return;
+
+      processedStatesRef.current.add(stateKey);
+
+      const audio = new Audio('/notificacion.wav');
+      audio.play().catch((err) => { console.debug('Audio playback blocked:', err); });
+
+      if (estado === 'ORDENADO') {
+        showInfoToast('✅ Tu pedido fue ordenado');
+      } else if (estado === 'EN_CAMINO') {
+        showInfoToast('🚴 Tu pedido va en camino');
+      }
+    }
+  });
 
   const cargarNegocios = async () => {
     setIsLoading(true);

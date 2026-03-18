@@ -791,6 +791,14 @@ const PageVentas: React.FC = () => {
           setCurrentFolioVenta(resultado.folioventa);
           setCurrentFormaDePago('sinFP'); // Store the formadepago value
           setCurrentEstadoDeVenta(estadodeventa); // Store the estadodeventa value
+
+          // Persist active WEB order idventa so PageClientes can track state changes
+          if (isClienteMode) {
+            const idNegocio = localStorage.getItem('idnegocio');
+            if (idNegocio) {
+              localStorage.setItem(`pedidoActivo_${idNegocio}`, String(resultado.idventa));
+            }
+          }
         }
       }
 
