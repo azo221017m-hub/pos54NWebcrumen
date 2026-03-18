@@ -1140,6 +1140,174 @@ export const addDetallesToVenta = async (req: AuthRequest, res: Response): Promi
   }
 };
 
+// Sincronizar (reemplazar) detalles de una venta WEB con estadodeventa='SOLICITADO'
+// Cancela todos los detalles SOLICITADO existentes e inserta los nuevos desde la comanda
+export const syncDetallesVentaWebSolicitado = async (req: AuthRequest, res: Response): Promise<void> => {
+  const connection = await pool.getConnection();
+
+  try {
+    const { id } = req.params;
+    const idnegocio = req.user?.idNegocio;
+    const usuarioauditoria = req.user?.alias;
+
+    if (!idnegocio || !usuarioauditoria) {
+      res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+      return;
+    }
+
+    const { detalles } = req.body;
+
+    if (!detalles || detalles.length === 0) {
+      res.status(400).json({
+        success: false,
+        message: 'No hay detalles para sincronizar'
+      });
+      return;
+    }
+
+    await connection.beginTransaction();
+
+    // Verificar que la venta existe, pertenece al negocio, es WEB y está en estado SOLICITADO
+    const [ventaRows] = await connection.execute<RowDataPacket[]>(
+      `SELECT idventa, folioventa, origenventa, estadodeventa
+       FROM tblposcrumenwebventas
+       WHERE idventa = ? AND idnegocio = ?`,
+      [id, idnegocio]
+    );
+
+    if (ventaRows.length === 0) {
+      await connection.rollback();
+      res.status(404).json({
+        success: false,
+        message: 'Venta no encontrada'
+      });
+      return;
+    }
+
+    const venta = ventaRows[0];
+
+    if (venta.origenventa !== 'WEB' || venta.estadodeventa !== 'SOLICITADO') {
+      await connection.rollback();
+      res.status(400).json({
+        success: false,
+        message: 'Solo se pueden sincronizar detalles de ventas WEB con estado SOLICITADO'
+      });
+      return;
+    }
+
+    // Cancelar todos los detalles SOLICITADO existentes de esta venta
+    await connection.execute(
+      `UPDATE tblposcrumenwebdetalleventas
+       SET estadodetalle = 'CANCELADO',
+           usuarioauditoria = ?,
+           fechamodificacionauditoria = NOW()
+       WHERE idventa = ? AND idnegocio = ? AND estadodetalle = 'SOLICITADO'`,
+      [usuarioauditoria, id, idnegocio]
+    );
+
+    // Calcular nuevos totales e insertar los detalles actualizados
+    let subtotalNuevo = 0;
+
+    for (const detalle of detalles) {
+      // Determinar tipo de afectación basado en tipoproducto
+      let tipoafectacion: 'DIRECTO' | 'INVENTARIO' | 'RECETA' = 'DIRECTO';
+      let afectainventario = -1;
+      let inventarioprocesado = -1;
+
+      const tipoproducto = detalle.tipoproducto || TIPO_PRODUCTO_DEFAULT;
+
+      if (tipoproducto === 'Receta') {
+        tipoafectacion = 'RECETA';
+        afectainventario = -1;
+        inventarioprocesado = -1;
+      } else if (tipoproducto === 'Inventario' || tipoproducto === 'Materia Prima') {
+        tipoafectacion = 'INVENTARIO';
+        afectainventario = -1;
+        inventarioprocesado = -1;
+      }
+
+      const detalleSubtotal = detalle.cantidad * detalle.preciounitario;
+      const detalleDescuento = 0;
+      const detalleImpuesto = 0;
+      const detalleTotal = detalleSubtotal - detalleDescuento + detalleImpuesto;
+
+      subtotalNuevo += detalleSubtotal;
+
+      await connection.execute(
+        `INSERT INTO tblposcrumenwebdetalleventas (
+          idventa, idproducto, nombreproducto, idreceta,
+          cantidad, preciounitario, costounitario, subtotal, descuento,
+          impuesto, total, afectainventario, tipoafectacion,
+          inventarioprocesado, fechadetalleventa, estadodetalle,
+          observaciones, moderadores, idnegocio, usuarioauditoria, fechamodificacionauditoria, comensal
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, NOW(), ?)`,
+        [
+          id,
+          detalle.idproducto,
+          detalle.nombreproducto,
+          detalle.idreceta || null,
+          detalle.cantidad,
+          detalle.preciounitario,
+          detalle.costounitario,
+          detalleSubtotal,
+          detalleDescuento,
+          detalleImpuesto,
+          detalleTotal,
+          afectainventario,
+          tipoafectacion,
+          inventarioprocesado,
+          'SOLICITADO',
+          detalle.observaciones || null,
+          detalle.moderadores || null,
+          idnegocio,
+          usuarioauditoria,
+          detalle.comensal || null
+        ]
+      );
+    }
+
+    // Actualizar totales de la venta
+    await connection.execute(
+      `UPDATE tblposcrumenwebventas
+       SET subtotal = ?,
+           totaldeventa = ?,
+           usuarioauditoria = ?,
+           fechamodificacionauditoria = NOW()
+       WHERE idventa = ? AND idnegocio = ?`,
+      [subtotalNuevo, subtotalNuevo, usuarioauditoria, id, idnegocio]
+    );
+
+    await connection.commit();
+
+    res.status(200).json({
+      success: true,
+      message: 'Detalles de venta WEB sincronizados exitosamente',
+      data: {
+        idventa: Number(id),
+        folioventa: venta.folioventa
+      }
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error al sincronizar detalles de venta WEB:', error);
+
+    let errorMessage = 'Error al sincronizar detalles de la venta';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+
+    res.status(500).json({
+      success: false,
+      message: errorMessage
+    });
+  } finally {
+    connection.release();
+  }
+};
+
 // Obtener resumen de ventas del turno actual abierto
 export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
