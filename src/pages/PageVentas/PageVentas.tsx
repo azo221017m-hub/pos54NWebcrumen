@@ -36,6 +36,7 @@ interface ItemComanda {
   moderadoresNames?: string[]; // Array of names for display
   estadodetalle?: EstadoDetalle; // Track the detail status to prevent re-insertion of ORDENADO items
   comensal?: string; // Seat assignment (e.g., 'A1', 'A2', etc.)
+  iddetalleventa?: number; // DB primary key of the detail record, used to UPDATE instead of INSERT
 }
 
 // Constants
@@ -335,7 +336,8 @@ const PageVentas: React.FC = () => {
           moderadores: detalle.moderadores || undefined,
           moderadoresNames,
           estadodetalle: detalle.estadodetalle, // Track the detail status
-          comensal: detalle.comensal || undefined // Load seat assignment
+          comensal: detalle.comensal || undefined, // Load seat assignment
+          iddetalleventa: detalle.iddetalleventa // Track DB record ID for UPDATE operations
         };
       });
       
@@ -1086,6 +1088,7 @@ const PageVentas: React.FC = () => {
       setIsProcessingVenta(true);
       // Sync all comanda items to the existing WEB SOLICITADO venta
       const detallesData = comanda.map(item => ({
+        iddetalleventa: item.iddetalleventa || null,
         idproducto: item.producto.idProducto,
         nombreproducto: item.producto.nombre,
         idreceta: (item.producto.tipoproducto === 'Receta' || item.producto.tipoproducto === 'Inventario') && item.producto.idreferencia
