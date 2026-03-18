@@ -379,12 +379,11 @@ export function generarTextoWhatsApp(datos: DatosRecibo): string {
 }
 
 /**
- * Abre WhatsApp Web con el texto del recibo
+ * Abre la app de WhatsApp con el texto del recibo (sin abrir WhatsApp Web)
  */
 export function enviarReciboWhatsApp(datos: DatosRecibo): void {
   const texto = generarTextoWhatsApp(datos);
-  const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
-  window.open(url, '_blank');
+  window.location.href = `whatsapp://send?text=${encodeURIComponent(texto)}`;
 }
 
 function escapeHtml(str: string): string {
