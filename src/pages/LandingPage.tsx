@@ -1,6 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LandingPage.css';
+import config from '../config/api.config';
+
+type ServerStatus = 'waiting' | 'loading' | 'active';
+
+const STATUS_INFO: Record<ServerStatus, { emoji: string; text: string }> = {
+  waiting: { emoji: '😴', text: 'Servidor de la Comunidad en espera' },
+  loading: { emoji: '👁️', text: 'Monitoreando CDT...' },
+  active:  { emoji: '✅', text: 'Comunidad lista' },
+};
 
 const phrases = [
   'Únete a Comunidad Digital de Texcoco.',
@@ -10,33 +19,76 @@ const phrases = [
   'Beneficios para Clientes y Negocios de CRUMENCDT.'
 ];
 
+const PING_INTERVAL_MS = 3000;
+const ACTIVE_DISPLAY_MS = 1200;
+const REQUEST_TIMEOUT_MS = 5000;
+
 export const LandingPage = () => {
   const [currentPhrase, setCurrentPhrase] = useState(0);
   const [fadeIn, setFadeIn] = useState(true);
+  const [serverStatus, setServerStatus] = useState<ServerStatus>('waiting');
   const navigate = useNavigate();
+  const cancelledRef = useRef(false);
 
+  // Phrase rotation
   useEffect(() => {
     const phraseInterval = setInterval(() => {
       setFadeIn(false);
-      
       setTimeout(() => {
         setCurrentPhrase((prev) => (prev + 1) % phrases.length);
         setFadeIn(true);
       }, 300);
     }, 1500);
 
-    const redirectTimer = setTimeout(() => {
-      navigate('/clientes');
-    }, phrases.length * 1500 + 500);
+    return () => clearInterval(phraseInterval);
+  }, []);
+
+  // Backend ping to wake up / activate the server
+  useEffect(() => {
+    cancelledRef.current = false;
+    let retryTimeout: ReturnType<typeof setTimeout> | undefined;
+
+    const pingBackend = async () => {
+      if (cancelledRef.current) return;
+      setServerStatus('loading');
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+        const response = await fetch(`${config.apiUrl}/health`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        if (!cancelledRef.current && response.ok) {
+          setServerStatus('active');
+          retryTimeout = setTimeout(() => {
+            if (!cancelledRef.current) navigate('/clientes');
+          }, ACTIVE_DISPLAY_MS);
+          return;
+        }
+      } catch {
+        // Server not ready yet; will retry
+      }
+      if (!cancelledRef.current) {
+        retryTimeout = setTimeout(pingBackend, PING_INTERVAL_MS);
+      }
+    };
+
+    pingBackend();
 
     return () => {
-      clearInterval(phraseInterval);
-      clearTimeout(redirectTimer);
+      cancelledRef.current = true;
+      clearTimeout(retryTimeout);
     };
   }, [navigate]);
 
+  const { emoji, text } = STATUS_INFO[serverStatus];
+
   return (
     <div className="landing-page">
+      <div className="server-status-badge" data-status={serverStatus}>
+        <span className="server-status-emoji">{emoji}</span>
+        <span className="server-status-text">{text}</span>
+      </div>
       <div className="landing-background">
         <div className="blob blob-1"></div>
         <div className="blob blob-2"></div>
