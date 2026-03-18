@@ -192,6 +192,7 @@ export const agregarDetallesAVenta = async (
 export const sincronizarDetallesVentaWebSolicitado = async (
   idVenta: number,
   detalles: {
+    iddetalleventa?: number | null;
     idproducto: number;
     nombreproducto: string;
     idreceta?: number | null;

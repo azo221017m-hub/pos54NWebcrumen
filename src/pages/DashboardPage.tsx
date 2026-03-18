@@ -66,7 +66,7 @@ const TIPO_VENTA_FILTER_ALL = 'TODOS' as const;
 type TipoVentaFilterOption = TipoDeVenta | typeof TIPO_VENTA_FILTER_ALL;
 
 // Refresh interval for sales summary (in milliseconds)
-const SALES_SUMMARY_REFRESH_INTERVAL = 30000; // 30 seconds
+const SALES_SUMMARY_REFRESH_INTERVAL = 15000; // 15 seconds (reduced from 30s to speed up Pedidos Online updates)
 
 // Helper to render icon SVG for sale type as React component
 const TipoVentaIcon: React.FC<{ tipo: TipoDeVenta }> = ({ tipo }) => {

@@ -1198,18 +1198,17 @@ export const syncDetallesVentaWebSolicitado = async (req: AuthRequest, res: Resp
       return;
     }
 
-    // Cancelar todos los detalles SOLICITADO existentes de esta venta
-    await connection.execute(
-      `UPDATE tblposcrumenwebdetalleventas
-       SET estadodetalle = 'CANCELADO',
-           usuarioauditoria = ?,
-           fechamodificacionauditoria = NOW()
+    // Get all existing SOLICITADO detail record IDs for this venta
+    const [existingRows] = await connection.execute<RowDataPacket[]>(
+      `SELECT iddetalleventa FROM tblposcrumenwebdetalleventas
        WHERE idventa = ? AND idnegocio = ? AND estadodetalle = 'SOLICITADO'`,
-      [usuarioauditoria, id, idnegocio]
+      [id, idnegocio]
     );
+    const existingIds: number[] = existingRows.map((r: RowDataPacket) => r.iddetalleventa);
 
-    // Calcular nuevos totales e insertar los detalles actualizados
+    // Calcular nuevos totales e insertar/actualizar los detalles
     let subtotalNuevo = 0;
+    const processedIds: number[] = [];
 
     for (const detalle of detalles) {
       // Determinar tipo de afectación basado en tipoproducto
@@ -1236,36 +1235,91 @@ export const syncDetallesVentaWebSolicitado = async (req: AuthRequest, res: Resp
 
       subtotalNuevo += detalleSubtotal;
 
+      // If the item has an existing DB record ID, UPDATE it instead of inserting a new one
+      if (detalle.iddetalleventa && existingIds.includes(detalle.iddetalleventa)) {
+        await connection.execute(
+          `UPDATE tblposcrumenwebdetalleventas
+           SET idproducto = ?, nombreproducto = ?, idreceta = ?,
+               cantidad = ?, preciounitario = ?, costounitario = ?,
+               subtotal = ?, descuento = ?, impuesto = ?, total = ?,
+               afectainventario = ?, tipoafectacion = ?, inventarioprocesado = ?,
+               estadodetalle = 'SOLICITADO',
+               observaciones = ?, moderadores = ?,
+               usuarioauditoria = ?, fechamodificacionauditoria = NOW(), comensal = ?
+           WHERE iddetalleventa = ? AND idventa = ? AND idnegocio = ?`,
+          [
+            detalle.idproducto,
+            detalle.nombreproducto,
+            detalle.idreceta || null,
+            detalle.cantidad,
+            detalle.preciounitario,
+            detalle.costounitario,
+            detalleSubtotal,
+            detalleDescuento,
+            detalleImpuesto,
+            detalleTotal,
+            afectainventario,
+            tipoafectacion,
+            inventarioprocesado,
+            detalle.observaciones || null,
+            detalle.moderadores || null,
+            usuarioauditoria,
+            detalle.comensal || null,
+            detalle.iddetalleventa,
+            id,
+            idnegocio
+          ]
+        );
+        processedIds.push(detalle.iddetalleventa);
+      } else {
+        // New item not present in original order — INSERT
+        await connection.execute(
+          `INSERT INTO tblposcrumenwebdetalleventas (
+            idventa, idproducto, nombreproducto, idreceta,
+            cantidad, preciounitario, costounitario, subtotal, descuento,
+            impuesto, total, afectainventario, tipoafectacion,
+            inventarioprocesado, fechadetalleventa, estadodetalle,
+            observaciones, moderadores, idnegocio, usuarioauditoria, fechamodificacionauditoria, comensal
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, NOW(), ?)`,
+          [
+            id,
+            detalle.idproducto,
+            detalle.nombreproducto,
+            detalle.idreceta || null,
+            detalle.cantidad,
+            detalle.preciounitario,
+            detalle.costounitario,
+            detalleSubtotal,
+            detalleDescuento,
+            detalleImpuesto,
+            detalleTotal,
+            afectainventario,
+            tipoafectacion,
+            inventarioprocesado,
+            'SOLICITADO',
+            detalle.observaciones || null,
+            detalle.moderadores || null,
+            idnegocio,
+            usuarioauditoria,
+            detalle.comensal || null
+          ]
+        );
+      }
+    }
+
+    // Cancel existing SOLICITADO details that were removed from the comanda
+    const idsToCancel = existingIds.filter(existingId => !processedIds.includes(existingId));
+    if (idsToCancel.length > 0) {
+      // Build a safe parameterized IN clause: placeholders contain only '?' characters
+      // derived from array length — no user input is interpolated into the SQL string
+      const placeholders = idsToCancel.map(() => '?').join(', ');
       await connection.execute(
-        `INSERT INTO tblposcrumenwebdetalleventas (
-          idventa, idproducto, nombreproducto, idreceta,
-          cantidad, preciounitario, costounitario, subtotal, descuento,
-          impuesto, total, afectainventario, tipoafectacion,
-          inventarioprocesado, fechadetalleventa, estadodetalle,
-          observaciones, moderadores, idnegocio, usuarioauditoria, fechamodificacionauditoria, comensal
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, NOW(), ?)`,
-        [
-          id,
-          detalle.idproducto,
-          detalle.nombreproducto,
-          detalle.idreceta || null,
-          detalle.cantidad,
-          detalle.preciounitario,
-          detalle.costounitario,
-          detalleSubtotal,
-          detalleDescuento,
-          detalleImpuesto,
-          detalleTotal,
-          afectainventario,
-          tipoafectacion,
-          inventarioprocesado,
-          'SOLICITADO',
-          detalle.observaciones || null,
-          detalle.moderadores || null,
-          idnegocio,
-          usuarioauditoria,
-          detalle.comensal || null
-        ]
+        `UPDATE tblposcrumenwebdetalleventas
+         SET estadodetalle = 'CANCELADO',
+             usuarioauditoria = ?,
+             fechamodificacionauditoria = NOW()
+         WHERE iddetalleventa IN (${placeholders}) AND idventa = ? AND idnegocio = ?`,
+        [usuarioauditoria, ...idsToCancel, id, idnegocio]
       );
     }
 
