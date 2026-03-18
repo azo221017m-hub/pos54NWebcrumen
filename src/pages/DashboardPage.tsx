@@ -2057,8 +2057,8 @@ export const DashboardPage = () => {
                             <strong>{venta.detalles?.reduce((sum, d) => sum + Number(d.cantidad), 0) || 0}</strong> producto(s)
                           </p>
                           
-                          {/* Status selector - only show for ONLINE sales */}
-                          {(venta.tipodeventa === 'ONLINE' || isWebOrdenado) && (
+                          {/* Status selector - only show for native ONLINE sales, not WEB-origin cards */}
+                          {venta.tipodeventa === 'ONLINE' && !isWebOrdenado && (
                             <div className="venta-status-selector">
                               <label htmlFor={`status-${venta.idventa}`}>Estado:</label>
                               <select
