@@ -250,6 +250,10 @@ const PageClientes: React.FC = () => {
   }, [searchTerm, categoriaActiva, aplicarFiltros]);
 
   const handleSeleccionarNegocio = async (negocio: NegocioPublico) => {
+    if (!clienteLogueado) {
+      handleAbrirModalLogin();
+      return;
+    }
     if (seleccionandoNegocio) return;
     setSeleccionandoNegocio(negocio.idNegocio);
     setTurnoError(null);
