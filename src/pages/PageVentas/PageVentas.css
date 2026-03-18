@@ -1003,6 +1003,31 @@
   opacity: 0.6;
 }
 
+/* Ajustar PEDIDO Web button */
+.btn-ajustar-pedido-web {
+  flex: 1;
+  padding: 0.438rem; /* 7px */
+  background: #8b5cf6;
+  border: none;
+  border-radius: 0.375rem; /* 6px */
+  font-weight: 700;
+  font-size: 0.586rem; /* 9.375px */
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-ajustar-pedido-web:hover:not(:disabled) {
+  background: #7c3aed;
+}
+
+.btn-ajustar-pedido-web:disabled {
+  background: #e0e0e0;
+  color: #a0a0a0;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 /* Moderadores in comanda items */
 .comanda-item-moderadores {
   display: flex;

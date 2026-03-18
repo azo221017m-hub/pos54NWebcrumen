@@ -165,8 +165,10 @@ const calcularImporteMostrar = (venta: VentaWebWithDetails, pagosRegistrados: Re
 };
 
 // Helper to determine if a venta originated from the SITIO (POS) — includes legacy orders without origenventa set
+// Also includes WEB orders that are already ORDENADO (moved to Comandas del Día after adjustment)
 const isSitioOrder = (venta: VentaWebWithDetails): boolean =>
-  venta.origenventa === 'SITIO' || venta.origenventa === null || venta.origenventa === undefined;
+  venta.origenventa === 'SITIO' || venta.origenventa === null || venta.origenventa === undefined ||
+  (venta.origenventa === 'WEB' && venta.estadodeventa === 'ORDENADO');
 
 // Helper to format quantity: show as integer when value has no decimal part
 const formatQuantity = (cantidad: number): number => {
@@ -615,12 +617,16 @@ export const DashboardPage = () => {
 
   // Memoize filtered ventas to avoid redundant filtering
   const ventasFiltradas = useMemo(() => {
-    // Comandas del día: orders from SITIO (POS) or legacy orders without origenventa set
+    // Comandas del día: orders from SITIO (POS), legacy orders, and WEB+ORDENADO orders
     const comandasSitio = ventasSolicitadas.filter(isSitioOrder);
     if (tipoVentaFilter === TIPO_VENTA_FILTER_ALL) {
       return comandasSitio;
     }
-    return comandasSitio.filter(v => v.tipodeventa === tipoVentaFilter);
+    // WEB+ORDENADO orders are displayed as 'ONLINE' type for filtering purposes
+    return comandasSitio.filter(v => {
+      const displayTipo = (v.origenventa === 'WEB' && v.estadodeventa === 'ORDENADO') ? 'ONLINE' : v.tipodeventa;
+      return displayTipo === tipoVentaFilter;
+    });
   }, [ventasSolicitadas, tipoVentaFilter]);
 
   // Comandas del Día count: SITIO orders (or legacy without origenventa)
@@ -727,9 +733,10 @@ export const DashboardPage = () => {
 
   const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
-  // Real pedidos online: orders originated from WEB (client portal)
+  // Real pedidos online: orders originated from WEB (client portal) that are NOT yet ORDENADO
+  // WEB orders with ORDENADO status are moved to Comandas del Día
   const pedidosOnline: PedidoOnline[] = ventasSolicitadas
-    .filter(v => v.origenventa === 'WEB')
+    .filter(v => v.origenventa === 'WEB' && v.estadodeventa !== 'ORDENADO')
     .map(v => ({
       id: v.idventa,
       cliente: v.cliente,
@@ -2020,18 +2027,21 @@ export const DashboardPage = () => {
                     </span>
                   </div>
                   <div className="ventas-solicitadas-grid">
-                    {ventasFiltradas.map((venta) => (
-                      <div key={venta.idventa} className={`venta-solicitada-card ${getTipoVentaColorClass(venta.tipodeventa)}`}>
+                    {ventasFiltradas.map((venta) => {
+                      const isWebOrdenado = venta.origenventa === 'WEB' && venta.estadodeventa === 'ORDENADO';
+                      const displayTipo: TipoDeVenta = isWebOrdenado ? 'ONLINE' : venta.tipodeventa;
+                      return (
+                      <div key={venta.idventa} className={`venta-solicitada-card ${getTipoVentaColorClass(displayTipo)}${isWebOrdenado ? ' origen-web' : ''}`}>
                         {/* Card Header: short folio + tipo label */}
                         <div className="venta-card-header">
                           <span className="venta-folio">
-                            {getShortFolio(venta.tipodeventa, venta.idventa)}
+                            {getShortFolio(displayTipo, venta.idventa)}
                           </span>
-                          <span className={`venta-tipo-chip ${getTipoVentaColorClass(venta.tipodeventa)}`}>
+                          <span className={`venta-tipo-chip ${getTipoVentaColorClass(displayTipo)}`}>
                             <span className="venta-tipo-chip-icon">
-                              <TipoVentaIcon tipo={venta.tipodeventa} />
+                              <TipoVentaIcon tipo={displayTipo} />
                             </span>
-                            {venta.tipodeventa}
+                            {displayTipo}
                           </span>
                         </div>
 
@@ -2049,7 +2059,7 @@ export const DashboardPage = () => {
                           </p>
                           
                           {/* Status selector - only show for ONLINE sales */}
-                          {venta.tipodeventa === 'ONLINE' && (
+                          {(venta.tipodeventa === 'ONLINE' || isWebOrdenado) && (
                             <div className="venta-status-selector">
                               <label htmlFor={`status-${venta.idventa}`}>Estado:</label>
                               <select
@@ -2121,7 +2131,8 @@ export const DashboardPage = () => {
                           </div>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ) : (

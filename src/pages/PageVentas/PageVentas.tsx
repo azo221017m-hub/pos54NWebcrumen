@@ -134,6 +134,7 @@ const PageVentas: React.FC = () => {
   const [currentFolioVenta, setCurrentFolioVenta] = useState<string | null>(null);
   const [currentFormaDePago, setCurrentFormaDePago] = useState<string | null>(null);
   const [currentEstadoDeVenta, setCurrentEstadoDeVenta] = useState<EstadoDeVenta | null>(null);
+  const [currentOrigenVenta, setCurrentOrigenVenta] = useState<OrigenVenta | null>(null);
 
   // Módulo de pagos state
   const [showModuloPagos, setShowModuloPagos] = useState(false);
@@ -292,6 +293,7 @@ const PageVentas: React.FC = () => {
       setCurrentFolioVenta(ventaToLoad.folioventa);
       setCurrentFormaDePago(ventaToLoad.formadepago);
       setCurrentEstadoDeVenta(ventaToLoad.estadodeventa);
+      setCurrentOrigenVenta(ventaToLoad.origenventa || null);
 
       // Load products into comanda
       const itemsComanda: ItemComanda[] = ventaToLoad.detalles.map(detalle => {
@@ -1048,6 +1050,43 @@ const PageVentas: React.FC = () => {
     handlePostVenta();
   };
 
+  const handleAjustarPedidoWeb = async () => {
+    if (!currentVentaId) return;
+    try {
+      setIsProcessingVenta(true);
+      // Add any new items (not yet persisted, i.e., no estadodetalle set) to the existing WEB venta
+      const newItems = comanda.filter(item => item.estadodetalle == null);
+      if (newItems.length > 0) {
+        const detallesData = newItems.map(item => ({
+          idproducto: item.producto.idProducto,
+          nombreproducto: item.producto.nombre,
+          idreceta: (item.producto.tipoproducto === 'Receta' || item.producto.tipoproducto === 'Inventario') && item.producto.idreferencia
+            ? item.producto.idreferencia
+            : null,
+          tipoproducto: item.producto.tipoproducto,
+          cantidad: item.cantidad,
+          preciounitario: Number(item.producto.precio),
+          costounitario: Number(item.producto.costoproducto),
+          observaciones: item.notas || null,
+          moderadores: item.moderadores || null,
+          comensal: item.comensal || null
+        }));
+        const resultadoDetalles = await agregarDetallesAVenta(currentVentaId, detallesData, 'SOLICITADO');
+        if (!resultadoDetalles.success) {
+          showErrorToast(`Error al ajustar pedido: ${resultadoDetalles.message || 'Error desconocido'}`);
+          return;
+        }
+      }
+      showSuccessToast(`Pedido Web ajustado - Folio: ${currentFolioVenta}`);
+      handlePostVenta();
+    } catch (error) {
+      console.error('Error al ajustar pedido web:', error);
+      showErrorToast('Error al ajustar el pedido web');
+    } finally {
+      setIsProcessingVenta(false);
+    }
+  };
+
   const handleSolicitarPedido = async () => {
     const success = await crearVenta('SOLICITADO', 'SOLICITADO', 'PENDIENTE');
     if (success) {
@@ -1754,13 +1793,24 @@ const PageVentas: React.FC = () => {
                 >
                   {isProcessingVenta ? 'Procesando...' : 'Producir'}
                 </button>
-                <button 
-                  className="btn-esperar" 
-                  onClick={handleEsperar} 
-                  disabled={!isServiceConfigured || comanda.length === 0 || hasOrdenadoItems(comanda) || currentEstadoDeVenta === 'ESPERAR' || isProcessingVenta}
-                >
-                  Esperar
-                </button>
+                {currentOrigenVenta !== 'WEB' && (
+                  <button 
+                    className="btn-esperar" 
+                    onClick={handleEsperar} 
+                    disabled={!isServiceConfigured || comanda.length === 0 || hasOrdenadoItems(comanda) || currentEstadoDeVenta === 'ESPERAR' || isProcessingVenta}
+                  >
+                    Esperar
+                  </button>
+                )}
+                {currentOrigenVenta === 'WEB' && (
+                  <button
+                    className="btn-ajustar-pedido-web"
+                    onClick={handleAjustarPedidoWeb}
+                    disabled={!isServiceConfigured || comanda.length === 0 || isProcessingVenta}
+                  >
+                    {isProcessingVenta ? 'Procesando...' : 'Ajustar PEDIDO Web'}
+                  </button>
+                )}
                 {currentEstadoDeVenta === 'ESPERAR' && (
                   <button className="btn-eliminar-espera" onClick={handleEliminarEspera} disabled={!isServiceConfigured}>ELIMINAR ESPERA</button>
                 )}
