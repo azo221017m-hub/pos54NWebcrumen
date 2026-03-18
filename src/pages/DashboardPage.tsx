@@ -34,6 +34,7 @@ interface PedidoOnline {
   productos: string;
   total: number;
   estado: 'pendiente' | 'preparando' | 'listo' | 'entregado';
+  estadodeventa: string;
   hora: string;
 }
 
@@ -167,6 +168,12 @@ const calcularImporteMostrar = (venta: VentaWebWithDetails, pagosRegistrados: Re
 const isSitioOrder = (venta: VentaWebWithDetails): boolean =>
   venta.origenventa === 'SITIO' || venta.origenventa === null || venta.origenventa === undefined;
 
+// Helper to format quantity: show as integer when value has no decimal part
+const formatQuantity = (cantidad: number): number => {
+  const qty = Number(cantidad);
+  return qty % 1 === 0 ? Math.floor(qty) : qty;
+};
+
 export const DashboardPage = () => {
   const navigate = useNavigate();
   const [usuario] = useState<Usuario | null>(getUsuarioFromStorage());
@@ -214,6 +221,7 @@ export const DashboardPage = () => {
   const [turnoAbierto, setTurnoAbierto] = useState<Turno | null>(null);
   const [showCierreTurnoModal, setShowCierreTurnoModal] = useState(false);
   const [negocio, setNegocio] = useState<Negocio | null>(null);
+  const [abiertoAhoraWeb, setAbiertoAhoraWeb] = useState<boolean>(false);
   const [nivelInventario, setNivelInventario] = useState<{
     nivel: 'OPTIMO' | 'ADVERTENCIA' | 'CRITICO';
     color: string;
@@ -388,6 +396,23 @@ export const DashboardPage = () => {
     } catch (error) {
       console.error('Error al cambiar estado:', error);
       alert('Error al actualizar el estado de la venta');
+    }
+  };
+
+  const handleToggleAbiertoAhoraWeb = async () => {
+    if (!usuario?.idNegocio) return;
+    const nuevoValor: 0 | 1 = abiertoAhoraWeb ? 0 : 1;
+    try {
+      const result = await negociosService.toggleAbiertoAhoraWeb(usuario.idNegocio, nuevoValor);
+      if (result.success) {
+        setAbiertoAhoraWeb(nuevoValor === 1);
+        showSuccessToast(nuevoValor === 1 ? '✅ Pedidos WEB activados' : '⏸ Pedidos WEB desactivados');
+      } else {
+        showErrorToast('Error al cambiar estado de pedidos WEB');
+      }
+    } catch (error) {
+      console.error('Error al togglear abiertoahoraweb:', error);
+      showErrorToast('Error al cambiar estado de pedidos WEB');
     }
   };
 
@@ -667,7 +692,12 @@ export const DashboardPage = () => {
     // Load negocio data for branding
     if (usuario?.idNegocio) {
       negociosService.obtenerNegocioPorId(usuario.idNegocio)
-        .then(data => { if (data?.negocio) setNegocio(data.negocio); })
+        .then(data => {
+          if (data?.negocio) {
+            setNegocio(data.negocio);
+            setAbiertoAhoraWeb(Number(data.negocio.abiertoahoraweb) === 1);
+          }
+        })
         .catch(err => { console.error('Error al cargar datos del negocio:', err); });
     }
 
@@ -704,30 +734,39 @@ export const DashboardPage = () => {
       id: v.idventa,
       cliente: v.cliente,
       productos: v.detalles
-        .map(d => `${d.cantidad}x ${d.nombreproducto}`)
+        .map(d => `${formatQuantity(d.cantidad)}x ${d.nombreproducto}`)
         .join(', '),
       total: Number(v.totaldeventa) || 0,
       estado: 'pendiente' as const,
+      estadodeventa: v.estadodeventa,
       hora: new Date(v.fechadeventa).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
     }));
 
-  const getEstadoBadgeClass = (estado: string) => {
-    switch(estado) {
-      case 'pendiente': return 'badge-warning';
-      case 'preparando': return 'badge-info';
-      case 'listo': return 'badge-success';
-      case 'entregado': return 'badge-default';
+  const getEstadoBadgeClass = (estadodeventa: string) => {
+    switch(estadodeventa) {
+      case 'SOLICITADO': return 'badge-neon-solicitado';
+      case 'PREPARANDO': return 'badge-info';
+      case 'EN_CAMINO': return 'badge-warning';
+      case 'ENTREGADO': return 'badge-success';
+      case 'CANCELADO': return 'badge-default';
+      case 'DEVUELTO': return 'badge-default';
+      case 'ORDENADO': return 'badge-info';
+      case 'ESPERAR': return 'badge-warning';
       default: return 'badge-default';
     }
   };
 
-  const getEstadoTexto = (estado: string) => {
-    switch(estado) {
-      case 'pendiente': return 'Pendiente';
-      case 'preparando': return 'Preparando';
-      case 'listo': return 'Listo';
-      case 'entregado': return 'Entregado';
-      default: return estado;
+  const getEstadoTexto = (estadodeventa: string) => {
+    switch(estadodeventa) {
+      case 'SOLICITADO': return 'Solicitado';
+      case 'PREPARANDO': return 'Preparando';
+      case 'EN_CAMINO': return 'En Camino';
+      case 'ENTREGADO': return 'Entregado';
+      case 'CANCELADO': return 'Cancelado';
+      case 'DEVUELTO': return 'Devuelto';
+      case 'ORDENADO': return 'Ordenado';
+      case 'ESPERAR': return 'Esperar';
+      default: return estadodeventa;
     }
   };
 
@@ -1273,6 +1312,30 @@ export const DashboardPage = () => {
                   <polyline points="12 6 12 12 16 14"/>
                 </svg>
                 Finaliza Día
+              </button>
+              <button
+                className="submenu-item"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleToggleAbiertoAhoraWeb();
+                  setMobileMenuOpen(false);
+                  setShowMiOperacionSubmenu(false);
+                }}
+                title={abiertoAhoraWeb ? 'Desactivar canal de pedidos WEB' : 'Activar canal de pedidos WEB'}
+              >
+                {abiertoAhoraWeb ? (
+                  <svg viewBox="0 0 24 24" fill="#2563eb" stroke="#2563eb" strokeWidth="2" style={{ color: '#2563eb' }}>
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.4 }}>
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                )}
+                Activar pedidos WEB
               </button>
             </div>
           )}
@@ -2094,14 +2157,20 @@ export const DashboardPage = () => {
                         <h3 className="pedido-cliente">{pedido.cliente}</h3>
                         <p className="pedido-hora">{pedido.hora}</p>
                       </div>
-                      <span className={`badge ${getEstadoBadgeClass(pedido.estado)}`}>
-                        {getEstadoTexto(pedido.estado)}
+                      <span className={`badge ${getEstadoBadgeClass(pedido.estadodeventa)}`}>
+                        {getEstadoTexto(pedido.estadodeventa)}
                       </span>
                     </div>
                     <p className="pedido-productos">{pedido.productos}</p>
                     <div className="pedido-footer">
                       <span className="pedido-total">${(Number(pedido.total) || 0).toFixed(2)}</span>
-                      <button className="btn-small">Ver detalles</button>
+                      <button
+                        className="btn-small"
+                        onClick={() => {
+                          const venta = ventasSolicitadas.find(v => v.idventa === pedido.id);
+                          if (venta) handleVerDetalle(venta);
+                        }}
+                      >Ver detalle</button>
                     </div>
                   </div>
                 ))}

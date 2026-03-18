@@ -9,6 +9,7 @@ import {
   actualizarNegocio,
   eliminarNegocio,
   cambiarEstatusNegocio,
+  toggleAbiertoAhoraWeb,
   validarNombreUnico,
   subirLogotipo,
   obtenerProximoNumeroNegocio,
@@ -73,6 +74,13 @@ router.delete('/:id', authMiddleware, eliminarNegocio);
  * @access  Private
  */
 router.patch('/:id/estatus', authMiddleware, cambiarEstatusNegocio);
+
+/**
+ * @route   PATCH /api/negocios/:id/abiertoahoraweb
+ * @desc    Activar/desactivar canal de pedidos WEB
+ * @access  Private
+ */
+router.patch('/:id/abiertoahoraweb', authMiddleware, toggleAbiertoAhoraWeb);
 
 /**
  * @route   POST /api/negocios/validar-nombre
