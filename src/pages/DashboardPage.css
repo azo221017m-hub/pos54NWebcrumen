@@ -666,6 +666,11 @@
 .venta-solicitada-card.tipo-online    { border-left-color: #8b5cf6; }
 .venta-solicitada-card.tipo-movimiento{ border-left-color: #ec4899; }
 
+/* Distinctive background for WEB-origin orders in Comandas del Día */
+.venta-solicitada-card.origen-web {
+  background: #f5f3ff;
+}
+
 .venta-solicitada-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
