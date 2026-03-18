@@ -377,8 +377,8 @@ const PageClientes: React.FC = () => {
     }
     const { interes } = negocioCtaData;
     const mensaje = `Interés: ${interes}\nNombre de Negocio: ${nombreNegocio.trim()}\nTipo de Negocio: ${tipoNegocio.trim()}\nDudas o Comentarios: ${dudasComentarios.trim()}`;
-    const url = `https://wa.me/5527618631?text=${encodeURIComponent(mensaje)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+    const url = `whatsapp://send?phone=5527618631&text=${encodeURIComponent(mensaje)}`;
+    window.location.href = url;
     setMostrarModalNegocioCta(false);
     setNegocioCtaData(NEGOCIO_CTA_INITIAL);
   };
