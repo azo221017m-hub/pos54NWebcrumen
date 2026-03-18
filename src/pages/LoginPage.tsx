@@ -4,7 +4,10 @@ import { getLogoutMessage } from '../services/sessionService';
 import { authService } from '../services/authService';
 import { rolesService } from '../services/rolesService';
 import { verificarTurnoAbierto } from '../services/turnosService';
+import { config } from '../config/api.config';
 import './LoginPage.css';
+
+type ServerStatus = 'waiting' | 'loading' | 'active';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -13,6 +16,48 @@ export const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [serverStatus, setServerStatus] = useState<ServerStatus>('waiting');
+
+  // Ping the backend to wake it up while the login page is displayed
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const ping = async () => {
+      if (cancelled) return;
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        try {
+          const res = await fetch(`${config.apiUrl}/health`, { signal: controller.signal });
+          if (!cancelled && res.ok) {
+            setServerStatus('active');
+            return;
+          }
+        } finally {
+          clearTimeout(timeoutId);
+        }
+      } catch {
+        // ignore errors, retry
+      }
+      if (!cancelled) {
+        timer = setTimeout(ping, 3000);
+      }
+    };
+
+    // Brief pause to show "waiting" state, then start polling
+    timer = setTimeout(() => {
+      if (!cancelled) {
+        setServerStatus('loading');
+        ping();
+      }
+    }, 600);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, []);
 
   // Check for logout message and if user is already logged in
   useEffect(() => {
@@ -124,23 +169,30 @@ export const LoginPage = () => {
         <div className="cloud cloud-3"></div>
       </div>
 
-      {/* Top bar with ACCEDER button */}
+      {/* Top bar: server status badge (while not active) or ACCEDER button (when active) */}
       <div className="login-topbar">
-        <button
-          type="submit"
-          form="login-form"
-          className={`acceder-topbar-btn ${isLoading ? 'loading' : ''}`}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
-              <span className="spinner"></span>
-              Accediendo...
-            </>
-          ) : (
-            'ACCEDER'
-          )}
-        </button>
+        {serverStatus !== 'active' ? (
+          <div className={`server-status-badge server-status-${serverStatus}`}>
+            {serverStatus === 'waiting' && <span>😴 Servidor CRUMEN54N en espera.</span>}
+            {serverStatus === 'loading' && <span>👁️ Cargando sistema CRUMEN54N.</span>}
+          </div>
+        ) : (
+          <button
+            type="submit"
+            form="login-form"
+            className={`acceder-topbar-btn ${isLoading ? 'loading' : ''}`}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <span className="spinner"></span>
+                Accediendo...
+              </>
+            ) : (
+              'ACCEDER'
+            )}
+          </button>
+        )}
       </div>
 
       {/* Centered header */}
