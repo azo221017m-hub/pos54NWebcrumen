@@ -33,6 +33,11 @@ apiClient.interceptors.request.use(
 // Endpoints de autenticación que no deben disparar auto-logout en 401
 const AUTH_ENDPOINTS = ['/auth/login', '/auth/register'];
 
+// Claves de localStorage que identifican una sesión de cliente web
+// (deben coincidir con las definidas en clienteWebService.ts)
+const CLIENTE_MODE_KEY = 'clienteMode';
+const CLIENTE_SESSION_KEY = 'clienteWebSession';
+
 // Estructura estándar de respuesta de error del servidor
 interface ApiErrorResponse {
   success: boolean;
@@ -61,7 +66,16 @@ apiClient.interceptors.response.use(
       
       if (!isAuthEndpoint) {
         // Token expirado, inválido o no autorizado (en endpoints protegidos)
-        autoLogout('/login');
+        const isClienteMode = localStorage.getItem(CLIENTE_MODE_KEY) === 'true';
+        const isClientePath = window.location.pathname.startsWith('/clientes');
+        if (isClienteMode || isClientePath) {
+          // Clear cliente-specific session data so PageClientes shows login options
+          localStorage.removeItem(CLIENTE_MODE_KEY);
+          localStorage.removeItem(CLIENTE_SESSION_KEY);
+          autoLogout('/clientes');
+        } else {
+          autoLogout('/login');
+        }
       }
       return Promise.reject(error);
     }

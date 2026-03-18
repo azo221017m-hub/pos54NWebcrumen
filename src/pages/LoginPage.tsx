@@ -72,6 +72,11 @@ export const LoginPage = () => {
     const token = localStorage.getItem('token');
 
     if (usuarioData && token) {
+      const isClienteMode = localStorage.getItem('clienteMode') === 'true';
+      if (isClienteMode) {
+        navigate('/clientes');
+        return;
+      }
       const privilegio = localStorage.getItem('privilegio');
       if (privilegio === '2') {
         navigate('/ventas');
