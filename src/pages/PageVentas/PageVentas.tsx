@@ -797,21 +797,6 @@ const PageVentas: React.FC = () => {
       if (resultado.success) {
         showSuccessToast(`Venta registrada - Folio: ${resultado.folioventa}`);
         
-        // Notify dashboard when client places a SOLICITADO order via BroadcastChannel
-        if (estadodeventa === 'SOLICITADO') {
-          try {
-            const channel = new BroadcastChannel('pos_pedidos_channel');
-            channel.postMessage({
-              type: 'nuevo_pedido_solicitado',
-              folio: resultado.folioventa,
-              idventa: resultado.idventa
-            });
-            channel.close();
-          } catch {
-            // BroadcastChannel not available; dashboard will refresh via polling
-          }
-        }
-
         // Mark newly inserted items as ORDENADO
         setComanda(comanda.map(item => 
           item.estadodetalle !== ESTADO_ORDENADO 

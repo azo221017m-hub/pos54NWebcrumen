@@ -13,6 +13,7 @@ import type {
   FormaDePago
 } from '../types/ventasWeb.types';
 import { getMexicoTimeComponents } from '../utils/dateTime';
+import { websocketService } from '../services/websocket.service';
 
 // Constantes para validación
 const FORMAS_DE_PAGO_VALIDAS: FormaDePago[] = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'MIXTO', 'sinFP'];
@@ -580,6 +581,13 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     }
 
     await connection.commit();
+
+    // Notify connected dashboards if this is a WEB order with SOLICITADO status
+    const finalEstado = ventaData.estadodeventa || 'SOLICITADO';
+    const finalOrigen = ventaData.origenventa || null;
+    if (finalOrigen === 'WEB' && finalEstado === 'SOLICITADO') {
+      websocketService.notifyNuevoPedidoWeb(idnegocio, folioFinal, ventaId);
+    }
 
     res.status(201).json({
       success: true,

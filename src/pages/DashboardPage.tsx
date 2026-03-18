@@ -17,6 +17,7 @@ import type { Insumo } from '../types/insumo.types';
 import { negociosService } from '../services/negociosService';
 import type { Negocio } from '../types/negocio.types';
 import TableroComandasPagadas from '../components/comandasPagadas/TableroComandasPagadas';
+import { useWebSocket } from '../hooks/useWebSocket';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -65,8 +66,8 @@ const getUsuarioFromStorage = (): Usuario | null => {
 const TIPO_VENTA_FILTER_ALL = 'TODOS' as const;
 type TipoVentaFilterOption = TipoDeVenta | typeof TIPO_VENTA_FILTER_ALL;
 
-// Refresh interval for sales summary (in milliseconds)
-const SALES_SUMMARY_REFRESH_INTERVAL = 15000; // 15 seconds (reduced from 30s to speed up Pedidos Online updates)
+// Refresh interval for non-real-time business metrics (in milliseconds)
+const SALES_SUMMARY_REFRESH_INTERVAL = 30000; // 30 seconds for summary/health metrics only
 
 // Helper to render icon SVG for sale type as React component
 const TipoVentaIcon: React.FC<{ tipo: TipoDeVenta }> = ({ tipo }) => {
@@ -643,22 +644,15 @@ export const DashboardPage = () => {
     }
   }, [comandasSitioCount, autoSwitchedToComandas]);
 
-  // Listen for new SOLICITADO orders placed by clients via BroadcastChannel
-  useEffect(() => {
-    let channel: BroadcastChannel | null = null;
-    try {
-      channel = new BroadcastChannel('pos_pedidos_channel');
-      channel.onmessage = (event) => {
-        if (event.data?.type === 'nuevo_pedido_solicitado') {
-          cargarVentasSolicitadas();
-          showInfoToast(`🛎 Pedido entrante: ${event.data.folio}`);
-        }
-      };
-    } catch {
-      // BroadcastChannel not supported; dashboard refreshes via polling
+  // Listen for new WEB/SOLICITADO orders via WebSocket (real-time, no polling)
+  useWebSocket({
+    onMessage: (data) => {
+      if (data.type === 'nuevo_pedido_web') {
+        cargarVentasSolicitadas();
+        showInfoToast(`🛎 Pedido WEB entrante: ${data.folioventa}`);
+      }
     }
-    return () => { channel?.close(); };
-  }, [cargarVentasSolicitadas]);
+  });
 
   useEffect(() => {
     // Verificar si hay usuario - check localStorage directly to avoid stale state
@@ -710,10 +704,9 @@ export const DashboardPage = () => {
     // Verify open turno
     verificarTurno();
 
-    // Refresh sales summary, comandas, turno status, and business health periodically
+    // Periodically refresh business metrics (summary, health, inventory, turno)
+    // WEB/SOLICITADO orders are now handled in real-time via WebSocket
     const intervalId = setInterval(() => {
-      console.log('🟢 INTERVAL: Ejecutando refresh cada 30 segundos...');
-      cargarVentasSolicitadas();
       cargarResumenVentas();
       cargarSaludNegocio();
       calcularNivelInventario();
