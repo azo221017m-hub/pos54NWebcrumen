@@ -733,10 +733,9 @@ export const DashboardPage = () => {
 
   const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
-  // Real pedidos online: orders originated from WEB (client portal) that are NOT yet ORDENADO
-  // WEB orders with ORDENADO status are moved to Comandas del Día
+  // Real pedidos online: only WEB orders with SOLICITADO status
   const pedidosOnline: PedidoOnline[] = ventasSolicitadas
-    .filter(v => v.origenventa === 'WEB' && v.estadodeventa !== 'ORDENADO')
+    .filter(v => v.origenventa === 'WEB' && v.estadodeventa === 'SOLICITADO')
     .map(v => ({
       id: v.idventa,
       cliente: v.cliente,
