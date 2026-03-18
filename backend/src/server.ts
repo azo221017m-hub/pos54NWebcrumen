@@ -1,7 +1,16 @@
 import app from './app';
-import { testConnection } from './config/db';
+import { testConnection, pool } from './config/db';
 
 const PORT = process.env.PORT || 3000;
+
+const runMigrations = async () => {
+  try {
+    await pool.query(`ALTER TABLE tblposcrumenwebventas ADD COLUMN IF NOT EXISTS origenventa ENUM('SITIO','WEB') NULL DEFAULT NULL`);
+    console.log('✅ Migración aplicada: columna origenventa en tblposcrumenwebventas');
+  } catch (error) {
+    console.error('⚠️  Error aplicando migración origenventa:', error);
+  }
+};
 
 const startServer = async () => {
   try {
@@ -12,6 +21,9 @@ const startServer = async () => {
       console.error('❌ No se pudo conectar a la base de datos');
       process.exit(1);
     }
+
+    // Aplicar migraciones de base de datos
+    await runMigrations();
 
     // Iniciar servidor
     app.listen(PORT, () => {

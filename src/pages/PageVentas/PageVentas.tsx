@@ -23,7 +23,7 @@ import type { Usuario } from '../../types/usuario.types';
 import type { Negocio } from '../../types/negocio.types';
 import type { Categoria } from '../../types/categoria.types';
 import type { TipoServicio } from '../../types/mesa.types';
-import type { VentaWebCreate, VentaWebWithDetails, TipoDeVenta, EstadoDeVenta, EstadoDetalle, EstatusDePago } from '../../types/ventasWeb.types';
+import type { VentaWebCreate, VentaWebWithDetails, TipoDeVenta, EstadoDeVenta, EstadoDetalle, EstatusDePago, OrigenVenta } from '../../types/ventasWeb.types';
 import type { Moderador } from '../../types/moderador.types';
 import type { CatModerador } from '../../types/catModerador.types';
 import './PageVentas.css';
@@ -774,6 +774,7 @@ const PageVentas: React.FC = () => {
           estatusdepago: estatusdepago,
           estadodetalle: estadodetalle,
           descripcionmov: 'VENTA', // Store 'VENTA' when PRODUCIR or ESPERAR buttons are pressed
+          origenventa: (isClienteMode ? 'WEB' : 'SITIO') as OrigenVenta,
           detalles: detallesData
         };
 
