@@ -1,5 +1,7 @@
+import http from 'http';
 import app from './app';
 import { testConnection, pool } from './config/db';
+import { websocketService } from './services/websocket.service';
 
 const PORT = process.env.PORT || 3000;
 
@@ -25,8 +27,14 @@ const startServer = async () => {
     // Aplicar migraciones de base de datos
     await runMigrations();
 
+    // Crear servidor HTTP
+    const server = http.createServer(app);
+
+    // Inicializar WebSocket server sobre el mismo servidor HTTP
+    websocketService.initialize(server);
+
     // Iniciar servidor
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
       console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
       console.log(`🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
