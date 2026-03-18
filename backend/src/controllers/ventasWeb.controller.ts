@@ -646,9 +646,9 @@ export const updateVentaWeb = async (req: AuthRequest, res: Response): Promise<v
 
     const updateData: VentaWebUpdate = req.body;
 
-    // Verificar que la venta existe y pertenece al negocio
+    // Verificar que la venta existe y pertenece al negocio; obtener origenventa para notificaciones
     const [ventaRows] = await pool.execute<RowDataPacket[]>(
-      'SELECT idventa FROM tblposcrumenwebventas WHERE idventa = ? AND idnegocio = ?',
+      'SELECT idventa, origenventa FROM tblposcrumenwebventas WHERE idventa = ? AND idnegocio = ?',
       [id, idnegocio]
     );
 
@@ -659,6 +659,8 @@ export const updateVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       });
       return;
     }
+
+    const origenVenta: string = ventaRows[0].origenventa || '';
 
     // Construir query de actualización dinámicamente
     const updates: string[] = [];
@@ -719,6 +721,21 @@ export const updateVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     const query = `UPDATE tblposcrumenwebventas SET ${updates.join(', ')} WHERE idventa = ? AND idnegocio = ?`;
 
     await pool.execute(query, values);
+
+    // Notificar via WebSocket si la venta es WEB y el estado cambia a ORDENADO o EN_CAMINO
+    const estadosNotificables = ['ORDENADO', 'EN_CAMINO'];
+    if (
+      origenVenta === 'WEB' &&
+      updateData.estadodeventa &&
+      estadosNotificables.includes(updateData.estadodeventa)
+    ) {
+      websocketService.notifyEstadoCambioWeb(
+        Number(id),
+        updateData.estadodeventa,
+        origenVenta,
+        idnegocio
+      );
+    }
 
     res.json({
       success: true,
