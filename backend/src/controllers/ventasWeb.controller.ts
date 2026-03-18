@@ -458,8 +458,8 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
         subtotal, descuentos, impuestos, 
         totaldeventa, cliente, direcciondeentrega, contactodeentrega, 
         telefonodeentrega, propinadeventa, formadepago, estatusdepago, 
-        descripcionmov, claveturno, idnegocio, usuarioauditoria, fechamodificacionauditoria
-      ) VALUES (?, ?, ?, NOW(), ?, NOW(), NOW(), NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+        descripcionmov, origenventa, claveturno, idnegocio, usuarioauditoria, fechamodificacionauditoria
+      ) VALUES (?, ?, ?, NOW(), ?, NOW(), NOW(), NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         ventaData.tipodeventa,
         folioventa,
@@ -477,6 +477,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
         ventaData.formadepago,
         ventaData.estatusdepago || 'PENDIENTE', // Estatus de pago proporcionado o inicial
         ventaData.descripcionmov || null, // Descripción del movimiento (e.g., 'VENTA')
+        ventaData.origenventa || null, // Origen de la venta: 'SITIO' o 'WEB'
         claveturno, // Clave de turno actual del usuario que hizo login
         idnegocio,
         usuarioauditoria

@@ -163,6 +163,10 @@ const calcularImporteMostrar = (venta: VentaWebWithDetails, pagosRegistrados: Re
   return total;
 };
 
+// Helper to determine if a venta originated from the SITIO (POS) — includes legacy orders without origenventa set
+const isSitioOrder = (venta: VentaWebWithDetails): boolean =>
+  venta.origenventa === 'SITIO' || venta.origenventa === null || venta.origenventa === undefined;
+
 export const DashboardPage = () => {
   const navigate = useNavigate();
   const [usuario] = useState<Usuario | null>(getUsuarioFromStorage());
@@ -244,6 +248,7 @@ export const DashboardPage = () => {
       );
       
       // Fetch registered payments for MIXTO sales in parallel
+      // Use all filtered ventas (both SITIO and WEB) for payment lookups
       const ventasMixto = ventasFiltradas.filter(v => v.formadepago === 'MIXTO');
       const pagosPromises = ventasMixto.map(async (venta) => {
         try {
@@ -585,19 +590,27 @@ export const DashboardPage = () => {
 
   // Memoize filtered ventas to avoid redundant filtering
   const ventasFiltradas = useMemo(() => {
+    // Comandas del día: orders from SITIO (POS) or legacy orders without origenventa set
+    const comandasSitio = ventasSolicitadas.filter(isSitioOrder);
     if (tipoVentaFilter === TIPO_VENTA_FILTER_ALL) {
-      return ventasSolicitadas;
+      return comandasSitio;
     }
-    return ventasSolicitadas.filter(v => v.tipodeventa === tipoVentaFilter);
+    return comandasSitio.filter(v => v.tipodeventa === tipoVentaFilter);
   }, [ventasSolicitadas, tipoVentaFilter]);
+
+  // Comandas del Día count: SITIO orders (or legacy without origenventa)
+  const comandasSitioCount = useMemo(() => 
+    ventasSolicitadas.filter(isSitioOrder).length,
+    [ventasSolicitadas]
+  );
 
   // Auto-show comandas dashboard when there are pending orders (only on first load)
   useEffect(() => {
-    if (ventasSolicitadas.length > 0 && !autoSwitchedToComandas) {
+    if (comandasSitioCount > 0 && !autoSwitchedToComandas) {
       setDashboardView('comandas');
       setAutoSwitchedToComandas(true);
     }
-  }, [ventasSolicitadas, autoSwitchedToComandas]);
+  }, [comandasSitioCount, autoSwitchedToComandas]);
 
   // Listen for new SOLICITADO orders placed by clients via BroadcastChannel
   useEffect(() => {
@@ -684,9 +697,9 @@ export const DashboardPage = () => {
 
   const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
-  // Real pedidos online: SOLICITADO orders from client portal
+  // Real pedidos online: orders originated from WEB (client portal)
   const pedidosOnline: PedidoOnline[] = ventasSolicitadas
-    .filter(v => v.estadodeventa === 'SOLICITADO')
+    .filter(v => v.origenventa === 'WEB')
     .map(v => ({
       id: v.idventa,
       cliente: v.cliente,
@@ -1283,7 +1296,7 @@ export const DashboardPage = () => {
               <div className="welcome-header-row">
                 {/* Comandas del Día label/button */}
                 {(() => {
-                  const hasPendingOrders = ventasSolicitadas.length > 0;
+                  const hasPendingOrders = comandasSitioCount > 0;
                   const accentColor = hasPendingOrders ? '#f97316' : '#6b7280';
                   return (
                     <div
@@ -1306,7 +1319,7 @@ export const DashboardPage = () => {
                         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
                       </svg>
                       <span style={{ fontSize: '0.9rem', fontWeight: '600', color: accentColor }}>
-                        Comandas del Día [{ventasSolicitadas.length}]
+                        Comandas del Día [{comandasSitioCount}]
                       </span>
                     </div>
                   );
@@ -1911,7 +1924,7 @@ export const DashboardPage = () => {
           <>
             <div className="content-left">
               {/* Sección de Comandas del Día */}
-              {ventasSolicitadas.length > 0 ? (
+              {comandasSitioCount > 0 ? (
                 <div className="ventas-solicitadas-section">
                   <div className="section-header">
                     {/* Filter by Tipo de Venta */}
