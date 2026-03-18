@@ -471,6 +471,36 @@ export const eliminarNegocio = async (req: Request, res: Response): Promise<void
   }
 };
 
+// Activar/desactivar canal de pedidos WEB (abiertoahoraweb)
+export const toggleAbiertoAhoraWeb = async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { abiertoahoraweb } = req.body;
+
+  if (abiertoahoraweb !== 0 && abiertoahoraweb !== 1) {
+    res.status(400).json({ success: false, message: 'Valor inválido para abiertoahoraweb' });
+    return;
+  }
+
+  try {
+    await pool.execute(
+      'UPDATE tblposcrumenwebnegocio SET abiertoahoraweb = ?, fehamodificacionauditoria = NOW() WHERE idNegocio = ?',
+      [abiertoahoraweb, id]
+    );
+
+    res.json({
+      success: true,
+      message: abiertoahoraweb === 1 ? 'Pedidos WEB activados' : 'Pedidos WEB desactivados',
+    });
+  } catch (error) {
+    console.error('Error al actualizar abiertoahoraweb:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al actualizar estado de pedidos WEB',
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    });
+  }
+};
+
 // Cambiar estatus de un negocio
 export const cambiarEstatusNegocio = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;

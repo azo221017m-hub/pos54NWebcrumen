@@ -83,6 +83,17 @@ export const negociosService = {
     }
   },
 
+  // Activar/desactivar canal de pedidos WEB
+  toggleAbiertoAhoraWeb: async (id: number, abiertoahoraweb: 0 | 1): Promise<NegocioResponse> => {
+    try {
+      const response = await api.patch<NegocioResponse>(`/negocios/${id}/abiertoahoraweb`, { abiertoahoraweb });
+      return response.data;
+    } catch (error) {
+      console.error('Error al actualizar estado de pedidos WEB:', error);
+      throw error;
+    }
+  },
+
   // Activar/Desactivar negocio
   cambiarEstatusNegocio: async (id: number, estatus: number): Promise<NegocioResponse> => {
     try {
