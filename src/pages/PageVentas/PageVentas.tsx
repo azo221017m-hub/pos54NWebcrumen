@@ -4,7 +4,7 @@ import { ArrowLeft, Search, Plus, Minus, ChevronLeft, ChevronRight, StickyNote, 
 import { obtenerProductosWeb } from '../../services/productosWebService';
 import { negociosService } from '../../services/negociosService';
 import { obtenerCategorias } from '../../services/categoriasService';
-import { crearVentaWeb, agregarDetallesAVenta, actualizarVentaWeb } from '../../services/ventasWebService';
+import { crearVentaWeb, agregarDetallesAVenta, actualizarVentaWeb, sincronizarDetallesVentaWebSolicitado } from '../../services/ventasWebService';
 import { obtenerModeradores } from '../../services/moderadoresService';
 import { obtenerModeradoresRef } from '../../services/moderadoresRefService';
 import { verificarTurnoAbierto } from '../../services/turnosService';
@@ -968,6 +968,34 @@ const PageVentas: React.FC = () => {
     const itemsParaImprimir = comanda.filter(item => item.estadodetalle !== ESTADO_ORDENADO);
     try {
       setIsProcessingVenta(true);
+      // Check if current venta is WEB + SOLICITADO - if so, UPDATE estadodeventa to ORDENADO
+      if (currentVentaId && currentOrigenVenta === 'WEB' && currentEstadoDeVenta === 'SOLICITADO') {
+        try {
+          const resultado = await actualizarVentaWeb(currentVentaId, {
+            estadodeventa: 'ORDENADO',
+            estatusdepago: 'PENDIENTE'
+          });
+
+          if (resultado.success) {
+            showSuccessToast(`Venta WEB producida - Folio: ${currentFolioVenta}`);
+            setCurrentEstadoDeVenta('ORDENADO');
+            setComanda(prevComanda => prevComanda.map(item => ({ ...item, estadodetalle: ESTADO_ORDENADO })));
+            if (imprimirChecked && itemsParaImprimir.length > 0) {
+              imprimirComandaCocina(itemsParaImprimir);
+            }
+            handlePostVenta();
+            return;
+          } else {
+            showErrorToast(`Error: ${resultado.message || 'Error desconocido'}`);
+            return;
+          }
+        } catch (error) {
+          console.error('Error al producir venta WEB SOLICITADO:', error);
+          showErrorToast('Error al producir la venta');
+          return;
+        }
+      }
+
       // Check if current venta has ESPERAR status - if so, UPDATE instead of creating new record
       if (currentVentaId && currentEstadoDeVenta === 'ESPERAR') {
         try {
@@ -1052,31 +1080,32 @@ const PageVentas: React.FC = () => {
 
   const handleAjustarPedidoWeb = async () => {
     if (!currentVentaId) return;
+    // Only process when origenventa='WEB' AND estadodeventa='SOLICITADO'
+    if (currentOrigenVenta !== 'WEB' || currentEstadoDeVenta !== 'SOLICITADO') return;
     try {
       setIsProcessingVenta(true);
-      // Add any new items (not yet persisted, i.e., no estadodetalle set) to the existing WEB venta
-      const newItems = comanda.filter(item => item.estadodetalle == null);
-      if (newItems.length > 0) {
-        const detallesData = newItems.map(item => ({
-          idproducto: item.producto.idProducto,
-          nombreproducto: item.producto.nombre,
-          idreceta: (item.producto.tipoproducto === 'Receta' || item.producto.tipoproducto === 'Inventario') && item.producto.idreferencia
-            ? item.producto.idreferencia
-            : null,
-          tipoproducto: item.producto.tipoproducto,
-          cantidad: item.cantidad,
-          preciounitario: Number(item.producto.precio),
-          costounitario: Number(item.producto.costoproducto),
-          observaciones: item.notas || null,
-          moderadores: item.moderadores || null,
-          comensal: item.comensal || null
-        }));
-        const resultadoDetalles = await agregarDetallesAVenta(currentVentaId, detallesData, 'SOLICITADO');
-        if (!resultadoDetalles.success) {
-          showErrorToast(`Error al ajustar pedido: ${resultadoDetalles.message || 'Error desconocido'}`);
-          return;
-        }
+      // Sync all comanda items to the existing WEB SOLICITADO venta
+      const detallesData = comanda.map(item => ({
+        idproducto: item.producto.idProducto,
+        nombreproducto: item.producto.nombre,
+        idreceta: (item.producto.tipoproducto === 'Receta' || item.producto.tipoproducto === 'Inventario') && item.producto.idreferencia
+          ? item.producto.idreferencia
+          : null,
+        tipoproducto: item.producto.tipoproducto,
+        cantidad: item.cantidad,
+        preciounitario: Number(item.producto.precio),
+        costounitario: Number(item.producto.costoproducto),
+        observaciones: item.notas || null,
+        moderadores: item.moderadores || null,
+        comensal: item.comensal || null
+      }));
+      const resultado = await sincronizarDetallesVentaWebSolicitado(currentVentaId, detallesData);
+      if (!resultado.success) {
+        showErrorToast(`Error al ajustar pedido: ${resultado.message || 'Error desconocido'}`);
+        return;
       }
+      // Mark all comanda items as SOLICITADO to reflect persisted state
+      setComanda(prevComanda => prevComanda.map(item => ({ ...item, estadodetalle: 'SOLICITADO' as EstadoDetalle })));
       showSuccessToast(`Pedido Web ajustado - Folio: ${currentFolioVenta}`);
       handlePostVenta();
     } catch (error) {

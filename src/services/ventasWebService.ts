@@ -188,6 +188,49 @@ export const agregarDetallesAVenta = async (
   }
 };
 
+// Sincronizar (reemplazar) detalles de una venta WEB con estadodeventa='SOLICITADO'
+export const sincronizarDetallesVentaWebSolicitado = async (
+  idVenta: number,
+  detalles: {
+    idproducto: number;
+    nombreproducto: string;
+    idreceta?: number | null;
+    tipoproducto?: string;
+    cantidad: number;
+    preciounitario: number;
+    costounitario: number;
+    observaciones?: string | null;
+    moderadores?: string | null;
+    comensal?: string | null;
+  }[]
+): Promise<{ 
+  success: boolean; 
+  idventa?: number; 
+  folioventa?: string; 
+  message?: string 
+}> => {
+  try {
+    console.log('🔵 ventasWebService: Sincronizando detalles de venta WEB ID:', idVenta);
+    const response = await apiClient.put<{ 
+      success: boolean; 
+      message: string; 
+      data: { idventa: number; folioventa: string } 
+    }>(`${API_BASE}/${idVenta}/detalles`, { detalles });
+    console.log('🔵 ventasWebService: Detalles sincronizados exitosamente:', response.data.data);
+    return { 
+      success: true, 
+      idventa: response.data.data.idventa,
+      folioventa: response.data.data.folioventa
+    };
+  } catch (error: any) {
+    console.error('🔴 ventasWebService: Error al sincronizar detalles de venta WEB:', error);
+    const errorMessage = error?.response?.data?.message || 
+                        error?.message || 
+                        'Error desconocido al sincronizar detalles de la venta';
+    return { success: false, message: errorMessage };
+  }
+};
+
 // Obtener resumen de ventas del turno actual abierto
 export interface VentaPorFormaDePago {
   formadepago: string;

@@ -8,6 +8,7 @@ import {
   updateDetalleEstado,
   getDetallesByEstado,
   addDetallesToVenta,
+  syncDetallesVentaWebSolicitado,
   getSalesSummary,
   getBusinessHealth,
   getTopProductosTurno,
@@ -100,6 +101,13 @@ router.delete('/:id', deleteVentaWeb);
  * @access  Private
  */
 router.post('/:id/detalles', addDetallesToVenta);
+
+/**
+ * @route   PUT /api/ventas-web/:id/detalles
+ * @desc    Sincronizar (reemplazar) detalles de una venta WEB con estadodeventa='SOLICITADO'
+ * @access  Private
+ */
+router.put('/:id/detalles', syncDetallesVentaWebSolicitado);
 
 /**
  * @route   PATCH /api/ventas-web/:id/detalles/:iddetalle/estado
