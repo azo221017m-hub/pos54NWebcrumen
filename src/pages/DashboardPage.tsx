@@ -168,6 +168,12 @@ const calcularImporteMostrar = (venta: VentaWebWithDetails, pagosRegistrados: Re
 const isSitioOrder = (venta: VentaWebWithDetails): boolean =>
   venta.origenventa === 'SITIO' || venta.origenventa === null || venta.origenventa === undefined;
 
+// Helper to format quantity: show as integer when value has no decimal part
+const formatQuantity = (cantidad: number): number => {
+  const qty = Number(cantidad);
+  return qty % 1 === 0 ? Math.floor(qty) : qty;
+};
+
 export const DashboardPage = () => {
   const navigate = useNavigate();
   const [usuario] = useState<Usuario | null>(getUsuarioFromStorage());
@@ -728,7 +734,7 @@ export const DashboardPage = () => {
       id: v.idventa,
       cliente: v.cliente,
       productos: v.detalles
-        .map(d => { const qty = Number(d.cantidad); return `${qty % 1 === 0 ? Math.floor(qty) : qty}x ${d.nombreproducto}`; })
+        .map(d => `${formatQuantity(d.cantidad)}x ${d.nombreproducto}`)
         .join(', '),
       total: Number(v.totaldeventa) || 0,
       estado: 'pendiente' as const,
