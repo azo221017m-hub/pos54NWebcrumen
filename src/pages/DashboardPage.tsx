@@ -66,9 +66,6 @@ const getUsuarioFromStorage = (): Usuario | null => {
 const TIPO_VENTA_FILTER_ALL = 'TODOS' as const;
 type TipoVentaFilterOption = TipoDeVenta | typeof TIPO_VENTA_FILTER_ALL;
 
-// Refresh interval for non-real-time business metrics (in milliseconds)
-const SALES_SUMMARY_REFRESH_INTERVAL = 30000; // 30 seconds for summary/health metrics only
-
 // Helper to render icon SVG for sale type as React component
 const TipoVentaIcon: React.FC<{ tipo: TipoDeVenta }> = ({ tipo }) => {
   switch (tipo) {
@@ -650,7 +647,25 @@ export const DashboardPage = () => {
     }
   }, [comandasSitioCount, autoSwitchedToComandas]);
 
-  // Listen for new WEB/SOLICITADO orders via WebSocket (real-time, no polling)
+  // Debounce timers for WebSocket-triggered refreshes to avoid rapid successive API calls
+  const wsDebounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  const debouncedRefresh = useCallback((key: string, fn: () => void, delay = 500) => {
+    if (wsDebounceTimers.current[key]) {
+      clearTimeout(wsDebounceTimers.current[key]);
+    }
+    wsDebounceTimers.current[key] = setTimeout(fn, delay);
+  }, []);
+
+  // Clean up debounce timers on unmount
+  useEffect(() => {
+    const timers = wsDebounceTimers.current;
+    return () => {
+      Object.values(timers).forEach(clearTimeout);
+    };
+  }, []);
+
+  // Listen for real-time dashboard updates via WebSocket (replaces setInterval polling)
   useWebSocket({
     onMessage: (data) => {
       if (data.type === 'nuevo_pedido_web') {
@@ -662,6 +677,27 @@ export const DashboardPage = () => {
         }
         cargarVentasSolicitadas();
         showInfoToast(`🛎 Pedido WEB entrante: ${data.folioventa}`);
+      } else if (data.type === 'venta_update') {
+        debouncedRefresh('ventas', () => {
+          cargarVentasSolicitadas();
+          cargarResumenVentas();
+          cargarSaludNegocio();
+          cargarTopProductosTurno();
+        });
+      } else if (data.type === 'gasto_update') {
+        debouncedRefresh('gastos', () => {
+          cargarSaludNegocio();
+        });
+      } else if (data.type === 'turno_update') {
+        debouncedRefresh('turno', () => {
+          verificarTurno();
+          cargarResumenVentas();
+          cargarTopProductosTurno();
+        });
+      } else if (data.type === 'inventario_update') {
+        debouncedRefresh('inventario', () => {
+          calcularNivelInventario();
+        });
       }
     }
   });
@@ -715,18 +751,6 @@ export const DashboardPage = () => {
 
     // Verify open turno
     verificarTurno();
-
-    // Periodically refresh business metrics (summary, health, inventory, turno)
-    // WEB/SOLICITADO orders are now handled in real-time via WebSocket
-    const intervalId = setInterval(() => {
-      cargarResumenVentas();
-      cargarSaludNegocio();
-      calcularNivelInventario();
-      cargarTopProductosTurno();
-      verificarTurno();
-    }, SALES_SUMMARY_REFRESH_INTERVAL);
-
-    return () => clearInterval(intervalId);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas, cargarModeradores, cargarResumenVentas, cargarSaludNegocio, and verificarTurno omitted to prevent infinite refresh loop
   }, [navigate]);
 

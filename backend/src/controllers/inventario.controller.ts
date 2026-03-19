@@ -2,6 +2,7 @@ import type { Response } from 'express';
 import { pool } from '../config/db';
 import type { RowDataPacket, ResultSetHeader } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
+import { websocketService } from '../services/websocket.service';
 
 interface Inventario extends RowDataPacket {
   id: number;
@@ -189,6 +190,8 @@ export const actualizarInventario = async (req: AuthRequest, res: Response): Pro
       );
     }
 
+    websocketService.notifyInventarioUpdate(idnegocio);
+
     res.json({
       success: true,
       message: 'Inventario actualizado exitosamente'
@@ -242,6 +245,8 @@ export const ajustarStock = async (req: AuthRequest, res: Response): Promise<voi
        WHERE producto_id = ? AND idnegocio = ?`,
       [cantidad, producto_id, idnegocio]
     );
+
+    websocketService.notifyInventarioUpdate(idnegocio);
 
     res.json({
       success: true,

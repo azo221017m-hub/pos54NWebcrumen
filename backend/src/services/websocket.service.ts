@@ -57,6 +57,42 @@ class WebSocketService {
       timestamp: new Date().toISOString()
     });
   }
+
+  // Notify dashboards that sales data changed (new sale, update, payment, cancellation)
+  notifyVentaUpdate(idnegocio: number): void {
+    this.broadcast({
+      type: 'venta_update',
+      idnegocio,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  // Notify dashboards that expense data changed
+  notifyGastoUpdate(idnegocio: number): void {
+    this.broadcast({
+      type: 'gasto_update',
+      idnegocio,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  // Notify dashboards that a turno (shift) was opened or closed
+  notifyTurnoUpdate(idnegocio: number): void {
+    this.broadcast({
+      type: 'turno_update',
+      idnegocio,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  // Notify dashboards that inventory changed (movement processed, stock adjusted)
+  notifyInventarioUpdate(idnegocio: number): void {
+    this.broadcast({
+      type: 'inventario_update',
+      idnegocio,
+      timestamp: new Date().toISOString()
+    });
+  }
 }
 
 export const websocketService = new WebSocketService();

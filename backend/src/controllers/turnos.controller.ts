@@ -3,6 +3,7 @@ import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
 import { getMexicoTimeComponents } from '../utils/dateTime';
+import { websocketService } from '../services/websocket.service';
 
 // Constantes
 const REFERENCIA_FONDO_CAJA = 'FONDO de CAJA';
@@ -293,6 +294,9 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
     connection.release();
 
     console.log('Turno creado con ID:', idturno, 'y venta inicial con ID:', idventa);
+
+    websocketService.notifyTurnoUpdate(idnegocio);
+
     res.status(201).json({ 
       message: 'Turno iniciado exitosamente',
       idturno,
@@ -550,6 +554,9 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
     await connection.commit();
 
     console.log('Turno cerrado exitosamente');
+
+    websocketService.notifyTurnoUpdate(idnegocio);
+
     res.json({ 
       message: 'Turno cerrado exitosamente',
       idturno
