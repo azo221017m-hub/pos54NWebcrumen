@@ -658,6 +658,20 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
               </div>
             </div>
 
+            {/* Botón de acción - solo COBRAR */}
+            <div className="pagos-botones-accion">
+              <button 
+                className={`btn-cobrar ${flashCobrar ? 'flash' : ''}`}
+                onClick={handleCobrar}
+                disabled={procesandoPago || !ventaId}
+              >
+                {procesandoPago ? 'PROCESANDO...' : 'COBRAR'}
+              </button>
+            </div>
+          </div>
+
+          {/* Columna Derecha */}
+          <div className="pagos-columna-derecha">
             {/* Selector de Recibo de Pago */}
             <div className="pagos-recibo-selector">
               <span className="pagos-recibo-label">Recibo de Pago:</span>
@@ -687,20 +701,6 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
               </div>
             </div>
 
-            {/* Botón de acción - solo COBRAR */}
-            <div className="pagos-botones-accion">
-              <button 
-                className={`btn-cobrar ${flashCobrar ? 'flash' : ''}`}
-                onClick={handleCobrar}
-                disabled={procesandoPago || !ventaId}
-              >
-                {procesandoPago ? 'PROCESANDO...' : 'COBRAR'}
-              </button>
-            </div>
-          </div>
-
-          {/* Columna Derecha */}
-          <div className="pagos-columna-derecha">
             {/* Pagos realizados EFECTIVO */}
             {metodoPagoSeleccionado === 'efectivo' && (
               <div className="pagos-panel-efectivo">
