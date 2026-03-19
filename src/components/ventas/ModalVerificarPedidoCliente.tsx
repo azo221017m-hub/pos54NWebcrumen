@@ -50,8 +50,6 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
   clienteData = null,
   precioEnvio = 0,
 }) => {
-  // Editable address
-  const [direccion, setDireccion] = useState(clienteData?.direccion || '');
   // Google Maps URL
   const [ubicacionUrl, setUbicacionUrl] = useState('');
   // Payment method
@@ -72,7 +70,6 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
     if (isOpen) {
       const freshMin = getMinHoraProgramada();
       setMinHora(freshMin);
-      setDireccion(clienteData?.direccion || '');
       setUbicacionUrl('');
       setFormaDePago('Efectivo');
       setRequiereCambio('');
@@ -92,13 +89,20 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
         </button>
 
         <header className="mvpc-header">
-          <div className="mvpc-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 11l3 3L22 4" />
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-            </svg>
+          <div className="mvpc-header-top">
+            <div className="mvpc-header-left">
+              <div className="mvpc-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 11l3 3L22 4" />
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                </svg>
+              </div>
+              <h2 className="mvpc-title">Verificar Pedido</h2>
+            </div>
+            {clienteData?.referencia && (
+              <span className="mvpc-header-ref">{clienteData.referencia}</span>
+            )}
           </div>
-          <h2 className="mvpc-title">Verificar Pedido</h2>
           <p className="mvpc-subtitle">Revisa tu pedido antes de enviarlo</p>
         </header>
 
@@ -162,32 +166,24 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
           {/* ---------- Right column: Client info + Order options ---------- */}
           {clienteData && (
             <div className="mvpc-col-right">
-              {/* ---------- Client info section ---------- */}
+              {/* ---------- Client info section: Mis Datos de Cliente CDT ---------- */}
               <section className="mvpc-cliente-info">
-                {clienteData.referencia && (
-                  <div className="mvpc-field">
-                    <label className="mvpc-field-label">Referencia</label>
-                    <span className="mvpc-field-value">{clienteData.referencia}</span>
-                  </div>
-                )}
-                <div className="mvpc-field">
-                  <label className="mvpc-field-label">Teléfono</label>
-                  <span className="mvpc-field-value">{clienteData.telefono}</span>
-                </div>
-                <div className="mvpc-field">
-                  <label className="mvpc-field-label">Dirección</label>
-                  <input
-                    type="text"
-                    className="mvpc-field-input"
-                    value={direccion}
-                    onChange={(e) => setDireccion(e.target.value)}
-                    placeholder="Escribe tu dirección de entrega"
-                  />
+                <span className="mvpc-cdt-title">Mis Datos de Cliente CDT</span>
+                <div className="mvpc-cdt-tags">
+                  <span className="mvpc-cdt-tag">
+                    <span className="mvpc-cdt-tag-label">Teléfono</span>
+                    <span className="mvpc-cdt-tag-value">{clienteData.telefono}</span>
+                  </span>
+                  {clienteData.direccion && (
+                    <span className="mvpc-cdt-tag">
+                      <span className="mvpc-cdt-tag-label">Dirección</span>
+                      <span className="mvpc-cdt-tag-value">{clienteData.direccion}</span>
+                    </span>
+                  )}
                 </div>
 
                 {/* Mini Google Maps */}
                 <div className="mvpc-field mvpc-map-field">
-                  <label className="mvpc-field-label">📍 Ubicación</label>
                   <div className="mvpc-mini-map">
                     <GoogleMapsSelector value={ubicacionUrl} onChange={setUbicacionUrl} />
                   </div>
