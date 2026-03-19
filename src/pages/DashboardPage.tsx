@@ -1395,18 +1395,20 @@ export const DashboardPage = () => {
                 {/* Comandas del Día label/button */}
                 {(() => {
                   const hasPendingOrders = comandasSitioCount > 0;
-                  const accentColor = hasPendingOrders ? '#f97316' : '#6b7280';
+                  const hasPedidosWeb = pedidosOnline.length > 0;
+                  const isClickable = hasPendingOrders || hasPedidosWeb;
+                  const accentColor = isClickable ? '#f97316' : '#6b7280';
                   return (
                     <div
-                      onClick={() => { if (hasPendingOrders) setDashboardView('comandas'); }}
+                      onClick={() => { if (isClickable) setDashboardView('comandas'); }}
                       style={{
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '0.5rem',
-                        cursor: hasPendingOrders ? 'pointer' : 'default',
+                        cursor: isClickable ? 'pointer' : 'default',
                         padding: '0.5rem 1rem',
-                        backgroundColor: hasPendingOrders ? '#fff7ed' : '#f9fafb',
-                        border: `1px solid ${hasPendingOrders ? '#f97316' : '#e5e7eb'}`,
+                        backgroundColor: isClickable ? '#fff7ed' : '#f9fafb',
+                        border: `1px solid ${isClickable ? '#f97316' : '#e5e7eb'}`,
                         borderRadius: '8px',
                         userSelect: 'none',
                       }}
@@ -1419,6 +1421,11 @@ export const DashboardPage = () => {
                       <span style={{ fontSize: '0.9rem', fontWeight: '600', color: accentColor }}>
                         Comandas del Día [{comandasSitioCount}]
                       </span>
+                      {hasPedidosWeb && (
+                        <span style={{ fontSize: '0.9rem', fontWeight: '600', color: '#2563eb' }}>
+                          Pedidos WEB [{pedidosOnline.length}]
+                        </span>
+                      )}
                     </div>
                   );
                 })()}
@@ -2175,7 +2182,7 @@ export const DashboardPage = () => {
               )}
             </div>
 
-            {/* Tablero de Pedidos Online - Lado Derecho */}
+            {/* Tablero de Pedidos WEB - Lado Derecho */}
             <aside className="pedidos-panel">
               <div className="panel-header">
                 <h2 className="panel-title">
@@ -2183,7 +2190,7 @@ export const DashboardPage = () => {
                     <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
                     <line x1="12" y1="18" x2="12.01" y2="18"/>
                   </svg>
-                  Pedidos Online
+                  Pedidos WEB
                 </h2>
                 <span className="badge badge-info">{pedidosOnline.length} activos</span>
               </div>
@@ -2222,7 +2229,7 @@ export const DashboardPage = () => {
                     <line x1="12" y1="8" x2="12" y2="12"/>
                     <line x1="12" y1="16" x2="12.01" y2="16"/>
                   </svg>
-                  <p>No hay pedidos online activos</p>
+                  <p>No hay pedidos WEB activos</p>
                 </div>
               )}
             </aside>
