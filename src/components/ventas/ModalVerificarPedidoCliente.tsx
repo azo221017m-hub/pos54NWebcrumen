@@ -136,6 +136,27 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
               <span className="mvpc-total-label">Total del pedido</span>
               <span className="mvpc-total-amount">${total.toFixed(2)}</span>
             </div>
+
+            {/* ---------- Notice + Actions below Total ---------- */}
+            <div className="mvpc-aviso">
+              <span className="mvpc-aviso-icon">✅</span>
+              <span className="mvpc-aviso-text">
+                Pedido sujeto a confirmación del negocio antes de iniciar preparación.
+              </span>
+            </div>
+
+            <footer className="mvpc-actions">
+              <button className="mvpc-btn-cancel" onClick={onClose} disabled={isProcessing}>
+                Regresar
+              </button>
+              <button
+                className="mvpc-btn-solicitar"
+                onClick={onSolicitarPedido}
+                disabled={isProcessing}
+              >
+                {isProcessing ? 'Procesando...' : 'Solicitar Pedido'}
+              </button>
+            </footer>
           </div>
 
           {/* ---------- Right column: Client info + Order options ---------- */}
@@ -173,8 +194,8 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
                 </div>
               </section>
 
-              {/* ---------- Order options ---------- */}
-              <section className="mvpc-options-section">
+              {/* ---------- Order options (compact) ---------- */}
+              <section className="mvpc-options-section mvpc-options-compact">
                 {/* Tipo de venta */}
                 <div className="mvpc-field">
                   <label className="mvpc-field-label">Tipo de Venta</label>
@@ -281,27 +302,6 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
             </div>
           )}
         </div>
-
-        {/* ---------- Notice ---------- */}
-        <div className="mvpc-aviso">
-          <span className="mvpc-aviso-icon">✅</span>
-          <span className="mvpc-aviso-text">
-            Pedido sujeto a confirmación del negocio antes de iniciar preparación.
-          </span>
-        </div>
-
-        <footer className="mvpc-actions">
-          <button className="mvpc-btn-cancel" onClick={onClose} disabled={isProcessing}>
-            Regresar
-          </button>
-          <button
-            className="mvpc-btn-solicitar"
-            onClick={onSolicitarPedido}
-            disabled={isProcessing}
-          >
-            {isProcessing ? 'Procesando...' : 'Solicitar Pedido'}
-          </button>
-        </footer>
       </div>
     </div>
   );
