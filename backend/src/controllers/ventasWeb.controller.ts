@@ -589,6 +589,8 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       websocketService.notifyNuevoPedidoWeb(idnegocio, folioFinal, ventaId);
     }
 
+    websocketService.notifyVentaUpdate(idnegocio);
+
     res.status(201).json({
       success: true,
       message: 'Venta registrada exitosamente',
@@ -737,6 +739,8 @@ export const updateVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       );
     }
 
+    websocketService.notifyVentaUpdate(idnegocio);
+
     res.json({
       success: true,
       message: 'Venta actualizada exitosamente'
@@ -798,6 +802,8 @@ export const deleteVentaWeb = async (req: AuthRequest, res: Response): Promise<v
        WHERE idventa = ? AND idnegocio = ?`,
       [usuarioauditoria, id, idnegocio]
     );
+
+    websocketService.notifyVentaUpdate(idnegocio);
 
     res.json({
       success: true,

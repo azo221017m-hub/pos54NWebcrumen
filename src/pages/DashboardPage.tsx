@@ -66,9 +66,6 @@ const getUsuarioFromStorage = (): Usuario | null => {
 const TIPO_VENTA_FILTER_ALL = 'TODOS' as const;
 type TipoVentaFilterOption = TipoDeVenta | typeof TIPO_VENTA_FILTER_ALL;
 
-// Refresh interval for non-real-time business metrics (in milliseconds)
-const SALES_SUMMARY_REFRESH_INTERVAL = 30000; // 30 seconds for summary/health metrics only
-
 // Helper to render icon SVG for sale type as React component
 const TipoVentaIcon: React.FC<{ tipo: TipoDeVenta }> = ({ tipo }) => {
   switch (tipo) {
@@ -650,7 +647,7 @@ export const DashboardPage = () => {
     }
   }, [comandasSitioCount, autoSwitchedToComandas]);
 
-  // Listen for new WEB/SOLICITADO orders via WebSocket (real-time, no polling)
+  // Listen for real-time dashboard updates via WebSocket (replaces setInterval polling)
   useWebSocket({
     onMessage: (data) => {
       if (data.type === 'nuevo_pedido_web') {
@@ -662,6 +659,19 @@ export const DashboardPage = () => {
         }
         cargarVentasSolicitadas();
         showInfoToast(`🛎 Pedido WEB entrante: ${data.folioventa}`);
+      } else if (data.type === 'venta_update') {
+        cargarVentasSolicitadas();
+        cargarResumenVentas();
+        cargarSaludNegocio();
+        cargarTopProductosTurno();
+      } else if (data.type === 'gasto_update') {
+        cargarSaludNegocio();
+      } else if (data.type === 'turno_update') {
+        verificarTurno();
+        cargarResumenVentas();
+        cargarTopProductosTurno();
+      } else if (data.type === 'inventario_update') {
+        calcularNivelInventario();
       }
     }
   });
@@ -715,18 +725,6 @@ export const DashboardPage = () => {
 
     // Verify open turno
     verificarTurno();
-
-    // Periodically refresh business metrics (summary, health, inventory, turno)
-    // WEB/SOLICITADO orders are now handled in real-time via WebSocket
-    const intervalId = setInterval(() => {
-      cargarResumenVentas();
-      cargarSaludNegocio();
-      calcularNivelInventario();
-      cargarTopProductosTurno();
-      verificarTurno();
-    }, SALES_SUMMARY_REFRESH_INTERVAL);
-
-    return () => clearInterval(intervalId);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas, cargarModeradores, cargarResumenVentas, cargarSaludNegocio, and verificarTurno omitted to prevent infinite refresh loop
   }, [navigate]);
 

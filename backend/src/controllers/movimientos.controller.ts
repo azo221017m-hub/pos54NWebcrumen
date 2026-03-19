@@ -10,6 +10,7 @@ import {
   DetalleMovimiento
 } from '../types/movimientos.types';
 import { formatMySQLDateTime } from '../utils/dateTime';
+import { websocketService } from '../services/websocket.service';
 
 // GET /api/movimientos - Obtener todos los movimientos
 export const obtenerMovimientos = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -511,6 +512,8 @@ export const procesarMovimiento = async (req: AuthRequest, res: Response): Promi
       detalles: detallesActualizados
     };
 
+    websocketService.notifyInventarioUpdate(idNegocio!);
+
     res.status(200).json({
       success: true,
       message: 'Movimiento procesado exitosamente',
@@ -756,6 +759,8 @@ export const aplicarMovimiento = async (req: AuthRequest, res: Response): Promis
       ...movimientoActualizado[0],
       detalles: detallesActualizados
     };
+
+    websocketService.notifyInventarioUpdate(idNegocio!);
 
     res.status(200).json({
       success: true,

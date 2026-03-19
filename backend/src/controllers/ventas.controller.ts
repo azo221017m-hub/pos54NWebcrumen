@@ -2,6 +2,7 @@ import type { Response } from 'express';
 import { pool } from '../config/db';
 import type { RowDataPacket, ResultSetHeader } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
+import { websocketService } from '../services/websocket.service';
 
 interface Venta extends RowDataPacket {
   id: number;
@@ -179,6 +180,8 @@ export const createVenta = async (req: AuthRequest, res: Response): Promise<void
     }
 
     await connection.commit();
+
+    websocketService.notifyVentaUpdate(idnegocio);
 
     res.status(201).json({
       success: true,

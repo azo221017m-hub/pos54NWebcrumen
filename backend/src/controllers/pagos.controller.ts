@@ -2,6 +2,7 @@ import type { Response } from 'express';
 import { pool } from '../config/db';
 import type { RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
+import { websocketService } from '../services/websocket.service';
 import type { 
   PagoSimpleRequest, 
   PagoMixtoRequest,
@@ -161,6 +162,8 @@ export const procesarPagoSimple = async (req: AuthRequest, res: Response): Promi
     const cambio = pagoData.formadepago === 'EFECTIVO' && pagoData.montorecibido 
       ? pagoData.montorecibido - totaldeventa 
       : 0;
+
+    websocketService.notifyVentaUpdate(idnegocio);
 
     res.json({
       success: true,
@@ -390,6 +393,8 @@ export const procesarPagoMixto = async (req: AuthRequest, res: Response): Promis
     }
 
     await connection.commit();
+
+    websocketService.notifyVentaUpdate(idnegocio);
 
     res.json({
       success: true,
