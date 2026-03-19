@@ -640,7 +640,7 @@ const PageClientes: React.FC = () => {
         {isLoading ? (
           <div className="pc-loading">
             <div className="pc-spinner" />
-            <p>Cargando negocios...</p>
+            <p>Activando sistema CRUMEN54N</p>
           </div>
         ) : filteredNegocios.length === 0 ? (
           <div className="pc-empty">
