@@ -296,8 +296,12 @@ const PageVentas: React.FC = () => {
       setCurrentEstadoDeVenta(ventaToLoad.estadodeventa);
       setCurrentOrigenVenta(ventaToLoad.origenventa || null);
 
-      // Load products into comanda - filter out CANCELADO detalles to prevent duplicates
-      const detallesActivos = ventaToLoad.detalles.filter(detalle => detalle.estadodetalle !== 'CANCELADO');
+      // Load products into comanda
+      // For WEB+SOLICITADO orders: only load detalles with estadodetalle = 'SOLICITADO'
+      // For other orders: filter out CANCELADO detalles to prevent duplicates
+      const detallesActivos = (ventaToLoad.origenventa === 'WEB' && ventaToLoad.estadodeventa === 'SOLICITADO')
+        ? ventaToLoad.detalles.filter(detalle => detalle.estadodetalle === 'SOLICITADO')
+        : ventaToLoad.detalles.filter(detalle => detalle.estadodetalle !== 'CANCELADO');
       const itemsComanda: ItemComanda[] = detallesActivos.map(detalle => {
         // Parse moderadores and determine moderadoresNames
         let moderadoresNames: string[] | undefined = undefined;
