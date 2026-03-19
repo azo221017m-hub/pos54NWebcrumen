@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import GoogleMapsSelector from '../common/GoogleMapsSelector/GoogleMapsSelector';
 import './ModalVerificarPedidoCliente.css';
 
@@ -64,12 +64,14 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
   const [horaEntrega, setHoraEntrega] = useState<HoraEntrega>('Lo antes posible');
   // Scheduled hour
   const [horaProgramada, setHoraProgramada] = useState('');
-
-  const minHora = useMemo(() => getMinHoraProgramada(), []);
+  // Dynamic min hour (recalculated on open and on selection)
+  const [minHora, setMinHora] = useState(getMinHoraProgramada);
 
   // Reset state when modal opens with new data
   React.useEffect(() => {
     if (isOpen) {
+      const freshMin = getMinHoraProgramada();
+      setMinHora(freshMin);
       setDireccion(clienteData?.direccion || '');
       setUbicacionUrl('');
       setFormaDePago('Efectivo');
@@ -247,8 +249,10 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
                   type="button"
                   className={`mvpc-toggle-btn ${horaEntrega === 'Hora Programada' ? 'active' : ''}`}
                   onClick={() => {
+                    const freshMin = getMinHoraProgramada();
+                    setMinHora(freshMin);
                     setHoraEntrega('Hora Programada');
-                    if (!horaProgramada) setHoraProgramada(minHora);
+                    if (!horaProgramada || horaProgramada < freshMin) setHoraProgramada(freshMin);
                   }}
                 >
                   🕐 Hora Programada
