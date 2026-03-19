@@ -1191,10 +1191,10 @@ export const syncDetallesVentaWebSolicitado = async (req: AuthRequest, res: Resp
 
     const { detalles } = req.body;
 
-    if (!detalles || detalles.length === 0) {
+    if (!detalles || !Array.isArray(detalles)) {
       res.status(400).json({
         success: false,
-        message: 'No hay detalles para sincronizar'
+        message: 'Detalles debe ser un arreglo válido'
       });
       return;
     }
