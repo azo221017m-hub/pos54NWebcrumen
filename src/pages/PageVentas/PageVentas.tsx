@@ -15,6 +15,7 @@ import { showSuccessToast, showErrorToast } from '../../components/FeedbackToast
 import ModalTipoServicio from '../../components/ventas/ModalTipoServicio';
 import ModalSeleccionVentaPageVentas from '../../components/ventas/ModalSeleccionVentaPageVentas';
 import ModalIniciaTurno from '../../components/turnos/ModalIniciaTurno';
+import ModalVerificarPedidoCliente from '../../components/ventas/ModalVerificarPedidoCliente';
 import FichaDeComanda from '../../components/ventas/FichaDeComanda';
 import ModuloPagos from '../../components/ventas/ModuloPagos';
 import type { MesaFormData, LlevarFormData, DomicilioFormData } from '../../components/ventas/ModalTipoServicio';
@@ -139,6 +140,9 @@ const PageVentas: React.FC = () => {
 
   // Módulo de pagos state
   const [showModuloPagos, setShowModuloPagos] = useState(false);
+
+  // Modal verificar pedido cliente state
+  const [showVerificarPedido, setShowVerificarPedido] = useState(false);
 
   // Seat assignment state for MESA sales - tracks current seat for new products
   const [currentSeatAssignment, setCurrentSeatAssignment] = useState<string>(DEFAULT_SEAT_ASSIGNMENT);
@@ -1865,10 +1869,10 @@ const PageVentas: React.FC = () => {
             {isClienteMode && (
               <button
                 className="btn-solicitar-pedido"
-                onClick={handleSolicitarPedido}
+                onClick={() => setShowVerificarPedido(true)}
                 disabled={!isServiceConfigured || comanda.length === 0 || isProcessingVenta}
               >
-                {isProcessingVenta ? 'Procesando...' : 'Solicitar Pedido'}
+                {isProcessingVenta ? 'Procesando...' : 'Verificar Pedido'}
               </button>
             )}
           </div>
@@ -2036,6 +2040,25 @@ const PageVentas: React.FC = () => {
           handlePostVenta();
         }}
         usuarioAlias={usuario?.alias}
+      />
+
+      {/* Modal verificar pedido cliente */}
+      <ModalVerificarPedidoCliente
+        isOpen={showVerificarPedido}
+        items={comanda.map((item) => ({
+          nombre: item.producto.nombre,
+          cantidad: item.cantidad,
+          precioUnitario: Number(item.producto.precio) || 0,
+          moderadores: item.moderadoresNames,
+          notas: item.notas,
+        }))}
+        total={calcularTotal()}
+        onSolicitarPedido={() => {
+          setShowVerificarPedido(false);
+          handleSolicitarPedido();
+        }}
+        onClose={() => setShowVerificarPedido(false)}
+        isProcessing={isProcessingVenta}
       />
 
       {/* Modal para selección de moderadores */}
