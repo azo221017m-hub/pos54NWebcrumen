@@ -86,19 +86,35 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
+  flex-shrink: 0;
 }
 
-.mvpc-header-ref {
+/* CDT group placed in header (compact variant) */
+.mvpc-cliente-info--header {
+  margin-bottom: 0;
+  padding: 0.2rem 0.35rem;
+  max-width: 340px;
+  font-size: 0.55rem;
   position: absolute;
   right: 0;
-  font-size: 0.62rem;
-  font-weight: 600;
-  color: #0d4f8a;
-  background: #e0f2fe;
-  border: 1px solid #7dd3fc;
-  border-radius: 10px;
-  padding: 0.15rem 0.5rem;
-  letter-spacing: 0.3px;
+}
+
+.mvpc-cliente-info--header .mvpc-cdt-title {
+  font-size: 0.48rem;
+  margin-bottom: 0;
+}
+
+.mvpc-cliente-info--header .mvpc-cdt-tags {
+  gap: 0.2rem;
+}
+
+.mvpc-cliente-info--header .mvpc-cdt-tag {
+  padding: 0.08rem 0.3rem;
+  font-size: 0.52rem;
+}
+
+.mvpc-cliente-info--header .mvpc-cdt-tag-label {
+  font-size: 0.46rem;
 }
 
 .mvpc-icon {
