@@ -22,6 +22,7 @@ export interface ClienteRegistroResponse {
 export interface ClienteWebData {
   idCliente: number;
   nombre: string;
+  referencia?: string;
   telefono: string;
   direccion?: string;
 }

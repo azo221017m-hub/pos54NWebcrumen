@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
+import GoogleMapsSelector from '../common/GoogleMapsSelector/GoogleMapsSelector';
 import './ModalVerificarPedidoCliente.css';
 
 interface ItemResumen {
@@ -9,6 +10,16 @@ interface ItemResumen {
   notas?: string;
 }
 
+interface ClienteInfo {
+  referencia?: string;
+  telefono: string;
+  direccion?: string;
+}
+
+type FormaDePago = 'Efectivo' | 'Transferencia';
+type TipoVenta = 'DOMICILIO' | 'RECOGER';
+type HoraEntrega = 'Lo antes posible' | 'Hora Programada';
+
 interface ModalVerificarPedidoClienteProps {
   isOpen: boolean;
   items: ItemResumen[];
@@ -16,7 +27,18 @@ interface ModalVerificarPedidoClienteProps {
   onSolicitarPedido: () => void;
   onClose: () => void;
   isProcessing?: boolean;
+  clienteData?: ClienteInfo | null;
+  precioEnvio?: number;
 }
+
+/** Returns min selectable time = now + 15 min, formatted as HH:mm */
+const getMinHoraProgramada = (): string => {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() + 15);
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${hh}:${mm}`;
+};
 
 const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = ({
   isOpen,
@@ -25,7 +47,39 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
   onSolicitarPedido,
   onClose,
   isProcessing = false,
+  clienteData = null,
+  precioEnvio = 0,
 }) => {
+  // Editable address
+  const [direccion, setDireccion] = useState(clienteData?.direccion || '');
+  // Google Maps URL
+  const [ubicacionUrl, setUbicacionUrl] = useState('');
+  // Payment method
+  const [formaDePago, setFormaDePago] = useState<FormaDePago>('Efectivo');
+  // Change required (only if Efectivo)
+  const [requiereCambio, setRequiereCambio] = useState('');
+  // Sale type
+  const [tipoVenta, setTipoVenta] = useState<TipoVenta>('DOMICILIO');
+  // Delivery time
+  const [horaEntrega, setHoraEntrega] = useState<HoraEntrega>('Lo antes posible');
+  // Scheduled hour
+  const [horaProgramada, setHoraProgramada] = useState('');
+
+  const minHora = useMemo(() => getMinHoraProgramada(), []);
+
+  // Reset state when modal opens with new data
+  React.useEffect(() => {
+    if (isOpen) {
+      setDireccion(clienteData?.direccion || '');
+      setUbicacionUrl('');
+      setFormaDePago('Efectivo');
+      setRequiereCambio('');
+      setTipoVenta('DOMICILIO');
+      setHoraEntrega('Lo antes posible');
+      setHoraProgramada('');
+    }
+  }, [isOpen, clienteData]);
+
   if (!isOpen) return null;
 
   return (
@@ -46,6 +100,41 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
           <p className="mvpc-subtitle">Revisa tu pedido antes de enviarlo</p>
         </header>
 
+        {/* ---------- Client info section ---------- */}
+        {clienteData && (
+          <section className="mvpc-cliente-info">
+            {clienteData.referencia && (
+              <div className="mvpc-field">
+                <label className="mvpc-field-label">Referencia</label>
+                <span className="mvpc-field-value">{clienteData.referencia}</span>
+              </div>
+            )}
+            <div className="mvpc-field">
+              <label className="mvpc-field-label">Teléfono</label>
+              <span className="mvpc-field-value">{clienteData.telefono}</span>
+            </div>
+            <div className="mvpc-field">
+              <label className="mvpc-field-label">Dirección</label>
+              <input
+                type="text"
+                className="mvpc-field-input"
+                value={direccion}
+                onChange={(e) => setDireccion(e.target.value)}
+                placeholder="Escribe tu dirección de entrega"
+              />
+            </div>
+
+            {/* Mini Google Maps */}
+            <div className="mvpc-field mvpc-map-field">
+              <label className="mvpc-field-label">📍 Ubicación</label>
+              <div className="mvpc-mini-map">
+                <GoogleMapsSelector value={ubicacionUrl} onChange={setUbicacionUrl} />
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ---------- Items list ---------- */}
         <section className="mvpc-items-list">
           <div className="mvpc-items-header">
             <span className="mvpc-col-producto">Producto</span>
@@ -75,6 +164,120 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
         <div className="mvpc-total-section">
           <span className="mvpc-total-label">Total del pedido</span>
           <span className="mvpc-total-amount">${total.toFixed(2)}</span>
+        </div>
+
+        {/* ---------- Order options ---------- */}
+        {clienteData && (
+          <section className="mvpc-options-section">
+            {/* Tipo de venta */}
+            <div className="mvpc-field">
+              <label className="mvpc-field-label">Tipo de Venta</label>
+              <div className="mvpc-toggle-group">
+                <button
+                  type="button"
+                  className={`mvpc-toggle-btn ${tipoVenta === 'DOMICILIO' ? 'active' : ''}`}
+                  onClick={() => setTipoVenta('DOMICILIO')}
+                >
+                  🏠 Domicilio
+                </button>
+                <button
+                  type="button"
+                  className={`mvpc-toggle-btn ${tipoVenta === 'RECOGER' ? 'active' : ''}`}
+                  onClick={() => setTipoVenta('RECOGER')}
+                >
+                  🏪 Recoger
+                </button>
+              </div>
+            </div>
+
+            {/* Forma de pago */}
+            <div className="mvpc-field">
+              <label className="mvpc-field-label">Forma de Pago</label>
+              <div className="mvpc-toggle-group">
+                <button
+                  type="button"
+                  className={`mvpc-toggle-btn ${formaDePago === 'Efectivo' ? 'active' : ''}`}
+                  onClick={() => setFormaDePago('Efectivo')}
+                >
+                  💵 Efectivo
+                </button>
+                <button
+                  type="button"
+                  className={`mvpc-toggle-btn ${formaDePago === 'Transferencia' ? 'active' : ''}`}
+                  onClick={() => setFormaDePago('Transferencia')}
+                >
+                  🏦 Transferencia
+                </button>
+              </div>
+            </div>
+
+            {/* Requiero cambio (only when Efectivo) */}
+            {formaDePago === 'Efectivo' && (
+              <div className="mvpc-field">
+                <label className="mvpc-field-label">¿Requiero cambio de $?</label>
+                <input
+                  type="number"
+                  className="mvpc-field-input"
+                  value={requiereCambio}
+                  onChange={(e) => setRequiereCambio(e.target.value)}
+                  placeholder="Ej: 500"
+                  min={0}
+                />
+              </div>
+            )}
+
+            {/* Precio de envío */}
+            <div className="mvpc-field">
+              <label className="mvpc-field-label">Precio de Envío</label>
+              <span className="mvpc-field-value mvpc-envio-valor">${precioEnvio.toFixed(2)}</span>
+            </div>
+
+            {/* Hora de entrega */}
+            <div className="mvpc-field">
+              <label className="mvpc-field-label">Hora de Entrega</label>
+              <div className="mvpc-toggle-group">
+                <button
+                  type="button"
+                  className={`mvpc-toggle-btn ${horaEntrega === 'Lo antes posible' ? 'active' : ''}`}
+                  onClick={() => setHoraEntrega('Lo antes posible')}
+                >
+                  ⚡ Lo antes posible
+                </button>
+                <button
+                  type="button"
+                  className={`mvpc-toggle-btn ${horaEntrega === 'Hora Programada' ? 'active' : ''}`}
+                  onClick={() => {
+                    setHoraEntrega('Hora Programada');
+                    if (!horaProgramada) setHoraProgramada(minHora);
+                  }}
+                >
+                  🕐 Hora Programada
+                </button>
+              </div>
+            </div>
+
+            {/* Time picker for scheduled delivery */}
+            {horaEntrega === 'Hora Programada' && (
+              <div className="mvpc-field mvpc-hora-picker">
+                <label className="mvpc-field-label">Selecciona la hora</label>
+                <input
+                  type="time"
+                  className="mvpc-field-input mvpc-time-input"
+                  value={horaProgramada}
+                  onChange={(e) => setHoraProgramada(e.target.value)}
+                  min={minHora}
+                />
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ---------- Notice ---------- */}
+        <div className="mvpc-aviso">
+          <span className="mvpc-aviso-icon">✅</span>
+          <span className="mvpc-aviso-text">
+            Pedido sujeto a confirmación del negocio antes de iniciar preparación.
+          </span>
         </div>
 
         <footer className="mvpc-actions">

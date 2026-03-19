@@ -179,7 +179,7 @@ export const LoginPage = () => {
         {serverStatus !== 'active' ? (
           <div className={`server-status-badge server-status-${serverStatus}`}>
             {serverStatus === 'waiting' && <span>😴 Servidor CRUMEN54N en espera.</span>}
-            {serverStatus === 'loading' && <span>👁️ Cargando sistema CRUMEN54N.</span>}
+            {serverStatus === 'loading' && <span>👁️ Activando sistema CRUMEN54N.</span>}
           </div>
         ) : (
           <button

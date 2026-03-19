@@ -2059,6 +2059,10 @@ const PageVentas: React.FC = () => {
         }}
         onClose={() => setShowVerificarPedido(false)}
         isProcessing={isProcessingVenta}
+        clienteData={isClienteMode ? (() => {
+          const cs = clienteWebService.getClienteSession();
+          return cs ? { referencia: cs.referencia, telefono: cs.telefono, direccion: cs.direccion } : null;
+        })() : null}
       />
 
       {/* Modal para selección de moderadores */}

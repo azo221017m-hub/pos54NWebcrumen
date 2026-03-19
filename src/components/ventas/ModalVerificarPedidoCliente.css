@@ -107,6 +107,76 @@
   color: #64748b;
 }
 
+/* ========== Client info section ========== */
+.mvpc-cliente-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  padding: 0.85rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.mvpc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mvpc-field-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.mvpc-field-value {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #1e293b;
+  padding: 0.35rem 0.5rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.mvpc-field-input {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #1e293b;
+  padding: 0.45rem 0.6rem;
+  background: #fff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.mvpc-field-input:focus {
+  border-color: #0ea5c0;
+  box-shadow: 0 0 0 2px rgba(14, 165, 192, 0.15);
+}
+
+/* Mini map */
+.mvpc-mini-map {
+  max-height: 160px;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.mvpc-mini-map .gms-iframe {
+  height: 130px;
+}
+
+.mvpc-mini-map .gms-btn {
+  padding: 8px 10px;
+  font-size: 0.82rem;
+}
+
 /* Items list */
 .mvpc-items-list {
   border: 1px solid #e2e8f0;
@@ -208,6 +278,94 @@
   color: #15803d;
 }
 
+/* ========== Options section ========== */
+.mvpc-options-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-top: 1rem;
+  padding: 0.85rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+/* Toggle button group */
+.mvpc-toggle-group {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.mvpc-toggle-btn {
+  flex: 1;
+  padding: 0.5rem 0.6rem;
+  border-radius: 8px;
+  border: 1.5px solid #cbd5e1;
+  background: #fff;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  text-align: center;
+}
+
+.mvpc-toggle-btn:hover {
+  border-color: #0ea5c0;
+  background: #f0fdfa;
+}
+
+.mvpc-toggle-btn.active {
+  border-color: #0891b2;
+  background: linear-gradient(135deg, #0d4f8a 0%, #0ea5c0 100%);
+  color: #fff;
+}
+
+/* Envio value badge */
+.mvpc-envio-valor {
+  display: inline-block;
+  width: fit-content;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
+  font-weight: 700;
+}
+
+/* Time input */
+.mvpc-time-input {
+  max-width: 160px;
+}
+
+.mvpc-hora-picker {
+  padding-left: 0.5rem;
+}
+
+/* ========== Notice / Aviso ========== */
+.mvpc-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 10px;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+}
+
+.mvpc-aviso-icon {
+  font-size: 1rem;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+.mvpc-aviso-text {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #166534;
+  line-height: 1.4;
+}
+
 /* Actions */
 .mvpc-actions {
   display: flex;
@@ -303,5 +461,13 @@
 
   .mvpc-btn-cancel {
     flex: unset;
+  }
+
+  .mvpc-toggle-group {
+    flex-direction: column;
+  }
+
+  .mvpc-toggle-btn {
+    font-size: 0.78rem;
   }
 }
