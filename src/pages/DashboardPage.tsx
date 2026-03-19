@@ -647,6 +647,24 @@ export const DashboardPage = () => {
     }
   }, [comandasSitioCount, autoSwitchedToComandas]);
 
+  // Debounce timers for WebSocket-triggered refreshes to avoid rapid successive API calls
+  const wsDebounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  const debouncedRefresh = useCallback((key: string, fn: () => void, delay = 500) => {
+    if (wsDebounceTimers.current[key]) {
+      clearTimeout(wsDebounceTimers.current[key]);
+    }
+    wsDebounceTimers.current[key] = setTimeout(fn, delay);
+  }, []);
+
+  // Clean up debounce timers on unmount
+  useEffect(() => {
+    const timers = wsDebounceTimers.current;
+    return () => {
+      Object.values(timers).forEach(clearTimeout);
+    };
+  }, []);
+
   // Listen for real-time dashboard updates via WebSocket (replaces setInterval polling)
   useWebSocket({
     onMessage: (data) => {
@@ -660,18 +678,26 @@ export const DashboardPage = () => {
         cargarVentasSolicitadas();
         showInfoToast(`🛎 Pedido WEB entrante: ${data.folioventa}`);
       } else if (data.type === 'venta_update') {
-        cargarVentasSolicitadas();
-        cargarResumenVentas();
-        cargarSaludNegocio();
-        cargarTopProductosTurno();
+        debouncedRefresh('ventas', () => {
+          cargarVentasSolicitadas();
+          cargarResumenVentas();
+          cargarSaludNegocio();
+          cargarTopProductosTurno();
+        });
       } else if (data.type === 'gasto_update') {
-        cargarSaludNegocio();
+        debouncedRefresh('gastos', () => {
+          cargarSaludNegocio();
+        });
       } else if (data.type === 'turno_update') {
-        verificarTurno();
-        cargarResumenVentas();
-        cargarTopProductosTurno();
+        debouncedRefresh('turno', () => {
+          verificarTurno();
+          cargarResumenVentas();
+          cargarTopProductosTurno();
+        });
       } else if (data.type === 'inventario_update') {
-        calcularNivelInventario();
+        debouncedRefresh('inventario', () => {
+          calcularNivelInventario();
+        });
       }
     }
   });
