@@ -623,14 +623,17 @@ export const DashboardPage = () => {
   const ventasFiltradas = useMemo(() => {
     // Comandas del día: orders from SITIO (POS), legacy orders, and WEB+ORDENADO orders
     const comandasSitio = ventasSolicitadas.filter(isSitioOrder);
-    if (tipoVentaFilter === TIPO_VENTA_FILTER_ALL) {
-      return comandasSitio;
-    }
-    // WEB+ORDENADO orders are displayed as 'ONLINE' type for filtering purposes
-    return comandasSitio.filter(v => {
-      const displayTipo = (v.origenventa === 'WEB' && v.estadodeventa === 'ORDENADO') ? 'ONLINE' : v.tipodeventa;
-      return displayTipo === tipoVentaFilter;
-    });
+    const filtered = tipoVentaFilter === TIPO_VENTA_FILTER_ALL
+      ? comandasSitio
+      : comandasSitio.filter(v => {
+          // WEB+ORDENADO orders are displayed as 'ONLINE' type for filtering purposes
+          const displayTipo = (v.origenventa === 'WEB' && v.estadodeventa === 'ORDENADO') ? 'ONLINE' : v.tipodeventa;
+          return displayTipo === tipoVentaFilter;
+        });
+    // Sort by fechamodificacionauditoria ascending (oldest first)
+    return filtered.sort((a, b) =>
+      new Date(a.fechamodificacionauditoria).getTime() - new Date(b.fechamodificacionauditoria).getTime()
+    );
   }, [ventasSolicitadas, tipoVentaFilter]);
 
   // Comandas del Día count: SITIO orders (or legacy without origenventa)
