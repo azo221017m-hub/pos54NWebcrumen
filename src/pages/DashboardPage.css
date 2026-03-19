@@ -1512,3 +1512,43 @@
 .btn-pagar:active {
   transform: translateY(0);
 }
+
+.btn-pagar:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-pagar:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-en-camino {
+  padding: 0.35rem 0.65rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.6875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.btn-en-camino svg {
+  width: 14px;
+  height: 14px;
+}
+
+.btn-en-camino:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.btn-en-camino:active {
+  transform: translateY(0);
+}

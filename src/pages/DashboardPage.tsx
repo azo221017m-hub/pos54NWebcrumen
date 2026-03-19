@@ -2148,6 +2148,7 @@ export const DashboardPage = () => {
                                   handlePagar(venta);
                                 }}
                                 title="Pagar"
+                                disabled={isWebOrdenado}
                               >
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
@@ -2156,16 +2157,33 @@ export const DashboardPage = () => {
                                 Pagar
                               </button>
                             )}
-                            {venta.formadepago !== 'MIXTO' && (
-                              <button 
-                                className="btn-ver-detalle"
+                            {isWebOrdenado ? (
+                              <button
+                                className="btn-en-camino"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleVerDetalle(venta);
+                                  handleStatusChange(venta.idventa, 'EN_CAMINO' as EstadoDeVenta);
                                 }}
+                                title="Marcar como En Camino"
                               >
-                                Ver detalle
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <circle cx="12" cy="12" r="10"/>
+                                  <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                En Camino
                               </button>
+                            ) : (
+                              venta.formadepago !== 'MIXTO' && (
+                                <button 
+                                  className="btn-ver-detalle"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleVerDetalle(venta);
+                                  }}
+                                >
+                                  Ver detalle
+                                </button>
+                              )
                             )}
                           </div>
                         </div>
