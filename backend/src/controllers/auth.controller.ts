@@ -26,6 +26,7 @@ interface Usuario extends RowDataPacket {
 interface ClienteWeb extends RowDataPacket {
   idCliente: number;
   nombre: string;
+  referencia: string | null;
   telefono: string;
   password: string;
   estatus: number;
@@ -471,7 +472,7 @@ export const loginCliente = async (req: Request, res: Response): Promise<void> =
     }
 
     const [rows] = await pool.execute<ClienteWeb[]>(
-      'SELECT idCliente, nombre, telefono, password, estatus, idnegocio, direccion FROM tblposcrumenwebclientes WHERE telefono = ? AND estatus = 1 LIMIT 1',
+      'SELECT idCliente, nombre, referencia, telefono, password, estatus, idnegocio, direccion FROM tblposcrumenwebclientes WHERE telefono = ? AND estatus = 1 LIMIT 1',
       [telefono]
     );
 
@@ -521,6 +522,7 @@ export const loginCliente = async (req: Request, res: Response): Promise<void> =
         cliente: {
           idCliente: cliente.idCliente,
           nombre: cliente.nombre,
+          referencia: cliente.referencia || undefined,
           telefono: cliente.telefono,
           direccion: cliente.direccion || undefined
         }

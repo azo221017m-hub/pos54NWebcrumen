@@ -1538,6 +1538,13 @@ const PageVentas: React.FC = () => {
     return undefined;
   };
 
+  const verificarClienteData = isClienteMode
+    ? (() => {
+        const cs = clienteWebService.getClienteSession();
+        return cs ? { referencia: cs.referencia, telefono: cs.telefono, direccion: cs.direccion } : null;
+      })()
+    : null;
+
   return (
     <div className="page-ventas">
       {/* Overlay de pantalla bloqueada */}
@@ -2059,6 +2066,7 @@ const PageVentas: React.FC = () => {
         }}
         onClose={() => setShowVerificarPedido(false)}
         isProcessing={isProcessingVenta}
+        clienteData={verificarClienteData}
       />
 
       {/* Modal para selección de moderadores */}
