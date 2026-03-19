@@ -74,15 +74,42 @@
   margin-bottom: 0.4rem;
 }
 
+.mvpc-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.mvpc-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.mvpc-header-ref {
+  position: absolute;
+  right: 0;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: #0d4f8a;
+  background: #e0f2fe;
+  border: 1px solid #7dd3fc;
+  border-radius: 10px;
+  padding: 0.15rem 0.5rem;
+  letter-spacing: 0.3px;
+}
+
 .mvpc-icon {
   width: 32px;
   height: 32px;
-  margin: 0 auto 0.25rem;
   border-radius: 50%;
   background: linear-gradient(135deg, #0d4f8a 0%, #0ea5c0 100%);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .mvpc-icon svg {
@@ -125,6 +152,46 @@
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   background: #f8fafc;
+}
+
+/* CDT group title */
+.mvpc-cdt-title {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: #0d4f8a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.1rem;
+}
+
+/* CDT inline tags */
+.mvpc-cdt-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.mvpc-cdt-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  background: #e0f2fe;
+  border: 1px solid #7dd3fc;
+  border-radius: 10px;
+  padding: 0.12rem 0.45rem;
+  font-size: 0.62rem;
+}
+
+.mvpc-cdt-tag-label {
+  font-weight: 600;
+  color: #64748b;
+  font-size: 0.55rem;
+  text-transform: uppercase;
+}
+
+.mvpc-cdt-tag-value {
+  font-weight: 600;
+  color: #1e293b;
 }
 
 .mvpc-field {
