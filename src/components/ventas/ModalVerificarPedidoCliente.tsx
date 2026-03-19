@@ -84,10 +84,6 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
   return (
     <div className="mvpc-overlay" onClick={onClose}>
       <div className="mvpc-content" onClick={(e) => e.stopPropagation()}>
-        <button className="mvpc-close-btn" onClick={onClose} aria-label="Cerrar">
-          ✕
-        </button>
-
         <header className="mvpc-header">
           <div className="mvpc-header-top">
             <div className="mvpc-header-left">
@@ -101,7 +97,12 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
             </div>
             {clienteData && (
               <section className="mvpc-cliente-info mvpc-cliente-info--header">
-                <span className="mvpc-cdt-title">Mis Datos de Cliente CDT</span>
+                <div className="mvpc-cdt-header-row">
+                  <span className="mvpc-cdt-title">Mis Datos de Cliente CDT</span>
+                  <div className="mvpc-cdt-location-inline">
+                    <GoogleMapsSelector value={ubicacionUrl} onChange={setUbicacionUrl} />
+                  </div>
+                </div>
                 <div className="mvpc-cdt-tags">
                   {clienteData.referencia && (
                     <span className="mvpc-cdt-tag">
@@ -113,10 +114,18 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
                     <span className="mvpc-cdt-tag-label">Tel</span>
                     <span className="mvpc-cdt-tag-value">{clienteData.telefono}</span>
                   </span>
-                  {clienteData.direccion && (
+                  {(ubicacionUrl || clienteData.direccion) && (
                     <span className="mvpc-cdt-tag">
                       <span className="mvpc-cdt-tag-label">Dir</span>
-                      <span className="mvpc-cdt-tag-value">{clienteData.direccion}</span>
+                      <span className="mvpc-cdt-tag-value">
+                        {ubicacionUrl ? (
+                          <a href={ubicacionUrl} target="_blank" rel="noopener noreferrer" className="mvpc-cdt-dir-link">
+                            {ubicacionUrl}
+                          </a>
+                        ) : (
+                          clienteData.direccion
+                        )}
+                      </span>
                     </span>
                   )}
                 </div>
@@ -186,13 +195,6 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
           {/* ---------- Right column: Map + Order options ---------- */}
           {clienteData && (
             <div className="mvpc-col-right">
-              {/* Mini Google Maps */}
-              <div className="mvpc-field mvpc-map-field">
-                <div className="mvpc-mini-map">
-                  <GoogleMapsSelector value={ubicacionUrl} onChange={setUbicacionUrl} />
-                </div>
-              </div>
-
               {/* ---------- Order options (compact) ---------- */}
               <section className="mvpc-options-section mvpc-options-compact">
                 {/* Tipo de venta */}

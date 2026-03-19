@@ -70,14 +70,14 @@
 
 /* Header */
 .mvpc-header {
-  text-align: center;
+  text-align: left;
   margin-bottom: 0.4rem;
 }
 
 .mvpc-header-top {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0.5rem;
   position: relative;
 }
@@ -97,6 +97,66 @@
   font-size: 0.55rem;
   position: absolute;
   right: 0;
+}
+
+.mvpc-cdt-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.3rem;
+}
+
+.mvpc-cdt-location-inline {
+  flex-shrink: 0;
+}
+
+.mvpc-cdt-location-inline .gms-container {
+  gap: 4px;
+}
+
+.mvpc-cdt-location-inline .gms-btn-round {
+  width: 24px;
+  height: 24px;
+}
+
+.mvpc-cdt-location-inline .gms-location-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.mvpc-cdt-location-inline .gms-tooltip {
+  font-size: 0.52rem;
+  padding: 2px 6px;
+}
+
+.mvpc-cdt-location-inline .gms-map-wrapper {
+  gap: 4px;
+}
+
+.mvpc-cdt-location-inline .gms-iframe {
+  height: 80px;
+  border-radius: 6px;
+}
+
+.mvpc-cdt-location-inline .gms-map-footer {
+  gap: 4px;
+}
+
+.mvpc-cdt-location-inline .gms-link {
+  font-size: 0.5rem;
+}
+
+.mvpc-cdt-location-inline .gms-clear-btn {
+  font-size: 0.5rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.mvpc-cdt-dir-link {
+  color: #0d4f8a;
+  text-decoration: underline;
+  word-break: break-all;
+  font-size: inherit;
 }
 
 .mvpc-cliente-info--header .mvpc-cdt-title {
@@ -148,6 +208,7 @@
   margin: 0.1rem 0 0;
   font-size: 0.68rem;
   color: #64748b;
+  text-align: left;
 }
 
 /* ========== Two-column body layout ========== */
