@@ -99,8 +99,28 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
               </div>
               <h2 className="mvpc-title">Verificar Pedido</h2>
             </div>
-            {clienteData?.referencia && (
-              <span className="mvpc-header-ref">{clienteData.referencia}</span>
+            {clienteData && (
+              <section className="mvpc-cliente-info mvpc-cliente-info--header">
+                <span className="mvpc-cdt-title">Mis Datos de Cliente CDT</span>
+                <div className="mvpc-cdt-tags">
+                  {clienteData.referencia && (
+                    <span className="mvpc-cdt-tag">
+                      <span className="mvpc-cdt-tag-label">Ref</span>
+                      <span className="mvpc-cdt-tag-value">{clienteData.referencia}</span>
+                    </span>
+                  )}
+                  <span className="mvpc-cdt-tag">
+                    <span className="mvpc-cdt-tag-label">Tel</span>
+                    <span className="mvpc-cdt-tag-value">{clienteData.telefono}</span>
+                  </span>
+                  {clienteData.direccion && (
+                    <span className="mvpc-cdt-tag">
+                      <span className="mvpc-cdt-tag-label">Dir</span>
+                      <span className="mvpc-cdt-tag-value">{clienteData.direccion}</span>
+                    </span>
+                  )}
+                </div>
+              </section>
             )}
           </div>
           <p className="mvpc-subtitle">Revisa tu pedido antes de enviarlo</p>
@@ -163,32 +183,15 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
             </footer>
           </div>
 
-          {/* ---------- Right column: Client info + Order options ---------- */}
+          {/* ---------- Right column: Map + Order options ---------- */}
           {clienteData && (
             <div className="mvpc-col-right">
-              {/* ---------- Client info section: Mis Datos de Cliente CDT ---------- */}
-              <section className="mvpc-cliente-info">
-                <span className="mvpc-cdt-title">Mis Datos de Cliente CDT</span>
-                <div className="mvpc-cdt-tags">
-                  <span className="mvpc-cdt-tag">
-                    <span className="mvpc-cdt-tag-label">Teléfono</span>
-                    <span className="mvpc-cdt-tag-value">{clienteData.telefono}</span>
-                  </span>
-                  {clienteData.direccion && (
-                    <span className="mvpc-cdt-tag">
-                      <span className="mvpc-cdt-tag-label">Dirección</span>
-                      <span className="mvpc-cdt-tag-value">{clienteData.direccion}</span>
-                    </span>
-                  )}
+              {/* Mini Google Maps */}
+              <div className="mvpc-field mvpc-map-field">
+                <div className="mvpc-mini-map">
+                  <GoogleMapsSelector value={ubicacionUrl} onChange={setUbicacionUrl} />
                 </div>
-
-                {/* Mini Google Maps */}
-                <div className="mvpc-field mvpc-map-field">
-                  <div className="mvpc-mini-map">
-                    <GoogleMapsSelector value={ubicacionUrl} onChange={setUbicacionUrl} />
-                  </div>
-                </div>
-              </section>
+              </div>
 
               {/* ---------- Order options (compact) ---------- */}
               <section className="mvpc-options-section mvpc-options-compact">
