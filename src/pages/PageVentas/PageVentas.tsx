@@ -296,8 +296,9 @@ const PageVentas: React.FC = () => {
       setCurrentEstadoDeVenta(ventaToLoad.estadodeventa);
       setCurrentOrigenVenta(ventaToLoad.origenventa || null);
 
-      // Load products into comanda
-      const itemsComanda: ItemComanda[] = ventaToLoad.detalles.map(detalle => {
+      // Load products into comanda - filter out CANCELADO detalles to prevent duplicates
+      const detallesActivos = ventaToLoad.detalles.filter(detalle => detalle.estadodetalle !== 'CANCELADO');
+      const itemsComanda: ItemComanda[] = detallesActivos.map(detalle => {
         // Parse moderadores and determine moderadoresNames
         let moderadoresNames: string[] | undefined = undefined;
         if (detalle.moderadores) {
@@ -1102,11 +1103,13 @@ const PageVentas: React.FC = () => {
         };
       });
 
-      // Validate that all items have valid quantities and prices
-      const itemInvalido = detallesData.find(d => d.cantidad <= 0 || d.preciounitario < 0 || d.costounitario < 0);
-      if (itemInvalido) {
-        showErrorToast('Error: Todos los productos deben tener cantidad mayor a 0 y precio válido');
-        return;
+      // Validate that all remaining items have valid quantities and prices
+      if (detallesData.length > 0) {
+        const itemInvalido = detallesData.find(d => d.cantidad <= 0 || d.preciounitario < 0 || d.costounitario < 0);
+        if (itemInvalido) {
+          showErrorToast('Error: Todos los productos deben tener cantidad mayor a 0 y precio válido');
+          return;
+        }
       }
 
       const resultado = await sincronizarDetallesVentaWebSolicitado(currentVentaId, detallesData);
