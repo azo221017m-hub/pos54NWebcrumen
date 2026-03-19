@@ -102,179 +102,185 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
           <p className="mvpc-subtitle">Revisa tu pedido antes de enviarlo</p>
         </header>
 
-        {/* ---------- Client info section ---------- */}
-        {clienteData && (
-          <section className="mvpc-cliente-info">
-            {clienteData.referencia && (
-              <div className="mvpc-field">
-                <label className="mvpc-field-label">Referencia</label>
-                <span className="mvpc-field-value">{clienteData.referencia}</span>
+        <div className="mvpc-body">
+          {/* ---------- Left column: Items + Total ---------- */}
+          <div className="mvpc-col-left">
+            {/* ---------- Items list ---------- */}
+            <section className="mvpc-items-list">
+              <div className="mvpc-items-header">
+                <span className="mvpc-col-producto">Producto</span>
+                <span className="mvpc-col-cant">Cant.</span>
+                <span className="mvpc-col-precio">Precio</span>
+                <span className="mvpc-col-subtotal">Subtotal</span>
               </div>
-            )}
-            <div className="mvpc-field">
-              <label className="mvpc-field-label">Teléfono</label>
-              <span className="mvpc-field-value">{clienteData.telefono}</span>
-            </div>
-            <div className="mvpc-field">
-              <label className="mvpc-field-label">Dirección</label>
-              <input
-                type="text"
-                className="mvpc-field-input"
-                value={direccion}
-                onChange={(e) => setDireccion(e.target.value)}
-                placeholder="Escribe tu dirección de entrega"
-              />
-            </div>
 
-            {/* Mini Google Maps */}
-            <div className="mvpc-field mvpc-map-field">
-              <label className="mvpc-field-label">📍 Ubicación</label>
-              <div className="mvpc-mini-map">
-                <GoogleMapsSelector value={ubicacionUrl} onChange={setUbicacionUrl} />
-              </div>
-            </div>
-          </section>
-        )}
+              {items.map((item, idx) => (
+                <article key={idx} className="mvpc-item-row">
+                  <div className="mvpc-col-producto">
+                    <span className="mvpc-item-nombre">{item.nombre}</span>
+                    {item.moderadores && item.moderadores.length > 0 && (
+                      <span className="mvpc-item-mods">{item.moderadores.join(', ')}</span>
+                    )}
+                    {item.notas && (
+                      <span className="mvpc-item-nota">📝 {item.notas}</span>
+                    )}
+                  </div>
+                  <span className="mvpc-col-cant">{item.cantidad}</span>
+                  <span className="mvpc-col-precio">${item.precioUnitario.toFixed(2)}</span>
+                  <span className="mvpc-col-subtotal">${(item.precioUnitario * item.cantidad).toFixed(2)}</span>
+                </article>
+              ))}
+            </section>
 
-        {/* ---------- Items list ---------- */}
-        <section className="mvpc-items-list">
-          <div className="mvpc-items-header">
-            <span className="mvpc-col-producto">Producto</span>
-            <span className="mvpc-col-cant">Cant.</span>
-            <span className="mvpc-col-precio">Precio</span>
-            <span className="mvpc-col-subtotal">Subtotal</span>
+            <div className="mvpc-total-section">
+              <span className="mvpc-total-label">Total del pedido</span>
+              <span className="mvpc-total-amount">${total.toFixed(2)}</span>
+            </div>
           </div>
 
-          {items.map((item, idx) => (
-            <article key={idx} className="mvpc-item-row">
-              <div className="mvpc-col-producto">
-                <span className="mvpc-item-nombre">{item.nombre}</span>
-                {item.moderadores && item.moderadores.length > 0 && (
-                  <span className="mvpc-item-mods">{item.moderadores.join(', ')}</span>
+          {/* ---------- Right column: Client info + Order options ---------- */}
+          {clienteData && (
+            <div className="mvpc-col-right">
+              {/* ---------- Client info section ---------- */}
+              <section className="mvpc-cliente-info">
+                {clienteData.referencia && (
+                  <div className="mvpc-field">
+                    <label className="mvpc-field-label">Referencia</label>
+                    <span className="mvpc-field-value">{clienteData.referencia}</span>
+                  </div>
                 )}
-                {item.notas && (
-                  <span className="mvpc-item-nota">📝 {item.notas}</span>
-                )}
-              </div>
-              <span className="mvpc-col-cant">{item.cantidad}</span>
-              <span className="mvpc-col-precio">${item.precioUnitario.toFixed(2)}</span>
-              <span className="mvpc-col-subtotal">${(item.precioUnitario * item.cantidad).toFixed(2)}</span>
-            </article>
-          ))}
-        </section>
+                <div className="mvpc-field">
+                  <label className="mvpc-field-label">Teléfono</label>
+                  <span className="mvpc-field-value">{clienteData.telefono}</span>
+                </div>
+                <div className="mvpc-field">
+                  <label className="mvpc-field-label">Dirección</label>
+                  <input
+                    type="text"
+                    className="mvpc-field-input"
+                    value={direccion}
+                    onChange={(e) => setDireccion(e.target.value)}
+                    placeholder="Escribe tu dirección de entrega"
+                  />
+                </div>
 
-        <div className="mvpc-total-section">
-          <span className="mvpc-total-label">Total del pedido</span>
-          <span className="mvpc-total-amount">${total.toFixed(2)}</span>
+                {/* Mini Google Maps */}
+                <div className="mvpc-field mvpc-map-field">
+                  <label className="mvpc-field-label">📍 Ubicación</label>
+                  <div className="mvpc-mini-map">
+                    <GoogleMapsSelector value={ubicacionUrl} onChange={setUbicacionUrl} />
+                  </div>
+                </div>
+              </section>
+
+              {/* ---------- Order options ---------- */}
+              <section className="mvpc-options-section">
+                {/* Tipo de venta */}
+                <div className="mvpc-field">
+                  <label className="mvpc-field-label">Tipo de Venta</label>
+                  <div className="mvpc-toggle-group">
+                    <button
+                      type="button"
+                      className={`mvpc-toggle-btn ${tipoVenta === 'DOMICILIO' ? 'active' : ''}`}
+                      onClick={() => setTipoVenta('DOMICILIO')}
+                    >
+                      🏠 Domicilio
+                    </button>
+                    <button
+                      type="button"
+                      className={`mvpc-toggle-btn ${tipoVenta === 'RECOGER' ? 'active' : ''}`}
+                      onClick={() => setTipoVenta('RECOGER')}
+                    >
+                      🏪 Recoger
+                    </button>
+                  </div>
+                </div>
+
+                {/* Forma de pago */}
+                <div className="mvpc-field">
+                  <label className="mvpc-field-label">Forma de Pago</label>
+                  <div className="mvpc-toggle-group">
+                    <button
+                      type="button"
+                      className={`mvpc-toggle-btn ${formaDePago === 'Efectivo' ? 'active' : ''}`}
+                      onClick={() => setFormaDePago('Efectivo')}
+                    >
+                      💵 Efectivo
+                    </button>
+                    <button
+                      type="button"
+                      className={`mvpc-toggle-btn ${formaDePago === 'Transferencia' ? 'active' : ''}`}
+                      onClick={() => setFormaDePago('Transferencia')}
+                    >
+                      🏦 Transferencia
+                    </button>
+                  </div>
+                </div>
+
+                {/* Requiero cambio (only when Efectivo) */}
+                {formaDePago === 'Efectivo' && (
+                  <div className="mvpc-field">
+                    <label className="mvpc-field-label">¿Requiero cambio de $?</label>
+                    <input
+                      type="number"
+                      className="mvpc-field-input"
+                      value={requiereCambio}
+                      onChange={(e) => setRequiereCambio(e.target.value)}
+                      placeholder="Ej: 500"
+                      min={0}
+                    />
+                  </div>
+                )}
+
+                {/* Precio de envío */}
+                <div className="mvpc-field">
+                  <label className="mvpc-field-label">Precio de Envío</label>
+                  <span className="mvpc-field-value mvpc-envio-valor">${precioEnvio.toFixed(2)}</span>
+                </div>
+
+                {/* Hora de entrega */}
+                <div className="mvpc-field">
+                  <label className="mvpc-field-label">Hora de Entrega</label>
+                  <div className="mvpc-toggle-group">
+                    <button
+                      type="button"
+                      className={`mvpc-toggle-btn ${horaEntrega === 'Lo antes posible' ? 'active' : ''}`}
+                      onClick={() => setHoraEntrega('Lo antes posible')}
+                    >
+                      ⚡ Lo antes posible
+                    </button>
+                    <button
+                      type="button"
+                      className={`mvpc-toggle-btn ${horaEntrega === 'Hora Programada' ? 'active' : ''}`}
+                      onClick={() => {
+                        const freshMin = getMinHoraProgramada();
+                        setMinHora(freshMin);
+                        setHoraEntrega('Hora Programada');
+                        if (!horaProgramada || horaProgramada < freshMin) setHoraProgramada(freshMin);
+                      }}
+                    >
+                      🕐 Hora Programada
+                    </button>
+                  </div>
+                </div>
+
+                {/* Time picker for scheduled delivery */}
+                {horaEntrega === 'Hora Programada' && (
+                  <div className="mvpc-field mvpc-hora-picker">
+                    <label className="mvpc-field-label">Selecciona la hora</label>
+                    <input
+                      type="time"
+                      className="mvpc-field-input mvpc-time-input"
+                      value={horaProgramada}
+                      onChange={(e) => setHoraProgramada(e.target.value)}
+                      min={minHora}
+                    />
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
         </div>
-
-        {/* ---------- Order options ---------- */}
-        {clienteData && (
-          <section className="mvpc-options-section">
-            {/* Tipo de venta */}
-            <div className="mvpc-field">
-              <label className="mvpc-field-label">Tipo de Venta</label>
-              <div className="mvpc-toggle-group">
-                <button
-                  type="button"
-                  className={`mvpc-toggle-btn ${tipoVenta === 'DOMICILIO' ? 'active' : ''}`}
-                  onClick={() => setTipoVenta('DOMICILIO')}
-                >
-                  🏠 Domicilio
-                </button>
-                <button
-                  type="button"
-                  className={`mvpc-toggle-btn ${tipoVenta === 'RECOGER' ? 'active' : ''}`}
-                  onClick={() => setTipoVenta('RECOGER')}
-                >
-                  🏪 Recoger
-                </button>
-              </div>
-            </div>
-
-            {/* Forma de pago */}
-            <div className="mvpc-field">
-              <label className="mvpc-field-label">Forma de Pago</label>
-              <div className="mvpc-toggle-group">
-                <button
-                  type="button"
-                  className={`mvpc-toggle-btn ${formaDePago === 'Efectivo' ? 'active' : ''}`}
-                  onClick={() => setFormaDePago('Efectivo')}
-                >
-                  💵 Efectivo
-                </button>
-                <button
-                  type="button"
-                  className={`mvpc-toggle-btn ${formaDePago === 'Transferencia' ? 'active' : ''}`}
-                  onClick={() => setFormaDePago('Transferencia')}
-                >
-                  🏦 Transferencia
-                </button>
-              </div>
-            </div>
-
-            {/* Requiero cambio (only when Efectivo) */}
-            {formaDePago === 'Efectivo' && (
-              <div className="mvpc-field">
-                <label className="mvpc-field-label">¿Requiero cambio de $?</label>
-                <input
-                  type="number"
-                  className="mvpc-field-input"
-                  value={requiereCambio}
-                  onChange={(e) => setRequiereCambio(e.target.value)}
-                  placeholder="Ej: 500"
-                  min={0}
-                />
-              </div>
-            )}
-
-            {/* Precio de envío */}
-            <div className="mvpc-field">
-              <label className="mvpc-field-label">Precio de Envío</label>
-              <span className="mvpc-field-value mvpc-envio-valor">${precioEnvio.toFixed(2)}</span>
-            </div>
-
-            {/* Hora de entrega */}
-            <div className="mvpc-field">
-              <label className="mvpc-field-label">Hora de Entrega</label>
-              <div className="mvpc-toggle-group">
-                <button
-                  type="button"
-                  className={`mvpc-toggle-btn ${horaEntrega === 'Lo antes posible' ? 'active' : ''}`}
-                  onClick={() => setHoraEntrega('Lo antes posible')}
-                >
-                  ⚡ Lo antes posible
-                </button>
-                <button
-                  type="button"
-                  className={`mvpc-toggle-btn ${horaEntrega === 'Hora Programada' ? 'active' : ''}`}
-                  onClick={() => {
-                    const freshMin = getMinHoraProgramada();
-                    setMinHora(freshMin);
-                    setHoraEntrega('Hora Programada');
-                    if (!horaProgramada || horaProgramada < freshMin) setHoraProgramada(freshMin);
-                  }}
-                >
-                  🕐 Hora Programada
-                </button>
-              </div>
-            </div>
-
-            {/* Time picker for scheduled delivery */}
-            {horaEntrega === 'Hora Programada' && (
-              <div className="mvpc-field mvpc-hora-picker">
-                <label className="mvpc-field-label">Selecciona la hora</label>
-                <input
-                  type="time"
-                  className="mvpc-field-input mvpc-time-input"
-                  value={horaProgramada}
-                  onChange={(e) => setHoraProgramada(e.target.value)}
-                  min={minHora}
-                />
-              </div>
-            )}
-          </section>
-        )}
 
         {/* ---------- Notice ---------- */}
         <div className="mvpc-aviso">
