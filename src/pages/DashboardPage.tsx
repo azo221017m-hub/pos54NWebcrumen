@@ -222,6 +222,7 @@ export const DashboardPage = () => {
   const [showCierreTurnoModal, setShowCierreTurnoModal] = useState(false);
   const [negocio, setNegocio] = useState<Negocio | null>(null);
   const [abiertoAhoraWeb, setAbiertoAhoraWeb] = useState<boolean>(false);
+  const [ventasEnCamino, setVentasEnCamino] = useState<Set<number>>(new Set());
   const [nivelInventario, setNivelInventario] = useState<{
     nivel: 'OPTIMO' | 'ADVERTENCIA' | 'CRITICO';
     color: string;
@@ -2148,7 +2149,7 @@ export const DashboardPage = () => {
                                   handlePagar(venta);
                                 }}
                                 title="Pagar"
-                                disabled={isWebOrdenado}
+                                disabled={isWebOrdenado && !ventasEnCamino.has(venta.idventa)}
                               >
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
@@ -2157,12 +2158,12 @@ export const DashboardPage = () => {
                                 Pagar
                               </button>
                             )}
-                            {isWebOrdenado ? (
+                            {isWebOrdenado && !ventasEnCamino.has(venta.idventa) ? (
                               <button
                                 className="btn-en-camino"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleStatusChange(venta.idventa, 'EN_CAMINO' as EstadoDeVenta);
+                                  setVentasEnCamino(prev => new Set(prev).add(venta.idventa));
                                 }}
                                 title="Marcar como En Camino"
                               >
@@ -2172,7 +2173,7 @@ export const DashboardPage = () => {
                                 </svg>
                                 En Camino
                               </button>
-                            ) : (
+                            ) : !isWebOrdenado ? (
                               venta.formadepago !== 'MIXTO' && (
                                 <button 
                                   className="btn-ver-detalle"
@@ -2184,7 +2185,7 @@ export const DashboardPage = () => {
                                   Ver detalle
                                 </button>
                               )
-                            )}
+                            ) : null}
                           </div>
                         </div>
                       </div>
