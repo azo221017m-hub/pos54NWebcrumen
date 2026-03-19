@@ -1080,21 +1080,35 @@ const PageVentas: React.FC = () => {
     try {
       setIsProcessingVenta(true);
       // Sync all comanda items to the existing WEB SOLICITADO venta
-      const detallesData = comanda.map(item => ({
-        iddetalleventa: item.iddetalleventa || null,
-        idproducto: item.producto.idProducto,
-        nombreproducto: item.producto.nombre,
-        idreceta: (item.producto.tipoproducto === 'Receta' || item.producto.tipoproducto === 'Inventario') && item.producto.idreferencia
-          ? item.producto.idreferencia
-          : null,
-        tipoproducto: item.producto.tipoproducto,
-        cantidad: item.cantidad,
-        preciounitario: Number(item.producto.precio),
-        costounitario: Number(item.producto.costoproducto),
-        observaciones: item.notas || null,
-        moderadores: item.moderadores || null,
-        comensal: item.comensal || null
-      }));
+      const detallesData = comanda.map(item => {
+        const preciounitario = Number(item.producto.precio) || 0;
+        const costounitario = Number(item.producto.costoproducto) || 0;
+        const cantidad = Number(item.cantidad) || 0;
+
+        return {
+          iddetalleventa: item.iddetalleventa || null,
+          idproducto: item.producto.idProducto,
+          nombreproducto: item.producto.nombre,
+          idreceta: (item.producto.tipoproducto === 'Receta' || item.producto.tipoproducto === 'Inventario') && item.producto.idreferencia
+            ? item.producto.idreferencia
+            : null,
+          tipoproducto: item.producto.tipoproducto,
+          cantidad,
+          preciounitario,
+          costounitario,
+          observaciones: item.notas || null,
+          moderadores: item.moderadores || null,
+          comensal: item.comensal || null
+        };
+      });
+
+      // Validate that all items have valid quantities and prices
+      const itemInvalido = detallesData.find(d => d.cantidad <= 0 || d.preciounitario < 0 || d.costounitario < 0);
+      if (itemInvalido) {
+        showErrorToast('Error: Todos los productos deben tener cantidad mayor a 0 y precio válido');
+        return;
+      }
+
       const resultado = await sincronizarDetallesVentaWebSolicitado(currentVentaId, detallesData);
       if (!resultado.success) {
         showErrorToast(`Error al ajustar pedido: ${resultado.message || 'Error desconocido'}`);
