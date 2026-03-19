@@ -1208,7 +1208,7 @@ export const syncDetallesVentaWebSolicitado = async (req: AuthRequest, res: Resp
       if (!Number.isFinite(cantidad) || cantidad <= 0) {
         res.status(400).json({
           success: false,
-          message: `Cantidad inválida para producto ${detalle.nombreproducto || detalle.idproducto}: ${detalle.cantidad}`
+          message: `Cantidad inválida para producto ${detalle.nombreproducto || detalle.idproducto}: ${cantidad}`
         });
         return;
       }
@@ -1216,7 +1216,7 @@ export const syncDetallesVentaWebSolicitado = async (req: AuthRequest, res: Resp
       if (!Number.isFinite(preciounitario) || preciounitario < 0) {
         res.status(400).json({
           success: false,
-          message: `Precio unitario inválido para producto ${detalle.nombreproducto || detalle.idproducto}: ${detalle.preciounitario}`
+          message: `Precio unitario inválido para producto ${detalle.nombreproducto || detalle.idproducto}: ${preciounitario}`
         });
         return;
       }
@@ -1224,7 +1224,7 @@ export const syncDetallesVentaWebSolicitado = async (req: AuthRequest, res: Resp
       if (!Number.isFinite(costounitario) || costounitario < 0) {
         res.status(400).json({
           success: false,
-          message: `Costo unitario inválido para producto ${detalle.nombreproducto || detalle.idproducto}: ${detalle.costounitario}`
+          message: `Costo unitario inválido para producto ${detalle.nombreproducto || detalle.idproducto}: ${costounitario}`
         });
         return;
       }

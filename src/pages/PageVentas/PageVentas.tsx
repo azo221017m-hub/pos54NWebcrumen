@@ -1103,7 +1103,7 @@ const PageVentas: React.FC = () => {
       });
 
       // Validate that all items have valid quantities and prices
-      const itemInvalido = detallesData.find(d => d.cantidad <= 0 || d.preciounitario < 0);
+      const itemInvalido = detallesData.find(d => d.cantidad <= 0 || d.preciounitario < 0 || d.costounitario < 0);
       if (itemInvalido) {
         showErrorToast('Error: Todos los productos deben tener cantidad mayor a 0 y precio válido');
         return;
