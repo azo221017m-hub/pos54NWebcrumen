@@ -218,16 +218,26 @@
 
 /* ---- CTA — Promote your business ---- */
 .pc-negocio-cta {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 25%, #f5f0ff 50%, #e8f8f0 75%, #f0f4ff 100%);
+  background-size: 400% 400%;
+  animation: pc-aurora 12s ease-in-out infinite;
+  border: 1px solid rgba(180, 190, 220, 0.4);
   border-radius: 14px;
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 2px 12px rgba(13, 79, 138, 0.08);
+  box-shadow: 0 2px 16px rgba(100, 120, 180, 0.12);
   flex-shrink: 0;
+}
+
+@keyframes pc-aurora {
+  0%   { background-position: 0% 50%; }
+  25%  { background-position: 50% 100%; }
+  50%  { background-position: 100% 50%; }
+  75%  { background-position: 50% 0%; }
+  100% { background-position: 0% 50%; }
 }
 
 .pc-negocio-cta-label {
