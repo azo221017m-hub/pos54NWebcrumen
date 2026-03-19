@@ -29,8 +29,8 @@
 /* Contenido principal con las dos columnas */
 .modulo-pagos-content {
   display: flex;
-  gap: 1.5rem;
-  padding: 1.5rem;
+  gap: 1rem;
+  padding: 1rem;
   overflow-y: auto;
   flex: 1;
 }
@@ -42,14 +42,14 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.75rem;
 }
 
 /* Resumen de Cuenta */
 .pagos-resumen-cuenta {
   background: #e3f2fd;
-  padding: 1.5rem;
-  border-radius: 0.75rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
   border: 2px solid #2196f3;
 }
 
@@ -57,17 +57,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .pagos-label {
-  font-size: 1rem;
+  font-size: 0.85rem;
   color: #555;
   font-weight: 600;
 }
 
 .pagos-monto-grande {
-  font-size: 2.5rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: #2c3e50;
 }
@@ -75,16 +75,16 @@
 /* Sección Descuentos */
 .pagos-descuentos {
   background: #fff3e0;
-  padding: 1.25rem;
-  border-radius: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
   border: 2px solid #ff9800;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .pagos-label-descuento {
-  font-size: 1rem;
+  font-size: 0.85rem;
   color: #555;
   font-weight: 600;
   text-align: center;
@@ -93,10 +93,10 @@
 
 .pagos-select-descuento {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.75rem;
   border: 2px solid #ff9800;
-  border-radius: 0.5rem;
-  font-size: 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.85rem;
   font-weight: 600;
   background: white;
   cursor: pointer;
@@ -124,13 +124,13 @@
 }
 
 .descuento-texto {
-  font-size: 0.95rem;
+  font-size: 0.8rem;
   color: #666;
   font-weight: 500;
 }
 
 .descuento-monto {
-  font-size: 1.25rem;
+  font-size: 1rem;
   color: #d32f2f;
   font-weight: 700;
 }
@@ -139,26 +139,26 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-  padding-top: 0.75rem;
+  gap: 0.25rem;
+  margin-top: 0.35rem;
+  padding-top: 0.5rem;
   border-top: 2px solid #ffcc80;
 }
 
 /* Botones de forma de pago */
 .pagos-formas-pago {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
 .btn-forma-pago {
   flex: 1;
-  min-width: 8rem;
-  padding: 1rem;
-  border: 3px solid;
-  border-radius: 0.75rem;
-  font-size: 1rem;
+  min-width: 5.5rem;
+  padding: 0.65rem;
+  border: 2px solid;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s;
@@ -225,16 +225,16 @@
 /* Área de pagos realizados */
 .pagos-realizados-area {
   background: #f5f5f5;
-  padding: 1.25rem;
-  border-radius: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
   border: 2px solid #e0e0e0;
   flex: 1;
-  min-height: 12rem;
+  min-height: 8rem;
 }
 
 .pagos-realizados-area h3 {
-  margin: 0 0 1rem 0;
-  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+  font-size: 0.85rem;
   color: #333;
   text-align: center;
 }
@@ -243,19 +243,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 8rem;
+  min-height: 5rem;
 }
 
 .pagos-vacio {
   color: #999;
   font-style: italic;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
 }
 
 /* Botones de acción */
 .pagos-botones-accion {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
   flex-direction: column;
 }
 
@@ -263,30 +263,30 @@
 .pagos-recibo-selector {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .pagos-recibo-label {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: #495057;
 }
 
 .pagos-recibo-opciones {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .pagos-recibo-opcion {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.3rem;
   cursor: pointer;
-  padding: 0.5rem 0.9rem;
-  border-radius: 0.5rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.375rem;
   border: 2px solid #dee2e6;
   background: #f8f9fa;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: #495057;
   transition: border-color 0.2s, background 0.2s, color 0.2s;
@@ -298,7 +298,7 @@
 }
 
 .pagos-recibo-icono {
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   line-height: 1;
 }
 
@@ -318,75 +318,75 @@
 .pagos-realizados-lista {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.35rem;
   width: 100%;
-  max-height: 10rem;
+  max-height: 7rem;
   overflow-y: auto;
 }
 
 .pago-registrado-item {
   background: white;
-  padding: 0.5rem;
-  border-radius: 0.4rem;
+  padding: 0.35rem;
+  border-radius: 0.3rem;
   border: 2px solid #4caf50;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.15rem;
 }
 
 .pago-forma {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: #4caf50;
 }
 
 .pago-monto {
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: #2c3e50;
 }
 
 .pago-referencia {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   color: #666;
   font-style: italic;
 }
 
 .pago-registrado-total {
   background: white;
-  padding: 0.75rem;
-  border-radius: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
   border: 2px solid #2196f3;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-weight: 700;
-  margin-top: 0.5rem;
+  margin-top: 0.35rem;
 }
 
 .pago-total-monto {
-  font-size: 1.25rem;
+  font-size: 1rem;
   color: #2196f3;
 }
 
 .pago-realizado-item {
   background: white;
-  padding: 1rem;
-  border-radius: 0.5rem;
+  padding: 0.65rem;
+  border-radius: 0.375rem;
   border: 2px solid #4caf50;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .pago-tipo {
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #4caf50;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.15rem;
 }
 
 .pago-detalles {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: #333;
   font-weight: 500;
 }
@@ -396,13 +396,13 @@
   background: #f44336;
   color: white;
   border: none;
-  padding: 1.25rem;
-  border-radius: 0.75rem;
-  font-size: 1.5rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+  box-shadow: 0 3px 8px rgba(244, 67, 54, 0.3);
 }
 
 .btn-cancelar-pagar:hover {
@@ -420,13 +420,13 @@
   background: #ffd54f;
   color: #333;
   border: none;
-  padding: 1.5rem;
-  border-radius: 0.75rem;
-  font-size: 1.75rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(255, 213, 79, 0.4);
+  box-shadow: 0 3px 8px rgba(255, 213, 79, 0.3);
 }
 
 .btn-cobrar:hover {
@@ -470,26 +470,26 @@
 .pagos-panel-transferencia,
 .pagos-panel-mixto {
   background: #fce4ec;
-  padding: 1.5rem;
-  border-radius: 0.75rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
   border: 2px solid #f48fb1;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.65rem;
 }
 
 /* Cancel button inside right panel */
 .pagos-panel-efectivo .btn-cancelar-pagar,
 .pagos-panel-transferencia .btn-cancelar-pagar,
 .pagos-panel-mixto .btn-cancelar-pagar {
-  margin-top: 1rem;
+  margin-top: 0.65rem;
 }
 
 .pagos-panel-efectivo h4,
 .pagos-panel-transferencia h4,
 .pagos-panel-mixto h4 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 0.95rem;
   color: #333;
   text-align: center;
 }
@@ -505,9 +505,9 @@
   background: white;
   border: 2px solid #e91e63;
   color: #e91e63;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  font-size: 1.1rem;
+  padding: 0.65rem;
+  border-radius: 0.375rem;
+  font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
@@ -523,10 +523,10 @@
 /* Input de monto manual */
 .pagos-input-monto {
   width: 100%;
-  padding: 1rem;
+  padding: 0.65rem;
   border: 2px solid #f48fb1;
-  border-radius: 0.5rem;
-  font-size: 1.1rem;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
   text-align: center;
   font-weight: 600;
   background: white;
@@ -541,26 +541,26 @@
 
 /* Etiqueta y monto a cobrar */
 .pagos-label-monto {
-  font-size: 1rem;
+  font-size: 0.85rem;
   color: #555;
   font-weight: 600;
   text-align: center;
   display: block;
-  margin-top: 0.5rem;
+  margin-top: 0.35rem;
 }
 
 /* Botón de monto a cobrar - clickable */
 .btn-monto-cobrar {
   width: 100%;
-  padding: 1rem;
-  border: 3px solid #e91e63;
-  border-radius: 0.5rem;
+  padding: 0.65rem;
+  border: 2px solid #e91e63;
+  border-radius: 0.375rem;
   background: white;
   cursor: pointer;
   transition: all 0.3s;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
   align-items: center;
 }
 
@@ -577,14 +577,14 @@
 }
 
 .btn-monto-cobrar-label {
-  font-size: 1rem;
+  font-size: 0.85rem;
   color: #555;
   font-weight: 600;
   text-align: center;
 }
 
 .btn-monto-cobrar-valor {
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #2c3e50;
   text-align: center;
@@ -592,20 +592,20 @@
 
 
 .pagos-monto-info {
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #2c3e50;
   text-align: center;
-  padding: 0.75rem;
+  padding: 0.5rem;
   background: white;
   border: 2px solid #f48fb1;
-  border-radius: 0.5rem;
-  margin-bottom: 0.5rem;
+  border-radius: 0.375rem;
+  margin-bottom: 0.35rem;
 }
 
 /* Panel de transferencia */
 .pagos-label-referencia {
-  font-size: 1rem;
+  font-size: 0.85rem;
   color: #555;
   font-weight: 600;
   text-align: center;
@@ -614,10 +614,10 @@
 
 .pagos-input-referencia {
   width: 100%;
-  padding: 1rem;
+  padding: 0.65rem;
   border: 2px solid #f48fb1;
-  border-radius: 0.5rem;
-  font-size: 1.1rem;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
   text-align: center;
   font-weight: 600;
   background: white;
@@ -633,17 +633,17 @@
 /* Panel mixto */
 .pagos-monto-cobrar-info {
   background: white;
-  padding: 1rem;
-  border-radius: 0.5rem;
+  padding: 0.65rem;
+  border-radius: 0.375rem;
   border: 2px solid #f48fb1;
-  margin-bottom: 1rem;
+  margin-bottom: 0.65rem;
 }
 
 .pagos-info-detalle {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: #666;
   text-align: center;
-  margin-top: 0.5rem;
+  margin-top: 0.35rem;
   font-style: italic;
 }
 
@@ -651,9 +651,9 @@
   background: #e91e63;
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  font-size: 0.95rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
@@ -669,10 +669,10 @@
 /* Select para forma de pago en mixto */
 .pagos-select-forma {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.35rem;
   border: 1px solid #f48fb1;
   border-radius: 0.25rem;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   text-align: center;
   background: white;
   cursor: pointer;
@@ -703,24 +703,24 @@
 }
 
 .pagos-tabla-mixto th {
-  padding: 0.75rem;
+  padding: 0.5rem;
   text-align: center;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
 }
 
 .pagos-tabla-mixto td {
-  padding: 0.5rem;
+  padding: 0.35rem;
   text-align: center;
   border-bottom: 1px solid #f8bbd0;
 }
 
 .pagos-tabla-mixto input {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.35rem;
   border: 1px solid #f48fb1;
   border-radius: 0.25rem;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   text-align: center;
   background: white;
 }
@@ -767,16 +767,16 @@
   }
 
   .pagos-monto-grande {
-    font-size: 2rem;
+    font-size: 1.5rem;
   }
 
   .btn-cancelar-pagar {
-    font-size: 1.25rem;
-    padding: 1rem;
+    font-size: 0.9rem;
+    padding: 0.65rem;
   }
 
   .btn-cobrar {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
   }
 }
 
@@ -786,8 +786,8 @@
   }
 
   .modulo-pagos-content {
-    padding: 1rem;
-    gap: 1rem;
+    padding: 0.75rem;
+    gap: 0.75rem;
   }
 
   .pagos-formas-pago {
@@ -803,16 +803,16 @@
   }
 
   .pagos-monto-grande {
-    font-size: 1.75rem;
+    font-size: 1.25rem;
   }
 
   .btn-cancelar-pagar {
-    font-size: 1rem;
-    padding: 1rem;
+    font-size: 0.85rem;
+    padding: 0.65rem;
   }
 
   .btn-cobrar {
-    font-size: 1.25rem;
-    padding: 1.25rem;
+    font-size: 1rem;
+    padding: 0.85rem;
   }
 }

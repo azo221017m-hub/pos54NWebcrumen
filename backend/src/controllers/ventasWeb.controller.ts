@@ -1199,6 +1199,37 @@ export const syncDetallesVentaWebSolicitado = async (req: AuthRequest, res: Resp
       return;
     }
 
+    // Validate each detail has valid numeric values
+    for (const detalle of detalles) {
+      const cantidad = Number(detalle.cantidad);
+      const preciounitario = Number(detalle.preciounitario);
+      const costounitario = Number(detalle.costounitario);
+
+      if (!Number.isFinite(cantidad) || cantidad <= 0) {
+        res.status(400).json({
+          success: false,
+          message: `Cantidad inválida para producto ${detalle.nombreproducto || detalle.idproducto}: ${detalle.cantidad}`
+        });
+        return;
+      }
+
+      if (!Number.isFinite(preciounitario) || preciounitario < 0) {
+        res.status(400).json({
+          success: false,
+          message: `Precio unitario inválido para producto ${detalle.nombreproducto || detalle.idproducto}: ${detalle.preciounitario}`
+        });
+        return;
+      }
+
+      if (!Number.isFinite(costounitario) || costounitario < 0) {
+        res.status(400).json({
+          success: false,
+          message: `Costo unitario inválido para producto ${detalle.nombreproducto || detalle.idproducto}: ${detalle.costounitario}`
+        });
+        return;
+      }
+    }
+
     await connection.beginTransaction();
 
     // Verificar que la venta existe, pertenece al negocio, es WEB y está en estado SOLICITADO
@@ -1239,6 +1270,8 @@ export const syncDetallesVentaWebSolicitado = async (req: AuthRequest, res: Resp
 
     // Calcular nuevos totales e insertar/actualizar los detalles
     let subtotalNuevo = 0;
+    let descuentosNuevo = 0;
+    let impuestosNuevo = 0;
     const processedIds: number[] = [];
 
     for (const detalle of detalles) {
@@ -1265,6 +1298,8 @@ export const syncDetallesVentaWebSolicitado = async (req: AuthRequest, res: Resp
       const detalleTotal = detalleSubtotal - detalleDescuento + detalleImpuesto;
 
       subtotalNuevo += detalleSubtotal;
+      descuentosNuevo += detalleDescuento;
+      impuestosNuevo += detalleImpuesto;
 
       // If the item has an existing DB record ID, UPDATE it instead of inserting a new one
       if (detalle.iddetalleventa && existingIds.includes(detalle.iddetalleventa)) {
@@ -1355,14 +1390,17 @@ export const syncDetallesVentaWebSolicitado = async (req: AuthRequest, res: Resp
     }
 
     // Actualizar totales de la venta
+    const totaldeventaNuevo = subtotalNuevo - descuentosNuevo + impuestosNuevo;
     await connection.execute(
       `UPDATE tblposcrumenwebventas
        SET subtotal = ?,
+           descuentos = ?,
+           impuestos = ?,
            totaldeventa = ?,
            usuarioauditoria = ?,
            fechamodificacionauditoria = NOW()
        WHERE idventa = ? AND idnegocio = ?`,
-      [subtotalNuevo, subtotalNuevo, usuarioauditoria, id, idnegocio]
+      [subtotalNuevo, descuentosNuevo, impuestosNuevo, totaldeventaNuevo, usuarioauditoria, id, idnegocio]
     );
 
     await connection.commit();
