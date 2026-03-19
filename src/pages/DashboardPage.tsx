@@ -763,19 +763,23 @@ export const DashboardPage = () => {
   const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
   // Real pedidos online: only WEB orders with SOLICITADO status
+  // Only consider detalles where estadodetalle = 'SOLICITADO'
   const pedidosOnline: PedidoOnline[] = ventasSolicitadas
     .filter(v => v.origenventa === 'WEB' && v.estadodeventa === 'SOLICITADO')
-    .map(v => ({
-      id: v.idventa,
-      cliente: v.cliente,
-      productos: v.detalles
-        .map(d => `${formatQuantity(d.cantidad)}x ${d.nombreproducto}`)
-        .join(', '),
-      total: Number(v.totaldeventa) || 0,
-      estado: 'pendiente' as const,
-      estadodeventa: v.estadodeventa,
-      hora: new Date(v.fechadeventa).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
-    }));
+    .map(v => {
+      const detallesSolicitados = v.detalles.filter(d => d.estadodetalle === 'SOLICITADO');
+      return {
+        id: v.idventa,
+        cliente: v.cliente,
+        productos: detallesSolicitados
+          .map(d => `${formatQuantity(d.cantidad)}x ${d.nombreproducto}`)
+          .join(', '),
+        total: detallesSolicitados.reduce((sum, d) => sum + (Number(d.total) || 0), 0),
+        estado: 'pendiente' as const,
+        estadodeventa: v.estadodeventa,
+        hora: new Date(v.fechadeventa).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
+      };
+    });
 
   const getEstadoBadgeClass = (estadodeventa: string) => {
     switch(estadodeventa) {
