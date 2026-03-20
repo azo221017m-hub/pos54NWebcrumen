@@ -580,12 +580,55 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       await updateInventoryStockFromMovements(connection, ventaId, idnegocio, usuarioAlias);
     }
 
+    // Insert into tblposcrumenwebpedidoswebtransito when origenventa='WEB' and estadodeventa='SOLICITADO'
+    const finalEstadoVenta = ventaData.estadodeventa || 'SOLICITADO';
+    const finalOrigenVenta = ventaData.origenventa || null;
+    if (finalOrigenVenta === 'WEB' && finalEstadoVenta === 'SOLICITADO') {
+      // Build detalleproductos JSON from detalles
+      const detalleproductos = JSON.stringify(
+        ventaData.detalles.map(d => ({
+          idproducto: d.idproducto,
+          nombreproducto: d.nombreproducto,
+          cantidad: d.cantidad,
+          preciounitario: d.preciounitario,
+          observaciones: d.observaciones || null,
+          moderadores: d.moderadores || null
+        }))
+      );
+
+      // Build detallesclientepedidostransito from client info
+      const detallesclientepedidostransito = [
+        ventaData.cliente ? `Cliente: ${ventaData.cliente}` : null,
+        ventaData.direcciondeentrega ? `Dirección: ${ventaData.direcciondeentrega}` : null,
+        ventaData.contactodeentrega ? `Contacto: ${ventaData.contactodeentrega}` : null
+      ].filter(Boolean).join(' | ') || null;
+
+      await connection.execute<ResultSetHeader>(
+        `INSERT INTO tblposcrumenwebpedidoswebtransito (
+          folioventa, idnegocio, totalpedido, fechahorapedidosolicitado,
+          telefonocliente, referenciacliente, detalleproductos,
+          estatuspedidotransito, detallesclientepedidostransito,
+          observacionesnegociopedidostransito,
+          puntosobtenidospedidostransito, puntosusadospedidostransito, saldopuntospedidostransito,
+          mensajeclientepedidostransito, mensajenegociopedidostransito,
+          fecha_creacion, fecha_actualizacion
+        ) VALUES (?, ?, ?, NOW(), ?, ?, ?, 'SOLICITADO', ?, NULL, 0, 0, 0, NULL, NULL, NOW(), NOW())`,
+        [
+          folioFinal,
+          idnegocio,
+          totaldeventa,
+          ventaData.telefonodeentrega || null,
+          ventaData.cliente || null,
+          detalleproductos,
+          detallesclientepedidostransito
+        ]
+      );
+    }
+
     await connection.commit();
 
     // Notify connected dashboards if this is a WEB order with SOLICITADO status
-    const finalEstado = ventaData.estadodeventa || 'SOLICITADO';
-    const finalOrigen = ventaData.origenventa || null;
-    if (finalOrigen === 'WEB' && finalEstado === 'SOLICITADO') {
+    if (finalOrigenVenta === 'WEB' && finalEstadoVenta === 'SOLICITADO') {
       websocketService.notifyNuevoPedidoWeb(idnegocio, folioFinal, ventaId);
     }
 
@@ -663,6 +706,16 @@ export const updateVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     }
 
     const origenVenta: string = ventaRows[0].origenventa || '';
+
+    // Solo usuarios de negocio pueden cancelar pedidos WEB; clientes (idRol=99) no pueden
+    const idRol = req.user?.idRol;
+    if (idRol === 99 && origenVenta === 'WEB' && updateData.estadodeventa === 'CANCELADO') {
+      res.status(403).json({
+        success: false,
+        message: 'Solo el negocio puede cancelar pedidos web'
+      });
+      return;
+    }
 
     // Construir query de actualización dinámicamente
     const updates: string[] = [];
@@ -760,6 +813,7 @@ export const deleteVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     const { id } = req.params;
     const idnegocio = req.user?.idNegocio;
     const usuarioauditoria = req.user?.alias;
+    const idRol = req.user?.idRol;
 
     if (!idnegocio || !usuarioauditoria) {
       res.status(401).json({
@@ -769,9 +823,9 @@ export const deleteVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
-    // Verificar que la venta existe
+    // Verificar que la venta existe y obtener origenventa
     const [ventaRows] = await pool.execute<RowDataPacket[]>(
-      'SELECT idventa FROM tblposcrumenwebventas WHERE idventa = ? AND idnegocio = ?',
+      'SELECT idventa, origenventa FROM tblposcrumenwebventas WHERE idventa = ? AND idnegocio = ?',
       [id, idnegocio]
     );
 
@@ -779,6 +833,15 @@ export const deleteVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       res.status(404).json({ 
         success: false, 
         message: 'Venta no encontrada' 
+      });
+      return;
+    }
+
+    // Solo usuarios de negocio pueden cancelar pedidos WEB; clientes (idRol=99) no pueden
+    if (idRol === 99 && ventaRows[0].origenventa === 'WEB') {
+      res.status(403).json({
+        success: false,
+        message: 'Solo el negocio puede cancelar pedidos web'
       });
       return;
     }
