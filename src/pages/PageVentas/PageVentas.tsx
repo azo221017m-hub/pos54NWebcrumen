@@ -1572,7 +1572,7 @@ const PageVentas: React.FC = () => {
 
           {privilegio !== 2 && (
           <button className="btn-back-dashboard" onClick={handleCancelar}>
-            <ArrowLeft size={12} />
+            <ArrowLeft size={14} />
             {isClienteMode ? 'Regresar' : 'Cancelar'}
           </button>
           )}

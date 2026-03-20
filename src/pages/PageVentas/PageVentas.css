@@ -71,6 +71,10 @@
   z-index: 100;
 }
 
+.ventas-header .user-info-header {
+  margin-left: 1.74rem;
+}
+
 .header-left-group {
   display: flex;
   flex-direction: column;
@@ -88,13 +92,13 @@
 .btn-back-dashboard {
   display: flex;
   align-items: center;
-  gap: 0.225rem;
-  padding: 0.3rem 0.525rem;
+  gap: 0.27rem;
+  padding: 0.36rem 0.63rem;
   background: #e74c3c;
   color: white;
   border: none;
-  border-radius: 0.225rem;
-  font-size: 0.4875rem;
+  border-radius: 0.27rem;
+  font-size: 0.585rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -185,22 +189,33 @@
 }
 
 .user-label-ventas {
-  font-size: 0.6875rem;
+  font-size: 0.825rem;
   font-weight: 600;
   color: #7f8c8d;
   text-align: right;
   white-space: nowrap;
-  max-width: 5rem;
+  max-width: 6rem;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-top: 0.125rem;
 }
 
-/* FichaDeComanda relocated below avatar at 50% size, aligned right */
+/* FichaDeComanda relocated below avatar at 60% size (20% increase), aligned right, 2 rows */
 .ficha-comanda-below-avatar {
-  transform: scale(0.5);
+  transform: scale(0.6);
   transform-origin: top right;
   margin-top: 0.25rem;
+}
+
+.ficha-comanda-below-avatar .ficha-de-comanda {
+  flex-wrap: wrap;
+  max-width: 16rem;
+  justify-content: flex-end;
+}
+
+.ficha-comanda-below-avatar .ficha-info {
+  width: 100%;
+  justify-content: flex-end;
 }
 
 /* Content Layout */
