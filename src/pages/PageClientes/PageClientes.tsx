@@ -521,14 +521,6 @@ const PageClientes: React.FC = () => {
                 </button>
                 {mostrarMenuAvatar && (
                   <div className="pc-avatar-menu" role="menu">
-                    <div className="pc-avatar-menu-header">
-                      <span className="pc-avatar-menu-initial">
-                        {(clienteData.nombre || clienteData.telefono || '?').charAt(0).toUpperCase()}
-                      </span>
-                      <span className="pc-avatar-menu-name">
-                        {clienteData.nombre || clienteData.telefono || '—'}
-                      </span>
-                    </div>
                     <button
                       className="pc-avatar-menu-logout"
                       onClick={handleLogout}
