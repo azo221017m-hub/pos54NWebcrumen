@@ -99,9 +99,6 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
               <section className="mvpc-cliente-info mvpc-cliente-info--header">
                 <div className="mvpc-cdt-header-row">
                   <span className="mvpc-cdt-title">Mis Datos de Cliente CDT</span>
-                  <div className="mvpc-cdt-location-inline">
-                    <GoogleMapsSelector value={ubicacionUrl} onChange={setUbicacionUrl} />
-                  </div>
                 </div>
                 <div className="mvpc-cdt-tags">
                   {clienteData.referencia && (
@@ -114,9 +111,9 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
                     <span className="mvpc-cdt-tag-label">Tel</span>
                     <span className="mvpc-cdt-tag-value">{clienteData.telefono}</span>
                   </span>
-                  {(ubicacionUrl || clienteData.direccion) && (
-                    <span className="mvpc-cdt-tag">
-                      <span className="mvpc-cdt-tag-label">Dir</span>
+                  <span className="mvpc-cdt-tag mvpc-cdt-tag-dir">
+                    <span className="mvpc-cdt-tag-label">Dir</span>
+                    {(ubicacionUrl || clienteData.direccion) && (
                       <span className="mvpc-cdt-tag-value">
                         {ubicacionUrl ? (
                           <a href={ubicacionUrl} target="_blank" rel="noopener noreferrer" className="mvpc-cdt-dir-link">
@@ -126,8 +123,11 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
                           clienteData.direccion
                         )}
                       </span>
-                    </span>
-                  )}
+                    )}
+                    <div className="mvpc-cdt-location-inline">
+                      <GoogleMapsSelector value={ubicacionUrl} onChange={setUbicacionUrl} />
+                    </div>
+                  </span>
                 </div>
               </section>
             )}
