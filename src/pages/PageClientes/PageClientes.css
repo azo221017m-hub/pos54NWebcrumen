@@ -937,8 +937,8 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 18px;
+  gap: 5px;
+  padding: 11px 18px;
   font-size: 0.78rem;
   color: #9ca3af;
 }
