@@ -7,7 +7,7 @@ type ServerStatus = 'waiting' | 'loading' | 'active';
 
 const STATUS_INFO: Record<ServerStatus, { emoji: string; text: string }> = {
   waiting: { emoji: '😴', text: 'Servidor de la Comunidad en espera' },
-  loading: { emoji: '👁️', text: 'Activando CDTs por nombre' },
+  loading: { emoji: '👁️', text: 'Activando CDT' },
   active:  { emoji: '✅', text: 'Comunidad lista' },
 };
 

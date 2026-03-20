@@ -362,6 +362,10 @@ const PageClientes: React.FC = () => {
       showInfoToast('El campo Teléfono es obligatorio');
       return;
     }
+    if (!registroData.direccion.trim()) {
+      showInfoToast('La selección de dirección es obligatoria');
+      return;
+    }
     setRegistroCargando(true);
     try {
       const result = await clienteWebService.registrarCliente({
@@ -373,7 +377,7 @@ const PageClientes: React.FC = () => {
         puntosfidelidad: registroData.puntosfidelidad ? Number(registroData.puntosfidelidad) : undefined,
         telefono: registroData.telefono.trim(),
         email: registroData.email || undefined,
-        direccion: registroData.direccion || undefined,
+        direccion: registroData.direccion.trim(),
         password: registroData.password
       });
       if (result.success) {
@@ -823,15 +827,9 @@ const PageClientes: React.FC = () => {
               <button className="pc-modal-close" onClick={handleCerrarModalRegistro} aria-label="Cerrar">✕</button>
             </div>
             <div className="pc-modal-body">
-              <div className="pc-form-row">
-                <div className="pc-form-group">
-                  <label className="pc-form-label">Nombre</label>
-                  <input type="text" className="pc-form-input" placeholder="Tu nombre" autoComplete="off" value={registroData.nombre} onChange={(e) => handleRegistroChange('nombre', e.target.value)} />
-                </div>
-                <div className="pc-form-group">
-                  <label className="pc-form-label pc-form-label--required">Alias como Cliente (¿A nombre de quién hacemos los pedidos?)</label>
-                  <input type="text" className="pc-form-input" placeholder="Nombre o alias" autoComplete="off" value={registroData.referencia} onChange={(e) => handleRegistroChange('referencia', e.target.value)} />
-                </div>
+              <div className="pc-form-group">
+                <label className="pc-form-label pc-form-label--required">Alias como Cliente (¿A nombre de quién hacemos los pedidos?)</label>
+                <input type="text" className="pc-form-input" placeholder="Nombre o alias" autoComplete="off" value={registroData.referencia} onChange={(e) => handleRegistroChange('referencia', e.target.value)} />
               </div>
               <div className="pc-form-row">
                 <div className="pc-form-group">
@@ -844,7 +842,7 @@ const PageClientes: React.FC = () => {
                 </div>
               </div>
               <div className="pc-form-group">
-                <label className="pc-form-label">Dirección</label>
+                <label className="pc-form-label pc-form-label--required">Dirección</label>
                 <GoogleMapsSelector
                   value={registroData.direccion}
                   onChange={(url) => handleRegistroChange('direccion', url)}
@@ -859,7 +857,7 @@ const PageClientes: React.FC = () => {
                 onClick={handleRegistroCliente}
                 disabled={registroCargando}
               >
-                {registroCargando ? <><span className="pc-btn-spinner" /> Registrando...</> : 'Registrarme'}
+                {registroCargando ? <><span className="pc-btn-spinner" /> Uniéndote...</> : 'Únirme'}
               </button>
             </div>
           </div>
