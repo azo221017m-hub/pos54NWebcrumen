@@ -158,6 +158,7 @@
   align-items: flex-end;
   flex-shrink: 0;
   position: relative;
+  overflow: visible;
 }
 
 .user-avatar-ventas {
@@ -214,6 +215,8 @@
   flex-wrap: nowrap;
   justify-content: flex-end;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ficha-comanda-below-avatar .ficha-info {
