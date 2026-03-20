@@ -20,6 +20,7 @@ const FORMAS_DE_PAGO_VALIDAS: FormaDePago[] = ['EFECTIVO', 'TARJETA', 'TRANSFERE
 const ESTADO_ESPERAR = 'ESPERAR';
 const ESTADO_ORDENADO = 'ORDENADO';
 const TIPO_PRODUCTO_DEFAULT = 'Directo';
+const ROL_CLIENTE_WEB = 99; // idRol asignado a clientes web en auth middleware
 
 // Helper function: Process inventory movements for recipe and inventory products
 // This function creates inventory movement records for recipe-based and inventory-based sales
@@ -709,7 +710,7 @@ export const updateVentaWeb = async (req: AuthRequest, res: Response): Promise<v
 
     // Solo usuarios de negocio pueden cancelar pedidos WEB; clientes (idRol=99) no pueden
     const idRol = req.user?.idRol;
-    if (idRol === 99 && origenVenta === 'WEB' && updateData.estadodeventa === 'CANCELADO') {
+    if (idRol === ROL_CLIENTE_WEB && origenVenta === 'WEB' && updateData.estadodeventa === 'CANCELADO') {
       res.status(403).json({
         success: false,
         message: 'Solo el negocio puede cancelar pedidos web'
@@ -838,7 +839,7 @@ export const deleteVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     }
 
     // Solo usuarios de negocio pueden cancelar pedidos WEB; clientes (idRol=99) no pueden
-    if (idRol === 99 && ventaRows[0].origenventa === 'WEB') {
+    if (idRol === ROL_CLIENTE_WEB && ventaRows[0].origenventa === 'WEB') {
       res.status(403).json({
         success: false,
         message: 'Solo el negocio puede cancelar pedidos web'
