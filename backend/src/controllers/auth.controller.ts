@@ -560,7 +560,7 @@ export const registroClientePublico = async (req: Request, res: Response): Promi
 
     // Verificar si ya existe un cliente con el mismo teléfono
     if (telefono) {
-      const [existing] = await pool.execute<RowDataPacket[]>(
+      const [existing] = await pool.query<RowDataPacket[]>(
         'SELECT idCliente FROM tblposcrumenwebclientes WHERE telefono = ? LIMIT 1',
         [telefono]
       );
@@ -572,7 +572,7 @@ export const registroClientePublico = async (req: Request, res: Response): Promi
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const [result] = await pool.execute<ResultSetHeader>(
+    const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebclientes (
         nombre,
         referencia,
