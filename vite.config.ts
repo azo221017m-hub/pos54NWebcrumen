@@ -9,7 +9,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'prompt',
       injectRegister: null, // No inyectar automáticamente, lo haremos manualmente
-      includeAssets: ['vite.svg', 'logocrumenpos.svg', 'logowebposcrumen.svg'],
+      includeAssets: ['vite.svg', 'logoposcrumen.svg', 'logowebposcrumen.svg'],
       manifest: {
         name: 'CRUMENCDT -Comunidad Digital Texcoco | Pedidos en Texcoco | Conectándo Negocios y Clientes',
         short_name: 'CRUMENCDT',
@@ -24,7 +24,7 @@ export default defineConfig({
             type: 'image/svg+xml'
           },
           {
-            src: 'logocrumenpos.svg',
+            src: 'logoposcrumen.svg',
             sizes: '512x512',
             type: 'image/svg+xml',
             purpose: 'any'

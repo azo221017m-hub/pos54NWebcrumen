@@ -778,6 +778,7 @@ const PageClientes: React.FC = () => {
               <button className="pc-modal-close" onClick={handleCerrarModalLogin} aria-label="Cerrar">✕</button>
             </div>
             <div className="pc-modal-body">
+              <form onSubmit={(e) => { e.preventDefault(); handleLoginCliente(); }}>
               <div className="pc-form-group">
                 <label className="pc-form-label">Teléfono cliente</label>
                 <input
@@ -786,7 +787,6 @@ const PageClientes: React.FC = () => {
                   placeholder="Tu número de teléfono"
                   value={loginTelefono}
                   onChange={(e) => setLoginTelefono(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleLoginCliente()}
                   autoFocus
                 />
               </div>
@@ -798,16 +798,16 @@ const PageClientes: React.FC = () => {
                   placeholder="Tu clave secreta"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleLoginCliente()}
                 />
               </div>
               <button
+                type="submit"
                 className="pc-modal-btn"
-                onClick={handleLoginCliente}
                 disabled={loginCargando}
               >
                 {loginCargando ? <><span className="pc-btn-spinner" /> Verificando...</> : 'Comenzar a Pedir'}
               </button>
+              </form>
               <div className="pc-unirse-link">
                 <button className="pc-unirse-btn" onClick={handleAbrirModalRegistro}>
                   Únirme a la Comunidad
@@ -827,6 +827,7 @@ const PageClientes: React.FC = () => {
               <button className="pc-modal-close" onClick={handleCerrarModalRegistro} aria-label="Cerrar">✕</button>
             </div>
             <div className="pc-modal-body">
+              <form onSubmit={(e) => { e.preventDefault(); handleRegistroCliente(); }}>
               <div className="pc-form-group">
                 <label className="pc-form-label pc-form-label--required">Alias como Cliente (¿A nombre de quién hacemos los pedidos?)</label>
                 <input type="text" className="pc-form-input" placeholder="Nombre o alias" autoComplete="off" value={registroData.referencia} onChange={(e) => handleRegistroChange('referencia', e.target.value)} />
@@ -854,12 +855,13 @@ const PageClientes: React.FC = () => {
                 <input type="password" className="pc-form-input" placeholder="E5cr1b3 un* c1aV3 5ecre7a" autoComplete="new-password" value={registroData.password} onChange={(e) => handleRegistroChange('password', e.target.value)} />
               </div>
               <button
+                type="submit"
                 className="pc-modal-btn"
-                onClick={handleRegistroCliente}
                 disabled={registroCargando}
               >
                 {registroCargando ? <><span className="pc-btn-spinner" /> Uniéndote...</> : 'Únirme'}
               </button>
+              </form>
             </div>
           </div>
         </div>

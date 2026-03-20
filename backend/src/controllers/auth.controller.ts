@@ -591,9 +591,8 @@ export const registroClientePublico = async (req: Request, res: Response): Promi
         password,
         fecharegistroauditoria,
         usuarioauditoria,
-        fehamodificacionauditoria,
         idnegocio
-      ) VALUES (?, ?, ?, 'NUEVO', ?, ?, ?, 'EN_PROSPECCIÓN', 'OTRO', NOW(), ?, ?, ?, 1, ?, NOW(), ?, NOW(), 0)`,
+      ) VALUES (?, ?, ?, 'NUEVO', ?, ?, ?, 'EN_PROSPECCIÓN', 'OTRO', NOW(), ?, ?, ?, 1, ?, NOW(), ?, 0)`,
       [
         nombre || null,
         referencia,
@@ -614,9 +613,12 @@ export const registroClientePublico = async (req: Request, res: Response): Promi
       message: 'Registro exitoso. Ahora puedes iniciar sesión.',
       data: { idCliente: result.insertId }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error en registroClientePublico:', error);
-    res.status(500).json({ success: false, message: 'Error en el servidor al registrar el cliente' });
+    const mensaje = error?.code === 'ER_DUP_ENTRY'
+      ? 'Ya existe un cliente con esos datos. Intenta iniciar sesión.'
+      : 'Error en el servidor al registrar el cliente';
+    res.status(error?.code === 'ER_DUP_ENTRY' ? 409 : 500).json({ success: false, message: mensaje });
   }
 };
 
