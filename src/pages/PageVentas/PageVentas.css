@@ -200,22 +200,25 @@
   margin-top: 0.125rem;
 }
 
-/* FichaDeComanda relocated below avatar at 60% size (20% increase), aligned right, 2 rows */
+/* FichaDeComanda relocated below avatar at 60% size, aligned right, single row */
 .ficha-comanda-below-avatar {
+  position: absolute;
+  top: 100%;
+  right: 0;
   transform: scale(0.6);
   transform-origin: top right;
-  margin-top: 0.25rem;
+  margin-top: 0.15rem;
 }
 
 .ficha-comanda-below-avatar .ficha-de-comanda {
-  flex-wrap: wrap;
-  max-width: 16rem;
+  flex-wrap: nowrap;
   justify-content: flex-end;
+  white-space: nowrap;
 }
 
 .ficha-comanda-below-avatar .ficha-info {
-  width: 100%;
   justify-content: flex-end;
+  flex-wrap: nowrap;
 }
 
 /* Content Layout */
