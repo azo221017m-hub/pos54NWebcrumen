@@ -1568,14 +1568,14 @@ const PageVentas: React.FC = () => {
       {/* Header */}
       <header className="ventas-header">
         <div className="header-left-group">
+          <img src={negocio?.logotipo || "/logowebposcrumen.svg"} alt={negocio?.nombreNegocio ? `${negocio.nombreNegocio} Logo` : 'Logo POS Crumen'} className="header-logo-ventas" />
+
           {privilegio !== 2 && (
           <button className="btn-back-dashboard" onClick={handleCancelar}>
-            <ArrowLeft size={20} />
+            <ArrowLeft size={12} />
             {isClienteMode ? 'Regresar' : 'Cancelar'}
           </button>
           )}
-
-          <img src={negocio?.logotipo || "/logowebposcrumen.svg"} alt={negocio?.nombreNegocio ? `${negocio.nombreNegocio} Logo` : 'Logo POS Crumen'} className="header-logo-ventas" />
         </div>
 
         {/* Carrusel de Categorías en Header — justo a la derecha del logo */}
@@ -1646,7 +1646,7 @@ const PageVentas: React.FC = () => {
           </div>
           <span className="user-label-ventas">@{usuario?.alias || 'Usuario'}</span>
 
-          {/* Client info (FichaDeComanda) — reduced 80% below avatar */}
+          {/* Client info (FichaDeComanda) — reduced 50% below avatar, aligned right */}
           <div className="ficha-comanda-below-avatar">
             <FichaDeComanda
               tipoServicio={tipoServicio}
