@@ -115,6 +115,11 @@
   animation: gms-spin 0.7s linear infinite;
 }
 
+.gms-spinner--dark {
+  border-color: rgba(13, 79, 138, 0.25);
+  border-top-color: #0d4f8a;
+}
+
 @keyframes gms-spin {
   to { transform: rotate(360deg); }
 }

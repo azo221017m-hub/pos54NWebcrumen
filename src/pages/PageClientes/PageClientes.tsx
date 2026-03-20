@@ -846,6 +846,7 @@ const PageClientes: React.FC = () => {
                 <GoogleMapsSelector
                   value={registroData.direccion}
                   onChange={(url) => handleRegistroChange('direccion', url)}
+                  variant="form"
                 />
               </div>
               <div className="pc-form-group">
