@@ -1,14 +1,9 @@
 import { api } from './api';
 
 export interface ClienteRegistroData {
-  nombre?: string;
   referencia: string;
-  cumple?: string;
-  satisfaccion?: number;
-  comentarios?: string;
-  puntosfidelidad?: number;
   telefono?: string;
-  email?: string;
+  cumple?: string;
   direccion?: string;
   password: string;
 }

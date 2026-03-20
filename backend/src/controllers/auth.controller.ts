@@ -540,15 +540,11 @@ export const loginCliente = async (req: Request, res: Response): Promise<void> =
  */
 export const registroClientePublico = async (req: Request, res: Response): Promise<void> => {
   try {
+    // Solo se usan los campos del formulario modal "Únirme a la Comunidad"
     const {
-      nombre,
       referencia,
-      cumple,
-      satisfaccion,
-      comentarios,
-      puntosfidelidad,
       telefono,
-      email,
+      cumple,
       direccion,
       password
     } = req.body;
@@ -572,6 +568,8 @@ export const registroClientePublico = async (req: Request, res: Response): Promi
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Insertar sólo los campos del formulario modal; los demás se completan con
+    // 'default' (varchar/text), idnegocio=0, usuarioauditoria='web', fechas con NOW()
     const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebclientes (
         nombre,
@@ -595,19 +593,13 @@ export const registroClientePublico = async (req: Request, res: Response): Promi
         usuarioauditoria,
         fehamodificacionauditoria,
         idnegocio
-      ) VALUES (?, ?, ?, 'NUEVO', ?, ?, ?, 'EN_PROSPECCIÓN', NULL, 'OTRO', NULL, NOW(), ?, ?, ?, 1, ?, NOW(), ?, NOW(), 0)`,
+      ) VALUES ('default', ?, ?, 'NUEVO', 0, 'default', 0, 'EN_PROSPECCIÓN', 'default', 'OTRO', 'default', NOW(), ?, 'default', ?, 1, ?, NOW(), 'web', NOW(), 0)`,
       [
-        nombre || null,
         referencia,
         cumple || null,
-        satisfaccion || null,
-        comentarios || null,
-        puntosfidelidad || 0,
         telefono || null,
-        email || null,
         direccion || null,
-        hashedPassword,
-        telefono || 'cliente'
+        hashedPassword
       ]
     );
 
