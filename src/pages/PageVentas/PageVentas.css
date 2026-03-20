@@ -195,6 +195,13 @@
   margin-top: 0.125rem;
 }
 
+/* FichaDeComanda relocated below avatar at 80% size */
+.ficha-comanda-below-avatar {
+  transform: scale(0.8);
+  transform-origin: top center;
+  margin-top: 0.25rem;
+}
+
 /* Content Layout */
 .ventas-content {
   display: flex;

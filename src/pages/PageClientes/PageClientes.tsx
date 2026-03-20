@@ -447,8 +447,8 @@ const PageClientes: React.FC = () => {
             <p className="pc-tagline">Explora Negocios en Texcoco, Pide y Obten Beneficios</p>
           </div>
 
+          {/* Search bar + category filters — right of logo */}
           <div className="pc-header-center">
-            {/* Search bar */}
             <div className="pc-search-wrapper">
               <svg className="pc-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="11" cy="11" r="8" />
@@ -466,7 +466,7 @@ const PageClientes: React.FC = () => {
               )}
             </div>
 
-            {/* Category filters */}
+            {/* Category filters below search */}
             <div className="pc-categorias">
               {CATEGORIAS.map((cat) => (
                 <button
@@ -635,7 +635,7 @@ const PageClientes: React.FC = () => {
         {isLoading ? (
           <div className="pc-loading">
             <div className="pc-spinner" />
-            <p>Activando sistema CRUMEN54N</p>
+            <p>Activando Comunidad Digital Texcoco</p>
           </div>
         ) : filteredNegocios.length === 0 ? (
           <div className="pc-empty">

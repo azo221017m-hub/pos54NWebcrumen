@@ -1578,15 +1578,7 @@ const PageVentas: React.FC = () => {
           <img src={negocio?.logotipo || "/logowebposcrumen.svg"} alt={negocio?.nombreNegocio ? `${negocio.nombreNegocio} Logo` : 'Logo POS Crumen'} className="header-logo-ventas" />
         </div>
 
-        <FichaDeComanda
-          tipoServicio={tipoServicio}
-          mesaData={mesaData}
-          llevarData={llevarData}
-          domicilioData={domicilioData}
-          isServiceConfigured={isServiceConfigured}
-        />
-
-        {/* Carrusel de Categorías en Header */}
+        {/* Carrusel de Categorías en Header — justo a la derecha del logo */}
         <div className={`header-categorias-carousel-container ${!isServiceConfigured ? 'hidden' : ''}`}>
           <button 
             className="carousel-nav-button carousel-nav-left"
@@ -1653,6 +1645,17 @@ const PageVentas: React.FC = () => {
             )}
           </div>
           <span className="user-label-ventas">@{usuario?.alias || 'Usuario'}</span>
+
+          {/* Client info (FichaDeComanda) — reduced 80% below avatar */}
+          <div className="ficha-comanda-below-avatar">
+            <FichaDeComanda
+              tipoServicio={tipoServicio}
+              mesaData={mesaData}
+              llevarData={llevarData}
+              domicilioData={domicilioData}
+              isServiceConfigured={isServiceConfigured}
+            />
+          </div>
 
           {/* User Menu Dropdown */}
           {showUserMenu && (
