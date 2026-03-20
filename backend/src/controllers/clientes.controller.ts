@@ -209,8 +209,9 @@ export const crearCliente = async (req: AuthRequest, res: Response): Promise<voi
         estatus,
         fecharegistroauditoria,
         usuarioauditoria,
+        fehamodificacionauditoria,
         idnegocio
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, NOW(), ?)`,
       [
         nombre,
         referencia || null,

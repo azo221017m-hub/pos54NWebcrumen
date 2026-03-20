@@ -582,7 +582,9 @@ export const registroClientePublico = async (req: Request, res: Response): Promi
         comentarios,
         puntosfidelidad,
         estatus_seguimiento,
+        responsable_seguimiento,
         medio_contacto,
+        observacionesseguimiento,
         fechaultimoseguimiento,
         telefono,
         email,
@@ -593,7 +595,7 @@ export const registroClientePublico = async (req: Request, res: Response): Promi
         usuarioauditoria,
         fehamodificacionauditoria,
         idnegocio
-      ) VALUES (?, ?, ?, 'NUEVO', ?, ?, ?, 'EN_PROSPECCIÓN', 'OTRO', NOW(), ?, ?, ?, 1, ?, NOW(), ?, NOW(), 0)`,
+      ) VALUES (?, ?, ?, 'NUEVO', ?, ?, ?, 'EN_PROSPECCIÓN', NULL, 'OTRO', NULL, NOW(), ?, ?, ?, 1, ?, NOW(), ?, NOW(), 0)`,
       [
         nombre || null,
         referencia,
