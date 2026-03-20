@@ -1567,14 +1567,16 @@ const PageVentas: React.FC = () => {
 
       {/* Header */}
       <header className="ventas-header">
-        {privilegio !== 2 && (
-        <button className="btn-back-dashboard" onClick={handleCancelar}>
-          <ArrowLeft size={20} />
-          {isClienteMode ? 'Regresar' : 'Cancelar'}
-        </button>
-        )}
+        <div className="header-left-group">
+          {privilegio !== 2 && (
+          <button className="btn-back-dashboard" onClick={handleCancelar}>
+            <ArrowLeft size={20} />
+            {isClienteMode ? 'Regresar' : 'Cancelar'}
+          </button>
+          )}
 
-        <img src={negocio?.logotipo || "/logowebposcrumen.svg"} alt={negocio?.nombreNegocio ? `${negocio.nombreNegocio} Logo` : 'Logo POS Crumen'} className="header-logo-ventas" />
+          <img src={negocio?.logotipo || "/logowebposcrumen.svg"} alt={negocio?.nombreNegocio ? `${negocio.nombreNegocio} Logo` : 'Logo POS Crumen'} className="header-logo-ventas" />
+        </div>
 
         <FichaDeComanda
           tipoServicio={tipoServicio}
@@ -1583,6 +1585,59 @@ const PageVentas: React.FC = () => {
           domicilioData={domicilioData}
           isServiceConfigured={isServiceConfigured}
         />
+
+        {/* Carrusel de Categorías en Header */}
+        <div className={`header-categorias-carousel-container ${!isServiceConfigured ? 'hidden' : ''}`}>
+          <button 
+            className="carousel-nav-button carousel-nav-left"
+            onClick={() => scrollCategorias('left')}
+            aria-label="Scroll left"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          
+          <div className="categorias-carousel header-categorias-carousel" ref={categoriasScrollRef}>
+            {categorias.map((categoria) => (
+              <div 
+                key={categoria.idCategoria}
+                className={`categoria-slide-item header-categoria-item ${categoriaSeleccionada === categoria.idCategoria ? 'selected' : ''}`}
+                onClick={() => handleCategoriaClick(categoria.idCategoria)}
+              >
+                {categoria.imagencategoria ? (
+                  <div className="categoria-slide-imagen header-categoria-imagen">
+                    <img 
+                      src={categoria.imagencategoria} 
+                      alt={categoria.nombre}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const parent = e.currentTarget.parentElement;
+                        if (parent) {
+                          const fallbackSpan = document.createElement('span');
+                          fallbackSpan.textContent = '📁';
+                          parent.appendChild(fallbackSpan);
+                          parent.classList.add('categoria-placeholder');
+                        }
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="categoria-slide-imagen header-categoria-imagen categoria-placeholder">
+                    <span>📁</span>
+                  </div>
+                )}
+                <span className="categoria-slide-nombre">{categoria.nombre}</span>
+              </div>
+            ))}
+          </div>
+
+          <button 
+            className="carousel-nav-button carousel-nav-right"
+            onClick={() => scrollCategorias('right')}
+            aria-label="Scroll right"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
 
         <div className="user-info-header">
           <div 
@@ -1597,10 +1652,7 @@ const PageVentas: React.FC = () => {
               </div>
             )}
           </div>
-          <div className="user-details-ventas">
-            <p className="user-alias-ventas">@{usuario?.alias || 'Usuario'}</p>
-            <p className="user-business-ventas">{negocio?.nombreNegocio || 'Negocio'}</p>
-          </div>
+          <span className="user-label-ventas">@{usuario?.alias || 'Usuario'}</span>
 
           {/* User Menu Dropdown */}
           {showUserMenu && (
@@ -1659,60 +1711,6 @@ const PageVentas: React.FC = () => {
                 }}
               />
             </div>
-          </div>
-
-          {/* Carrusel de Categorías - Show when service is configured */}
-          <div className={`categorias-carousel-container ${!isServiceConfigured ? 'hidden' : ''}`}>
-            <button 
-              className="carousel-nav-button carousel-nav-left"
-              onClick={() => scrollCategorias('left')}
-              aria-label="Scroll left"
-            >
-              <ChevronLeft size={24} />
-            </button>
-            
-            <div className="categorias-carousel" ref={categoriasScrollRef}>
-              {categorias.map((categoria) => (
-                <div 
-                  key={categoria.idCategoria}
-                  className={`categoria-slide-item ${categoriaSeleccionada === categoria.idCategoria ? 'selected' : ''}`}
-                  onClick={() => handleCategoriaClick(categoria.idCategoria)}
-                >
-                  {categoria.imagencategoria ? (
-                    <div className="categoria-slide-imagen">
-                      <img 
-                        src={categoria.imagencategoria} 
-                        alt={categoria.nombre}
-                        onError={(e) => {
-                          // Fallback if image fails to load
-                          e.currentTarget.style.display = 'none';
-                          const parent = e.currentTarget.parentElement;
-                          if (parent) {
-                            const fallbackSpan = document.createElement('span');
-                            fallbackSpan.textContent = '📁';
-                            parent.appendChild(fallbackSpan);
-                            parent.classList.add('categoria-placeholder');
-                          }
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <div className="categoria-slide-imagen categoria-placeholder">
-                      <span>📁</span>
-                    </div>
-                  )}
-                  <span className="categoria-slide-nombre">{categoria.nombre}</span>
-                </div>
-              ))}
-            </div>
-
-            <button 
-              className="carousel-nav-button carousel-nav-right"
-              onClick={() => scrollCategorias('right')}
-              aria-label="Scroll right"
-            >
-              <ChevronRight size={24} />
-            </button>
           </div>
 
           {/* Ver Menu Día Button and Seat Selector */}
