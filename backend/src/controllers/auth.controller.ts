@@ -591,8 +591,9 @@ export const registroClientePublico = async (req: Request, res: Response): Promi
         password,
         fecharegistroauditoria,
         usuarioauditoria,
+        fehamodificacionauditoria,
         idnegocio
-      ) VALUES (?, ?, ?, 'NUEVO', ?, ?, ?, 'EN_PROSPECCIÓN', 'OTRO', NOW(), ?, ?, ?, 1, ?, NOW(), ?, 0)`,
+      ) VALUES (?, ?, ?, 'NUEVO', ?, ?, ?, 'EN_PROSPECCIÓN', 'OTRO', NOW(), ?, ?, ?, 1, ?, NOW(), ?, NOW(), 0)`,
       [
         nombre || null,
         referencia,

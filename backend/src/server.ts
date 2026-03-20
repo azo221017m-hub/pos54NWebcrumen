@@ -12,6 +12,13 @@ const runMigrations = async () => {
   } catch (error) {
     console.error('⚠️  Error aplicando migración origenventa:', error);
   }
+
+  try {
+    await pool.query(`ALTER TABLE tblposcrumenwebclientes ADD COLUMN IF NOT EXISTS password VARCHAR(255) NULL DEFAULT NULL`);
+    console.log('✅ Migración aplicada: columna password en tblposcrumenwebclientes');
+  } catch (error) {
+    console.error('⚠️  Error aplicando migración password en tblposcrumenwebclientes:', error);
+  }
 };
 
 const startServer = async () => {
