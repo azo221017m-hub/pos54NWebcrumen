@@ -88,14 +88,9 @@ const PageClientes: React.FC = () => {
   const [mostrarModalNegocioCta, setMostrarModalNegocioCta] = useState(false);
   const [negocioCtaData, setNegocioCtaData] = useState(NEGOCIO_CTA_INITIAL);
   const [registroData, setRegistroData] = useState({
-    nombre: '',
     referencia: '',
-    cumple: '',
-    satisfaccion: '',
-    comentarios: '',
-    puntosfidelidad: '',
     telefono: '',
-    email: '',
+    cumple: '',
     direccion: '',
     password: ''
   });
@@ -326,14 +321,9 @@ const PageClientes: React.FC = () => {
   const handleAbrirModalRegistro = () => {
     setMostrarModalLogin(false);
     setRegistroData({
-      nombre: '',
       referencia: '',
-      cumple: '',
-      satisfaccion: '',
-      comentarios: '',
-      puntosfidelidad: '',
       telefono: '',
-      email: '',
+      cumple: '',
       direccion: '',
       password: ''
     });
@@ -369,14 +359,9 @@ const PageClientes: React.FC = () => {
     setRegistroCargando(true);
     try {
       const result = await clienteWebService.registrarCliente({
-        nombre: registroData.nombre || undefined,
         referencia: registroData.referencia.trim(),
-        cumple: registroData.cumple || undefined,
-        satisfaccion: registroData.satisfaccion ? Number(registroData.satisfaccion) : undefined,
-        comentarios: registroData.comentarios || undefined,
-        puntosfidelidad: registroData.puntosfidelidad ? Number(registroData.puntosfidelidad) : undefined,
         telefono: registroData.telefono.trim(),
-        email: registroData.email || undefined,
+        cumple: registroData.cumple || undefined,
         direccion: registroData.direccion.trim(),
         password: registroData.password
       });
