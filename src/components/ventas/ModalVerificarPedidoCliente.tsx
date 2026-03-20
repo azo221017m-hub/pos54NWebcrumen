@@ -180,7 +180,7 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
 
             <footer className="mvpc-actions">
               <button className="mvpc-btn-cancel" onClick={onClose} disabled={isProcessing}>
-                Regresar
+                Corregir
               </button>
               <button
                 className="mvpc-btn-solicitar"

@@ -21,7 +21,7 @@
   z-index: 100;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   flex-shrink: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Floating space-like particle structures in header */
@@ -1299,7 +1299,10 @@
 
 /* ---- Avatar component (header) ---- */
 .pc-avatar-container {
-  position: relative;
+  position: fixed;
+  top: 6px;
+  right: 10px;
+  z-index: 1000;
 }
 
 .pc-avatar-btn {
@@ -1322,14 +1325,14 @@
 }
 
 .pc-avatar-initial {
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: linear-gradient(135deg, #f59e0b, #ef4444);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
@@ -1362,10 +1365,10 @@
   right: 0;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   border: 1px solid #e5e7eb;
-  min-width: 190px;
-  z-index: 200;
+  min-width: 210px;
+  z-index: 10;
   overflow: hidden;
   animation: pcFadeIn 0.15s ease;
 }
@@ -1385,14 +1388,14 @@
 }
 
 .pc-avatar-menu-initial {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: linear-gradient(135deg, #f59e0b, #ef4444);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
