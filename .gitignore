@@ -32,3 +32,4 @@ dist-ssr
 .vercel
 .vercel/*
 dist/
+backend/node_modules/
