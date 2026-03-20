@@ -438,6 +438,9 @@ const PageClientes: React.FC = () => {
     <div className="pc-page">
       {/* Header */}
       <header className="pc-header">
+        <div className="pc-header-particles" aria-hidden="true">
+          <span /><span /><span /><span /><span /><span />
+        </div>
         <div className="pc-header-top">
           <div className="pc-logo-area">
             <img src="/logowebposcrumencdt.svg" alt="CRUMEN54N" className="pc-logo" />

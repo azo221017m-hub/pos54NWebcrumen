@@ -13,7 +13,7 @@
 
 /* ---- Header ---- */
 .pc-header {
-  background: linear-gradient(135deg, #0d4f8a 0%, #0ea5c0 60%, #14b8a6 100%);
+  background: linear-gradient(135deg, #3a8fd4 0%, #1a7abf 30%, #0ea5c0 60%, #14b8a6 100%);
   color: #fff;
   padding: 12px 24px;
   position: sticky;
@@ -21,6 +21,89 @@
   z-index: 100;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* Floating space-like particle structures in header */
+.pc-header-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.pc-header-particles span {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.35) 0%, transparent 70%);
+}
+
+.pc-header-particles span:nth-child(1) {
+  width: 80px;
+  height: 80px;
+  top: -20px;
+  left: 5%;
+  opacity: 0.15;
+  animation: pc-float-1 9s ease-in-out infinite;
+}
+
+.pc-header-particles span:nth-child(2) {
+  width: 50px;
+  height: 50px;
+  top: 10px;
+  left: 25%;
+  opacity: 0.1;
+  animation: pc-float-2 11s ease-in-out infinite;
+}
+
+.pc-header-particles span:nth-child(3) {
+  width: 120px;
+  height: 120px;
+  top: -40px;
+  left: 45%;
+  opacity: 0.08;
+  animation: pc-float-1 13s ease-in-out infinite reverse;
+}
+
+.pc-header-particles span:nth-child(4) {
+  width: 40px;
+  height: 40px;
+  bottom: -10px;
+  right: 30%;
+  opacity: 0.12;
+  animation: pc-float-2 8s ease-in-out infinite;
+}
+
+.pc-header-particles span:nth-child(5) {
+  width: 90px;
+  height: 90px;
+  top: -30px;
+  right: 10%;
+  opacity: 0.1;
+  animation: pc-float-1 10s ease-in-out infinite 2s;
+}
+
+.pc-header-particles span:nth-child(6) {
+  width: 30px;
+  height: 30px;
+  bottom: 5px;
+  left: 60%;
+  opacity: 0.14;
+  animation: pc-float-2 7s ease-in-out infinite 1s;
+}
+
+@keyframes pc-float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%  { transform: translate(20px, 10px) scale(1.1); }
+  50%  { transform: translate(-10px, 15px) scale(0.95); }
+  75%  { transform: translate(15px, -10px) scale(1.05); }
+}
+
+@keyframes pc-float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(-15px, -12px) scale(1.08); }
+  66%  { transform: translate(12px, 8px) scale(0.92); }
 }
 
 .pc-header-top {
@@ -30,6 +113,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  position: relative;
+  z-index: 1;
 }
 
 .pc-logo-area {
@@ -218,10 +303,12 @@
 
 /* ---- CTA — Promote your business ---- */
 .pc-negocio-cta {
-  background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 25%, #f5f0ff 50%, #e8f8f0 75%, #f0f4ff 100%);
+  background: linear-gradient(135deg,
+    #d4e8ff 0%, #c9dbff 15%, #e0d0ff 30%, #ffe0d0 45%,
+    #d0ffe8 60%, #c9dbff 75%, #d4e8ff 100%);
   background-size: 400% 400%;
-  animation: pc-aurora 12s ease-in-out infinite;
-  border: 1px solid rgba(180, 190, 220, 0.4);
+  animation: pc-aurora 8s ease-in-out infinite;
+  border: 1px solid rgba(160, 170, 210, 0.5);
   border-radius: 14px;
   padding: 14px 16px;
   display: flex;
@@ -230,6 +317,13 @@
   gap: 10px;
   box-shadow: 0 2px 16px rgba(100, 120, 180, 0.12);
   flex-shrink: 0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.pc-negocio-cta:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 28px rgba(80, 100, 200, 0.25);
+  border-color: rgba(100, 130, 220, 0.6);
 }
 
 @keyframes pc-aurora {
@@ -263,13 +357,21 @@
   cursor: pointer;
   width: 100%;
   letter-spacing: 0.02em;
-  transition: opacity 0.2s, transform 0.15s;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.3s;
   line-height: 1.3;
+  animation: pc-btn-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes pc-btn-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(14, 165, 192, 0.4); }
+  50%      { transform: scale(1.06); box-shadow: 0 0 16px 4px rgba(14, 165, 192, 0.25); }
 }
 
 .pc-negocio-cta-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+  opacity: 0.95;
+  transform: scale(1.08);
+  box-shadow: 0 4px 20px rgba(14, 165, 192, 0.4);
+  animation: none;
 }
 
 .pc-banner-content {
@@ -491,13 +593,26 @@
   padding-right: 4px;
   overflow-y: auto;
   min-height: 0;
-  /* SCROLL INVISIBLE — funcional pero sin barra visible */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE y Edge */
+  /* Thin custom scrollbar */
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #2dd4a8 transparent; /* Firefox: emerald thumb, transparent track */
 }
 
 .pc-content::-webkit-scrollbar {
-  display: none; /* Chrome, Safari y Opera */
+  width: 6px; /* Thin scrollbar */
+}
+
+.pc-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pc-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #2dd4a8, #10b981);
+  border-radius: 10px;
+}
+
+.pc-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #34d9b0, #059669);
 }
 
 .pc-results-count {
