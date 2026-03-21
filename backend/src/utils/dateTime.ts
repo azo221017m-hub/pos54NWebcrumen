@@ -1,19 +1,50 @@
 /**
- * Utility functions for date and time operations with Mexico timezone
+ * Utility functions for date and time operations with configurable timezone
  * This ensures all timestamps are server-side and user-immutable
  * 
  * Important Note on Timestamps and Timezones:
  * - Date objects and timestamps (milliseconds since epoch) are UNIVERSAL and timezone-agnostic
  * - They represent the same moment in time regardless of timezone
  * - Timezone only affects how we DISPLAY or FORMAT that moment
- * - This module provides utilities to format times in Mexico timezone for business logic
+ * - This module provides utilities to format times in the configured timezone for business logic
+ * 
+ * The timezone is configured via the TZ environment variable in the .env file.
+ * Default: 'America/Mexico_City'
  */
 
-// Mexico timezone constant - UTC-6 (Mexico City standard time)
-// Note: As of October 2022, Mexico abolished daylight saving time nationwide
-// (except some border regions). Most of the country now uses UTC-6 year-round.
-export const MEXICO_TIMEZONE = 'America/Mexico_City';
-export const MEXICO_TIMEZONE_OFFSET = '-06:00'; // For MySQL compatibility
+// Timezone configured from TZ environment variable (defaults to Mexico City)
+export const MEXICO_TIMEZONE: string = process.env.TZ || 'America/Mexico_City';
+
+/**
+ * Compute the UTC offset string (e.g. '-06:00', '+05:30') for the configured timezone.
+ * This is used for MySQL pool timezone configuration.
+ */
+function computeTimezoneOffset(timezone: string): string {
+  try {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      timeZoneName: 'shortOffset'
+    });
+    const parts = formatter.formatToParts(new Date());
+    const tzPart = parts.find(p => p.type === 'timeZoneName');
+    const offset = tzPart?.value || 'GMT';
+
+    if (offset === 'GMT') return '+00:00';
+
+    const match = offset.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/);
+    if (match) {
+      const sign = match[1];
+      const hours = match[2].padStart(2, '0');
+      const minutes = match[3] || '00';
+      return `${sign}${hours}:${minutes}`;
+    }
+    return '+00:00';
+  } catch {
+    return '-06:00'; // Fallback to Mexico offset
+  }
+}
+
+export const MEXICO_TIMEZONE_OFFSET: string = computeTimezoneOffset(MEXICO_TIMEZONE);
 
 /**
  * Get current server time as Date object
@@ -35,16 +66,16 @@ export const getMexicoTimeISO = (): string => {
 };
 
 /**
- * Format a date for MySQL DATETIME column in Mexico timezone
- * Format: YYYY-MM-DD HH:MM:SS in Mexico timezone
- * Note: This converts the universal moment to Mexico local time for display
+ * Format a date for MySQL DATETIME column in the configured timezone
+ * Format: YYYY-MM-DD HH:MM:SS in configured timezone
+ * Note: This converts the universal moment to local time for display
  * @param date Optional date to format, defaults to current time
  * @returns MySQL-formatted datetime string in Mexico timezone
  */
 export const formatMySQLDateTime = (date?: Date): string => {
   const d = date || new Date();
   
-  // Format using Mexico timezone
+  // Format using configured timezone
   const options: Intl.DateTimeFormatOptions = {
     timeZone: MEXICO_TIMEZONE,
     year: 'numeric',
@@ -80,10 +111,10 @@ export const getMexicoTimestamp = (): number => {
 };
 
 /**
- * Get time components formatted in Mexico timezone
+ * Get time components formatted in the configured timezone
  * This is used for generating business codes (folios, claveturno) that should
- * reflect Mexico local time
- * @returns Object with date/time components in Mexico timezone
+ * reflect local time
+ * @returns Object with date/time components in configured timezone
  */
 export const getMexicoTimeComponents = (): {
   year: string;

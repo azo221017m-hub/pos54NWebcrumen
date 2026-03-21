@@ -1,11 +1,24 @@
-# Implementación de Timestamps del Servidor con Zona Horaria de México
+# Implementación de Timestamps del Servidor con Zona Horaria Configurable
 
 ## Resumen
 
-Este documento describe los cambios implementados para garantizar que todas las fechas y horas almacenadas en el sistema sean generadas por el servidor y utilicen la zona horaria de México (America/Mexico_City), cumpliendo con los siguientes requisitos:
+Este documento describe los cambios implementados para garantizar que todas las fechas y horas almacenadas en el sistema sean generadas por el servidor y utilicen la zona horaria configurada mediante la variable de entorno `TZ` (por defecto: America/Mexico_City), cumpliendo con los siguientes requisitos:
 
 1. **Fuente inmutable**: Las fechas/horas deben ser generadas por el servidor (el usuario no puede modificarlas)
-2. **Zona horaria de México**: Todas las operaciones de fecha/hora deben usar la hora de México
+2. **Zona horaria configurable**: Todas las operaciones de fecha/hora usan la zona horaria definida en la variable de entorno `TZ`
+
+## Configuración de Zona Horaria
+
+La zona horaria se configura mediante la variable de entorno `TZ` en el archivo `.env` del backend:
+
+```env
+# Zona horaria del servidor (IANA timezone)
+# Se usa para generar timestamps y configurar MySQL
+# Ejemplos: America/Mexico_City, America/Bogota, America/Lima, America/Buenos_Aires
+TZ=America/Mexico_City
+```
+
+Si no se define `TZ`, se usa `America/Mexico_City` como valor por defecto.
 
 ## Cambios Implementados
 
@@ -14,9 +27,9 @@ Este documento describe los cambios implementados para garantizar que todas las 
 Se creó un nuevo módulo de utilidad que centraliza toda la generación de fechas/horas del servidor:
 
 ```typescript
-// Constantes de zona horaria
-export const MEXICO_TIMEZONE = 'America/Mexico_City';
-export const MEXICO_TIMEZONE_OFFSET = '-06:00';  // UTC-6 (horario estándar)
+// Zona horaria configurada desde la variable de entorno TZ
+export const MEXICO_TIMEZONE = process.env.TZ || 'America/Mexico_City';
+export const MEXICO_TIMEZONE_OFFSET = computeTimezoneOffset(MEXICO_TIMEZONE);  // Calculado dinámicamente
 
 // Funciones principales:
 - getMexicoTime(): Date                      // Retorna Date actual del servidor
@@ -27,7 +40,8 @@ export const MEXICO_TIMEZONE_OFFSET = '-06:00';  // UTC-6 (horario estándar)
 ```
 
 **Implementación clave:**
-- `getMexicoTimeComponents()` usa `Intl.DateTimeFormat` con zona horaria México
+- `getMexicoTimeComponents()` usa `Intl.DateTimeFormat` con la zona horaria configurada en `TZ`
+- `computeTimezoneOffset()` calcula dinámicamente el offset UTC para MySQL
 - Retorna componentes (año, mes, día, hora, minuto, segundo) ya formateados para México
 - Estos componentes se usan para generar folios y claves de turno
 
@@ -39,23 +53,24 @@ export const MEXICO_TIMEZONE_OFFSET = '-06:00';  // UTC-6 (horario estándar)
 
 ### 2. Configuración de Base de Datos (`backend/src/config/db.ts`)
 
-Se actualizó la configuración del pool de conexiones MySQL para usar el offset de zona horaria de México:
+Se actualizó la configuración del pool de conexiones MySQL para usar el offset de zona horaria calculado dinámicamente desde `TZ`:
 
 ```typescript
 const dbConfig = {
   // ... otras configuraciones
-  timezone: MEXICO_TIMEZONE_OFFSET  // '-06:00' para México (horario estándar)
+  timezone: MEXICO_TIMEZONE_OFFSET  // Offset calculado dinámicamente desde TZ
 };
 ```
 
 **Impacto:**
-- Todas las funciones MySQL como `NOW()`, `CURRENT_TIMESTAMP` usan hora con offset de México
+- Todas las funciones MySQL como `NOW()`, `CURRENT_TIMESTAMP` usan hora con el offset configurado
 - Las conversiones de fecha/hora son consistentes
 - Los datos almacenados reflejan la hora local del negocio
-- Usa formato de offset numérico (`-06:00`) compatible con MySQL sin necesidad de tablas de zona horaria
+- Usa formato de offset numérico (ej: `-06:00`) compatible con MySQL sin necesidad de tablas de zona horaria
+- El offset se calcula automáticamente a partir del nombre IANA de la zona horaria
 
-**Nota sobre horario de verano:**
-Desde octubre de 2022, México abolió el horario de verano a nivel nacional (excepto algunas regiones fronterizas). El país usa UTC-6 todo el año. El offset `-06:00` es apropiado para la mayoría de los casos de uso.
+**Nota sobre zona horaria:**
+La zona horaria se configura mediante la variable de entorno `TZ`. Por defecto se usa `America/Mexico_City`. Desde octubre de 2022, México abolió el horario de verano a nivel nacional (excepto algunas regiones fronterizas). El país usa UTC-6 todo el año. Si se cambia `TZ`, el offset se recalcula automáticamente.
 
 ### 3. Actualización de Controladores Backend
 
@@ -150,8 +165,8 @@ El cliente solo puede enviar datos de negocio que requieren input del usuario:
 ### ¿Qué pasa si el servidor está en otra zona horaria?
 **No hay problema**. Razones:
 
-1. `getMexicoTimeComponents()` usa `Intl.DateTimeFormat` con zona horaria México
-2. MySQL está configurado con `timezone: '-06:00'` (offset de México)
+1. `getMexicoTimeComponents()` usa `Intl.DateTimeFormat` con la zona horaria configurada en `TZ`
+2. MySQL está configurado con el offset calculado dinámicamente desde `TZ`
 3. Las consultas SQL con `NOW()` respetan la configuración de timezone
 4. Los Date objects y timestamps son universales - la zona horaria solo afecta el formato de salida
 
@@ -236,6 +251,6 @@ const metadata = {
 La implementación cumple con ambos requisitos:
 
 1. ✅ **Fuente inmutable**: Todas las fechas son generadas por el servidor
-2. ✅ **Zona horaria de México**: Configurado en MySQL y funciones de utilidad
+2. ✅ **Zona horaria configurable**: Configurado en MySQL y funciones de utilidad mediante la variable de entorno `TZ`
 
-Los cambios son mínimos, quirúrgicos y no afectan la funcionalidad existente. El sistema ahora tiene timestamps confiables e inmutables que reflejan la hora local del negocio en México.
+Los cambios son mínimos, quirúrgicos y no afectan la funcionalidad existente. El sistema ahora tiene timestamps confiables e inmutables que reflejan la hora local del negocio según la zona horaria configurada en `TZ`.

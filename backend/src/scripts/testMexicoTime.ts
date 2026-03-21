@@ -1,22 +1,26 @@
 /**
- * Test script to verify Mexico timezone functionality
+ * Test script to verify timezone functionality
  * This demonstrates that server-side dates are used and cannot be manipulated by clients
+ * The timezone is configured via the TZ environment variable
  */
 
-import { getMexicoTime, getMexicoTimeISO, formatMySQLDateTime, getMexicoTimestamp, MEXICO_TIMEZONE } from '../utils/dateTime';
+import { getMexicoTime, getMexicoTimeISO, formatMySQLDateTime, getMexicoTimestamp, MEXICO_TIMEZONE, MEXICO_TIMEZONE_OFFSET } from '../utils/dateTime';
 
 console.log('='.repeat(60));
-console.log('TESTING MEXICO TIMEZONE FUNCTIONALITY');
+console.log('TESTING TIMEZONE FUNCTIONALITY');
 console.log('='.repeat(60));
 
-// Test 1: Get Mexico time
-console.log('\n1. Current Mexico Time:');
+console.log(`\nConfigured timezone (TZ): ${MEXICO_TIMEZONE}`);
+console.log(`Computed offset: ${MEXICO_TIMEZONE_OFFSET}`);
+
+// Test 1: Get server time
+console.log('\n1. Current Server Time:');
 const mexicoTime = getMexicoTime();
 console.log(`   Date object: ${mexicoTime}`);
 console.log(`   Timezone: ${MEXICO_TIMEZONE}`);
 
 // Test 2: Get ISO format
-console.log('\n2. Mexico Time in ISO format:');
+console.log('\n2. Server Time in ISO format:');
 const isoTime = getMexicoTimeISO();
 console.log(`   ISO String: ${isoTime}`);
 
@@ -26,14 +30,14 @@ const mysqlTime = formatMySQLDateTime();
 console.log(`   MySQL format: ${mysqlTime}`);
 
 // Test 4: Timestamp
-console.log('\n4. Mexico Timestamp:');
+console.log('\n4. Server Timestamp:');
 const timestamp = getMexicoTimestamp();
 console.log(`   Timestamp: ${timestamp}`);
 console.log(`   Date from timestamp: ${new Date(timestamp)}`);
 
 // Test 5: Comparison with local time
 console.log('\n5. Comparison (Server vs Local):');
-console.log(`   Server time (Mexico): ${getMexicoTime().toLocaleString('es-MX', { timeZone: MEXICO_TIMEZONE })}`);
+console.log(`   Server time (${MEXICO_TIMEZONE}): ${getMexicoTime().toLocaleString('es-MX', { timeZone: MEXICO_TIMEZONE })}`);
 console.log(`   Local system time: ${new Date().toLocaleString()}`);
 console.log(`   NOTE: These may differ based on server's physical timezone`);
 
@@ -51,6 +55,7 @@ console.log('\n' + '='.repeat(60));
 console.log('KEY POINTS:');
 console.log('- All dates are generated SERVER-SIDE');
 console.log('- Client CANNOT manipulate these timestamps');
-console.log('- Timezone is ALWAYS Mexico City (America/Mexico_City)');
+console.log(`- Timezone is configured via TZ env var: ${MEXICO_TIMEZONE}`);
+console.log(`- MySQL offset: ${MEXICO_TIMEZONE_OFFSET}`);
 console.log('- Used for audit trails, turnos, ventas, and all timestamps');
 console.log('='.repeat(60) + '\n');
