@@ -751,6 +751,16 @@ const PageVentas: React.FC = () => {
         contactodeentrega = domicilioData.contactodeentrega || null;
       }
 
+      // Ensure telefonodeentrega is always set for WEB client orders so that
+      // the transit table (tblposcrumenwebpedidoswebtransito.telefonocliente)
+      // can be queried by phone in "Mis Pedidos".
+      if (isClienteMode && !telefonodeentrega) {
+        const cs = clienteWebService.getClienteSession();
+        if (cs?.telefono) {
+          telefonodeentrega = cs.telefono;
+        }
+      }
+
       const detallesData = itemsToInsert.map(item => ({
         idproducto: item.producto.idProducto,
         nombreproducto: item.producto.nombre,

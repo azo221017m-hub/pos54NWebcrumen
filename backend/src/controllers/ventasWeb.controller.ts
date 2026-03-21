@@ -629,7 +629,7 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
           folioFinal,
           idnegocio,
           totaldeventa,
-          ventaData.telefonodeentrega || null,
+          ventaData.telefonodeentrega || (req.user?.idRol === ROL_CLIENTE_WEB ? req.user?.alias : null),
           ventaData.cliente || null,
           detalleproductos,
           detallesclientepedidostransito
