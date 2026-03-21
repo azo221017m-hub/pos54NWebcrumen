@@ -8,6 +8,7 @@ import GoogleMapsSelector from '../../components/common/GoogleMapsSelector/Googl
 import { obtenerAnunciosVigentes } from '../../services/anunciosService';
 import type { Anuncio } from '../../types/anuncio.types';
 import { useWebSocket } from '../../hooks/useWebSocket';
+import TableroCliente from '../../components/tableroCliente/TableroCliente';
 import './PageClientes.css';
 
 const CATEGORIAS = ['Todos', 'Alimentos', 'Bebidas Calientes', 'Cuidado Personal', 'Bebidas Frías'];
@@ -64,6 +65,9 @@ const PageClientes: React.FC = () => {
   // Avatar dropdown
   const [mostrarMenuAvatar, setMostrarMenuAvatar] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
+
+  // Tablero cliente (Mis Pedidos)
+  const [mostrarTablero, setMostrarTablero] = useState(false);
 
   // Anuncios vigentes sidebar
   const [anuncios, setAnuncios] = useState<Anuncio[]>([]);
@@ -511,6 +515,19 @@ const PageClientes: React.FC = () => {
                 {mostrarMenuAvatar && (
                   <div className="pc-avatar-menu" role="menu">
                     <button
+                      className="pc-avatar-menu-item"
+                      onClick={() => { setMostrarTablero(true); setMostrarMenuAvatar(false); }}
+                      role="menuitem"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="pc-avatar-menu-icon">
+                        <rect x="3" y="3" width="7" height="7" rx="1" />
+                        <rect x="14" y="3" width="7" height="7" rx="1" />
+                        <rect x="3" y="14" width="7" height="7" rx="1" />
+                        <rect x="14" y="14" width="7" height="7" rx="1" />
+                      </svg>
+                      Mis Pedidos
+                    </button>
+                    <button
                       className="pc-avatar-menu-logout"
                       onClick={handleLogout}
                       role="menuitem"
@@ -619,6 +636,11 @@ const PageClientes: React.FC = () => {
 
         {/* Main content area */}
         <main className="pc-main">
+          {/* Tablero Cliente — Mis Pedidos (above business cards) */}
+          {clienteLogueado && mostrarTablero && (
+            <TableroCliente onOcultar={() => setMostrarTablero(false)} />
+          )}
+
           {/* Business cards section with vertical scroll */}
           <div className="pc-content">
         {isLoading ? (

@@ -9,7 +9,8 @@ import {
   refreshToken,
   loginCliente,
   getClienteTokenForNegocio,
-  registroClientePublico
+  registroClientePublico,
+  getMisPedidos
 } from '../controllers/auth.controller';
 import { authMiddleware, checkRole } from '../middlewares/auth';
 import { strictLimiter, apiLimiter } from '../middlewares/rateLimit';
@@ -39,6 +40,13 @@ router.post('/login-cliente', strictLimiter, loginCliente);
  * @access  Private (requiere token de cliente válido)
  */
 router.post('/cliente-token-negocio', apiLimiter, authMiddleware, getClienteTokenForNegocio);
+
+/**
+ * @route   GET /api/auth/mis-pedidos
+ * @desc    Obtener pedidos activos del cliente autenticado
+ * @access  Private (requiere token de cliente válido)
+ */
+router.get('/mis-pedidos', apiLimiter, authMiddleware, getMisPedidos);
 
 /**
  * @route   POST /api/auth/registro-cliente

@@ -668,3 +668,37 @@ export const getClienteTokenForNegocio = async (req: AuthRequest, res: Response)
   }
 };
 
+/**
+ * Obtener pedidos activos del cliente autenticado desde tblposcrumenwebpedidoswebtransito.
+ * Filtra por teléfono del cliente y retorna los pedidos más recientes.
+ */
+export const getMisPedidos = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const telefono = req.user?.alias;
+    if (!telefono) {
+      res.status(400).json({ success: false, message: 'No se pudo identificar al cliente' });
+      return;
+    }
+
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT 
+        idpedidowebtransito, folioventa, idnegocio, totalpedido,
+        fechahorapedidosolicitado, telefonocliente, referenciacliente,
+        detalleproductos, estatuspedidotransito, detallesclientepedidostransito,
+        puntosobtenidospedidostransito, puntosusadospedidostransito, saldopuntospedidostransito,
+        mensajeclientepedidostransito, mensajenegociopedidostransito,
+        fecha_creacion, fecha_actualizacion
+      FROM tblposcrumenwebpedidoswebtransito
+      WHERE telefonocliente = ?
+      ORDER BY fecha_creacion DESC
+      LIMIT 20`,
+      [telefono]
+    );
+
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error en getMisPedidos:', error);
+    res.status(500).json({ success: false, message: 'Error al obtener pedidos' });
+  }
+};
+
