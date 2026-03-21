@@ -669,16 +669,17 @@ export const getClienteTokenForNegocio = async (req: AuthRequest, res: Response)
 };
 
 /**
- * Obtener pedidos activos del cliente autenticado desde tblposcrumenwebpedidoswebtransito.
- * Filtra por teléfono del cliente y retorna los pedidos más recientes.
+ * Obtener pedidos activos del cliente desde tblposcrumenwebpedidoswebtransito.
+ * Filtra por teléfono del cliente (query param) y retorna los pedidos más recientes.
  * Incluye logotipo y contactonegocio de tblposcrumenwebnegocio.
  * Filtra solo estados: SOLICITADO, PREPARANDO, EN_CAMINO, ENTREGADO.
  * Ordena por idnegocio y luego por fecha de creación.
+ * No requiere token de autenticación.
  */
-export const getMisPedidos = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getMisPedidos = async (req: Request, res: Response): Promise<void> => {
   try {
-    const telefono = req.user?.alias;
-    if (!telefono) {
+    const telefono = (req.query.telefono as string || '').trim();
+    if (!telefono || !/^\d{7,15}$/.test(telefono)) {
       res.status(400).json({ success: false, message: 'No se pudo identificar al cliente' });
       return;
     }
@@ -735,16 +736,16 @@ export const getMisPedidos = async (req: AuthRequest, res: Response): Promise<vo
 /**
  * Enviar mensaje del cliente en un pedido en tránsito.
  * Actualiza mensajeclientepedidostransito en tblposcrumenwebpedidoswebtransito.
+ * No requiere token de autenticación.
  */
-export const enviarMensajePedido = async (req: AuthRequest, res: Response): Promise<void> => {
+export const enviarMensajePedido = async (req: Request, res: Response): Promise<void> => {
   try {
-    const telefono = req.user?.alias;
-    if (!telefono) {
+    const { idpedidowebtransito, mensaje, telefono: rawTelefono } = req.body;
+    const telefono = typeof rawTelefono === 'string' ? rawTelefono.trim() : '';
+    if (!telefono || !/^\d{7,15}$/.test(telefono)) {
       res.status(400).json({ success: false, message: 'No se pudo identificar al cliente' });
       return;
     }
-
-    const { idpedidowebtransito, mensaje } = req.body;
     if (!idpedidowebtransito || typeof mensaje !== 'string') {
       res.status(400).json({ success: false, message: 'Datos incompletos' });
       return;

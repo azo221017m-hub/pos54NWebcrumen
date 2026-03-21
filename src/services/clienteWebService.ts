@@ -137,12 +137,16 @@ export const clienteWebService = {
   },
 
   /**
-   * Obtiene los pedidos activos del cliente autenticado
+   * Obtiene los pedidos activos del cliente (sin autenticación, por teléfono)
    */
   obtenerMisPedidos: async (): Promise<PedidoTransito[]> => {
     try {
+      const session = clienteWebService.getClienteSession();
+      const telefono = session?.telefono;
+      if (!telefono) return [];
       const response = await api.get<{ success: boolean; data: PedidoTransito[] }>(
-        '/auth/mis-pedidos'
+        '/auth/mis-pedidos',
+        { params: { telefono } }
       );
       return response.data.data || [];
     } catch (error) {
@@ -152,13 +156,17 @@ export const clienteWebService = {
   },
 
   /**
-   * Envía un mensaje del cliente en un pedido en tránsito
+   * Envía un mensaje del cliente en un pedido en tránsito (sin autenticación)
    */
   enviarMensajePedido: async (idpedidowebtransito: number, mensaje: string): Promise<boolean> => {
     try {
+      const session = clienteWebService.getClienteSession();
+      const telefono = session?.telefono;
+      if (!telefono) return false;
       const response = await api.post<{ success: boolean }>('/auth/enviar-mensaje-pedido', {
         idpedidowebtransito,
-        mensaje
+        mensaje,
+        telefono
       });
       return response.data.success;
     } catch (error) {

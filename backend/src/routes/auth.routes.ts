@@ -44,17 +44,17 @@ router.post('/cliente-token-negocio', apiLimiter, authMiddleware, getClienteToke
 
 /**
  * @route   GET /api/auth/mis-pedidos
- * @desc    Obtener pedidos activos del cliente autenticado
- * @access  Private (requiere token de cliente válido)
+ * @desc    Obtener pedidos activos del cliente (por teléfono, sin autenticación)
+ * @access  Public
  */
-router.get('/mis-pedidos', apiLimiter, authMiddleware, getMisPedidos);
+router.get('/mis-pedidos', apiLimiter, getMisPedidos);
 
 /**
  * @route   POST /api/auth/enviar-mensaje-pedido
- * @desc    Enviar mensaje del cliente en un pedido en tránsito
- * @access  Private (requiere token de cliente válido)
+ * @desc    Enviar mensaje del cliente en un pedido en tránsito (sin autenticación)
+ * @access  Public
  */
-router.post('/enviar-mensaje-pedido', apiLimiter, authMiddleware, enviarMensajePedido);
+router.post('/enviar-mensaje-pedido', apiLimiter, enviarMensajePedido);
 
 /**
  * @route   POST /api/auth/registro-cliente
