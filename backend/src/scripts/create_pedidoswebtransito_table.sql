@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS tblposcrumenwebpedidoswebtransito (
   mensajenegociopedidostransito TEXT NULL COMMENT 'Mensaje del negocio al cliente (mini-chat)',
   fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro',
   fecha_actualizacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de última actualización',
+  estadopedidowebtransito TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Estado del pedido web en tránsito: 1=activo, 0=inactivo',
   PRIMARY KEY (idpedidowebtransito),
   INDEX idx_telefonocliente (telefonocliente),
   INDEX idx_idnegocio (idnegocio),
@@ -51,3 +52,4 @@ CREATE TABLE IF NOT EXISTS tblposcrumenwebpedidoswebtransito (
 -- mensajenegociopedidostransito: Último mensaje del negocio al cliente (mini-chat)
 -- fecha_creacion: Timestamp de creación (NOW() al insertar)
 -- fecha_actualizacion: Timestamp de última modificación (actualizado automáticamente)
+-- estadopedidowebtransito: Estado del pedido web en tránsito (1=activo, 0=inactivo)

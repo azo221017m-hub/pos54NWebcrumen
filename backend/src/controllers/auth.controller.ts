@@ -678,11 +678,9 @@ export const getClienteTokenForNegocio = async (req: AuthRequest, res: Response)
  */
 export const getMisPedidos = async (req: Request, res: Response): Promise<void> => {
   try {
-    const telefonoRaw = (req.query.telefono as string || '').trim();
-    // Strip non-digit characters so formats like "+52 123 456 7890" still work
-    const telefono = telefonoRaw.replace(/\D/g, '');
-    if (!telefono || !/^\d{7,15}$/.test(telefono)) {
-      res.status(400).json({ success: false, message: 'Teléfono del cliente no válido. Debe contener entre 7 y 15 dígitos.' });
+    const telefono = typeof req.query.telefono === 'string' ? req.query.telefono.trim() : '';
+    if (!telefono) {
+      res.status(400).json({ success: false, message: 'Teléfono del cliente es obligatorio.' });
       return;
     }
 
@@ -695,12 +693,13 @@ export const getMisPedidos = async (req: Request, res: Response): Promise<void> 
         t.observacionesnegociopedidostransito,
         t.puntosobtenidospedidostransito, t.puntosusadospedidostransito, t.saldopuntospedidostransito,
         t.mensajeclientepedidostransito, t.mensajenegociopedidostransito,
-        t.fecha_creacion, t.fecha_actualizacion,
+        t.fecha_creacion, t.fecha_actualizacion, t.estadopedidowebtransito,
         n.logotipo AS negocio_logotipo,
         n.contactonegocio AS negocio_contacto
       FROM tblposcrumenwebpedidoswebtransito t
       LEFT JOIN tblposcrumenwebnegocio n ON n.idNegocio = t.idnegocio
       WHERE t.telefonocliente = ?
+        AND t.estadopedidowebtransito = 1
         AND t.estatuspedidotransito IN ('SOLICITADO', 'PREPARANDO', 'EN_CAMINO', 'ENTREGADO')
       ORDER BY t.idnegocio, t.fecha_creacion DESC
       LIMIT 50`,
@@ -751,10 +750,9 @@ export const getMisPedidos = async (req: Request, res: Response): Promise<void> 
 export const enviarMensajePedido = async (req: Request, res: Response): Promise<void> => {
   try {
     const { idpedidowebtransito, mensaje, telefono: rawTelefono } = req.body;
-    // Strip non-digit characters so formats like "+52 123 456 7890" still work
-    const telefono = typeof rawTelefono === 'string' ? rawTelefono.trim().replace(/\D/g, '') : '';
-    if (!telefono || !/^\d{7,15}$/.test(telefono)) {
-      res.status(400).json({ success: false, message: 'Teléfono del cliente no válido. Debe contener entre 7 y 15 dígitos.' });
+    const telefono = typeof rawTelefono === 'string' ? rawTelefono.trim() : '';
+    if (!telefono) {
+      res.status(400).json({ success: false, message: 'Teléfono del cliente es obligatorio.' });
       return;
     }
     if (!idpedidowebtransito || typeof mensaje !== 'string') {
