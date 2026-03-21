@@ -22,6 +22,17 @@ const ESTADO_ORDENADO = 'ORDENADO';
 const TIPO_PRODUCTO_DEFAULT = 'Directo';
 const ROL_CLIENTE_WEB = 99; // idRol asignado a clientes web en auth middleware
 
+// Maps order state → transit table status for tblposcrumenwebpedidoswebtransito
+const TRANSIT_STATUS_MAP: Record<string, string> = {
+  'SOLICITADO': 'SOLICITADO',
+  'ORDENADO': 'SOLICITADO',
+  'LEIDO': 'SOLICITADO',
+  'PREPARANDO': 'PREPARANDO',
+  'EN_CAMINO': 'EN_CAMINO',
+  'ENTREGADO': 'ENTREGADO',
+  'CANCELADO': 'CANCELADO'
+};
+
 // Helper function: Process inventory movements for recipe and inventory products
 // This function creates inventory movement records for recipe-based and inventory-based sales
 async function processRecipeInventoryMovements(
@@ -780,16 +791,7 @@ export const updateVentaWeb = async (req: AuthRequest, res: Response): Promise<v
 
     // Sync estatuspedidotransito in transit table when a WEB order status changes
     if (origenVenta === 'WEB' && updateData.estadodeventa) {
-      const transitStatusMap: Record<string, string> = {
-        'SOLICITADO': 'SOLICITADO',
-        'ORDENADO': 'SOLICITADO',
-        'LEIDO': 'SOLICITADO',
-        'PREPARANDO': 'PREPARANDO',
-        'EN_CAMINO': 'EN_CAMINO',
-        'ENTREGADO': 'ENTREGADO',
-        'CANCELADO': 'CANCELADO'
-      };
-      const transitStatus = transitStatusMap[updateData.estadodeventa];
+      const transitStatus = TRANSIT_STATUS_MAP[updateData.estadodeventa];
       if (transitStatus) {
         // Match by folioventa and idnegocio since the transit table uses folioventa
         const [ventaData] = await pool.execute<RowDataPacket[]>(

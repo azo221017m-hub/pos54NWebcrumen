@@ -54,8 +54,8 @@ const TableroCliente: React.FC<TableroClienteProps> = ({ onOcultar }) => {
     try {
       const data = await clienteWebService.obtenerMisPedidos();
       setPedidos(data);
-    } catch {
-      // silently fail
+    } catch (err) {
+      console.error('Error loading pedidos:', err);
     } finally {
       setCargando(false);
     }
