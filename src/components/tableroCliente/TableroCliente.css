@@ -139,6 +139,69 @@
   opacity: 0.5;
 }
 
+/* ── Grupo Negocio ── */
+.tc-grupos {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tc-grupo {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  padding: 14px;
+  border: 1px solid #fde68a44;
+}
+
+.tc-grupo-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #fde68a66;
+}
+
+.tc-grupo-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 2px solid #fde68a;
+  flex-shrink: 0;
+}
+
+.tc-grupo-logo-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #fef3c7;
+  border: 2px solid #fde68a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.tc-grupo-contacto {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: #6b7280;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 3px 10px;
+}
+
+.tc-contacto-icon {
+  width: 13px;
+  height: 13px;
+  color: #9ca3af;
+}
+
 /* Grid */
 .tc-pedidos-grid {
   display: grid;
@@ -163,6 +226,16 @@
 .tc-card--entregado {
   opacity: 0.7;
   border-color: #d1fae5;
+}
+
+/* Flash animation for new message notification */
+.tc-card--flash {
+  animation: tcFlashCard 0.6s ease-in-out 3;
+}
+
+@keyframes tcFlashCard {
+  0%, 100% { border-color: #e5e7eb; box-shadow: none; }
+  50% { border-color: #f59e0b; box-shadow: 0 0 16px rgba(245, 158, 11, 0.35); }
 }
 
 .tc-card-top {
@@ -276,6 +349,50 @@
   font-weight: 600;
 }
 
+/* ── Atención (observaciones negocio) ── */
+.tc-atencion {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #fffbeb;
+  border: 1px solid #fbbf24;
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  animation: tcAtencionPulse 2s ease-in-out 2;
+}
+
+@keyframes tcAtencionPulse {
+  0%, 100% { background: #fffbeb; }
+  50% { background: #fef3c7; }
+}
+
+.tc-atencion-icon {
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.tc-atencion-content {
+  font-size: 0.78rem;
+  color: #92400e;
+}
+
+.tc-atencion-content strong {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #b45309;
+  margin-bottom: 2px;
+}
+
+.tc-atencion-content p {
+  margin: 0;
+}
+
 /* Detail toggle */
 .tc-detalle-toggle {
   display: flex;
@@ -342,19 +459,156 @@
   font-size: 0.75rem;
 }
 
-.tc-mensaje-negocio {
-  background: #f0fdf4;
-  border-left: 3px solid #34d399;
-  border-radius: 6px;
-  padding: 8px 10px;
-  font-size: 0.78rem;
-  color: #065f46;
-  margin-bottom: 6px;
-}
-
 .tc-puntos-pedido {
   font-size: 0.75rem;
   color: #92400e;
+  margin-bottom: 10px;
+}
+
+/* ── MiniChat CDT ── */
+.tc-minichat {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: 6px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.tc-minichat--flash {
+  animation: tcMiniChatFlash 0.5s ease-in-out 4;
+}
+
+@keyframes tcMiniChatFlash {
+  0%, 100% { border-color: #e2e8f0; box-shadow: none; }
+  50% { border-color: #3b82f6; box-shadow: 0 0 12px rgba(59, 130, 246, 0.25); }
+}
+
+.tc-minichat-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tc-minichat-icon {
+  width: 14px;
+  height: 14px;
+  color: #3b82f6;
+}
+
+/* Chat messages */
+.tc-minichat-msg {
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  font-size: 0.78rem;
+}
+
+.tc-minichat-msg p {
+  margin: 0;
+}
+
+.tc-minichat-msg-label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.tc-minichat-msg--negocio {
+  background: #f0fdf4;
+  border-left: 3px solid #34d399;
+  color: #065f46;
+}
+
+.tc-minichat-msg--negocio .tc-minichat-msg-label {
+  color: #059669;
+}
+
+.tc-minichat-msg--cliente {
+  background: #eff6ff;
+  border-left: 3px solid #60a5fa;
+  color: #1e40af;
+}
+
+.tc-minichat-msg--cliente .tc-minichat-msg-label {
+  color: #3b82f6;
+}
+
+/* Chat input */
+.tc-minichat-input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.tc-minichat-input {
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  color: #1e293b;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.tc-minichat-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+.tc-minichat-input::placeholder {
+  color: #94a3b8;
+}
+
+.tc-minichat-send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: #3b82f6;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+
+.tc-minichat-send:hover:not(:disabled) {
+  background: #2563eb;
+  transform: scale(1.05);
+}
+
+.tc-minichat-send:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.tc-minichat-send-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.tc-minichat-send-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: tcSpin 0.6s linear infinite;
 }
 
 /* Responsive */
@@ -380,5 +634,9 @@
   .tc-step-dot {
     width: 28px;
     height: 28px;
+  }
+
+  .tc-grupo-header {
+    flex-wrap: wrap;
   }
 }

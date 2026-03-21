@@ -33,6 +33,7 @@ export interface PedidoTransito {
   detalleproductos: string;
   estatuspedidotransito: string;
   detallesclientepedidostransito: string | null;
+  observacionesnegociopedidostransito: string | null;
   puntosobtenidospedidostransito: number;
   puntosusadospedidostransito: number;
   saldopuntospedidostransito: number;
@@ -40,6 +41,8 @@ export interface PedidoTransito {
   mensajenegociopedidostransito: string | null;
   fecha_creacion: string;
   fecha_actualizacion: string;
+  negocio_logotipo: string | null;
+  negocio_contacto: string | null;
 }
 
 export interface ClienteLoginResponse {
@@ -145,6 +148,22 @@ export const clienteWebService = {
     } catch (error) {
       console.error('Error al obtener mis pedidos:', error);
       return [];
+    }
+  },
+
+  /**
+   * Envía un mensaje del cliente en un pedido en tránsito
+   */
+  enviarMensajePedido: async (idpedidowebtransito: number, mensaje: string): Promise<boolean> => {
+    try {
+      const response = await api.post<{ success: boolean }>('/auth/enviar-mensaje-pedido', {
+        idpedidowebtransito,
+        mensaje
+      });
+      return response.data.success;
+    } catch (error) {
+      console.error('Error al enviar mensaje:', error);
+      return false;
     }
   },
 
