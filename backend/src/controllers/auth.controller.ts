@@ -729,8 +729,16 @@ export const getMisPedidos = async (req: Request, res: Response): Promise<void> 
     });
 
     res.json({ success: true, data: rowsProcessed });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error en getMisPedidos:', error);
+    // Handle "table doesn't exist" (ER_NO_SUCH_TABLE / errno 1146) gracefully
+    // so the client sees an empty list instead of a 500 error.
+    const sqlError = error as { code?: string; errno?: number };
+    if (sqlError.code === 'ER_NO_SUCH_TABLE' || sqlError.errno === 1146) {
+      console.warn('getMisPedidos: La tabla tblposcrumenwebpedidoswebtransito no existe. Ejecute el script create_pedidoswebtransito_table.sql');
+      res.json({ success: true, data: [] });
+      return;
+    }
     res.status(500).json({ success: false, message: 'Error al obtener pedidos' });
   }
 };
@@ -787,8 +795,14 @@ export const enviarMensajePedido = async (req: Request, res: Response): Promise<
     }
 
     res.json({ success: true, message: 'Mensaje enviado' });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error en enviarMensajePedido:', error);
+    const sqlError = error as { code?: string; errno?: number };
+    if (sqlError.code === 'ER_NO_SUCH_TABLE' || sqlError.errno === 1146) {
+      console.warn('enviarMensajePedido: La tabla tblposcrumenwebpedidoswebtransito no existe. Ejecute el script create_pedidoswebtransito_table.sql');
+      res.status(404).json({ success: false, message: 'Pedido no encontrado' });
+      return;
+    }
     res.status(500).json({ success: false, message: 'Error al enviar mensaje' });
   }
 };
