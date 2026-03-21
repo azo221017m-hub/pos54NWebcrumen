@@ -671,6 +671,9 @@ export const getClienteTokenForNegocio = async (req: AuthRequest, res: Response)
 /**
  * Obtener pedidos activos del cliente autenticado desde tblposcrumenwebpedidoswebtransito.
  * Filtra por teléfono del cliente y retorna los pedidos más recientes.
+ * Incluye logotipo y contactonegocio de tblposcrumenwebnegocio.
+ * Filtra solo estados: SOLICITADO, PREPARANDO, EN_CAMINO, ENTREGADO.
+ * Ordena por idnegocio y luego por fecha de creación.
  */
 export const getMisPedidos = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -680,25 +683,104 @@ export const getMisPedidos = async (req: AuthRequest, res: Response): Promise<vo
       return;
     }
 
-    const [rows] = await pool.execute<RowDataPacket[]>(
+    // pool.query() instead of pool.execute() because logotipo is LONGBLOB
+    const [rows] = await pool.query<RowDataPacket[]>(
       `SELECT 
-        idpedidowebtransito, folioventa, idnegocio, totalpedido,
-        fechahorapedidosolicitado, telefonocliente, referenciacliente,
-        detalleproductos, estatuspedidotransito, detallesclientepedidostransito,
-        puntosobtenidospedidostransito, puntosusadospedidostransito, saldopuntospedidostransito,
-        mensajeclientepedidostransito, mensajenegociopedidostransito,
-        fecha_creacion, fecha_actualizacion
-      FROM tblposcrumenwebpedidoswebtransito
-      WHERE telefonocliente = ?
-      ORDER BY fecha_creacion DESC
-      LIMIT 20`,
+        t.idpedidowebtransito, t.folioventa, t.idnegocio, t.totalpedido,
+        t.fechahorapedidosolicitado, t.telefonocliente, t.referenciacliente,
+        t.detalleproductos, t.estatuspedidotransito, t.detallesclientepedidostransito,
+        t.observacionesnegociopedidostransito,
+        t.puntosobtenidospedidostransito, t.puntosusadospedidostransito, t.saldopuntospedidostransito,
+        t.mensajeclientepedidostransito, t.mensajenegociopedidostransito,
+        t.fecha_creacion, t.fecha_actualizacion,
+        n.logotipo AS negocio_logotipo,
+        n.contactonegocio AS negocio_contacto
+      FROM tblposcrumenwebpedidoswebtransito t
+      LEFT JOIN tblposcrumenwebnegocio n ON n.idNegocio = t.idnegocio
+      WHERE t.telefonocliente = ?
+        AND t.estatuspedidotransito IN ('SOLICITADO', 'PREPARANDO', 'EN_CAMINO', 'ENTREGADO')
+      ORDER BY t.idnegocio, t.fecha_creacion DESC
+      LIMIT 50`,
       [telefono]
     );
 
-    res.json({ success: true, data: rows });
+    // Convert logotipo Buffer to data URI for frontend
+    const rowsProcessed = rows.map((row: RowDataPacket) => {
+      let logotipoUri: string | null = null;
+      if (row.negocio_logotipo) {
+        if (typeof row.negocio_logotipo === 'string') {
+          logotipoUri = row.negocio_logotipo.startsWith('data:image/') ? row.negocio_logotipo : null;
+        } else if (Buffer.isBuffer(row.negocio_logotipo)) {
+          logotipoUri = `data:image/png;base64,${row.negocio_logotipo.toString('base64')}`;
+        }
+      }
+      return {
+        ...row,
+        negocio_logotipo: logotipoUri
+      };
+    });
+
+    res.json({ success: true, data: rowsProcessed });
   } catch (error) {
     console.error('Error en getMisPedidos:', error);
     res.status(500).json({ success: false, message: 'Error al obtener pedidos' });
+  }
+};
+
+/**
+ * Enviar mensaje del cliente en un pedido en tránsito.
+ * Actualiza mensajeclientepedidostransito en tblposcrumenwebpedidoswebtransito.
+ */
+export const enviarMensajePedido = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const telefono = req.user?.alias;
+    if (!telefono) {
+      res.status(400).json({ success: false, message: 'No se pudo identificar al cliente' });
+      return;
+    }
+
+    const { idpedidowebtransito, mensaje } = req.body;
+    if (!idpedidowebtransito || typeof mensaje !== 'string') {
+      res.status(400).json({ success: false, message: 'Datos incompletos' });
+      return;
+    }
+
+    // Sanitize: trim and limit message length
+    const mensajeLimpio = mensaje.trim().slice(0, 500);
+    if (!mensajeLimpio) {
+      res.status(400).json({ success: false, message: 'El mensaje no puede estar vacío' });
+      return;
+    }
+
+    // Only allow the owning client to send messages, and only on active orders
+    const [result] = await pool.execute<ResultSetHeader>(
+      `UPDATE tblposcrumenwebpedidoswebtransito 
+       SET mensajeclientepedidostransito = ?, fecha_actualizacion = NOW()
+       WHERE idpedidowebtransito = ? AND telefonocliente = ?
+         AND estatuspedidotransito IN ('SOLICITADO', 'PREPARANDO', 'EN_CAMINO')`,
+      [mensajeLimpio, idpedidowebtransito, telefono]
+    );
+
+    if (result.affectedRows === 0) {
+      res.status(404).json({ success: false, message: 'Pedido no encontrado o ya entregado' });
+      return;
+    }
+
+    // Get idnegocio for websocket notification
+    const [pedidoRows] = await pool.execute<RowDataPacket[]>(
+      'SELECT idnegocio FROM tblposcrumenwebpedidoswebtransito WHERE idpedidowebtransito = ?',
+      [idpedidowebtransito]
+    );
+
+    if (pedidoRows.length > 0) {
+      const { websocketService } = await import('../services/websocket.service');
+      websocketService.notifyMensajePedidoTransito(pedidoRows[0].idnegocio, idpedidowebtransito);
+    }
+
+    res.json({ success: true, message: 'Mensaje enviado' });
+  } catch (error) {
+    console.error('Error en enviarMensajePedido:', error);
+    res.status(500).json({ success: false, message: 'Error al enviar mensaje' });
   }
 };
 

@@ -93,6 +93,16 @@ class WebSocketService {
       timestamp: new Date().toISOString()
     });
   }
+
+  // Notify about a new chat message on a transit order (client → business or business → client)
+  notifyMensajePedidoTransito(idnegocio: number, idpedidowebtransito: number): void {
+    this.broadcast({
+      type: 'mensaje_pedido_transito',
+      idnegocio,
+      idpedidowebtransito,
+      timestamp: new Date().toISOString()
+    });
+  }
 }
 
 export const websocketService = new WebSocketService();

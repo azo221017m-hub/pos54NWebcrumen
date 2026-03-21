@@ -10,7 +10,8 @@ import {
   loginCliente,
   getClienteTokenForNegocio,
   registroClientePublico,
-  getMisPedidos
+  getMisPedidos,
+  enviarMensajePedido
 } from '../controllers/auth.controller';
 import { authMiddleware, checkRole } from '../middlewares/auth';
 import { strictLimiter, apiLimiter } from '../middlewares/rateLimit';
@@ -47,6 +48,13 @@ router.post('/cliente-token-negocio', apiLimiter, authMiddleware, getClienteToke
  * @access  Private (requiere token de cliente válido)
  */
 router.get('/mis-pedidos', apiLimiter, authMiddleware, getMisPedidos);
+
+/**
+ * @route   POST /api/auth/enviar-mensaje-pedido
+ * @desc    Enviar mensaje del cliente en un pedido en tránsito
+ * @access  Private (requiere token de cliente válido)
+ */
+router.post('/enviar-mensaje-pedido', apiLimiter, authMiddleware, enviarMensajePedido);
 
 /**
  * @route   POST /api/auth/registro-cliente
