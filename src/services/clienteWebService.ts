@@ -28,6 +28,7 @@ export interface PedidoTransito {
   idnegocio: number;
   totalpedido: number;
   fechahorapedidosolicitado: string;
+  fechahorapedidowebtransito: string;
   telefonocliente: string;
   referenciacliente: string | null;
   detalleproductos: string;

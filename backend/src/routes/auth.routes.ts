@@ -44,15 +44,15 @@ router.post('/cliente-token-negocio', apiLimiter, authMiddleware, getClienteToke
 
 /**
  * @route   GET /api/auth/mis-pedidos
- * @desc    Obtener pedidos activos del cliente (por teléfono, sin autenticación)
- * @access  Public
+ * @desc    Obtener pedidos activos del cliente (por JWT o teléfono)
+ * @access  Public (soft auth – uses JWT when available, falls back to query param)
  */
 router.get('/mis-pedidos', apiLimiter, getMisPedidos);
 
 /**
  * @route   POST /api/auth/enviar-mensaje-pedido
- * @desc    Enviar mensaje del cliente en un pedido en tránsito (sin autenticación)
- * @access  Public
+ * @desc    Enviar mensaje del cliente en un pedido en tránsito (por JWT o teléfono)
+ * @access  Public (soft auth – uses JWT when available, falls back to body param)
  */
 router.post('/enviar-mensaje-pedido', apiLimiter, enviarMensajePedido);
 

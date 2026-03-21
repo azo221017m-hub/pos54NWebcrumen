@@ -669,26 +669,66 @@ export const getClienteTokenForNegocio = async (req: AuthRequest, res: Response)
 };
 
 /**
+ * Extracts the client phone (alias) from a JWT in the Authorization header.
+ * Returns the phone string if valid, or empty string on any failure.
+ * This is a "soft auth" helper: it never throws.
+ */
+function extractPhoneFromJWT(req: Request): string {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return '';
+  try {
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) return '';
+    const decoded = jwt.verify(authHeader.slice(7), JWT_SECRET) as { alias?: string };
+    return (decoded.alias || '').trim();
+  } catch {
+    return '';
+  }
+}
+
+/**
  * Obtener pedidos activos del cliente desde tblposcrumenwebpedidoswebtransito.
- * Filtra por teléfono del cliente (query param) y retorna los pedidos más recientes.
+ * Filtra por teléfono del cliente y retorna los pedidos más recientes.
  * Incluye logotipo y contactonegocio de tblposcrumenwebnegocio.
- * Filtra solo estados: SOLICITADO, PREPARANDO, EN_CAMINO, ENTREGADO.
+ * Filtra solo registros con estadopedidowebtransito=1.
  * Ordena por idnegocio y luego por fecha de creación.
- * No requiere token de autenticación.
+ *
+ * Obtención del teléfono (prioridad):
+ *   1. JWT token (Authorization header) → req.user.alias  (más fiable)
+ *   2. Query param ?telefono=…                            (fallback)
  */
 export const getMisPedidos = async (req: Request, res: Response): Promise<void> => {
   try {
-    const telefono = typeof req.query.telefono === 'string' ? req.query.telefono.trim() : '';
+    // 1. Try to extract phone from JWT (soft auth – does not fail on invalid token)
+    let telefono = extractPhoneFromJWT(req);
+
+    // 2. Fallback to query param
+    if (!telefono) {
+      telefono = typeof req.query.telefono === 'string' ? req.query.telefono.trim() : '';
+    }
+
     if (!telefono) {
       res.status(400).json({ success: false, message: 'Teléfono del cliente es obligatorio.' });
       return;
     }
 
+    // Validate phone format (7-15 digits)
+    if (!/^\d{7,15}$/.test(telefono)) {
+      res.status(400).json({ success: false, message: 'Formato de teléfono inválido.' });
+      return;
+    }
+
+    // Prevent caching so the client always gets fresh data
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+
     // pool.query() instead of pool.execute() because logotipo is LONGBLOB
     const [rows] = await pool.query<RowDataPacket[]>(
       `SELECT 
         t.idpedidowebtransito, t.folioventa, t.idnegocio, t.totalpedido,
-        t.fechahorapedidosolicitado, t.telefonocliente, t.referenciacliente,
+        t.fechahorapedidosolicitado,
+        t.fechahorapedidosolicitado AS fechahorapedidowebtransito, -- alias for frontend compatibility
+        t.telefonocliente, t.referenciacliente,
         t.detalleproductos, t.estatuspedidotransito, t.detallesclientepedidostransito,
         t.observacionesnegociopedidostransito,
         t.puntosobtenidospedidostransito, t.puntosusadospedidostransito, t.saldopuntospedidostransito,
@@ -700,7 +740,6 @@ export const getMisPedidos = async (req: Request, res: Response): Promise<void> 
       LEFT JOIN tblposcrumenwebnegocio n ON n.idNegocio = t.idnegocio
       WHERE t.telefonocliente = ?
         AND t.estadopedidowebtransito = 1
-        AND t.estatuspedidotransito IN ('SOLICITADO', 'PREPARANDO', 'EN_CAMINO', 'ENTREGADO')
       ORDER BY t.idnegocio, t.fecha_creacion DESC
       LIMIT 50`,
       [telefono]
@@ -738,6 +777,12 @@ export const getMisPedidos = async (req: Request, res: Response): Promise<void> 
       res.json({ success: true, data: [] });
       return;
     }
+    // Handle unknown column errors gracefully (e.g. column doesn't exist in production)
+    if (sqlError.code === 'ER_BAD_FIELD_ERROR' || sqlError.errno === 1054) {
+      console.error('getMisPedidos: Columna no encontrada en la tabla. Verifique el esquema de tblposcrumenwebpedidoswebtransito y tblposcrumenwebnegocio.');
+      res.json({ success: true, data: [] });
+      return;
+    }
     res.status(500).json({ success: false, message: 'Error al obtener pedidos' });
   }
 };
@@ -745,12 +790,23 @@ export const getMisPedidos = async (req: Request, res: Response): Promise<void> 
 /**
  * Enviar mensaje del cliente en un pedido en tránsito.
  * Actualiza mensajeclientepedidostransito en tblposcrumenwebpedidoswebtransito.
- * No requiere token de autenticación.
+ *
+ * Obtención del teléfono (prioridad):
+ *   1. JWT token (Authorization header) → decoded.alias  (más fiable)
+ *   2. Body param telefono                               (fallback)
  */
 export const enviarMensajePedido = async (req: Request, res: Response): Promise<void> => {
   try {
     const { idpedidowebtransito, mensaje, telefono: rawTelefono } = req.body;
-    const telefono = typeof rawTelefono === 'string' ? rawTelefono.trim() : '';
+
+    // 1. Try to extract phone from JWT (soft auth)
+    let telefono = extractPhoneFromJWT(req);
+
+    // 2. Fallback to body param
+    if (!telefono) {
+      telefono = typeof rawTelefono === 'string' ? rawTelefono.trim() : '';
+    }
+
     if (!telefono) {
       res.status(400).json({ success: false, message: 'Teléfono del cliente es obligatorio.' });
       return;

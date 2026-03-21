@@ -230,7 +230,7 @@ const TableroCliente: React.FC<TableroClienteProps> = ({ onOcultar }) => {
                       </div>
 
                       <div className="tc-card-fecha">
-                        🕐 {formatHora(pedido.fechahorapedidosolicitado)}
+                        🕐 {formatHora(pedido.fechahorapedidowebtransito || pedido.fechahorapedidosolicitado)}
                       </div>
 
                       {/* Timeline */}
