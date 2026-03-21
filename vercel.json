@@ -18,7 +18,9 @@
       "dest": "/index.html"
     }
   ],
-  "env": {
-    "VITE_API_URL": "https://pos54nwebcrumenbackend.onrender.com"
+  "build": {
+    "env": {
+      "VITE_API_URL": "https://pos54nwebcrumenbackend.onrender.com"
+    }
   }
 }
