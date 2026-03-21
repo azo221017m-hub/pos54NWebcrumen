@@ -22,6 +22,26 @@ export interface ClienteWebData {
   direccion?: string;
 }
 
+export interface PedidoTransito {
+  idpedidowebtransito: number;
+  folioventa: string;
+  idnegocio: number;
+  totalpedido: number;
+  fechahorapedidosolicitado: string;
+  telefonocliente: string;
+  referenciacliente: string | null;
+  detalleproductos: string;
+  estatuspedidotransito: string;
+  detallesclientepedidostransito: string | null;
+  puntosobtenidospedidostransito: number;
+  puntosusadospedidostransito: number;
+  saldopuntospedidostransito: number;
+  mensajeclientepedidostransito: string | null;
+  mensajenegociopedidostransito: string | null;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+}
+
 export interface ClienteLoginResponse {
   success: boolean;
   message: string;
@@ -109,6 +129,21 @@ export const clienteWebService = {
       return response.data.data || [];
     } catch (error) {
       console.error('Error al obtener negocios públicos:', error);
+      return [];
+    }
+  },
+
+  /**
+   * Obtiene los pedidos activos del cliente autenticado
+   */
+  obtenerMisPedidos: async (): Promise<PedidoTransito[]> => {
+    try {
+      const response = await api.get<{ success: boolean; data: PedidoTransito[] }>(
+        '/auth/mis-pedidos'
+      );
+      return response.data.data || [];
+    } catch (error) {
+      console.error('Error al obtener mis pedidos:', error);
       return [];
     }
   },

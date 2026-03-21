@@ -778,12 +778,56 @@ export const updateVentaWeb = async (req: AuthRequest, res: Response): Promise<v
 
     await pool.execute(query, values);
 
+    // Sync estatuspedidotransito in transit table when a WEB order status changes
+    if (origenVenta === 'WEB' && updateData.estadodeventa) {
+      const transitStatusMap: Record<string, string> = {
+        'SOLICITADO': 'SOLICITADO',
+        'ORDENADO': 'SOLICITADO',
+        'LEIDO': 'SOLICITADO',
+        'PREPARANDO': 'PREPARANDO',
+        'EN_CAMINO': 'EN_CAMINO',
+        'ENTREGADO': 'ENTREGADO',
+        'CANCELADO': 'CANCELADO'
+      };
+      const transitStatus = transitStatusMap[updateData.estadodeventa];
+      if (transitStatus) {
+        // Match by folioventa and idnegocio since the transit table uses folioventa
+        const [ventaData] = await pool.execute<RowDataPacket[]>(
+          'SELECT folioventa FROM tblposcrumenwebventas WHERE idventa = ? AND idnegocio = ?',
+          [id, idnegocio]
+        );
+        if (ventaData.length > 0) {
+          await pool.execute(
+            `UPDATE tblposcrumenwebpedidoswebtransito 
+             SET estatuspedidotransito = ?, fecha_actualizacion = NOW()
+             WHERE folioventa = ? AND idnegocio = ?`,
+            [transitStatus, ventaData[0].folioventa, idnegocio]
+          );
+        }
+      }
+    }
+
     // Notificar via WebSocket si la venta es WEB y el estado cambia a ORDENADO o EN_CAMINO
     const estadosNotificables = ['ORDENADO', 'EN_CAMINO'];
     if (
       origenVenta === 'WEB' &&
       updateData.estadodeventa &&
       estadosNotificables.includes(updateData.estadodeventa)
+    ) {
+      websocketService.notifyEstadoCambioWeb(
+        Number(id),
+        updateData.estadodeventa,
+        origenVenta,
+        idnegocio
+      );
+    }
+
+    // Also notify for PREPARANDO and ENTREGADO so the client dashboard updates in real-time
+    const estadosTransitoNotificables = ['PREPARANDO', 'ENTREGADO'];
+    if (
+      origenVenta === 'WEB' &&
+      updateData.estadodeventa &&
+      estadosTransitoNotificables.includes(updateData.estadodeventa)
     ) {
       websocketService.notifyEstadoCambioWeb(
         Number(id),

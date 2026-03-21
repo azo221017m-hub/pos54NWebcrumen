@@ -1,0 +1,384 @@
+/* ── TableroCliente ── */
+
+.tc-tablero {
+  background: linear-gradient(135deg, #fefce8 0%, #fff7ed 50%, #fef2f2 100%);
+  border-radius: 16px;
+  border: 1px solid #fde68a;
+  padding: 20px;
+  margin-bottom: 20px;
+  animation: tcSlideIn 0.3s ease;
+}
+
+@keyframes tcSlideIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Header */
+.tc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tc-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tc-header-icon {
+  width: 22px;
+  height: 22px;
+  color: #f59e0b;
+}
+
+.tc-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.tc-header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Puntos */
+.tc-puntos {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff;
+  border: 1px solid #fde68a;
+  border-radius: 20px;
+  padding: 4px 12px;
+}
+
+.tc-puntos-icon {
+  width: 16px;
+  height: 16px;
+  color: #f59e0b;
+}
+
+.tc-puntos-valor {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #92400e;
+}
+
+.tc-puntos-label {
+  font-size: 0.75rem;
+  color: #b45309;
+  opacity: 0.8;
+}
+
+/* Ocultar button */
+.tc-ocultar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tc-ocultar-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #9ca3af;
+}
+
+.tc-ocultar-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* Loading */
+.tc-loading {
+  text-align: center;
+  padding: 24px 0;
+  color: #92400e;
+}
+
+.tc-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #fde68a;
+  border-top-color: #f59e0b;
+  border-radius: 50%;
+  margin: 0 auto 8px;
+  animation: tcSpin 0.7s linear infinite;
+}
+
+@keyframes tcSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Empty */
+.tc-empty {
+  text-align: center;
+  padding: 24px 0;
+  color: #9ca3af;
+}
+
+.tc-empty-icon {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 6px;
+  opacity: 0.5;
+}
+
+/* Grid */
+.tc-pedidos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+/* Card */
+.tc-card {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.tc-card:hover {
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.12);
+  border-color: #fcd34d;
+}
+
+.tc-card--entregado {
+  opacity: 0.7;
+  border-color: #d1fae5;
+}
+
+.tc-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.tc-card-folio {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #1f2937;
+}
+
+.tc-folio-hash {
+  color: #f59e0b;
+  margin-right: 2px;
+}
+
+.tc-card-total {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #059669;
+}
+
+.tc-card-fecha {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-bottom: 14px;
+}
+
+/* Timeline */
+.tc-timeline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.tc-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  z-index: 1;
+}
+
+.tc-step-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  border: 2px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: all 0.3s;
+  position: relative;
+  z-index: 2;
+}
+
+.tc-step--active .tc-step-dot {
+  background: #fef3c7;
+  border-color: #f59e0b;
+}
+
+.tc-step--current .tc-step-dot {
+  background: #f59e0b;
+  border-color: #d97706;
+  animation: tcPulse 2s ease-in-out infinite;
+}
+
+@keyframes tcPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+}
+
+.tc-step-emoji {
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.tc-step-line {
+  position: absolute;
+  top: 15px;
+  left: calc(50% + 16px);
+  right: calc(-50% + 16px);
+  height: 2px;
+  background: #e5e7eb;
+  z-index: 0;
+}
+
+.tc-step-line--active {
+  background: #f59e0b;
+}
+
+.tc-step-label {
+  font-size: 0.6rem;
+  color: #9ca3af;
+  margin-top: 4px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.tc-step--active .tc-step-label {
+  color: #92400e;
+  font-weight: 600;
+}
+
+/* Detail toggle */
+.tc-detalle-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.15s;
+}
+
+.tc-detalle-toggle:hover {
+  color: #f59e0b;
+}
+
+.tc-detalle-chevron {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s;
+}
+
+.tc-detalle-chevron--open {
+  transform: rotate(180deg);
+}
+
+/* Detail section */
+.tc-detalle {
+  border-top: 1px solid #f3f4f6;
+  margin-top: 8px;
+  padding-top: 10px;
+  animation: tcSlideIn 0.2s ease;
+}
+
+.tc-productos-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+}
+
+.tc-producto-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: 0.8rem;
+  color: #374151;
+}
+
+.tc-producto-cant {
+  font-weight: 700;
+  color: #f59e0b;
+  min-width: 28px;
+}
+
+.tc-producto-nombre {
+  flex: 1;
+}
+
+.tc-producto-precio {
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.tc-mensaje-negocio {
+  background: #f0fdf4;
+  border-left: 3px solid #34d399;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.78rem;
+  color: #065f46;
+  margin-bottom: 6px;
+}
+
+.tc-puntos-pedido {
+  font-size: 0.75rem;
+  color: #92400e;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .tc-tablero {
+    padding: 14px;
+    border-radius: 12px;
+  }
+
+  .tc-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tc-pedidos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tc-step-label {
+    font-size: 0.55rem;
+  }
+
+  .tc-step-dot {
+    width: 28px;
+    height: 28px;
+  }
+}
