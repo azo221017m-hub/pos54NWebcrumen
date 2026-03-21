@@ -623,8 +623,8 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
           observacionesnegociopedidostransito,
           puntosobtenidospedidostransito, puntosusadospedidostransito, saldopuntospedidostransito,
           mensajeclientepedidostransito, mensajenegociopedidostransito,
-          fecha_creacion, fecha_actualizacion
-        ) VALUES (?, ?, ?, NOW(), ?, ?, ?, 'SOLICITADO', ?, NULL, 0, 0, 0, NULL, NULL, NOW(), NOW())`,
+          fecha_creacion, fecha_actualizacion, estadopedidowebtransito
+        ) VALUES (?, ?, ?, NOW(), ?, ?, ?, 'SOLICITADO', ?, NULL, 0, 0, 0, NULL, NULL, NOW(), NOW(), 1)`,
         [
           folioFinal,
           idnegocio,
@@ -870,9 +870,9 @@ export const deleteVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
-    // Verificar que la venta existe y obtener origenventa
+    // Verificar que la venta existe y obtener origenventa + folioventa
     const [ventaRows] = await pool.execute<RowDataPacket[]>(
-      'SELECT idventa, origenventa FROM tblposcrumenwebventas WHERE idventa = ? AND idnegocio = ?',
+      'SELECT idventa, origenventa, folioventa FROM tblposcrumenwebventas WHERE idventa = ? AND idnegocio = ?',
       [id, idnegocio]
     );
 
@@ -912,6 +912,25 @@ export const deleteVentaWeb = async (req: AuthRequest, res: Response): Promise<v
        WHERE idventa = ? AND idnegocio = ?`,
       [usuarioauditoria, id, idnegocio]
     );
+
+    // Sync transit table when cancelling a WEB order
+    if (ventaRows[0].origenventa === 'WEB' && ventaRows[0].folioventa) {
+      try {
+        await pool.execute(
+          `UPDATE tblposcrumenwebpedidoswebtransito
+           SET estatuspedidotransito = 'CANCELADO', fecha_actualizacion = NOW()
+           WHERE folioventa = ? AND idnegocio = ?`,
+          [ventaRows[0].folioventa, idnegocio]
+        );
+      } catch (transitError: unknown) {
+        // Ignore if transit table doesn't exist (ER_NO_SUCH_TABLE)
+        const sqlErr = transitError as { code?: string };
+        if (sqlErr.code !== 'ER_NO_SUCH_TABLE') {
+          console.error('Error syncing transit table on cancel:', transitError);
+          throw transitError;
+        }
+      }
+    }
 
     websocketService.notifyVentaUpdate(idnegocio);
 
