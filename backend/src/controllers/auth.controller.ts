@@ -711,7 +711,12 @@ export const getMisPedidos = async (req: AuthRequest, res: Response): Promise<vo
         if (typeof row.negocio_logotipo === 'string') {
           logotipoUri = row.negocio_logotipo.startsWith('data:image/') ? row.negocio_logotipo : null;
         } else if (Buffer.isBuffer(row.negocio_logotipo)) {
-          logotipoUri = `data:image/png;base64,${row.negocio_logotipo.toString('base64')}`;
+          // Detect MIME type from magic bytes
+          let mime = 'image/png';
+          if (row.negocio_logotipo[0] === 0xFF && row.negocio_logotipo[1] === 0xD8) mime = 'image/jpeg';
+          else if (row.negocio_logotipo[0] === 0x47 && row.negocio_logotipo[1] === 0x49) mime = 'image/gif';
+          else if (row.negocio_logotipo[0] === 0x52 && row.negocio_logotipo[1] === 0x49) mime = 'image/webp';
+          logotipoUri = `data:${mime};base64,${row.negocio_logotipo.toString('base64')}`;
         }
       }
       return {
