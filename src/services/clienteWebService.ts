@@ -41,6 +41,7 @@ export interface PedidoTransito {
   mensajenegociopedidostransito: string | null;
   fecha_creacion: string;
   fecha_actualizacion: string;
+  estadopedidowebtransito: number;
   negocio_logotipo: string | null;
   negocio_contacto: string | null;
 }
@@ -142,11 +143,8 @@ export const clienteWebService = {
   obtenerMisPedidos: async (): Promise<PedidoTransito[]> => {
     try {
       const session = clienteWebService.getClienteSession();
-      const rawTelefono = session?.telefono;
-      if (!rawTelefono) return [];
-      // Strip non-digit characters and validate format before sending
-      const telefono = rawTelefono.replace(/\D/g, '');
-      if (!/^\d{7,15}$/.test(telefono)) return [];
+      const telefono = (session?.telefono || '').trim();
+      if (!telefono) return [];
       const response = await api.get<{ success: boolean; data: PedidoTransito[] }>(
         '/auth/mis-pedidos',
         { params: { telefono } }
@@ -164,11 +162,8 @@ export const clienteWebService = {
   enviarMensajePedido: async (idpedidowebtransito: number, mensaje: string): Promise<boolean> => {
     try {
       const session = clienteWebService.getClienteSession();
-      const rawTelefono = session?.telefono;
-      if (!rawTelefono) return false;
-      // Strip non-digit characters and validate format before sending
-      const telefono = rawTelefono.replace(/\D/g, '');
-      if (!/^\d{7,15}$/.test(telefono)) return false;
+      const telefono = (session?.telefono || '').trim();
+      if (!telefono) return false;
       const response = await api.post<{ success: boolean }>('/auth/enviar-mensaje-pedido', {
         idpedidowebtransito,
         mensaje,

@@ -789,7 +789,7 @@ const PageClientes: React.FC = () => {
               <div className="pc-form-group">
                 <label className="pc-form-label">Teléfono cliente</label>
                 <input
-                  type="tel"
+                  type="text"
                   className="pc-form-input"
                   placeholder="Tu número de teléfono"
                   value={loginTelefono}
@@ -842,7 +842,7 @@ const PageClientes: React.FC = () => {
               <div className="pc-form-row">
                 <div className="pc-form-group">
                   <label className="pc-form-label pc-form-label--required">Teléfono</label>
-                  <input type="tel" className="pc-form-input" placeholder="Tu teléfono" autoComplete="off" value={registroData.telefono} onChange={(e) => handleRegistroChange('telefono', e.target.value)} />
+                  <input type="text" className="pc-form-input" placeholder="Tu teléfono" autoComplete="off" value={registroData.telefono} onChange={(e) => handleRegistroChange('telefono', e.target.value)} />
                 </div>
                 <div className="pc-form-group">
                   <label className="pc-form-label">Fecha de Nacimiento (Para tener presente tu día especial)</label>
