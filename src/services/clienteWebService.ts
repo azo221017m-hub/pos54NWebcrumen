@@ -142,15 +142,18 @@ export const clienteWebService = {
   obtenerMisPedidos: async (): Promise<PedidoTransito[]> => {
     try {
       const session = clienteWebService.getClienteSession();
-      const telefono = session?.telefono;
-      if (!telefono) return [];
+      const rawTelefono = session?.telefono;
+      if (!rawTelefono) return [];
+      // Strip non-digit characters and validate format before sending
+      const telefono = rawTelefono.replace(/\D/g, '');
+      if (!/^\d{7,15}$/.test(telefono)) return [];
       const response = await api.get<{ success: boolean; data: PedidoTransito[] }>(
         '/auth/mis-pedidos',
         { params: { telefono } }
       );
       return response.data.data || [];
     } catch (error) {
-      console.error('Error al obtener mis pedidos:', error);
+      console.error('Error al obtener mis pedidos:', error instanceof Error ? error.message : error);
       return [];
     }
   },
@@ -161,8 +164,11 @@ export const clienteWebService = {
   enviarMensajePedido: async (idpedidowebtransito: number, mensaje: string): Promise<boolean> => {
     try {
       const session = clienteWebService.getClienteSession();
-      const telefono = session?.telefono;
-      if (!telefono) return false;
+      const rawTelefono = session?.telefono;
+      if (!rawTelefono) return false;
+      // Strip non-digit characters and validate format before sending
+      const telefono = rawTelefono.replace(/\D/g, '');
+      if (!/^\d{7,15}$/.test(telefono)) return false;
       const response = await api.post<{ success: boolean }>('/auth/enviar-mensaje-pedido', {
         idpedidowebtransito,
         mensaje,
@@ -170,7 +176,7 @@ export const clienteWebService = {
       });
       return response.data.success;
     } catch (error) {
-      console.error('Error al enviar mensaje:', error);
+      console.error('Error al enviar mensaje:', error instanceof Error ? error.message : error);
       return false;
     }
   },
