@@ -740,6 +740,7 @@ export const getMisPedidos = async (req: Request, res: Response): Promise<void> 
       LEFT JOIN tblposcrumenwebnegocio n ON n.idNegocio = t.idnegocio
       WHERE t.telefonocliente = ?
         AND t.estadopedidowebtransito = 1
+        AND t.estatuspedidotransito IN ('SOLICITADO', 'PREPARANDO', 'EN_CAMINO', 'ENTREGADO')
       ORDER BY t.idnegocio, t.fecha_creacion DESC
       LIMIT 50`,
       [telefono]
