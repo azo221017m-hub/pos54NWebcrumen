@@ -122,6 +122,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 console.log('✅ Variables de entorno validadas correctamente');
+console.log(`🕐 Zona horaria configurada (TZ): ${process.env.TZ || 'America/Mexico_City (default)'}`);
 
 const app: Application = express();
 
