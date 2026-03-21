@@ -669,6 +669,24 @@ export const getClienteTokenForNegocio = async (req: AuthRequest, res: Response)
 };
 
 /**
+ * Extracts the client phone (alias) from a JWT in the Authorization header.
+ * Returns the phone string if valid, or empty string on any failure.
+ * This is a "soft auth" helper: it never throws.
+ */
+function extractPhoneFromJWT(req: Request): string {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return '';
+  try {
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) return '';
+    const decoded = jwt.verify(authHeader.slice(7), JWT_SECRET) as { alias?: string };
+    return (decoded.alias || '').trim();
+  } catch {
+    return '';
+  }
+}
+
+/**
  * Obtener pedidos activos del cliente desde tblposcrumenwebpedidoswebtransito.
  * Filtra por teléfono del cliente y retorna los pedidos más recientes.
  * Incluye logotipo y contactonegocio de tblposcrumenwebnegocio.
@@ -682,21 +700,7 @@ export const getClienteTokenForNegocio = async (req: AuthRequest, res: Response)
 export const getMisPedidos = async (req: Request, res: Response): Promise<void> => {
   try {
     // 1. Try to extract phone from JWT (soft auth – does not fail on invalid token)
-    let telefono = '';
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      try {
-        const JWT_SECRET = process.env.JWT_SECRET;
-        if (JWT_SECRET) {
-          const decoded = jwt.verify(authHeader.slice(7), JWT_SECRET) as { alias?: string };
-          if (decoded.alias) {
-            telefono = decoded.alias.trim();
-          }
-        }
-      } catch {
-        // Token invalid/expired – fall through to query param
-      }
-    }
+    let telefono = extractPhoneFromJWT(req);
 
     // 2. Fallback to query param
     if (!telefono) {
@@ -723,7 +727,7 @@ export const getMisPedidos = async (req: Request, res: Response): Promise<void> 
       `SELECT 
         t.idpedidowebtransito, t.folioventa, t.idnegocio, t.totalpedido,
         t.fechahorapedidosolicitado,
-        t.fechahorapedidosolicitado AS fechahorapedidowebtransito,
+        t.fechahorapedidosolicitado AS fechahorapedidowebtransito, -- alias for frontend compatibility
         t.telefonocliente, t.referenciacliente,
         t.detalleproductos, t.estatuspedidotransito, t.detallesclientepedidostransito,
         t.observacionesnegociopedidostransito,
@@ -796,21 +800,7 @@ export const enviarMensajePedido = async (req: Request, res: Response): Promise<
     const { idpedidowebtransito, mensaje, telefono: rawTelefono } = req.body;
 
     // 1. Try to extract phone from JWT (soft auth)
-    let telefono = '';
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      try {
-        const JWT_SECRET = process.env.JWT_SECRET;
-        if (JWT_SECRET) {
-          const decoded = jwt.verify(authHeader.slice(7), JWT_SECRET) as { alias?: string };
-          if (decoded.alias) {
-            telefono = decoded.alias.trim();
-          }
-        }
-      } catch {
-        // Token invalid/expired – fall through to body param
-      }
-    }
+    let telefono = extractPhoneFromJWT(req);
 
     // 2. Fallback to body param
     if (!telefono) {
