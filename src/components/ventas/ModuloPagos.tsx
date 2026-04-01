@@ -392,14 +392,17 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
         const datosRecibo = buildDatosRecibo('EFECTIVO', totalAPagar, null, cambio);
         if (accionRecibo === 'imprimir') {
           imprimirRecibo(datosRecibo);
-        } else {
-          enviarReciboWhatsApp(datosRecibo);
         }
 
         alert(`Pago procesado exitosamente${cambio > 0 ? `\nCAMBIO: $${cambio.toFixed(2)}` : ''}`);
         
         // Close modal and return to dashboard
         onClose();
+
+        // Enviar WhatsApp al final, después de asegurar el registro y finalizar el proceso
+        if (accionRecibo === 'whatsapp') {
+          enviarReciboWhatsApp(datosRecibo);
+        }
       } 
       // Validación para transferencia
       else if (metodoPagoSeleccionado === 'transferencia') {
@@ -429,14 +432,17 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
         const datosRecibo = buildDatosRecibo('TRANSFERENCIA', totalAPagar, numeroReferencia);
         if (accionRecibo === 'imprimir') {
           imprimirRecibo(datosRecibo);
-        } else {
-          enviarReciboWhatsApp(datosRecibo);
         }
 
         alert('Pago procesado exitosamente');
         
         // Close modal and return to dashboard
         onClose();
+
+        // Enviar WhatsApp al final, después de asegurar el registro y finalizar el proceso
+        if (accionRecibo === 'whatsapp') {
+          enviarReciboWhatsApp(datosRecibo);
+        }
       }
       // Para mixto
       else {
@@ -517,14 +523,17 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
         const datosRecibo = buildDatosRecibo('MIXTO', totalAPagar, undefined, undefined, todosLosPagos);
         if (accionRecibo === 'imprimir') {
           imprimirRecibo(datosRecibo);
-        } else {
-          enviarReciboWhatsApp(datosRecibo);
         }
 
         alert(resultado.message || 'Pago procesado exitosamente');
         
         // Close modal and return to dashboard
         onClose();
+
+        // Enviar WhatsApp al final, después de asegurar el registro y finalizar el proceso
+        if (accionRecibo === 'whatsapp') {
+          enviarReciboWhatsApp(datosRecibo);
+        }
       }
     } catch (error) {
       console.error('Error al procesar pago:', error);

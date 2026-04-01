@@ -22,6 +22,17 @@ const USUARIO_KEY = 'usuario';
 const CHECK_INTERVAL_MS = 60000; // Verificar cada 1 minuto
 const WARNING_TIME_MS = 300000; // Advertir 5 minutos antes de expirar
 
+// Flag para omitir la advertencia de beforeunload (ej. al abrir WhatsApp después de cobrar)
+let skipBeforeUnloadFlag = false;
+
+/**
+ * Permite omitir temporalmente la advertencia de beforeunload.
+ * Útil para navegaciones intencionales como abrir WhatsApp tras finalizar un cobro.
+ */
+export const setSkipBeforeUnload = (skip: boolean): void => {
+  skipBeforeUnloadFlag = skip;
+};
+
 /**
  * Decodifica el token JWT y retorna el payload
  */
@@ -169,6 +180,11 @@ export const clearServiceWorkerCache = async (): Promise<void> => {
  */
 export const setupSessionClearOnReload = (): (() => void) => {
   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+    // Omitir advertencia si se marcó explícitamente (ej. al abrir WhatsApp tras cobrar)
+    if (skipBeforeUnloadFlag) {
+      return;
+    }
+    
     // Obtener token y pathname de forma síncrona
     // Solo mostrar confirmación si hay una sesión activa (no estamos en login)
     const currentPath = window.location.pathname;
@@ -538,6 +554,7 @@ export default {
   clearSession,
   clearServiceWorkerCache,
   setupSessionClearOnReload,
+  setSkipBeforeUnload,
   checkTokenExpiration,
   autoLogout,
   getLogoutMessage,

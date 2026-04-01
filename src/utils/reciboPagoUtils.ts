@@ -1,5 +1,14 @@
 // Utilidades para generar el recibo de pago en formato 58mm
 import { extractShortFolio } from './formatters';
+import { setSkipBeforeUnload } from '../services/sessionService';
+
+// Retardo para restaurar la protección de beforeunload tras abrir WhatsApp.
+// El protocolo whatsapp:// abre la app nativa sin descargar la página;
+// este retardo da margen al navegador para completar la navegación de protocolo.
+const WHATSAPP_NAVIGATION_DELAY_MS = 1500;
+
+// Referencia al timeout pendiente para evitar conflictos si se llama varias veces
+let whatsappTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
 export interface ItemRecibo {
   nombreproducto: string;
@@ -405,7 +414,20 @@ export function generarTextoWhatsApp(datos: DatosRecibo): string {
  */
 export function enviarReciboWhatsApp(datos: DatosRecibo): void {
   const texto = generarTextoWhatsApp(datos);
+  // Desactivar temporalmente la advertencia de beforeunload para evitar
+  // el mensaje "se perderán los cambios" al abrir WhatsApp tras cobrar
+  setSkipBeforeUnload(true);
   window.location.href = `whatsapp://send?text=${encodeURIComponent(texto)}`;
+  // Cancelar timeout previo si existe para evitar conflictos
+  if (whatsappTimeoutId !== null) {
+    clearTimeout(whatsappTimeoutId);
+  }
+  // Restaurar la protección después de un breve retardo
+  // (el protocolo whatsapp:// abre la app nativa sin descargar la página)
+  whatsappTimeoutId = setTimeout(() => {
+    setSkipBeforeUnload(false);
+    whatsappTimeoutId = null;
+  }, WHATSAPP_NAVIGATION_DELAY_MS);
 }
 
 function escapeHtml(str: string): string {
