@@ -28,6 +28,7 @@ interface DetalleSubreceta extends RowDataPacket {
   usuarioauditoria: string;
   fehamodificacionauditoria: Date;
   idnegocio: number;
+  dtlsubrecetaidinsumo: number | null;
 }
 
 // Función auxiliar para calcular el costo total de una subreceta
@@ -195,11 +196,11 @@ export const crearSubreceta = async (req: AuthRequest, res: Response): Promise<v
           `INSERT INTO tblposcrumenwebdetallesubrecetas
           (dtlSubRecetaId, nombreInsumoSubr, umInsumoSubr, cantidadUsoSubr, 
            costoInsumoSubr, estatus, fechaRegistroauditoria, usuarioauditoria, 
-           fehamodificacionauditoria, idnegocio)
-          VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, NOW(), ?)`,
+           fehamodificacionauditoria, idnegocio, dtlsubrecetaidinsumo)
+          VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, NOW(), ?, ?)`,
           [idSubReceta, detalle.nombreInsumoSubr, detalle.umInsumoSubr, 
            detalle.cantidadUsoSubr, detalle.costoInsumoSubr, detalle.estatus, 
-           usuarioauditoria, idnegocio]
+           usuarioauditoria, idnegocio, detalle.dtlsubrecetaidinsumo || null]
         );
       }
     }
@@ -300,11 +301,11 @@ export const actualizarSubreceta = async (req: AuthRequest, res: Response): Prom
           `INSERT INTO tblposcrumenwebdetallesubrecetas
           (dtlSubRecetaId, nombreInsumoSubr, umInsumoSubr, cantidadUsoSubr, 
            costoInsumoSubr, estatus, fechaRegistroauditoria, usuarioauditoria, 
-           fehamodificacionauditoria, idnegocio)
-          VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, NOW(), ?)`,
+           fehamodificacionauditoria, idnegocio, dtlsubrecetaidinsumo)
+          VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, NOW(), ?, ?)`,
           [id, detalle.nombreInsumoSubr, detalle.umInsumoSubr, 
            detalle.cantidadUsoSubr, detalle.costoInsumoSubr, detalle.estatus, 
-           usuarioauditoria, idnegocio]
+           usuarioauditoria, idnegocio, detalle.dtlsubrecetaidinsumo || null]
         );
       }
     }

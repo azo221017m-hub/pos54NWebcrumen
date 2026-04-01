@@ -116,7 +116,8 @@ const FormularioSubreceta: React.FC<Props> = ({ subreceta, idnegocio, onSubmit, 
               ...detalle,
               nombreInsumoSubr: insumoSeleccionado.nombre,
               umInsumoSubr: insumoSeleccionado.unidad_medida,
-              costoInsumoSubr: Number(insumoSeleccionado.costo_promedio_ponderado) || 0
+              costoInsumoSubr: Number(insumoSeleccionado.costo_promedio_ponderado) || 0,
+              dtlsubrecetaidinsumo: insumoSeleccionado.id_insumo
             };
           }
           return detalle;

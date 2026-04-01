@@ -25,6 +25,7 @@ export interface DetalleSubreceta {
   usuarioauditoria?: string;
   fehamodificacionauditoria?: Date | string;
   idnegocio?: number;
+  dtlsubrecetaidinsumo?: number;
 }
 
 export interface SubrecetaCreate {
