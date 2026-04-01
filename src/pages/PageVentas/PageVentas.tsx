@@ -1847,15 +1847,13 @@ const PageVentas: React.FC = () => {
           <div className="comanda-buttons">
             {!isClienteMode && (
               <>
-                {privilegio >= 5 && (
-                  <button 
-                    className="btn-producir" 
-                    onClick={handleProducir} 
-                    disabled={!isServiceConfigured || comanda.length === 0 || isProcessingVenta}
-                  >
-                    {isProcessingVenta ? 'Procesando...' : 'Producir'}
-                  </button>
-                )}
+                <button 
+                  className="btn-producir" 
+                  onClick={handleProducir} 
+                  disabled={!isServiceConfigured || comanda.length === 0 || isProcessingVenta}
+                >
+                  {isProcessingVenta ? 'Procesando...' : 'Producir'}
+                </button>
                 {privilegio >= 5 && currentOrigenVenta !== 'WEB' && (
                   <button 
                     className="btn-esperar" 
