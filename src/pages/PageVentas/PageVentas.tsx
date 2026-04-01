@@ -148,8 +148,8 @@ const PageVentas: React.FC = () => {
   // Seat assignment state for MESA sales - tracks current seat for new products
   const [currentSeatAssignment, setCurrentSeatAssignment] = useState<string>(DEFAULT_SEAT_ASSIGNMENT);
 
-  // Imprimir comanda cocina checkbox state
-  const [imprimirChecked, setImprimirChecked] = useState(false);
+  // Imprimir comanda cocina checkbox state (checked by default)
+  const [imprimirChecked, setImprimirChecked] = useState(true);
 
   // Helper: navigate to dashboard or reset state for privilege 2 after completing/canceling a venta
   const handlePostVenta = React.useCallback(() => {
@@ -1412,10 +1412,6 @@ const PageVentas: React.FC = () => {
   };
 
   const handleEliminarEspera = async () => {
-    if (privilegio < 5) {
-      showErrorToast('No tiene privilegios suficientes para eliminar registros');
-      return;
-    }
     if (!currentVentaId) {
       alert('No hay una venta activa para eliminar');
       return;
