@@ -349,8 +349,8 @@ const FormularioProductoWeb: React.FC<Props> = ({ productoEditar, idnegocio, onS
   };
 
   return (
-    <div className="formulario-producto-web-overlay" onClick={onCancel}>
-      <div className="formulario-producto-web-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="formulario-producto-web-overlay">
+      <div className="formulario-producto-web-modal">
         <div className="formulario-producto-web-header">
           <div className="formulario-header-content">
             <Package className="formulario-header-icon" />

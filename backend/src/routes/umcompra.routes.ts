@@ -7,7 +7,7 @@ import {
   eliminarUMCompra,
   validarNombreUnico
 } from '../controllers/umcompra.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 
 const router = Router();
 
@@ -19,7 +19,7 @@ router.get('/', obtenerUMCompras);
 router.get('/:id', obtenerUMCompraPorId);
 router.post('/', crearUMCompra);
 router.put('/:id', actualizarUMCompra);
-router.delete('/:id', eliminarUMCompra);
+router.delete('/:id', checkPrivilegio(5), eliminarUMCompra);
 
 // Validación
 router.post('/validar-nombre', validarNombreUnico);

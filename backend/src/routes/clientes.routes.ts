@@ -6,7 +6,7 @@ import {
   actualizarCliente,
   eliminarCliente
 } from '../controllers/clientes.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 
 const router = Router();
 
@@ -18,6 +18,6 @@ router.get('/', obtenerClientes);
 router.get('/:idCliente', obtenerClientePorId);
 router.post('/', crearCliente);
 router.put('/:idCliente', actualizarCliente);
-router.delete('/:idCliente', eliminarCliente);
+router.delete('/:idCliente', checkPrivilegio(5), eliminarCliente);
 
 export default router;

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { clienteWebService } from '../../services/clienteWebService';
 import type { PedidoTransito } from '../../services/clienteWebService';
 import { useWebSocket } from '../../hooks/useWebSocket';
+import { extractShortFolio } from '../../utils/formatters';
 import './TableroCliente.css';
 
 interface TableroClienteProps {
@@ -224,7 +225,7 @@ const TableroCliente: React.FC<TableroClienteProps> = ({ onOcultar }) => {
                       <div className="tc-card-top">
                         <div className="tc-card-folio">
                           <span className="tc-folio-hash">#</span>
-                          {pedido.folioventa}
+                          {extractShortFolio(pedido.folioventa)}
                         </div>
                         <div className="tc-card-total">{formatMoneda(pedido.totalpedido)}</div>
                       </div>

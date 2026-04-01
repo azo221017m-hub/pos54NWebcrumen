@@ -9,7 +9,7 @@ import {
   obtenerUltimaCompra,
   aplicarMovimiento
 } from '../controllers/movimientos.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 
 const router = Router();
 
@@ -24,7 +24,7 @@ router.get('/', obtenerMovimientos);
 router.get('/:id', obtenerMovimientoPorId);
 router.post('/', crearMovimiento);
 router.put('/:id', actualizarMovimiento);
-router.delete('/:id', eliminarMovimiento);
+router.delete('/:id', checkPrivilegio(5), eliminarMovimiento);
 
 // Ruta especial para procesar movimientos
 router.patch('/:id/procesar', procesarMovimiento);

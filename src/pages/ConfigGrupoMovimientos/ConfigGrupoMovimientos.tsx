@@ -24,6 +24,7 @@ const ConfigGrupoMovimientos: React.FC = () => {
 
   // Obtener idnegocio del localStorage
   const idnegocio = parseInt(localStorage.getItem('idnegocio') || '1');
+  const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
@@ -91,6 +92,10 @@ const ConfigGrupoMovimientos: React.FC = () => {
   };
 
   const handleEliminarGrupo = async (id: number) => {
+    if (privilegio < 5) {
+      mostrarMensaje('error', 'No tiene privilegios suficientes para eliminar registros');
+      return;
+    }
     const grupo = grupos.find(g => g.id_cuentacontable === id);
     
     if (!window.confirm(

@@ -220,9 +220,57 @@ export const checkNegocio = (req: AuthRequest, res: Response, next: NextFunction
 };
 
 /**
- * Middleware opcional - No requiere autenticación pero agrega info si existe
- * Útil para endpoints públicos que pueden personalizar respuesta si hay usuario
+ * Middleware para verificar privilegio mínimo del rol del usuario.
+ * Consulta el privilegio del rol en la BD y verifica que sea >= minPrivilegio.
+ * Debe usarse DESPUÉS de authMiddleware.
  */
+export const checkPrivilegio = (minPrivilegio: number) => {
+  return async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        error: 'Usuario no autenticado',
+        message: 'Debe estar autenticado para realizar esta acción'
+      });
+      return;
+    }
+
+    try {
+      const [rolRows] = await pool.execute<RowDataPacket[]>(
+        'SELECT privilegio FROM tblposcrumenwebroles WHERE idRol = ?',
+        [req.user.idRol]
+      );
+
+      if (rolRows.length === 0) {
+        res.status(403).json({
+          success: false,
+          error: 'Rol no encontrado',
+          message: 'No se pudo verificar el nivel de privilegio'
+        });
+        return;
+      }
+
+      const privilegio = Number(rolRows[0].privilegio) || 0;
+
+      if (privilegio < minPrivilegio) {
+        res.status(403).json({
+          success: false,
+          error: 'Privilegios insuficientes',
+          message: 'No tiene privilegios suficientes para realizar esta acción'
+        });
+        return;
+      }
+
+      next();
+    } catch (error) {
+      console.error('Error al verificar privilegio:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Error al verificar privilegios'
+      });
+    }
+  };
+};
 export const optionalAuth = async (
   req: AuthRequest,
   _res: Response,

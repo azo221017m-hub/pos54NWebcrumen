@@ -52,8 +52,8 @@ const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps
   };
 
   return (
-    <div className="modal-seleccion-venta-pageventas-overlay" onClick={handleOverlayClick}>
-      <div className="modal-seleccion-venta-pageventas-content floating" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-seleccion-venta-pageventas-overlay">
+      <div className="modal-seleccion-venta-pageventas-content floating">
         {isClienteMode && (
           <button
             className="btn-cancelar-seleccion-venta"

@@ -6,7 +6,7 @@ import {
   actualizarCuentaContable,
   eliminarCuentaContable
 } from '../controllers/cuentasContables.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 
 const router = Router();
 
@@ -18,6 +18,6 @@ router.get('/', obtenerCuentasContables);
 router.get('/:id', obtenerCuentaContable);
 router.post('/', crearCuentaContable);
 router.put('/:id', actualizarCuentaContable);
-router.delete('/:id', eliminarCuentaContable);
+router.delete('/:id', checkPrivilegio(5), eliminarCuentaContable);
 
 export default router;

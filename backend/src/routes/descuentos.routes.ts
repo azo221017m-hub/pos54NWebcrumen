@@ -8,7 +8,7 @@ import {
   validarNombreDescuentoUnico,
   cambiarEstatusDescuento
 } from '../controllers/descuentos.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 
 const router = Router();
 
@@ -21,7 +21,7 @@ router.get('/validar/nombre-descuento', validarNombreDescuentoUnico);
 router.get('/:id_descuento', obtenerDescuentoPorId);
 router.post('/', crearDescuento);
 router.put('/:id_descuento', actualizarDescuento);
-router.delete('/:id_descuento', eliminarDescuento);
+router.delete('/:id_descuento', checkPrivilegio(5), eliminarDescuento);
 
 // Rutas adicionales
 router.patch('/:id_descuento/estatus', cambiarEstatusDescuento);

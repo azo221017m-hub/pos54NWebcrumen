@@ -7,7 +7,7 @@ import {
   eliminarModerador,
   obtenerModeradoresRef
 } from '../controllers/moderadores.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 
 const router = Router();
 
@@ -20,6 +20,6 @@ router.get('/negocio/:idnegocio', obtenerModeradores);
 router.get('/:id', obtenerModerador);
 router.post('/', crearModerador);
 router.put('/:id', actualizarModerador);
-router.delete('/:id', eliminarModerador);
+router.delete('/:id', checkPrivilegio(5), eliminarModerador);
 
 export default router;

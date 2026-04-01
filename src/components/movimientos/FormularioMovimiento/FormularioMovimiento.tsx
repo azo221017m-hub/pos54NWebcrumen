@@ -38,6 +38,7 @@ interface Props {
 
 const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancelar, mensaje, isEditMode = false, onAplicar }) => {
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
+  const privilegio = Number(localStorage.getItem('privilegio') || '0');
   
   // Estado del formulario
   const [motivomovimiento, setMotivoMovimiento] = useState<MotivoMovimiento>('COMPRA');
@@ -483,7 +484,9 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                 required
               >
                 <option value="COMPRA">COMPRA</option>
-                <option value="AJUSTE_MANUAL">AJUSTE MANUAL</option>
+                {privilegio >= 5 && (
+                  <option value="AJUSTE_MANUAL">AJUSTE MANUAL</option>
+                )}
                 <option value="MERMA">MERMA</option>
                 <option value="INV_INICIAL">INV. INICIAL</option>
                 <option value="CONSUMO">CONSUMO</option>

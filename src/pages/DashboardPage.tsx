@@ -18,6 +18,7 @@ import { negociosService } from '../services/negociosService';
 import type { Negocio } from '../types/negocio.types';
 import TableroComandasPagadas from '../components/comandasPagadas/TableroComandasPagadas';
 import { useWebSocket } from '../hooks/useWebSocket';
+import { extractShortFolio } from '../utils/formatters';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -677,7 +678,7 @@ export const DashboardPage = () => {
           audio.play().catch((err) => { console.debug('Audio playback blocked:', err); });
         }
         cargarVentasSolicitadas();
-        showInfoToast(`🛎 Pedido WEB entrante: ${data.folioventa}`);
+        showInfoToast(`🛎 Pedido WEB entrante: ${extractShortFolio(data.folioventa)}`);
       } else if (data.type === 'venta_update') {
         debouncedRefresh('ventas', () => {
           cargarVentasSolicitadas();

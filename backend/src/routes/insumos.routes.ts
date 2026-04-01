@@ -8,7 +8,7 @@ import {
   eliminarInsumo,
   validarNombreInsumo
 } from '../controllers/insumos.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 import { apiLimiter } from '../middlewares/rateLimit';
 
 const router = Router();
@@ -24,6 +24,6 @@ router.get('/validar-nombre/:nombre', validarNombreInsumo);
 router.get('/:id_insumo', obtenerInsumoPorId);
 router.post('/', crearInsumo);
 router.put('/:id_insumo', actualizarInsumo);
-router.delete('/:id_insumo', eliminarInsumo);
+router.delete('/:id_insumo', checkPrivilegio(5), eliminarInsumo);
 
 export default router;

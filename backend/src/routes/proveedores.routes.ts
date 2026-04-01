@@ -6,7 +6,7 @@ import {
   actualizarProveedor,
   eliminarProveedor
 } from '../controllers/proveedores.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 
 const router = Router();
 
@@ -18,6 +18,6 @@ router.get('/', obtenerProveedores);
 router.get('/:id_proveedor', obtenerProveedorPorId);
 router.post('/', crearProveedor);
 router.put('/:id_proveedor', actualizarProveedor);
-router.delete('/:id_proveedor', eliminarProveedor);
+router.delete('/:id_proveedor', checkPrivilegio(5), eliminarProveedor);
 
 export default router;

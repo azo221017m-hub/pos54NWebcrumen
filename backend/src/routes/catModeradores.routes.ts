@@ -6,7 +6,7 @@ import {
   actualizarCatModerador,
   eliminarCatModerador
 } from '../controllers/catModeradores.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 
 const router = Router();
 
@@ -18,6 +18,6 @@ router.get('/', obtenerCatModeradores);
 router.get('/:id', obtenerCatModeradorPorId);
 router.post('/', crearCatModerador);
 router.put('/:id', actualizarCatModerador);
-router.delete('/:id', eliminarCatModerador);
+router.delete('/:id', checkPrivilegio(5), eliminarCatModerador);
 
 export default router;

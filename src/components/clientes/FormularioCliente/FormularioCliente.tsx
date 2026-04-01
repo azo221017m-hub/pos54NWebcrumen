@@ -118,8 +118,8 @@ const FormularioCliente: React.FC<Props> = ({ clienteEditar, onSubmit, onCancel,
   };
 
   return (
-    <div className="formulario-cliente-overlay" onClick={onCancel}>
-      <div className="formulario-cliente-container" onClick={(e) => e.stopPropagation()}>
+    <div className="formulario-cliente-overlay">
+      <div className="formulario-cliente-container">
         <div className="formulario-header">
           <div className="header-icon">
             <User size={28} />

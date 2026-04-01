@@ -7,7 +7,7 @@ import {
   actualizarAnuncio,
   eliminarAnuncio
 } from '../controllers/anuncios.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 import { apiLimiter } from '../middlewares/rateLimit';
 
 const router = Router();
@@ -28,6 +28,6 @@ router.get('/', obtenerAnuncios);
 router.get('/:id', obtenerAnuncioPorId);
 router.post('/', crearAnuncio);
 router.put('/:id', actualizarAnuncio);
-router.delete('/:id', eliminarAnuncio);
+router.delete('/:id', checkPrivilegio(5), eliminarAnuncio);
 
 export default router;

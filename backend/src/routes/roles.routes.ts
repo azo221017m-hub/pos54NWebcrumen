@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 import {
   obtenerRoles,
   obtenerRolPorId,
@@ -45,7 +45,7 @@ router.put('/:id', authMiddleware, actualizarRol);
  * @desc    Eliminar un rol (soft delete)
  * @access  Private
  */
-router.delete('/:id', authMiddleware, eliminarRol);
+router.delete('/:id', authMiddleware, checkPrivilegio(5), eliminarRol);
 
 /**
  * @route   PATCH /api/roles/:id/estatus

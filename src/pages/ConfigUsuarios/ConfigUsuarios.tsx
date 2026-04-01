@@ -19,6 +19,7 @@ export const ConfigUsuarios: React.FC = () => {
   const [usuarioEditar, setUsuarioEditar] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
+  const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
   const cargarUsuarios = useCallback(async () => {
     try {
@@ -61,6 +62,10 @@ export const ConfigUsuarios: React.FC = () => {
   };
 
   const handleEliminarUsuario = async (id: number) => {
+    if (privilegio < 5) {
+      mostrarMensaje('error', 'No tiene privilegios suficientes para eliminar registros');
+      return;
+    }
     try {
       setLoading(true);
       const idEliminado = await eliminarUsuario(id);
@@ -168,8 +173,8 @@ export const ConfigUsuarios: React.FC = () => {
 
       {/* Formulario Modal */}
       {mostrarFormulario && (
-        <div className="usuario-formulario-overlay" onClick={handleCancelarFormulario}>
-          <div className="usuario-formulario-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="usuario-formulario-overlay">
+          <div className="usuario-formulario-modal">
             <FormularioUsuario
               usuarioEditar={usuarioEditar}
               onSubmit={handleSubmitFormulario}

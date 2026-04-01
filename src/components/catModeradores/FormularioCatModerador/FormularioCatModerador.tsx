@@ -127,8 +127,8 @@ const FormularioCatModerador: React.FC<Props> = ({ catModerador, idnegocio, onSu
   };
 
   return (
-    <div className="cat-moderador-modal-overlay" onClick={onCancel}>
-      <div className="cat-moderador-modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="cat-moderador-modal-overlay">
+      <div className="cat-moderador-modal-content">
         <div className="cat-moderador-header">
           <div className="cat-moderador-header-content">
             <Users className="cat-moderador-header-icon" />

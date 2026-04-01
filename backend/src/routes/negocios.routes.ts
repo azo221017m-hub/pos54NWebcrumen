@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 import { apiLimiter } from '../middlewares/rateLimit';
 import {
   obtenerNegocios,
@@ -66,7 +66,7 @@ router.put('/:id', authMiddleware, actualizarNegocio);
  * @desc    Eliminar un negocio (soft delete)
  * @access  Private
  */
-router.delete('/:id', authMiddleware, eliminarNegocio);
+router.delete('/:id', authMiddleware, checkPrivilegio(5), eliminarNegocio);
 
 /**
  * @route   PATCH /api/negocios/:id/estatus

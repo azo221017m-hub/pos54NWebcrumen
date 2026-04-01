@@ -6,7 +6,7 @@ import {
   updateProducto, 
   deleteProducto 
 } from '../controllers/productos.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 
 const router = Router();
 
@@ -46,6 +46,6 @@ router.put('/:id', updateProducto);
  * @desc    Eliminar un producto (soft delete)
  * @access  Private
  */
-router.delete('/:id', deleteProducto);
+router.delete('/:id', checkPrivilegio(5), deleteProducto);
 
 export default router;

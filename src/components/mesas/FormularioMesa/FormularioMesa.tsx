@@ -137,8 +137,8 @@ const FormularioMesa: React.FC<FormularioMesaProps> = ({
   };
 
   return (
-    <div className="formulario-mesa-overlay" onClick={onCancel}>
-      <div className="formulario-mesa-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="formulario-mesa-overlay">
+      <div className="formulario-mesa-modal">
         <div className="formulario-mesa-header">
           <div className="formulario-header-content">
             <Table2 className="formulario-header-icon" />

@@ -12,6 +12,7 @@ import { cambiarEstatusMesa } from '../../services/mesasService';
 import { clearSession } from '../../services/sessionService';
 import { clienteWebService } from '../../services/clienteWebService';
 import { showSuccessToast, showErrorToast } from '../../components/FeedbackToast';
+import { extractShortFolio } from '../../utils/formatters';
 import ModalTipoServicio from '../../components/ventas/ModalTipoServicio';
 import ModalSeleccionVentaPageVentas from '../../components/ventas/ModalSeleccionVentaPageVentas';
 import ModalIniciaTurno from '../../components/turnos/ModalIniciaTurno';
@@ -822,7 +823,7 @@ const PageVentas: React.FC = () => {
       }
 
       if (resultado.success) {
-        showSuccessToast(`Venta registrada - Folio: ${resultado.folioventa}`);
+        showSuccessToast(`Venta registrada - Folio: ${extractShortFolio(resultado.folioventa || '')}`);
         
         // Mark newly inserted items as ORDENADO
         setComanda(comanda.map(item => 
@@ -1419,6 +1420,10 @@ const PageVentas: React.FC = () => {
   };
 
   const handleEliminarEspera = async () => {
+    if (privilegio < 5) {
+      showErrorToast('No tiene privilegios suficientes para eliminar registros');
+      return;
+    }
     if (!currentVentaId) {
       alert('No hay una venta activa para eliminar');
       return;
@@ -2082,8 +2087,8 @@ const PageVentas: React.FC = () => {
 
       {/* Modal para selección de moderadores */}
       {showModModal && selectedProductoIdForMod && (
-        <div className="modal-overlay" onClick={closeModModal}>
-          <div className="modal-mod-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay">
+          <div className="modal-mod-content">
             {modSelectionMode === 'options' ? (
               // Show LIMPIO | CON TODO | SOLO CON options
               <>

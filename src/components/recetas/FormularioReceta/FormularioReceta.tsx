@@ -291,8 +291,8 @@ const FormularioReceta: React.FC<Props> = ({ receta, idnegocio, onSubmit, onCanc
   const costoTotal = calcularCostoTotal();
 
   return (
-    <div className="receta-modal-overlay" onClick={onCancel}>
-      <div className="receta-modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="receta-modal-overlay">
+      <div className="receta-modal-content">
         <div className="receta-modal-header">
           <div className="receta-header-content">
             <ChefHat className="receta-header-icon" />

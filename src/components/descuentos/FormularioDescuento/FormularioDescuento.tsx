@@ -125,8 +125,8 @@ const FormularioDescuento: React.FC<FormularioDescuentoProps> = ({
   };
 
   return (
-    <div className="formulario-descuento-overlay" onClick={onCancel}>
-      <div className="formulario-descuento-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="formulario-descuento-overlay">
+      <div className="formulario-descuento-modal">
         <div className="formulario-descuento-header">
           <div className="formulario-header-content">
             <BadgePercent className="formulario-header-icon" />

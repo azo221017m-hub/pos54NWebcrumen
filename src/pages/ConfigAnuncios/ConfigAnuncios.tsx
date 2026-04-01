@@ -18,6 +18,7 @@ const ConfigAnuncios: React.FC = () => {
   const [guardando, setGuardando] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [anuncioSeleccionado, setAnuncioSeleccionado] = useState<Anuncio | null>(null);
+  const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
   const cargarAnuncios = useCallback(async () => {
     try {
@@ -48,6 +49,10 @@ const ConfigAnuncios: React.FC = () => {
   };
 
   const handleEliminar = async (id: number) => {
+    if (privilegio < 5) {
+      showErrorToast('No tiene privilegios suficientes para eliminar registros');
+      return;
+    }
     const anuncio = anuncios.find(a => a.idAnuncio === id);
     if (!window.confirm(`¿Está seguro de eliminar el anuncio "${anuncio?.tituloDeAnuncio}"?`)) {
       return;

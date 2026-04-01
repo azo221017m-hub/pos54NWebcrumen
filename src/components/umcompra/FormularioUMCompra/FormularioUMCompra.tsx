@@ -57,8 +57,8 @@ export const FormularioUMCompra: React.FC<FormularioUMCompraProps> = ({
   };
 
   return (
-    <div className="formulario-umcompra-overlay" onClick={onCancelar}>
-      <div className="formulario-umcompra-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="formulario-umcompra-overlay">
+      <div className="formulario-umcompra-modal">
         <div className="formulario-umcompra-container">
       <form onSubmit={handleSubmit} className="formulario-umcompra">
         <div className="formulario-umcompra-header">

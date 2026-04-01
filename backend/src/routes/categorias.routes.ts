@@ -6,7 +6,7 @@ import {
   actualizarCategoria,
   eliminarCategoria
 } from '../controllers/categorias.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 
 const router = Router();
 
@@ -26,6 +26,6 @@ router.post('/', crearCategoria);
 router.put('/:id', actualizarCategoria);
 
 // DELETE /api/categorias/:id - Eliminar categoría (soft delete)
-router.delete('/:id', eliminarCategoria);
+router.delete('/:id', checkPrivilegio(5), eliminarCategoria);
 
 export default router;

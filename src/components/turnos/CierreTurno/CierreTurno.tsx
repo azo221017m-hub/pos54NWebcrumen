@@ -192,8 +192,8 @@ const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) 
   );
 
   return (
-    <div className="modal-overlay" onClick={onCancel}>
-      <div className="modal-content-cierre" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay">
+      <div className="modal-content-cierre">
         {/* Botón de cerrar modal */}
         <button
           type="button"
