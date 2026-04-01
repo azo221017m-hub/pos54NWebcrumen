@@ -149,7 +149,7 @@ const PageVentas: React.FC = () => {
   const [currentSeatAssignment, setCurrentSeatAssignment] = useState<string>(DEFAULT_SEAT_ASSIGNMENT);
 
   // Imprimir comanda cocina checkbox state
-  const [imprimirChecked, setImprimirChecked] = useState(false);
+  const [imprimirChecked, setImprimirChecked] = useState(true);
 
   // Helper: navigate to dashboard or reset state for privilege 2 after completing/canceling a venta
   const handlePostVenta = React.useCallback(() => {
@@ -1412,10 +1412,6 @@ const PageVentas: React.FC = () => {
   };
 
   const handleEliminarEspera = async () => {
-    if (privilegio < 5) {
-      showErrorToast('No tiene privilegios suficientes para eliminar registros');
-      return;
-    }
     if (!currentVentaId) {
       alert('No hay una venta activa para eliminar');
       return;
@@ -1851,14 +1847,16 @@ const PageVentas: React.FC = () => {
           <div className="comanda-buttons">
             {!isClienteMode && (
               <>
-                <button 
-                  className="btn-producir" 
-                  onClick={handleProducir} 
-                  disabled={!isServiceConfigured || comanda.length === 0 || isProcessingVenta}
-                >
-                  {isProcessingVenta ? 'Procesando...' : 'Producir'}
-                </button>
-                {currentOrigenVenta !== 'WEB' && (
+                {privilegio >= 5 && (
+                  <button 
+                    className="btn-producir" 
+                    onClick={handleProducir} 
+                    disabled={!isServiceConfigured || comanda.length === 0 || isProcessingVenta}
+                  >
+                    {isProcessingVenta ? 'Procesando...' : 'Producir'}
+                  </button>
+                )}
+                {privilegio >= 5 && currentOrigenVenta !== 'WEB' && (
                   <button 
                     className="btn-esperar" 
                     onClick={handleEsperar} 
@@ -1867,7 +1865,7 @@ const PageVentas: React.FC = () => {
                     Esperar
                   </button>
                 )}
-                {currentOrigenVenta === 'WEB' && (
+                {privilegio >= 5 && currentOrigenVenta === 'WEB' && (
                   <button
                     className="btn-ajustar-pedido-web"
                     onClick={handleAjustarPedidoWeb}

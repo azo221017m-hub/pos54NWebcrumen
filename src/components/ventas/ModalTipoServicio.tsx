@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Save } from 'lucide-react';
 import { obtenerMesas, cambiarEstatusMesa } from '../../services/mesasService';
 import { obtenerClientes } from '../../services/clientesService';
@@ -81,6 +81,9 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
   const [mesaFormData, setMesaFormData] = useState<MesaFormData>(INITIAL_MESA_DATA);
   const [llevarFormData, setLlevarFormData] = useState<LlevarFormData>(INITIAL_LLEVAR_DATA);
   const [domicilioFormData, setDomicilioFormData] = useState<DomicilioFormData>(INITIAL_DOMICILIO_DATA);
+
+  // Ref for Llevar client name input to set focus
+  const clienteLlevarInputRef = useRef<HTMLInputElement>(null);
 
   const cargarMesas = async () => {
     try {
@@ -196,6 +199,17 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
       }
     }
   }, [isOpen, tipoServicio, initialData, clienteData]);
+
+  // Set focus on Llevar client name input when Llevar is selected
+  useEffect(() => {
+    if (isOpen && tipoServicio === 'Llevar') {
+      // Small delay to ensure the DOM has rendered
+      const timer = setTimeout(() => {
+        clienteLlevarInputRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, tipoServicio]);
 
   const handleSave = async () => {
     if (tipoServicio === 'Mesa') {
@@ -323,6 +337,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                   id="cliente"
                   className="form-control"
                   list="clientes-list-llevar"
+                  ref={clienteLlevarInputRef}
                   value={llevarFormData.cliente}
                   onChange={(e) => {
                     const inputValue = e.target.value;
