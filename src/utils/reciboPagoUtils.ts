@@ -1,5 +1,6 @@
 // Utilidades para generar el recibo de pago en formato 58mm
 import { extractShortFolio } from './formatters';
+import { setSkipBeforeUnload } from '../services/sessionService';
 
 export interface ItemRecibo {
   nombreproducto: string;
@@ -405,7 +406,13 @@ export function generarTextoWhatsApp(datos: DatosRecibo): string {
  */
 export function enviarReciboWhatsApp(datos: DatosRecibo): void {
   const texto = generarTextoWhatsApp(datos);
+  // Desactivar temporalmente la advertencia de beforeunload para evitar
+  // el mensaje "se perderán los cambios" al abrir WhatsApp tras cobrar
+  setSkipBeforeUnload(true);
   window.location.href = `whatsapp://send?text=${encodeURIComponent(texto)}`;
+  // Restaurar la protección después de un breve retardo
+  // (el protocolo whatsapp:// abre la app nativa sin descargar la página)
+  setTimeout(() => setSkipBeforeUnload(false), 1500);
 }
 
 function escapeHtml(str: string): string {
