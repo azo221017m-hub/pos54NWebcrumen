@@ -860,44 +860,39 @@ const PageVentas: React.FC = () => {
 
   const imprimirComandaCocina = (items: ItemComanda[]) => {
     const ahora = new Date();
-    const fechaHora = ahora.toLocaleString('es-MX', {
-      year: 'numeric', month: '2-digit', day: '2-digit',
+    const horaEnvio = ahora.toLocaleString('es-MX', {
       hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
 
-    // Build client / preparation details for footer
-    let detallePreparacion = '';
-    let detalleCliente = '';
+    // Determine TIPODEVENTA and CLIENTE for the header
+    const tipoDeVentaMap: Record<TipoServicio, string> = {
+      'Mesa': 'MESA',
+      'Llevar': 'LLEVAR',
+      'Domicilio': 'DOMICILIO'
+    };
+    const tipoDeVentaLabel = tipoDeVentaMap[tipoServicio] || 'MESA';
+
+    let clienteLabel = '';
     if (tipoServicio === 'Mesa' && mesaData) {
-      detallePreparacion = `Tipo: MESA`;
-      detalleCliente = `Mesa: ${mesaData.nombremesa}`;
+      clienteLabel = mesaData.nombremesa || '';
     } else if (tipoServicio === 'Llevar' && llevarData) {
-      detallePreparacion = `Tipo: LLEVAR${llevarData.fechaprogramadaventa ? ` | Entrega: ${llevarData.fechaprogramadaventa}` : ''}`;
-      detalleCliente = `Cliente: ${llevarData.cliente || 'mostrador'}`;
+      clienteLabel = llevarData.cliente || 'mostrador';
     } else if (tipoServicio === 'Domicilio' && domicilioData) {
-      detallePreparacion = `Tipo: DOMICILIO${domicilioData.fechaprogramadaventa ? ` | Entrega: ${domicilioData.fechaprogramadaventa}` : ''}`;
-      detalleCliente = [
-        `Cliente: ${domicilioData.cliente || 'mostrador'}`,
-        domicilioData.direcciondeentrega ? `Dirección: ${domicilioData.direcciondeentrega}` : '',
-        domicilioData.telefonodeentrega ? `Teléfono: ${domicilioData.telefonodeentrega}` : '',
-        domicilioData.contactodeentrega ? `Contacto: ${domicilioData.contactodeentrega}` : '',
-        domicilioData.observaciones ? `Nota: ${domicilioData.observaciones}` : ''
-      ].filter(Boolean).join('<br/>');
+      clienteLabel = domicilioData.cliente || 'mostrador';
     }
+
+    const nombreNegocio = negocio?.nombreNegocio || 'POS Crumen';
 
     const filas = items.map(item => {
       const mods = item.moderadoresNames && item.moderadoresNames.length > 0
         ? item.moderadoresNames.join(', ')
         : '';
       const obs = item.notas || '';
-      const modObs = [
-        mods ? `<span class="mod-txt">${mods}</span>` : '',
-        obs ? `<span class="obs-txt">${obs}</span>` : ''
-      ].filter(Boolean).join('<br/>');
       return `<tr>
         <td class="cant-col">${item.cantidad}</td>
         <td class="prod-col">${item.producto.nombre}</td>
-        <td class="mod-col">${modObs}</td>
+        <td class="mod-col">${mods}</td>
+        <td class="obs-col">${obs}</td>
       </tr>`;
     }).join('');
 
@@ -905,60 +900,57 @@ const PageVentas: React.FC = () => {
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
-  <title>COMANDA DE PREPARACIÓN</title>
+  <title>COMANDA DE COCINA</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Courier New', Courier, monospace;
-      font-size: 10px;
-      width: 58mm;
-      max-width: 58mm;
+      font-size: 12px;
+      width: 80mm;
+      max-width: 80mm;
       padding: 3mm 2mm;
       color: #000;
       background: #fff;
     }
-    h1 { font-size: 12px; text-align: center; margin-bottom: 2px; letter-spacing: 0.5px; }
-    .fecha { font-size: 9px; text-align: center; margin-bottom: 4px; }
-    .divider { border: none; border-top: 1px dashed #000; margin: 3px 0; }
-    .info-line { font-size: 9px; margin-bottom: 2px; }
+    .negocio-name { font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 4px; }
+    .header-info { font-size: 11px; text-align: center; margin-bottom: 4px; }
+    .divider { border: none; border-top: 1px dashed #000; margin: 4px 0; }
     table { width: 100%; border-collapse: collapse; }
     th {
-      font-size: 9px;
+      font-size: 10px;
       text-align: left;
       border-bottom: 1px solid #000;
-      padding: 1px 2px;
+      padding: 2px 2px;
     }
-    td { font-size: 9px; padding: 2px 2px; vertical-align: top; }
-    .cant-col { width: 12%; text-align: center; }
-    .prod-col { width: 52%; }
-    .mod-col { width: 36%; }
-    .mod-txt { font-size: 8px; font-style: italic; color: #333; }
-    .obs-txt { font-size: 8px; color: #555; }
-    .footer { margin-top: 4px; border-top: 1px dashed #000; padding-top: 3px; font-size: 9px; }
+    td { font-size: 10px; padding: 2px 2px; vertical-align: top; }
+    .cant-col { width: 10%; text-align: center; }
+    .prod-col { width: 38%; }
+    .mod-col { width: 28%; font-style: italic; }
+    .obs-col { width: 24%; font-size: 9px; }
+    .footer-label { font-size: 12px; font-weight: bold; text-align: center; margin-top: 4px; padding-top: 4px; letter-spacing: 1px; }
     @media print {
-      html, body { width: 58mm; }
-      @page { size: 58mm auto; margin: 0; }
+      html, body { width: 80mm; }
+      @page { size: 80mm auto; margin: 0; }
     }
   </style>
 </head>
 <body>
-  <h1>★ COMANDA ★</h1>
-  <div class="fecha">${fechaHora}</div>
-  <hr class="divider"/>
-  ${detalleCliente ? `<div class="info-line">${detalleCliente}</div>` : ''}
-  ${detallePreparacion ? `<div class="info-line">${detallePreparacion}</div>` : ''}
+  <div class="negocio-name">${nombreNegocio}</div>
+  <div class="header-info">${tipoDeVentaLabel} | ${clienteLabel} | ${horaEnvio}</div>
   <hr class="divider"/>
   <table>
     <thead>
       <tr>
         <th class="cant-col">Cant</th>
         <th class="prod-col">Producto</th>
-        <th class="mod-col">Mod/Obs</th>
+        <th class="mod-col">Moderadores</th>
+        <th class="obs-col">Notas</th>
       </tr>
     </thead>
     <tbody>${filas}</tbody>
   </table>
   <hr class="divider"/>
+  <div class="footer-label">COMANDA DE COCINA</div>
   <script>
     window.addEventListener('load', function() { window.print(); });
     window.addEventListener('afterprint', function() { window.close(); });
@@ -968,7 +960,7 @@ const PageVentas: React.FC = () => {
 
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    const ventana = window.open(url, '_blank', 'width=260,height=500');
+    const ventana = window.open(url, '_blank', 'width=340,height=500');
     if (ventana) {
       ventana.addEventListener('unload', () => {
         URL.revokeObjectURL(url);
