@@ -1420,6 +1420,10 @@ const PageVentas: React.FC = () => {
   };
 
   const handleEliminarEspera = async () => {
+    if (privilegio < 5) {
+      showErrorToast('No tiene privilegios suficientes para eliminar registros');
+      return;
+    }
     if (!currentVentaId) {
       alert('No hay una venta activa para eliminar');
       return;

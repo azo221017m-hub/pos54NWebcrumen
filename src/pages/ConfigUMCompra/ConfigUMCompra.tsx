@@ -19,6 +19,7 @@ export const ConfigUMCompra: React.FC = () => {
   const [umEditar, setUmEditar] = useState<UMCompra | null>(null);
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
+  const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
   const cargarUnidades = useCallback(async () => {
     try {
@@ -59,6 +60,10 @@ export const ConfigUMCompra: React.FC = () => {
   };
 
   const handleEliminarUnidad = async (id: number) => {
+    if (privilegio < 5) {
+      mostrarMensaje('error', 'No tiene privilegios suficientes para eliminar registros');
+      return;
+    }
     try {
       setLoading(true);
       const idEliminado = await eliminarUMCompra(id);

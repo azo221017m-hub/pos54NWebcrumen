@@ -16,6 +16,7 @@ const ConfigDescuentos: React.FC = () => {
 
   // Obtener idnegocio del localStorage
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
+  const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
   const mostrarMensaje = (tipo: 'success' | 'error', texto: string) => {
     setMensaje({ tipo, texto });
@@ -71,6 +72,10 @@ const ConfigDescuentos: React.FC = () => {
   };
 
   const handleEliminarDescuento = async (id_descuento: number) => {
+    if (privilegio < 5) {
+      mostrarMensaje('error', 'No tiene privilegios suficientes para eliminar registros');
+      return;
+    }
     if (!window.confirm('¿Estás seguro de que deseas eliminar este descuento?')) {
       return;
     }

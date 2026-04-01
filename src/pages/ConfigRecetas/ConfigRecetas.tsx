@@ -17,6 +17,7 @@ const ConfigRecetas: React.FC = () => {
     tipo: 'success' | 'error' | 'info';
     texto: string;
   } | null>(null);
+  const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
@@ -85,6 +86,10 @@ const ConfigRecetas: React.FC = () => {
   };
 
   const handleEliminar = async (id: number) => {
+    if (privilegio < 5) {
+      mostrarMensaje('error', 'No tiene privilegios suficientes para eliminar registros');
+      return;
+    }
     const receta = recetas.find(r => r.idReceta === id);
     
     if (!window.confirm(

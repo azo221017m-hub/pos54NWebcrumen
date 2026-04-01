@@ -21,6 +21,7 @@ const MovimientosInventario: React.FC = () => {
     tipo: 'success' | 'error' | 'info';
     texto: string;
   } | null>(null);
+  const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
@@ -97,6 +98,10 @@ const MovimientosInventario: React.FC = () => {
   };
 
   const handleEliminar = async (id: number) => {
+    if (privilegio < 5) {
+      mostrarMensaje('error', 'No tiene privilegios suficientes para eliminar registros');
+      return;
+    }
     if (!window.confirm('¿Está seguro de que desea eliminar este movimiento?')) {
       return;
     }

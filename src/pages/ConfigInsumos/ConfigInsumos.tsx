@@ -24,6 +24,7 @@ const ConfigInsumos: React.FC = () => {
 
   // Obtener idnegocio del localStorage
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
+  const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
   // Helper para extraer mensaje de error
   const extraerMensajeError = (error: unknown, mensajePorDefecto: string): string => {
@@ -106,6 +107,10 @@ const ConfigInsumos: React.FC = () => {
   };
 
   const handleEliminar = async (id: number) => {
+    if (privilegio < 5) {
+      mostrarMensaje('error', 'No tiene privilegios suficientes para eliminar registros');
+      return;
+    }
     const insumo = insumos.find(i => i.id_insumo === id);
     
     if (!window.confirm(

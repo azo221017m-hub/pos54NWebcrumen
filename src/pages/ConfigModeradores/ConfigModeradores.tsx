@@ -24,6 +24,7 @@ const ConfigModeradores: React.FC = () => {
 
   // Obtener idnegocio del localStorage
   const idnegocio = parseInt(localStorage.getItem('idnegocio') || '1');
+  const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
@@ -94,6 +95,10 @@ const ConfigModeradores: React.FC = () => {
   };
 
   const handleEliminarModerador = async (id: number) => {
+    if (privilegio < 5) {
+      mostrarMensaje('error', 'No tiene privilegios suficientes para eliminar registros');
+      return;
+    }
     const moderador = moderadores.find(m => m.idmoderador === id);
     
     if (!window.confirm(

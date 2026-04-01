@@ -21,6 +21,7 @@ const ConfigMesas: React.FC = () => {
 
   // Obtener idnegocio del localStorage
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
+  const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
   const mostrarMensaje = (tipo: 'success' | 'error', texto: string) => {
     setMensaje({ tipo, texto });
@@ -76,6 +77,10 @@ const ConfigMesas: React.FC = () => {
   };
 
   const handleEliminarMesa = async (idmesa: number) => {
+    if (privilegio < 5) {
+      mostrarMensaje('error', 'No tiene privilegios suficientes para eliminar registros');
+      return;
+    }
     if (!window.confirm('¿Estás seguro de que deseas eliminar esta mesa?')) {
       return;
     }

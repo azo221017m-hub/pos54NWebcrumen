@@ -13,6 +13,7 @@ export const ConfigNegocios = () => {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [negocioEditar, setNegocioEditar] = useState<NegocioCompleto | null>(null);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
+  const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
   const cargarNegocios = useCallback(async () => {
     try {
@@ -62,6 +63,10 @@ export const ConfigNegocios = () => {
   };
 
   const handleEliminarNegocio = async (id: number) => {
+    if (privilegio < 5) {
+      mostrarMensaje('error', 'No tiene privilegios suficientes para eliminar registros');
+      return;
+    }
     if (!window.confirm('¿Estás seguro de que deseas eliminar este negocio?')) {
       return;
     }

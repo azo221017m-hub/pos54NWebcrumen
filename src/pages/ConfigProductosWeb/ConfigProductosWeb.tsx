@@ -24,6 +24,7 @@ const ConfigProductosWeb: React.FC = () => {
   } | null>(null);
 
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
+  const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
@@ -61,6 +62,10 @@ const ConfigProductosWeb: React.FC = () => {
   };
 
   const handleEliminar = async (id: number) => {
+    if (privilegio < 5) {
+      mostrarMensaje('error', 'No tiene privilegios suficientes para eliminar registros');
+      return;
+    }
     const producto = productos.find(p => p.idProducto === id);
     
     if (!window.confirm(
