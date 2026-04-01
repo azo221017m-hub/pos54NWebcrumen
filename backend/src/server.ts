@@ -1,25 +1,9 @@
 import http from 'http';
 import app from './app';
-import { testConnection, pool } from './config/db';
+import { testConnection } from './config/db';
 import { websocketService } from './services/websocket.service';
 
 const PORT = process.env.PORT || 3000;
-
-const runMigrations = async () => {
-  try {
-    await pool.query(`ALTER TABLE tblposcrumenwebventas ADD COLUMN IF NOT EXISTS origenventa ENUM('SITIO','WEB') NULL DEFAULT NULL`);
-    console.log('✅ Migración aplicada: columna origenventa en tblposcrumenwebventas');
-  } catch (error) {
-    console.error('⚠️  Error aplicando migración origenventa:', error);
-  }
-
-  try {
-    await pool.query(`ALTER TABLE tblposcrumenwebclientes ADD COLUMN IF NOT EXISTS password VARCHAR(255) NULL DEFAULT NULL`);
-    console.log('✅ Migración aplicada: columna password en tblposcrumenwebclientes');
-  } catch (error) {
-    console.error('⚠️  Error aplicando migración password en tblposcrumenwebclientes:', error);
-  }
-};
 
 const startServer = async () => {
   try {
@@ -30,9 +14,6 @@ const startServer = async () => {
       console.error('❌ No se pudo conectar a la base de datos');
       process.exit(1);
     }
-
-    // Aplicar migraciones de base de datos
-    await runMigrations();
 
     // Crear servidor HTTP
     const server = http.createServer(app);
