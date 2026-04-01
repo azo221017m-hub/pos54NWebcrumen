@@ -9,11 +9,11 @@
  * - This module provides utilities to format times in the configured timezone for business logic
  * 
  * The timezone is configured via the TZ environment variable in the .env file.
- * Default: 'America/Mexico_City'
+ * Default: 'Etc/GMT+6' (UTC-6)
  */
 
-// Timezone configured from TZ environment variable (defaults to Mexico City)
-export const MEXICO_TIMEZONE: string = process.env.TZ || 'America/Mexico_City';
+// Timezone configured from TZ environment variable (defaults to UTC-6)
+export const MEXICO_TIMEZONE: string = process.env.TZ || 'Etc/GMT+6';
 
 /**
  * Compute the UTC offset string (e.g. '-06:00', '+05:30') for the configured timezone.
