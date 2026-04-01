@@ -28,7 +28,7 @@ interface DetalleSubreceta extends RowDataPacket {
   usuarioauditoria: string;
   fehamodificacionauditoria: Date;
   idnegocio: number;
-  dtlsubrecetaidinsumo: number;
+  dtlsubrecetaidinsumo: number | null;
 }
 
 // Función auxiliar para calcular el costo total de una subreceta
