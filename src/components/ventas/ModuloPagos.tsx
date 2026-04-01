@@ -4,6 +4,7 @@ import { obtenerDescuentos } from '../../services/descuentosService';
 import { procesarPagoSimple, procesarPagoMixto, obtenerDetallesPagos } from '../../services/pagosService';
 import { negociosService } from '../../services/negociosService';
 import { imprimirRecibo, enviarReciboWhatsApp } from '../../utils/reciboPagoUtils';
+import type { DetallePagoRecibo } from '../../utils/reciboPagoUtils';
 import type { Descuento } from '../../types/descuento.types';
 import type { DetallePago, TipoDeVenta } from '../../types/ventasWeb.types';
 import type { Negocio, ParametrosNegocio } from '../../types/negocio.types';
@@ -295,7 +296,8 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     fpago: string,
     importePago: number,
     referenciaRecibo?: string | null,
-    cambioRecibo?: number
+    cambioRecibo?: number,
+    detallesPagosMixtos?: DetallePagoRecibo[]
   ) => {
     const fecha = new Date();
     const fechaStr = fecha.toLocaleDateString('es-MX') + ' ' + fecha.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
@@ -308,7 +310,6 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     }));
     const totalAPagar = descuentoSeleccionado ? nuevoTotal : totalCuenta;
     return {
-      logotipo: negocioData?.logotipo ?? undefined,
       nombredenegocio: negocioData?.nombreNegocio || DEFAULT_NEGOCIO_NAME,
       rfc: negocioData?.rfcnegocio || undefined,
       direccionfiscal: negocioData?.direccionfiscalnegocio || undefined,
@@ -323,6 +324,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
       importedepago: importePago,
       referencia: referenciaRecibo ?? undefined,
       cambio: cambioRecibo,
+      detallesPagosMixtos,
       telefonopedidos: parametrosData?.telefonoPedidos || undefined,
       pie: parametrosData?.pie || undefined,
     };
@@ -499,7 +501,20 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
         }
 
         // Generar recibo según la acción seleccionada
-        const datosRecibo = buildDatosRecibo('MIXTO', totalAPagar);
+        // Combinar pagos registrados anteriores + nuevos pagos mixtos
+        const todosLosPagos: DetallePagoRecibo[] = [
+          ...pagosRegistrados.map(p => ({
+            formadepago: p.formadepagodetalle,
+            importe: Number(p.totaldepago),
+            referencia: p.referencia,
+          })),
+          ...pagosMixtos.map(p => ({
+            formadepago: p.formaPago.toUpperCase(),
+            importe: parseFloat(p.importe),
+            referencia: p.referencia || null,
+          })),
+        ];
+        const datosRecibo = buildDatosRecibo('MIXTO', totalAPagar, undefined, undefined, todosLosPagos);
         if (accionRecibo === 'imprimir') {
           imprimirRecibo(datosRecibo);
         } else {
