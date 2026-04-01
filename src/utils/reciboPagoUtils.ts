@@ -9,6 +9,12 @@ export interface ItemRecibo {
   moderadores?: string | null;
 }
 
+export interface DetallePagoRecibo {
+  formadepago: string;
+  importe: number;
+  referencia?: string | null;
+}
+
 export interface DatosRecibo {
   // Header
   logotipo?: string | null;
@@ -31,6 +37,8 @@ export interface DatosRecibo {
   importedepago: number;
   referencia?: string | null;
   cambio?: number;
+  // Detalle de pagos mixtos
+  detallesPagosMixtos?: DetallePagoRecibo[];
   // Footer
   telefonopedidos?: string;
   pie?: string;
@@ -41,7 +49,6 @@ export interface DatosRecibo {
  */
 export function generarHtmlRecibo(datos: DatosRecibo): string {
   const {
-    logotipo,
     nombredenegocio,
     rfc,
     direccionfiscal,
@@ -57,6 +64,7 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
     importedepago,
     referencia,
     cambio,
+    detallesPagosMixtos,
     telefonopedidos,
     pie,
   } = datos;
@@ -79,10 +87,6 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
         </div>`;
     })
     .join('');
-
-  const logoHtml = logotipo
-    ? `<img src="${logotipo}" class="logo" alt="Logo" />`
-    : '';
 
   const encabezadoHtml = encabezado
     ? `<div class="encabezado">${escapeHtml(encabezado)}</div>`
@@ -120,6 +124,18 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
     pagoInfoHtml += `<div class="pago-row"><span>Cambio:</span><span>${fmt(cambio)}</span></div>`;
   }
 
+  // Detalle de pagos mixtos
+  if (formadepago.toUpperCase() === 'MIXTO' && detallesPagosMixtos && detallesPagosMixtos.length > 0) {
+    pagoInfoHtml += `<hr class="divider" />`;
+    pagoInfoHtml += `<div class="pago-row" style="font-weight:bold;"><span>Detalle de Pagos:</span></div>`;
+    for (const dp of detallesPagosMixtos) {
+      pagoInfoHtml += `<div class="pago-row"><span>${escapeHtml(dp.formadepago)}</span><span>${fmt(dp.importe)}</span></div>`;
+      if (dp.referencia) {
+        pagoInfoHtml += `<div class="pago-row" style="font-size:9px;"><span>Ref:</span><span>${escapeHtml(dp.referencia)}</span></div>`;
+      }
+    }
+  }
+
   const telefonoPedidosHtml = telefonopedidos
     ? `<div class="telefono-pedidos">Tel. Pedidos: ${escapeHtml(telefonopedidos)}</div>`
     : '';
@@ -145,13 +161,6 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
       background: #fff;
     }
     .center { text-align: center; }
-    .logo {
-      display: block;
-      margin: 0 auto 4px;
-      max-width: 40mm;
-      max-height: 20mm;
-      object-fit: contain;
-    }
     .negocio {
       font-size: 13px;
       font-weight: bold;
@@ -250,7 +259,6 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
   </style>
 </head>
 <body>
-  ${logoHtml}
   <div class="negocio">${escapeHtml(nombredenegocio)}</div>
   ${rfc ? `<div class="rfc">${escapeHtml(rfc)}</div>` : ''}
   ${direccionfiscal ? `<div class="direccion">${escapeHtml(direccionfiscal)}</div>` : ''}
@@ -314,6 +322,7 @@ export function generarTextoWhatsApp(datos: DatosRecibo): string {
     importedepago,
     referencia,
     cambio,
+    detallesPagosMixtos,
     telefonopedidos,
     pie,
   } = datos;
@@ -371,6 +380,18 @@ export function generarTextoWhatsApp(datos: DatosRecibo): string {
     texto += `Referencia: ${referencia}\n`;
   } else if (formadepago.toUpperCase() === 'EFECTIVO' && cambio !== undefined) {
     texto += `Cambio: ${fmt(cambio)}\n`;
+  }
+
+  // Detalle de pagos mixtos
+  if (formadepago.toUpperCase() === 'MIXTO' && detallesPagosMixtos && detallesPagosMixtos.length > 0) {
+    texto += `\n${linea}\n`;
+    texto += `Detalle de Pagos:\n`;
+    for (const dp of detallesPagosMixtos) {
+      texto += `${padRow(dp.formadepago, fmt(dp.importe))}\n`;
+      if (dp.referencia) {
+        texto += `  Ref: ${dp.referencia}\n`;
+      }
+    }
   }
 
   if (telefonopedidos) texto += `\nTel. Pedidos: ${telefonopedidos}\n`;
