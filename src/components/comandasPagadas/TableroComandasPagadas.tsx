@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { obtenerComandasPagadasTurnoActual } from '../../services/ventasWebService';
 import type { VentaWebWithDetails } from '../../types/ventasWeb.types';
+import { getShortFolio } from '../../utils/formatters';
 import './TableroComandasPagadas.css';
 
 interface Props {
@@ -129,7 +130,7 @@ const TableroComandasPagadas = ({ onVolver }: Props) => {
               {comandas.map((venta) => (
                 <tr key={venta.idventa}>
                   <td className="tcp-hora">{formatHora(venta.fechadeventa)}</td>
-                  <td className="tcp-folio">#{venta.folioventa}</td>
+                  <td className="tcp-folio">#{getShortFolio(venta.tipodeventa, venta.idventa)}</td>
                   <td className="tcp-cliente">{venta.cliente || '—'}</td>
                   <td>
                     <span className={`tcp-badge tcp-tipo-${venta.tipodeventa.toLowerCase()}`}>
@@ -184,7 +185,7 @@ const TableroComandasPagadas = ({ onVolver }: Props) => {
             <div className="tcp-modal-header">
               <h3>Detalle de Comanda</h3>
               <div className="tcp-modal-meta">
-                <span>#{comandaDetalle.folioventa}</span>
+                <span>#{getShortFolio(comandaDetalle.tipodeventa, comandaDetalle.idventa)}</span>
                 <span>{formatHora(comandaDetalle.fechadeventa)}</span>
               </div>
             </div>

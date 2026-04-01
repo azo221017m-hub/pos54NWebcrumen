@@ -51,6 +51,32 @@ export const truncateText = (text: string, maxLength: number): string => {
 };
 
 /**
+ * Genera el folio corto de venta: primera letra del tipo de venta + idventa
+ * Ejemplo: M123 (Mesa), L456 (Llevar), D789 (Domicilio)
+ */
+export const getShortFolio = (tipodeventa: string, idventa: number): string => {
+  const letra = tipodeventa?.charAt(0) || 'V';
+  return `${letra}${idventa}`;
+};
+
+/**
+ * Extrae el folio corto desde un folioventa completo.
+ * El folioventa tiene formato: [claveturno]HHMMSS[Letra][idventa]
+ * Esta función extrae la Letra + idventa (últimos caracteres después del timestamp).
+ * Si no se puede parsear, retorna el folioventa original.
+ */
+export const extractShortFolio = (folioventa: string): string => {
+  if (!folioventa) return '';
+  // El folio tiene formato: [claveturno]HHMMSS[Letra][idventa]
+  // La letra del tipo es una sola letra mayúscula seguida de dígitos al final
+  const match = folioventa.match(/([A-Z])(\d+)$/);
+  if (match) {
+    return `${match[1]}${match[2]}`;
+  }
+  return folioventa;
+};
+
+/**
  * Debounce para inputs
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -12,6 +12,7 @@ import { cambiarEstatusMesa } from '../../services/mesasService';
 import { clearSession } from '../../services/sessionService';
 import { clienteWebService } from '../../services/clienteWebService';
 import { showSuccessToast, showErrorToast } from '../../components/FeedbackToast';
+import { extractShortFolio } from '../../utils/formatters';
 import ModalTipoServicio from '../../components/ventas/ModalTipoServicio';
 import ModalSeleccionVentaPageVentas from '../../components/ventas/ModalSeleccionVentaPageVentas';
 import ModalIniciaTurno from '../../components/turnos/ModalIniciaTurno';
@@ -822,7 +823,7 @@ const PageVentas: React.FC = () => {
       }
 
       if (resultado.success) {
-        showSuccessToast(`Venta registrada - Folio: ${resultado.folioventa}`);
+        showSuccessToast(`Venta registrada - Folio: ${extractShortFolio(resultado.folioventa || '')}`);
         
         // Mark newly inserted items as ORDENADO
         setComanda(comanda.map(item => 

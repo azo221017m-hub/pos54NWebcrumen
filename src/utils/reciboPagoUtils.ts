@@ -1,4 +1,5 @@
 // Utilidades para generar el recibo de pago en formato 58mm
+import { extractShortFolio } from './formatters';
 
 export interface ItemRecibo {
   nombreproducto: string;
@@ -89,7 +90,7 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
 
   const foliodateHtml =
     folioventa || fechadeventa
-      ? `<div class="folio">${folioventa ? `Ticket #${escapeHtml(folioventa)}` : ''}</div>
+      ? `<div class="folio">${folioventa ? `Ticket #${escapeHtml(extractShortFolio(folioventa))}` : ''}</div>
          <div class="fecha">${fechadeventa ? escapeHtml(fechadeventa) : ''}</div>`
       : '';
 
@@ -340,7 +341,7 @@ export function generarTextoWhatsApp(datos: DatosRecibo): string {
   let texto = `${nombredenegocio}\n`;
   if (rfc) texto += `RFC: ${rfc}\n`;
   if (encabezado) texto += `${encabezado}\n`;
-  if (folioventa) texto += `Ticket #${folioventa}\n`;
+  if (folioventa) texto += `Ticket #${extractShortFolio(folioventa)}\n`;
   if (fechadeventa) {
     if (horaParte) {
       texto += `${fechaParte}  ${horaParte}\n`;

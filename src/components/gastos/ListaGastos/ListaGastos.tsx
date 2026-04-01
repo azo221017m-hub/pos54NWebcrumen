@@ -1,6 +1,7 @@
 import React from 'react';
 import { CheckCircle } from 'lucide-react';
 import type { Gasto } from '../../../types/gastos.types';
+import { extractShortFolio } from '../../../utils/formatters';
 import './ListaGastos.css';
 
 interface Props {
@@ -72,7 +73,7 @@ const ListaGastos: React.FC<Props> = ({ gastos }) => {
                   key={gasto.idventa}
                   className={gasto.estatusdepago === 'PAGADO' ? 'fila-aplicada' : ''}
                 >
-                  <td className="col-folio">{gasto.folioventa}</td>
+                  <td className="col-folio">{extractShortFolio(gasto.folioventa)}</td>
                   <td>{formatearFecha(gasto.fechadeventa)}</td>
                   <td>{formatearHora(gasto.fechadeventa)}</td>
                   <td>{gasto.descripcionmov || 'Sin descripción'}</td>
