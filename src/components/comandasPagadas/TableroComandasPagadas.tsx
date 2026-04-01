@@ -168,8 +168,8 @@ const TableroComandasPagadas = ({ onVolver }: Props) => {
 
       {/* Modal detalle */}
       {comandaDetalle && (
-        <div className="tcp-modal-overlay" onClick={() => setComandaDetalle(null)}>
-          <div className="tcp-modal-card" onClick={(e) => e.stopPropagation()}>
+        <div className="tcp-modal-overlay">
+          <div className="tcp-modal-card">
             <button
               className="tcp-modal-btn-cerrar"
               onClick={() => setComandaDetalle(null)}

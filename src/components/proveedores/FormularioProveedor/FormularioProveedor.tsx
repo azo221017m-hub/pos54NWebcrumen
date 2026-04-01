@@ -106,8 +106,8 @@ const FormularioProveedor: React.FC<Props> = ({ proveedorEditar, idnegocio, onSu
   };
 
   return (
-    <div className="formulario-proveedor-overlay" onClick={onCancel}>
-      <div className="formulario-proveedor-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="formulario-proveedor-overlay">
+      <div className="formulario-proveedor-modal">
         <div className="formulario-proveedor-header">
           <div className="formulario-header-content">
             <Truck className="formulario-header-icon" />

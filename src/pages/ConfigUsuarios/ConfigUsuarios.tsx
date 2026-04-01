@@ -168,8 +168,8 @@ export const ConfigUsuarios: React.FC = () => {
 
       {/* Formulario Modal */}
       {mostrarFormulario && (
-        <div className="usuario-formulario-overlay" onClick={handleCancelarFormulario}>
-          <div className="usuario-formulario-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="usuario-formulario-overlay">
+          <div className="usuario-formulario-modal">
             <FormularioUsuario
               usuarioEditar={usuarioEditar}
               onSubmit={handleSubmitFormulario}

@@ -82,8 +82,8 @@ export const FormularioRol = ({ rolEditar, rolesExistentes = [], onSubmit, onCan
   };
 
   return (
-    <div className="formulario-rol-overlay" onClick={onCancel}>
-      <div className="formulario-rol-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="formulario-rol-overlay">
+      <div className="formulario-rol-modal">
         <div className="formulario-rol-container">
       <div className="formulario-header">
         <h2>{rolEditar ? 'Editar Rol' : 'Nuevo Rol'}</h2>

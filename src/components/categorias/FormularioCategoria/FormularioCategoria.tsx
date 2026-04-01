@@ -145,8 +145,8 @@ const FormularioCategoria: React.FC<Props> = ({ categoria, idnegocio, onSubmit, 
   };
 
   return (
-    <div className="categoria-modal-overlay" onClick={onCancel}>
-      <div className="categoria-modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="categoria-modal-overlay">
+      <div className="categoria-modal-content">
         <div className="categoria-header">
           <div className="categoria-header-content">
             <Tag className="categoria-header-icon" />

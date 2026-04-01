@@ -115,8 +115,8 @@ const CargaImagen: React.FC<CargaImagenProps> = ({
 
       {/* Modal para ver imagen completa */}
       {mostrarModal && imagenPreview && (
-        <div className="modal-imagen-overlay" onClick={() => setMostrarModal(false)}>
-          <div className="modal-imagen-contenido" onClick={e => e.stopPropagation()}>
+        <div className="modal-imagen-overlay">
+          <div className="modal-imagen-contenido">
             <button
               className="modal-cerrar"
               onClick={() => setMostrarModal(false)}

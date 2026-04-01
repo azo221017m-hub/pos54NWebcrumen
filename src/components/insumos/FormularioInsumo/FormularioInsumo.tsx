@@ -245,8 +245,8 @@ const FormularioInsumo: React.FC<Props> = ({ insumoEditar, onSubmit, onCancel, l
   };
 
   return (
-    <div className="formulario-insumo-overlay" onClick={onCancel}>
-      <div className="formulario-insumo-container" onClick={(e) => e.stopPropagation()}>
+    <div className="formulario-insumo-overlay">
+      <div className="formulario-insumo-container">
         <div className="formulario-header">
           <div className="header-icon">
             <Package size={28} />

@@ -177,8 +177,8 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
   };
 
   return (
-    <div className="formulario-negocio-overlay" onClick={onCancel}>
-      <div className="formulario-negocio-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="formulario-negocio-overlay">
+      <div className="formulario-negocio-modal">
         <form onSubmit={handleSubmit} className="formulario-negocio">
           <div className="formulario-header">
         <h2 className="formulario-titulo">

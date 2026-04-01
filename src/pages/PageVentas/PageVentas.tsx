@@ -2083,8 +2083,8 @@ const PageVentas: React.FC = () => {
 
       {/* Modal para selección de moderadores */}
       {showModModal && selectedProductoIdForMod && (
-        <div className="modal-overlay" onClick={closeModModal}>
-          <div className="modal-mod-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay">
+          <div className="modal-mod-content">
             {modSelectionMode === 'options' ? (
               // Show LIMPIO | CON TODO | SOLO CON options
               <>

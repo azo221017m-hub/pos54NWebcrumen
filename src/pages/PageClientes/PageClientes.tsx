@@ -778,7 +778,7 @@ const PageClientes: React.FC = () => {
 
       {/* Login Modal */}
       {mostrarModalLogin && (
-        <div className="pc-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) handleCerrarModalLogin(); }}>
+        <div className="pc-modal-overlay">
           <div className="pc-modal" role="dialog" aria-modal="true" aria-labelledby="login-modal-title">
             <div className="pc-modal-header">
               <h2 className="pc-modal-title" id="login-modal-title">INiCIaR PeDIDoS</h2>
@@ -827,7 +827,7 @@ const PageClientes: React.FC = () => {
 
       {/* Register Modal */}
       {mostrarModalRegistro && (
-        <div className="pc-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) handleCerrarModalRegistro(); }}>
+        <div className="pc-modal-overlay">
           <div className="pc-modal pc-modal--wide" role="dialog" aria-modal="true" aria-labelledby="registro-modal-title">
             <div className="pc-modal-header">
               <h2 className="pc-modal-title" id="registro-modal-title">Únirme a la Comunidad</h2>
@@ -876,7 +876,7 @@ const PageClientes: React.FC = () => {
 
       {/* Thank-you modal after successful registration */}
       {mostrarModalAgradecimiento && (
-        <div className="pc-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) handleCerrarModalAgradecimiento(); }}>
+        <div className="pc-modal-overlay">
           <div className="pc-agradecimiento-modal" role="dialog" aria-modal="true" aria-label="Gracias por registrarte">
             <button
               className="pc-agradecimiento-close"
@@ -896,7 +896,7 @@ const PageClientes: React.FC = () => {
 
       {/* Modal — Quiero Mostrar mi Negocio Aquí */}
       {mostrarModalNegocioCta && (
-        <div className="pc-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) handleCerrarModalNegocioCta(); }}>
+        <div className="pc-modal-overlay">
           <div className="pc-modal" role="dialog" aria-modal="true" aria-labelledby="negocio-cta-modal-title">
             <div className="pc-modal-header">
               <h2 className="pc-modal-title" id="negocio-cta-modal-title">Quiero Mostrar mi Negocio Aquí</h2>

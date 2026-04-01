@@ -50,8 +50,8 @@ const FormularioTurno: React.FC<FormularioTurnoProps> = ({
   };
 
   return (
-    <div className="modal-overlay" onClick={onCancel}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay">
+      <div className="modal-content">
         <div className="modal-header">
           <div className="modal-header-content">
             <Clock size={28} className="modal-icon" />

@@ -82,8 +82,8 @@ const ModalVerificarPedidoCliente: React.FC<ModalVerificarPedidoClienteProps> = 
   if (!isOpen) return null;
 
   return (
-    <div className="mvpc-overlay" onClick={onClose}>
-      <div className="mvpc-content" onClick={(e) => e.stopPropagation()}>
+    <div className="mvpc-overlay">
+      <div className="mvpc-content">
         <header className="mvpc-header">
           <div className="mvpc-header-top">
             <div className="mvpc-header-left">
