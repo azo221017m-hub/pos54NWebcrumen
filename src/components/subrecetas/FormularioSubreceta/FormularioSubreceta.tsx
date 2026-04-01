@@ -195,8 +195,8 @@ const FormularioSubreceta: React.FC<Props> = ({ subreceta, idnegocio, onSubmit, 
       if (detalle.cantidadUsoSubr <= 0) {
         nuevosErrores[`detalle_${index}_cantidad`] = 'La cantidad debe ser mayor a 0';
       }
-      if (detalle.costoInsumoSubr <= 0) {
-        nuevosErrores[`detalle_${index}_costo`] = 'El costo debe ser mayor a 0';
+      if (detalle.costoInsumoSubr < 0) {
+        nuevosErrores[`detalle_${index}_costo`] = 'El costo no puede ser negativo';
       }
     });
 
