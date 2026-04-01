@@ -65,6 +65,9 @@ const INITIAL_DOMICILIO_DATA: DomicilioFormData = {
   observaciones: ''
 };
 
+// Delay in ms to allow DOM to render before setting focus
+const FOCUS_DELAY_MS = 100;
+
 const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
   tipoServicio,
   isOpen,
@@ -203,10 +206,9 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
   // Set focus on Llevar client name input when Llevar is selected
   useEffect(() => {
     if (isOpen && tipoServicio === 'Llevar') {
-      // Small delay to ensure the DOM has rendered
       const timer = setTimeout(() => {
         clienteLlevarInputRef.current?.focus();
-      }, 100);
+      }, FOCUS_DELAY_MS);
       return () => clearTimeout(timer);
     }
   }, [isOpen, tipoServicio]);
