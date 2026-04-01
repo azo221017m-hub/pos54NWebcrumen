@@ -15,7 +15,7 @@ interface ModalSeleccionVentaPageVentasProps {
 const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps> = ({ 
   isOpen, 
   onTipoVentaSelect,
-  onClose,
+  onClose: _onClose,
   privilegio = 0,
   isClienteMode = false
 }) => {
@@ -29,18 +29,6 @@ const ModalSeleccionVentaPageVentas: React.FC<ModalSeleccionVentaPageVentasProps
     // and opens the configuration modal. Calling onClose() would navigate to dashboard.
   };
 
-  const handleOverlayClick = () => {
-    if (isClienteMode) {
-      navigate('/clientes');
-      return;
-    }
-    if (onClose) {
-      onClose();
-    } else {
-      // Navigate to Dashboard when clicking outside the modal
-      navigate('/dashboard');
-    }
-  };
 
   const handleCancelarSesion = () => {
     clearSession();

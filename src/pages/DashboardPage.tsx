@@ -678,7 +678,7 @@ export const DashboardPage = () => {
           audio.play().catch((err) => { console.debug('Audio playback blocked:', err); });
         }
         cargarVentasSolicitadas();
-        showInfoToast(`🛎 Pedido WEB entrante: ${extractShortFolio(data.folioventa)}`);
+        showInfoToast(`🛎 Pedido WEB entrante: ${extractShortFolio(String(data.folioventa || ''))}`);
       } else if (data.type === 'venta_update') {
         debouncedRefresh('ventas', () => {
           cargarVentasSolicitadas();
