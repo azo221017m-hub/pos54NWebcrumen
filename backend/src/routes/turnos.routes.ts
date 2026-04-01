@@ -10,7 +10,7 @@ import {
   obtenerFondoCaja,
   obtenerTurnoAbierto
 } from '../controllers/turnos.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 import { apiLimiter } from '../middlewares/rateLimit';
 
 const router = Router();
@@ -27,7 +27,7 @@ router.get('/turno-abierto', obtenerTurnoAbierto); // Must be before /:idturno
 router.get('/:idturno', obtenerTurnoPorId);
 router.post('/', crearTurno);
 router.put('/:idturno', actualizarTurno);
-router.delete('/:idturno', eliminarTurno);
+router.delete('/:idturno', checkPrivilegio(5), eliminarTurno);
 
 // Ruta adicional para cerrar turno actual
 router.post('/cerrar-actual', cerrarTurnoActual);

@@ -9,7 +9,7 @@ import {
   cambiarEstatusMesa,
   obtenerNumerosDisponibles
 } from '../controllers/mesas.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 
 const router = Router();
 
@@ -23,7 +23,7 @@ router.get('/numeros-disponibles', obtenerNumerosDisponibles);
 router.get('/:idmesa', obtenerMesaPorId);
 router.post('/', crearMesa);
 router.put('/:idmesa', actualizarMesa);
-router.delete('/:idmesa', eliminarMesa);
+router.delete('/:idmesa', checkPrivilegio(5), eliminarMesa);
 
 // Rutas adicionales
 router.patch('/:idmesa/estatus', cambiarEstatusMesa);

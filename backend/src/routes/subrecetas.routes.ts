@@ -6,7 +6,7 @@ import {
   actualizarSubreceta,
   eliminarSubreceta
 } from '../controllers/subrecetas.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 
 const router = Router();
 
@@ -15,6 +15,6 @@ router.get('/negocio/:idnegocio', authMiddleware, obtenerSubrecetas);
 router.get('/:id', authMiddleware, obtenerSubrecetaPorId);
 router.post('/', authMiddleware, crearSubreceta);
 router.put('/:id', authMiddleware, actualizarSubreceta);
-router.delete('/:id', authMiddleware, eliminarSubreceta);
+router.delete('/:id', authMiddleware, checkPrivilegio(5), eliminarSubreceta);
 
 export default router;

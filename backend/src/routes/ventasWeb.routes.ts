@@ -14,7 +14,7 @@ import {
   getTopProductosTurno,
   getComandasPagadasTurnoActual
 } from '../controllers/ventasWeb.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 import { apiLimiter } from '../middlewares/rateLimit';
 
 const router = Router();
@@ -93,7 +93,7 @@ router.put('/:id', updateVentaWeb);
  * @desc    Cancelar una venta web (soft delete)
  * @access  Private
  */
-router.delete('/:id', deleteVentaWeb);
+router.delete('/:id', checkPrivilegio(5), deleteVentaWeb);
 
 /**
  * @route   POST /api/ventas-web/:id/detalles

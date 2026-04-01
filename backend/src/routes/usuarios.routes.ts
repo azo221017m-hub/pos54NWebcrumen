@@ -11,7 +11,7 @@ import {
   obtenerImagenUsuario,
   eliminarImagenUsuario
 } from '../controllers/usuarios.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 
 const router = Router();
 
@@ -23,7 +23,7 @@ router.get('/', obtenerUsuarios);
 router.get('/:id', obtenerUsuarioPorId);
 router.post('/', crearUsuario);
 router.put('/:id', actualizarUsuario);
-router.delete('/:id', eliminarUsuario);
+router.delete('/:id', checkPrivilegio(5), eliminarUsuario);
 
 // Rutas adicionales
 router.patch('/:id/estatus', cambiarEstatusUsuario);

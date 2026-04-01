@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 import {
   obtenerGastos,
   obtenerGastoPorId,
@@ -26,6 +26,6 @@ router.post('/', crearGasto);
 router.put('/:id', actualizarGasto);
 
 // DELETE /api/gastos/:id - Eliminar un gasto
-router.delete('/:id', eliminarGasto);
+router.delete('/:id', checkPrivilegio(5), eliminarGasto);
 
 export default router;

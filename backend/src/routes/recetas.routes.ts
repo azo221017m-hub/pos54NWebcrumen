@@ -6,7 +6,7 @@ import {
   actualizarReceta,
   eliminarReceta
 } from '../controllers/recetas.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 
 const router = Router();
 
@@ -15,6 +15,6 @@ router.get('/negocio/:idnegocio', authMiddleware, obtenerRecetas);
 router.get('/:id', authMiddleware, obtenerRecetaPorId);
 router.post('/', authMiddleware, crearReceta);
 router.put('/:id', authMiddleware, actualizarReceta);
-router.delete('/:id', authMiddleware, eliminarReceta);
+router.delete('/:id', authMiddleware, checkPrivilegio(5), eliminarReceta);
 
 export default router;

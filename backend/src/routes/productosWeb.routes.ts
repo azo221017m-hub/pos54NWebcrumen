@@ -7,7 +7,7 @@ import {
   actualizarProductoWeb,
   eliminarProductoWeb
 } from '../controllers/productosWeb.controller';
-import { authMiddleware } from '../middlewares/auth';
+import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 
 const router = Router();
 
@@ -20,6 +20,6 @@ router.get('/verificar-nombre', verificarNombreProducto);
 router.get('/:id', obtenerProductoWebPorId);
 router.post('/', crearProductoWeb);
 router.put('/:id', actualizarProductoWeb);
-router.delete('/:id', eliminarProductoWeb);
+router.delete('/:id', checkPrivilegio(5), eliminarProductoWeb);
 
 export default router;
