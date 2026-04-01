@@ -235,7 +235,15 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   };
 
   const handleAgregarPagoMixto = () => {
-    setPagosMixtos([...pagosMixtos, { formaPago: 'Efectivo', importe: '', referencia: '' }]);
+    const nuevaCantidad = pagosMixtos.length + 1;
+    const importeBase = Math.floor((montoACobrar / nuevaCantidad) * 100) / 100;
+    const residuo = Math.round((montoACobrar - importeBase * nuevaCantidad) * 100) / 100;
+    const nuevosArr = pagosMixtos.map((p, i) => ({
+      ...p,
+      importe: i === 0 ? (importeBase + residuo).toFixed(2) : importeBase.toFixed(2)
+    }));
+    nuevosArr.push({ formaPago: 'Efectivo', importe: importeBase.toFixed(2), referencia: '' });
+    setPagosMixtos(nuevosArr);
   };
 
   // Handle click on "Monto a cobrar" label to copy amount to input
@@ -510,6 +518,10 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     }
   };
 
+  // COBRAR disabled: also disable in MIXTO when sum of importes < montoACobrar
+  const sumaPagosMixtos = pagosMixtos.reduce((sum, p) => sum + (Number(p.importe) || 0), 0);
+  const cobrarDisabled = procesandoPago || !ventaId || (metodoPagoSeleccionado === 'mixto' && sumaPagosMixtos < montoACobrar);
+
   return (
     <div className="modulo-pagos-overlay">
       <div className="modulo-pagos-container">
@@ -663,7 +675,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
               <button 
                 className={`btn-cobrar ${flashCobrar ? 'flash' : ''}`}
                 onClick={handleCobrar}
-                disabled={procesandoPago || !ventaId}
+                disabled={cobrarDisabled}
               >
                 {procesandoPago ? 'PROCESANDO...' : 'COBRAR'}
               </button>

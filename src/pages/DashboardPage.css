@@ -642,7 +642,7 @@
 
 .ventas-solicitadas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(14.375rem, 1fr));  /* 230px (+15%) */
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));  /* 256px - wider to show VER DETALLE button fully */
   gap: 0.875rem;
 }
 
@@ -790,6 +790,7 @@
   font-size: 0.6875rem;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .btn-ver-detalle:hover {
