@@ -129,7 +129,7 @@ const FormularioReceta: React.FC<Props> = ({ receta, idnegocio, onSubmit, onCanc
     // Mapear los detalles de subreceta a detalles de receta
     const nuevosDetalles: DetalleReceta[] = subreceta.detalles.map(det => ({
       nombreinsumo: det.nombreInsumoSubr,
-      idreferencia: '', // No tenemos idreferencia en subreceta, dejar vacío
+      idreferencia: det.dtlsubrecetaidinsumo?.toString() || '',
       umInsumo: det.umInsumoSubr,
       cantidadUso: det.cantidadUsoSubr,
       costoInsumo: det.costoInsumoSubr,
