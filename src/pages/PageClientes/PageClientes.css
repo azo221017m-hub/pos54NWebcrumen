@@ -1035,9 +1035,9 @@
   }
 
   .pc-logo {
-    width: 44px;
-    height: 44px;
-    transform: scale(1.5);
+    width: 66px;
+    height: 66px;
+    transform: none;
   }
 
   .pc-tagline {
