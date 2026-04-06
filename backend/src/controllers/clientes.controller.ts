@@ -101,7 +101,7 @@ export const obtenerClientes = async (req: AuthRequest, res: Response): Promise<
         idnegocio
       FROM tblposcrumenwebclientes`;
 
-    const params: any[] = [];
+    const params: number[] = [];
 
     if (!isSuperUsuario) {
       query += ` WHERE idnegocio = ?`;
