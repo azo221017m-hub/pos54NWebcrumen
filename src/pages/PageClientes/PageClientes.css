@@ -1000,9 +1000,27 @@
   }
 }
 
+@media (min-width: 601px) and (max-width: 900px) {
+  .pc-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ---- Mobile: vertical sections filling screen ---- */
 @media (max-width: 600px) {
+  /* Allow the page to scroll vertically */
+  .pc-page {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* ---- Header section — compact for mobile ---- */
   .pc-header {
     padding: 10px 12px;
+    position: relative;
+    min-height: auto;
   }
 
   .pc-header-top {
@@ -1013,16 +1031,20 @@
   .pc-logo-area {
     flex-direction: row;
     gap: 8px;
+    align-items: center;
   }
 
   .pc-logo {
-    width: 54px;
-    height: 54px;
+    width: 66px;
+    height: 66px;
+    transform: none;
   }
 
   .pc-tagline {
-    font-size: 8pt;
+    font-size: 7.5pt;
     white-space: normal;
+    max-width: 140px;
+    line-height: 1.3;
   }
 
   .pc-header-center {
@@ -1031,33 +1053,166 @@
     padding: 0;
   }
 
+  .pc-search-input {
+    padding: 10px 40px 10px 38px;
+    font-size: 0.88rem;
+    border-radius: 10px;
+  }
+
+  .pc-categorias {
+    gap: 6px;
+  }
+
+  .pc-cat-btn {
+    padding: 5px 12px;
+    font-size: 0.75rem;
+  }
+
+  .pc-header-right {
+    gap: 8px;
+  }
+
+  .pc-header-iniciar-btn {
+    padding: 6px 10px;
+    font-size: 0.72rem;
+  }
+
+  .pc-header-comunidad-btn {
+    padding: 5px 10px;
+    font-size: 0.68rem;
+  }
+
+  .pc-btn-hint {
+    font-size: 0.65rem;
+  }
+
   .pc-cliente-greeting {
     display: none;
   }
 
+  /* ---- Layout — vertical stacking, scrollable ---- */
   .pc-layout {
+    flex-direction: column;
+    padding: 0;
+    gap: 0;
+    overflow: visible;
+    flex: none;
+  }
+
+  /* ---- Anuncios section — full-width, screen-fitting ---- */
+  .pc-sidebar {
+    width: 100%;
+    min-height: 50vh;
     padding: 12px;
-    gap: 12px;
+    gap: 10px;
+    order: 0;
+  }
+
+  .pc-banner-promo {
+    flex: 1;
+    min-height: 35vh;
+    height: auto;
+    border-radius: 12px;
+  }
+
+  .pc-carousel {
+    gap: 6px;
+  }
+
+  .pc-carousel-track {
+    border-radius: 10px;
+  }
+
+  .pc-carousel-dots {
+    display: flex;
+  }
+
+  .pc-negocio-cta {
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+
+  .pc-negocio-cta-label {
+    font-size: 0.78rem;
+  }
+
+  .pc-negocio-cta-btn {
+    font-size: 0.74rem;
+    padding: 8px 12px;
+    border-radius: 8px;
+  }
+
+  /* ---- Negocios section — full-width, stacked cards ---- */
+  .pc-main {
+    min-height: auto;
+    overflow: visible;
+    padding: 0 12px 12px;
+  }
+
+  .pc-content {
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .pc-results-count {
+    font-size: 0.82rem;
+    margin-bottom: 10px;
+    padding-top: 8px;
   }
 
   .pc-grid {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 14px;
+    padding-bottom: 14px;
+  }
+
+  .pc-card {
+    border-radius: 14px;
   }
 
   .pc-card-header {
-    height: 120px;
+    height: 140px;
   }
 
-  .pc-banner-promo {
-    flex: none;
-    height: 160px;
+  .pc-card-body {
+    padding: 14px 16px 10px;
   }
-}
 
-@media (min-width: 601px) and (max-width: 900px) {
-  .pc-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .pc-card-name {
+    font-size: 1rem;
+  }
+
+  .pc-card-footer {
+    padding: 0 16px 16px;
+  }
+
+  .pc-ver-btn {
+    padding: 10px 0;
+    font-size: 0.88rem;
+    border-radius: 10px;
+  }
+
+  /* ---- Footer — stacked on mobile ---- */
+  .pc-footer {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+    padding: 14px 12px;
+  }
+
+  .pc-footer-badges {
+    justify-content: center;
+  }
+
+  .pc-footer-badge {
+    font-size: 0.7rem;
+  }
+
+  /* ---- Loading / Empty states ---- */
+  .pc-loading,
+  .pc-empty {
+    padding: 40px 16px;
   }
 }
 
