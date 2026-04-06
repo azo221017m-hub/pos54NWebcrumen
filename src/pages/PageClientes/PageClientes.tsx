@@ -311,7 +311,8 @@ const PageClientes: React.FC = () => {
         setClienteLogueado(true);
         setClienteData(result.data.cliente);
         setMostrarModalLogin(false);
-        showSuccessToast(`¡Bienvenido${result.data.cliente.nombre ? ', ' + result.data.cliente.nombre : ''}! Ya puedes ver los productos.`);
+        const nombreCliente = result.data.cliente.referencia || result.data.cliente.nombre;
+        showSuccessToast(`¡Bienvenido${nombreCliente ? ', ' + nombreCliente : ''}! Ya puedes ver los productos.`);
       } else {
         showErrorToast(result.message || 'Teléfono o clave de acceso incorrectos');
       }
@@ -503,10 +504,10 @@ const PageClientes: React.FC = () => {
                   aria-expanded={mostrarMenuAvatar}
                 >
                   <span className="pc-avatar-initial">
-                    {(clienteData.nombre || clienteData.telefono || '?').charAt(0).toUpperCase()}
+                    {(clienteData.referencia || clienteData.nombre || clienteData.telefono || '?').charAt(0).toUpperCase()}
                   </span>
                   <span className="pc-avatar-name">
-                    {clienteData.nombre || clienteData.telefono || '—'}
+                    {clienteData.referencia || clienteData.nombre || clienteData.telefono || '—'}
                   </span>
                   <svg className="pc-avatar-chevron" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />

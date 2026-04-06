@@ -187,7 +187,7 @@ export const clienteWebService = {
     // Store a minimal "usuario" so parts of the app that check localStorage still work
     localStorage.setItem('usuario', JSON.stringify({
       id: cliente.idCliente,
-      nombre: cliente.nombre,
+      nombre: cliente.referencia || cliente.nombre,
       alias: cliente.telefono,
       telefono: cliente.telefono,
       idNegocio: NO_BUSINESS_SELECTED,
@@ -208,7 +208,7 @@ export const clienteWebService = {
     if (clienteData) {
       localStorage.setItem('usuario', JSON.stringify({
         id: clienteData.idCliente,
-        nombre: clienteData.nombre,
+        nombre: clienteData.referencia || clienteData.nombre,
         alias: clienteData.telefono,
         telefono: clienteData.telefono,
         idNegocio,
