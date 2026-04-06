@@ -60,18 +60,24 @@ async function obtenerClienteCompleto(idCliente: number): Promise<Cliente | null
 }
 
 // Obtener todos los clientes por negocio
+// Si el usuario es SUPERUSUARIO (nombre='SUPERUSUARIO') o tiene idNegocio=99999,
+// se muestran todos los clientes de todos los negocios.
 export const obtenerClientes = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // Usar idnegocio del usuario autenticado para seguridad
     const idnegocio = req.user?.idNegocio;
+    const usuarioNombre = req.user?.nombre;
     
     if (!idnegocio) {
       res.status(401).json({ message: 'Usuario no autenticado o sin negocio asignado' });
       return;
     }
-    
-    const [rows] = await pool.query<Cliente[]>(
-      `SELECT 
+
+    // Si es SUPERUSUARIO o idNegocio=99999, mostrar todos los clientes
+    // Si no, mostrar solo clientes del mismo negocio
+    const isSuperUsuario = usuarioNombre === 'SUPERUSUARIO' || idnegocio === 99999;
+
+    let query = `SELECT 
         idCliente,
         nombre,
         referencia,
@@ -93,11 +99,18 @@ export const obtenerClientes = async (req: AuthRequest, res: Response): Promise<
         usuarioauditoria,
         fehamodificacionauditoria,
         idnegocio
-      FROM tblposcrumenwebclientes
-      WHERE idnegocio = ?
-      ORDER BY nombre ASC`,
-      [idnegocio]
-    );
+      FROM tblposcrumenwebclientes`;
+
+    const params: any[] = [];
+
+    if (!isSuperUsuario) {
+      query += ` WHERE idnegocio = ?`;
+      params.push(idnegocio);
+    }
+
+    query += ` ORDER BY nombre ASC`;
+
+    const [rows] = await pool.query<Cliente[]>(query, params);
     
     res.json(rows);
   } catch (error) {
