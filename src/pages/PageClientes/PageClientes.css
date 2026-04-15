@@ -1222,7 +1222,7 @@
 
   .pc-card {
     border-radius: 14px;
-    min-height: 70vh;
+    min-height: 65vh;
     scroll-snap-align: start;
     display: flex;
     flex-direction: column;

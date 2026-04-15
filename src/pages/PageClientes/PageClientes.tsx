@@ -634,8 +634,9 @@ const PageClientes: React.FC = () => {
                 {/* Duplicate items for seamless infinite scroll */}
                 {[...anuncios, ...anuncios].map((anuncio, idx) => {
                   const imagenes = getImagenes(anuncio);
+                  const setKey = idx < anuncios.length ? 'a' : 'b';
                   return (
-                    <div key={idx} className="pc-mobile-anuncio-slide">
+                    <div key={`${setKey}-${idx % anuncios.length}`} className="pc-mobile-anuncio-slide">
                       {imagenes.length > 0 ? (
                         <img
                           src={`data:image/jpeg;base64,${imagenes[0]}`}
