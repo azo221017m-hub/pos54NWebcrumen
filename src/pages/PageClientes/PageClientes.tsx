@@ -13,6 +13,14 @@ import './PageClientes.css';
 
 const CATEGORIAS = ['Todos', 'Alimentos', 'Bebidas Calientes', 'Cuidado Personal', 'Bebidas Frías'];
 
+const CATEGORIA_ICONS: Record<string, string> = {
+  'Todos': '🏪',
+  'Alimentos': '🍽️',
+  'Bebidas Calientes': '☕',
+  'Cuidado Personal': '💆',
+  'Bebidas Frías': '🧊',
+};
+
 function getPrepTime(id: number): string {
   const mins = ((id * 7 + 5) % 20) + 10;
   return `${mins}-${mins + 5} min`;
@@ -460,7 +468,7 @@ const PageClientes: React.FC = () => {
               )}
             </div>
 
-            {/* Category filters below search */}
+            {/* Category filters below search — desktop horizontal pills */}
             <div className="pc-categorias">
               {CATEGORIAS.map((cat) => (
                 <button
@@ -469,6 +477,27 @@ const PageClientes: React.FC = () => {
                   onClick={() => setCategoriaActiva(cat)}
                 >
                   {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Category filters — mobile modern list selector */}
+            <div className="pc-mobile-tags">
+              {CATEGORIAS.map((cat) => (
+                <button
+                  key={cat}
+                  className={`pc-mobile-tag-item${categoriaActiva === cat ? ' pc-mobile-tag-item--active' : ''}`}
+                  onClick={() => setCategoriaActiva(cat)}
+                >
+                  <span className="pc-mobile-tag-icon">
+                    {CATEGORIA_ICONS[cat] || '📌'}
+                  </span>
+                  <span className="pc-mobile-tag-label">{cat}</span>
+                  <span className="pc-mobile-tag-check">
+                    <svg viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="2,6 5,9 10,3" />
+                    </svg>
+                  </span>
                 </button>
               ))}
             </div>
