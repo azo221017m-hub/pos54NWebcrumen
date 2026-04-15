@@ -1017,6 +1017,27 @@
   }
 }
 
+@media (max-width: 900px) and (orientation: portrait) {
+  .pc-banner-promo {
+    height: auto;
+    min-height: clamp(320px, 60vh, 620px);
+  }
+
+  .pc-carousel {
+    height: auto;
+  }
+
+  .pc-carousel-track {
+    flex: none;
+    aspect-ratio: 3 / 4;
+  }
+
+  .pc-carousel-img {
+    object-fit: contain;
+    background: rgba(0, 0, 0, 0.2);
+  }
+}
+
 @media (min-width: 601px) and (max-width: 900px) {
   .pc-grid {
     grid-template-columns: repeat(2, 1fr);
