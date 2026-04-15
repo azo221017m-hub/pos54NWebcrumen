@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { setupAutoUpdate } from './services/swUpdateService'
+import { setupAutoUpdate, registerSWWithUpdate, refreshPage } from './services/swUpdateService'
 
 // Diagnóstico: confirmar que el JS se está ejecutando en el cliente
 console.log('[APP_START] JS ejecutando — versión 2.5.B13', new Date().toISOString());
@@ -73,7 +73,20 @@ createRoot(document.getElementById('root')!).render(
 // Registrar Service Worker con manejo de actualizaciones
 // Se hace después del render para no bloquear la carga inicial
 if (import.meta.env.PROD) {
-  // Solo en producción: registrar SW con actualización automática
-  // skipWaiting: true en workbox config asegura activación inmediata del nuevo SW
-  setupAutoUpdate();
+  // La detección de móvil se evalúa una sola vez al inicio (el registro del SW es una operación única por sesión).
+  // En móvil (≤600px): mostrar banner de notificación para que el usuario decida cuándo actualizar
+  // En escritorio: aplicar actualización automáticamente y recargar
+  const isMobile = window.matchMedia('(max-width: 600px)').matches;
+  if (isMobile) {
+    registerSWWithUpdate(
+      (workbox) => {
+        window.dispatchEvent(new CustomEvent('swUpdateAvailable', { detail: { workbox } }));
+      },
+      () => {
+        refreshPage();
+      }
+    );
+  } else {
+    setupAutoUpdate();
+  }
 }
