@@ -448,7 +448,6 @@ const PageClientes: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [mostrarMenuAvatar]);
 
-  const hasSearchTerm = searchTerm.trim().length > 0;
   const mostrarSeccionNegocios = !isMobileView || isSearchInputFocused;
   const mostrarFiltrosCategorias = !isMobileView || isSearchInputFocused;
   const mostrarMobileAnuncios = !isSearchInputFocused;
