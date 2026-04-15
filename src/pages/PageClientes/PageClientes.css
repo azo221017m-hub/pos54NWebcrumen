@@ -1231,6 +1231,9 @@
     padding: 0;
     gap: 0;
     order: 0;
+    position: sticky;
+    top: 0;
+    z-index: 50;
   }
 
   /* Hide desktop carousel on mobile */
