@@ -75,9 +75,18 @@ export const registerSWWithUpdate = (
           registration.update();
         }, 60 * 60 * 1000); // 1 hora
 
-        // Almacenar el ID del intervalo en una propiedad del objeto workbox
-        // para permitir limpieza externa si es necesario
+        // Verificar actualizaciones cuando el usuario regresa a la app (mobile-friendly)
+        const handleVisibilityChange = () => {
+          if (document.visibilityState === 'visible') {
+            console.log('🔍 App visible — verificando actualizaciones del service worker...');
+            registration.update();
+          }
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        // Almacenar referencias para limpieza externa si es necesario
         (wb as any).updateCheckIntervalId = intervalId;
+        (wb as any).visibilityChangeHandler = handleVisibilityChange;
       }
     })
     .catch((error) => {
@@ -173,9 +182,14 @@ export const clearSWCache = async (): Promise<void> => {
  * @param workbox - Instancia de Workbox con el intervalo almacenado
  */
 export const clearUpdateCheckInterval = (workbox: Workbox | null): void => {
-  if (workbox && (workbox as any).updateCheckIntervalId) {
-    clearInterval((workbox as any).updateCheckIntervalId);
-    console.log('🧹 Intervalo de verificación de actualizaciones limpiado');
+  if (workbox) {
+    if ((workbox as any).updateCheckIntervalId) {
+      clearInterval((workbox as any).updateCheckIntervalId);
+    }
+    if ((workbox as any).visibilityChangeHandler) {
+      document.removeEventListener('visibilitychange', (workbox as any).visibilityChangeHandler);
+    }
+    console.log('🧹 Intervalo y listeners de verificación de actualizaciones limpiados');
   }
 };
 
