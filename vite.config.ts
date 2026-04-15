@@ -42,11 +42,13 @@ export default defineConfig({
         globIgnores: ['**/agradecimientocdt.png'], // Exclude large image (2.49 MB) from precache; served on demand
         // Exclude API endpoints from caching to always fetch fresh data
         navigateFallbackDenylist: [/^\/api/],
-        // Configuración de auto-actualización
-        skipWaiting: false, // No activar inmediatamente, esperar la señal del frontend
+        // Activar el nuevo SW inmediatamente sin esperar a que el usuario confirme
+        skipWaiting: true,
         clientsClaim: true, // Tomar control de las páginas abiertas después de activarse
         // Limpiar caches antiguos automáticamente
         cleanupOutdatedCaches: true,
+        // ID de versión para forzar invalidación de cache en cada deploy
+        cacheId: 'crumencdt-v3',
         runtimeCaching: [
           {
             // Network-first strategy for API calls - always try to fetch from network first
@@ -68,6 +70,10 @@ export default defineConfig({
       }
     })
   ],
+  build: {
+    // Target browsers that cover all modern mobile devices (Chrome 80+, Safari 13+, Firefox 72+)
+    target: ['es2019', 'chrome80', 'safari13', 'firefox72', 'edge80'],
+  },
   server: {
     proxy: {
       '/api': {

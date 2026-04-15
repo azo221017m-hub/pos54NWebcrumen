@@ -2,7 +2,25 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { setupPromptUpdate } from './services/swUpdateService'
+import { setupAutoUpdate } from './services/swUpdateService'
+
+// Diagnóstico: confirmar que el JS se está ejecutando en el cliente
+console.log('[APP_START] JS ejecutando — versión 2.5.B13', new Date().toISOString());
+
+// Capturar errores globales de JavaScript (útil para debugging en móviles)
+window.onerror = (message, source, lineno, colno, error) => {
+  const msg = String(message);
+  // Ignorar errores de extensiones del navegador
+  if (
+    msg.includes('message channel closed') ||
+    msg.includes('listener indicated an asynchronous response') ||
+    msg.includes('Extension context invalidated')
+  ) {
+    return true;
+  }
+  console.error('[APP_JS_ERROR]', { message, source, lineno, colno, error });
+  return false;
+};
 
 // Suprimir errores de extensiones de navegador que no afectan la funcionalidad
 window.addEventListener('error', (event) => {
@@ -16,9 +34,10 @@ window.addEventListener('error', (event) => {
     event.preventDefault();
     return;
   }
+  console.error('[APP_UNHANDLED_ERROR]', message);
 });
 
-// Suprimir warnings de Promise rejection de extensiones
+// Capturar promesas rechazadas no manejadas
 window.addEventListener('unhandledrejection', (event) => {
   const message = event.reason?.message || event.reason?.toString() || '';
   if (
@@ -29,6 +48,7 @@ window.addEventListener('unhandledrejection', (event) => {
     event.preventDefault();
     return;
   }
+  console.error('[APP_UNHANDLED_REJECTION]', message);
 });
 
 // Evitar que los inputs de tipo número cambien su valor al hacer scroll con el mouse
@@ -53,14 +73,7 @@ createRoot(document.getElementById('root')!).render(
 // Registrar Service Worker con manejo de actualizaciones
 // Se hace después del render para no bloquear la carga inicial
 if (import.meta.env.PROD) {
-  // Solo en producción
-  setupPromptUpdate((workbox) => {
-    // Este callback se ejecutará cuando haya una actualización disponible
-    // La notificación se manejará en el componente UpdateNotification
-    console.log('📦 Nueva versión detectada, esperando acción del usuario');
-    
-    // Disparar evento personalizado para que el componente lo capture
-    const event = new CustomEvent('swUpdateAvailable', { detail: { workbox } });
-    window.dispatchEvent(event);
-  });
+  // Solo en producción: registrar SW con actualización automática
+  // skipWaiting: true en workbox config asegura activación inmediata del nuevo SW
+  setupAutoUpdate();
 }
