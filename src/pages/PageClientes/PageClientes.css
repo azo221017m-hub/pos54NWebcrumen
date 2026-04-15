@@ -982,6 +982,19 @@
   cursor: pointer;
 }
 
+/* ---- Mobile-only elements — hidden on desktop ---- */
+.pc-mobile-anuncios {
+  display: none;
+}
+
+.pc-mobile-cta {
+  display: none;
+}
+
+.pc-mobile-actions {
+  display: none;
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 900px) {
   .pc-layout {
@@ -1007,6 +1020,7 @@
 }
 
 /* ---- Mobile: vertical sections filling screen ---- */
+/* Layout: A(Header) → B(Anuncios) → C(Negocios) → D(CTA) → E(Botones) */
 @media (max-width: 600px) {
   /* Allow the page to scroll vertically */
   .pc-page {
@@ -1016,7 +1030,7 @@
     overflow-x: hidden;
   }
 
-  /* ---- Header section — compact for mobile ---- */
+  /* ---- A: Header section — compact for mobile ---- */
   .pc-header {
     padding: 10px 12px;
     position: relative;
@@ -1072,14 +1086,9 @@
     gap: 8px;
   }
 
-  .pc-header-iniciar-btn {
-    padding: 6px 10px;
-    font-size: 0.72rem;
-  }
-
-  .pc-header-comunidad-btn {
-    padding: 5px 10px;
-    font-size: 0.68rem;
+  /* Hide header action buttons on mobile — moved to section E */
+  .pc-header-actions {
+    display: none;
   }
 
   .pc-btn-hint {
@@ -1099,54 +1108,98 @@
     flex: none;
   }
 
-  /* ---- Anuncios section — full-width, screen-fitting ---- */
+  /* ---- B: Anuncios section — horizontal auto-scroll ---- */
   .pc-sidebar {
     width: 100%;
-    min-height: 50vh;
-    padding: 12px;
-    gap: 10px;
+    min-height: auto;
+    padding: 0;
+    gap: 0;
     order: 0;
   }
 
-  .pc-banner-promo {
-    flex: 1;
-    min-height: 35vh;
-    height: auto;
-    border-radius: 12px;
+  /* Hide desktop carousel on mobile */
+  .pc-desktop-anuncios {
+    display: none;
   }
 
-  .pc-carousel {
-    gap: 6px;
+  /* Hide desktop CTA on mobile (moved to section D) */
+  .pc-desktop-cta {
+    display: none;
   }
 
-  .pc-carousel-track {
-    border-radius: 10px;
+  /* Show mobile auto-scroll anuncios */
+  .pc-mobile-anuncios {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    background: linear-gradient(180deg, #1e3a8a 0%, #3b82f6 100%);
+    padding: 12px 0;
+    min-height: 140px;
   }
 
-  .pc-carousel-dots {
+  .pc-mobile-anuncios-track {
     display: flex;
+    gap: 14px;
+    animation: pc-anuncios-scroll 20s linear infinite;
+    width: max-content;
+    padding: 0 14px;
   }
 
-  .pc-negocio-cta {
+  .pc-mobile-anuncios-track:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes pc-anuncios-scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .pc-mobile-anuncio-slide {
+    flex-shrink: 0;
+    width: 200px;
     border-radius: 12px;
-    padding: 12px 14px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
   }
 
-  .pc-negocio-cta-label {
-    font-size: 0.78rem;
+  .pc-mobile-anuncio-img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    display: block;
+    border-radius: 12px 12px 0 0;
   }
 
-  .pc-negocio-cta-btn {
-    font-size: 0.74rem;
-    padding: 8px 12px;
-    border-radius: 8px;
+  .pc-mobile-anuncio-placeholder {
+    width: 100%;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px 12px 0 0;
   }
 
-  /* ---- Negocios section — full-width, stacked cards ---- */
+  .pc-mobile-anuncio-title {
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 6px 10px;
+    margin: 0;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ---- C: Negocios section — full-width, stacked cards ---- */
   .pc-main {
     min-height: auto;
     overflow: visible;
     padding: 0 12px 12px;
+    order: 1;
   }
 
   .pc-content {
@@ -1164,22 +1217,29 @@
     grid-template-columns: 1fr;
     gap: 14px;
     padding-bottom: 14px;
+    scroll-snap-type: y proximity;
   }
 
   .pc-card {
     border-radius: 14px;
+    min-height: 65vh;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
   }
 
   .pc-card-header {
-    height: 140px;
+    height: 200px;
+    flex-shrink: 0;
   }
 
   .pc-card-body {
     padding: 14px 16px 10px;
+    flex: 1;
   }
 
   .pc-card-name {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
 
   .pc-card-footer {
@@ -1187,9 +1247,81 @@
   }
 
   .pc-ver-btn {
-    padding: 10px 0;
-    font-size: 0.88rem;
+    padding: 12px 0;
+    font-size: 0.92rem;
     border-radius: 10px;
+  }
+
+  /* ---- D: CTA section — mobile only ---- */
+  .pc-mobile-cta {
+    display: block;
+    padding: 12px;
+    order: 2;
+  }
+
+  .pc-mobile-cta .pc-negocio-cta {
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .pc-mobile-cta .pc-negocio-cta-label {
+    font-size: 0.85rem;
+  }
+
+  .pc-mobile-cta .pc-negocio-cta-btn {
+    font-size: 0.8rem;
+    padding: 10px 14px;
+    border-radius: 10px;
+  }
+
+  /* ---- E: Mobile action buttons — bottom ---- */
+  .pc-mobile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px 12px 20px;
+    order: 3;
+  }
+
+  .pc-mobile-action-pedido {
+    width: 100%;
+    padding: 14px 0;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #0d4f8a 0%, #0ea5c0 100%);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    box-shadow: 0 4px 16px rgba(13, 79, 138, 0.35);
+    transition: opacity 0.2s, transform 0.15s;
+  }
+
+  .pc-mobile-action-pedido:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  .pc-mobile-action-comunidad {
+    width: 100%;
+    padding: 12px 0;
+    border-radius: 12px;
+    border: 2px solid #0ea5c0;
+    background: rgba(14, 165, 192, 0.08);
+    color: #0d4f8a;
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: background 0.2s, transform 0.15s;
+  }
+
+  .pc-mobile-action-comunidad:hover {
+    background: rgba(14, 165, 192, 0.15);
+    transform: translateY(-1px);
   }
 
   /* ---- Footer — stacked on mobile ---- */

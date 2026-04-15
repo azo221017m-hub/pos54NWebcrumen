@@ -566,7 +566,8 @@ const PageClientes: React.FC = () => {
 
         {/* Left sidebar — Anuncios vigentes */}
         <aside className="pc-sidebar">
-          <div className="pc-banner-promo">
+          {/* Desktop carousel (hidden on mobile) */}
+          <div className="pc-banner-promo pc-desktop-anuncios">
             {anuncios.length > 0 ? (() => {
               const anuncio = anuncios[anuncioActivo];
               const imagenes = getImagenes(anuncio);
@@ -626,8 +627,42 @@ const PageClientes: React.FC = () => {
             )}
           </div>
 
-          {/* CTA — Promote your business */}
-          <div className="pc-negocio-cta">
+          {/* Mobile auto-scroll anuncios strip (hidden on desktop) */}
+          <div className="pc-mobile-anuncios">
+            {anuncios.length > 0 ? (
+              <div className="pc-mobile-anuncios-track">
+                {/* Duplicate items for seamless infinite scroll */}
+                {[...anuncios, ...anuncios].map((anuncio, idx) => {
+                  const imagenes = getImagenes(anuncio);
+                  const setKey = idx < anuncios.length ? 'a' : 'b';
+                  return (
+                    <div key={`${setKey}-${idx % anuncios.length}`} className="pc-mobile-anuncio-slide">
+                      {imagenes.length > 0 ? (
+                        <img
+                          src={`data:image/jpeg;base64,${imagenes[0]}`}
+                          alt={anuncio.tituloDeAnuncio}
+                          className="pc-mobile-anuncio-img"
+                        />
+                      ) : (
+                        <div className="pc-mobile-anuncio-placeholder" />
+                      )}
+                      {anuncio.tituloDeAnuncio && (
+                        <p className="pc-mobile-anuncio-title">{anuncio.tituloDeAnuncio}</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="pc-banner-content">
+                <p className="pc-banner-small">Anuncios</p>
+                <p className="pc-carousel-detalle">Próximamente promociones y novedades</p>
+              </div>
+            )}
+          </div>
+
+          {/* CTA — Promote your business (desktop only, inside sidebar) */}
+          <div className="pc-negocio-cta pc-desktop-cta">
             <p className="pc-negocio-cta-label">¿Tienes Negocio en Texcoco?</p>
             <button type="button" className="pc-negocio-cta-btn" onClick={handleAbrirModalNegocioCta}>
               Quiero Mostrar mi Negocio Aquí
@@ -765,6 +800,34 @@ const PageClientes: React.FC = () => {
         )}
           </div>
         </main>
+
+        {/* D: Mobile CTA — Quiero Registrar mi Negocio (mobile only, after negocios) */}
+        <div className="pc-mobile-cta">
+          <div className="pc-negocio-cta">
+            <p className="pc-negocio-cta-label">¿Tienes Negocio en Texcoco?</p>
+            <button type="button" className="pc-negocio-cta-btn" onClick={handleAbrirModalNegocioCta}>
+              Quiero Mostrar mi Negocio Aquí
+            </button>
+          </div>
+        </div>
+
+        {/* E: Mobile action buttons (mobile only, at the bottom) */}
+        {!clienteLogueado && (
+          <div className="pc-mobile-actions">
+            <button
+              className="pc-mobile-action-pedido"
+              onClick={handleAbrirModalLogin}
+            >
+              HACER PEDIDO AHORA
+            </button>
+            <button
+              className="pc-mobile-action-comunidad"
+              onClick={handleAbrirModalRegistro}
+            >
+              CREAR MI ACCESO Gratis
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Footer */}
