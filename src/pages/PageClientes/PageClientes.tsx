@@ -456,7 +456,9 @@ const PageClientes: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [mostrarMenuAvatar]);
 
-  const mostrarSeccionNegocios = !isMobileView || searchTerm.trim().length > 0;
+  const hasSearchTerm = searchTerm.trim().length > 0;
+  const mostrarSeccionNegocios = !isMobileView || hasSearchTerm;
+  const mostrarFiltrosCategorias = !isMobileView || hasSearchTerm;
 
   return (
     <div className="pc-page">
@@ -492,20 +494,22 @@ const PageClientes: React.FC = () => {
             </div>
 
             {/* Category filters below search — desktop horizontal pills */}
-            <div className="pc-categorias">
-              {CATEGORIAS.map((cat) => (
-                <button
-                  key={cat}
-                  className={`pc-cat-btn${categoriaActiva === cat ? ' pc-cat-btn--active' : ''}`}
-                  onClick={() => setCategoriaActiva(cat)}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+            {mostrarFiltrosCategorias && (
+              <div className="pc-categorias">
+                {CATEGORIAS.map((cat) => (
+                  <button
+                    key={cat}
+                    className={`pc-cat-btn${categoriaActiva === cat ? ' pc-cat-btn--active' : ''}`}
+                    onClick={() => setCategoriaActiva(cat)}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Category filters — mobile modern list selector */}
-            {!isMobileView && (
+            {isMobileView && mostrarFiltrosCategorias && (
               <div className="pc-mobile-tags">
               {CATEGORIAS.map((cat) => (
                 <button
