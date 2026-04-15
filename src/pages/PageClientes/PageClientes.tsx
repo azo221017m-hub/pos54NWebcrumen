@@ -12,6 +12,9 @@ import TableroCliente from '../../components/tableroCliente/TableroCliente';
 import './PageClientes.css';
 
 const CATEGORIAS = ['Todos', 'Alimentos', 'Bebidas Calientes', 'Cuidado Personal', 'Bebidas Frías'];
+const MOBILE_BREAKPOINT = 600;
+const MOBILE_MEDIA_QUERY = `(max-width: ${MOBILE_BREAKPOINT}px)`;
+const MOBILE_FOCUS_DELAY_MS = 180;
 
 const CATEGORIA_ICONS: Record<string, string> = {
   'Todos': '🏪',
@@ -58,7 +61,7 @@ const PageClientes: React.FC = () => {
   const [filteredNegocios, setFilteredNegocios] = useState<NegocioPublico[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoriaActiva, setCategoriaActiva] = useState('Todos');
-  const [isMobileView, setIsMobileView] = useState(() => window.matchMedia('(max-width: 600px)').matches);
+  const [isMobileView, setIsMobileView] = useState(() => window.matchMedia(MOBILE_MEDIA_QUERY).matches);
   const [isLoading, setIsLoading] = useState(true);
   const [pedidosActivos, setPedidosActivos] = useState<Set<number>>(new Set());
   const [seleccionandoNegocio, setSeleccionandoNegocio] = useState<number | null>(null);
@@ -133,9 +136,8 @@ const PageClientes: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 600px)');
+    const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
     const handleChange = (event: MediaQueryListEvent) => setIsMobileView(event.matches);
-    setIsMobileView(mediaQuery.matches);
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
@@ -144,7 +146,7 @@ const PageClientes: React.FC = () => {
     if (!isMobileView) return;
     const focusTimer = window.setTimeout(() => {
       searchInputRef.current?.focus();
-    }, 180);
+    }, MOBILE_FOCUS_DELAY_MS);
     return () => window.clearTimeout(focusTimer);
   }, [isMobileView]);
 
