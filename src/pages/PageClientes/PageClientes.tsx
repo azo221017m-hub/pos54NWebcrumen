@@ -60,6 +60,7 @@ const PageClientes: React.FC = () => {
   const [negocios, setNegocios] = useState<NegocioPublico[]>([]);
   const [filteredNegocios, setFilteredNegocios] = useState<NegocioPublico[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSearchInputFocused, setIsSearchInputFocused] = useState(false);
   const [categoriaActiva, setCategoriaActiva] = useState('Todos');
   const [isMobileView, setIsMobileView] = useState(() => window.matchMedia(MOBILE_MEDIA_QUERY).matches);
   const [isLoading, setIsLoading] = useState(true);
@@ -457,8 +458,9 @@ const PageClientes: React.FC = () => {
   }, [mostrarMenuAvatar]);
 
   const hasSearchTerm = searchTerm.trim().length > 0;
-  const mostrarSeccionNegocios = !isMobileView || hasSearchTerm;
+  const mostrarSeccionNegocios = !isMobileView || isSearchInputFocused || hasSearchTerm;
   const mostrarFiltrosCategorias = !isMobileView || hasSearchTerm;
+  const mostrarMobileAnuncios = !isSearchInputFocused;
 
   return (
     <div className="pc-page">
@@ -487,6 +489,8 @@ const PageClientes: React.FC = () => {
                 placeholder="Buscar negocio o producto"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => setIsSearchInputFocused(true)}
+                onBlur={() => setIsSearchInputFocused(false)}
               />
               {searchTerm && (
                 <button className="pc-search-clear" onClick={() => setSearchTerm('')}>✕</button>
@@ -686,38 +690,40 @@ const PageClientes: React.FC = () => {
           </div>
 
           {/* Mobile auto-scroll anuncios strip (hidden on desktop) */}
-          <div className="pc-mobile-anuncios">
-            {anuncios.length > 0 ? (
-              <div className="pc-mobile-anuncios-track">
-                {/* Duplicate items for seamless infinite scroll */}
-                {[...anuncios, ...anuncios].map((anuncio, idx) => {
-                  const imagenes = getImagenes(anuncio);
-                  const setKey = idx < anuncios.length ? 'a' : 'b';
-                  return (
-                    <div key={`${setKey}-${idx % anuncios.length}`} className="pc-mobile-anuncio-slide">
-                      {imagenes.length > 0 ? (
-                        <img
-                          src={`data:image/jpeg;base64,${imagenes[0]}`}
-                          alt={anuncio.tituloDeAnuncio}
-                          className="pc-mobile-anuncio-img"
-                        />
-                      ) : (
-                        <div className="pc-mobile-anuncio-placeholder" />
-                      )}
-                      {anuncio.tituloDeAnuncio && (
-                        <p className="pc-mobile-anuncio-title">{anuncio.tituloDeAnuncio}</p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="pc-banner-content">
-                <p className="pc-banner-small">Anuncios</p>
-                <p className="pc-carousel-detalle">Próximamente promociones y novedades</p>
-              </div>
-            )}
-          </div>
+          {mostrarMobileAnuncios && (
+            <div className="pc-mobile-anuncios">
+              {anuncios.length > 0 ? (
+                <div className="pc-mobile-anuncios-track">
+                  {/* Duplicate items for seamless infinite scroll */}
+                  {[...anuncios, ...anuncios].map((anuncio, idx) => {
+                    const imagenes = getImagenes(anuncio);
+                    const setKey = idx < anuncios.length ? 'a' : 'b';
+                    return (
+                      <div key={`${setKey}-${idx % anuncios.length}`} className="pc-mobile-anuncio-slide">
+                        {imagenes.length > 0 ? (
+                          <img
+                            src={`data:image/jpeg;base64,${imagenes[0]}`}
+                            alt={anuncio.tituloDeAnuncio}
+                            className="pc-mobile-anuncio-img"
+                          />
+                        ) : (
+                          <div className="pc-mobile-anuncio-placeholder" />
+                        )}
+                        {anuncio.tituloDeAnuncio && (
+                          <p className="pc-mobile-anuncio-title">{anuncio.tituloDeAnuncio}</p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="pc-banner-content">
+                  <p className="pc-banner-small">Anuncios</p>
+                  <p className="pc-carousel-detalle">Próximamente promociones y novedades</p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* CTA — Promote your business (desktop only, inside sidebar) */}
           <div className="pc-negocio-cta pc-desktop-cta">
