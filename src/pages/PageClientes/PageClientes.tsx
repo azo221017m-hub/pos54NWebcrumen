@@ -14,7 +14,6 @@ import './PageClientes.css';
 const CATEGORIAS = ['Todos', 'Alimentos', 'Bebidas Calientes', 'Cuidado Personal', 'Bebidas Frías'];
 const MOBILE_BREAKPOINT = 600;
 const MOBILE_MEDIA_QUERY = `(max-width: ${MOBILE_BREAKPOINT}px)`;
-const MOBILE_FOCUS_DELAY_MS = 180;
 
 const CATEGORIA_ICONS: Record<string, string> = {
   'Todos': '🏪',
@@ -142,14 +141,6 @@ const PageClientes: React.FC = () => {
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
-
-  useEffect(() => {
-    if (!isMobileView) return;
-    const focusTimer = window.setTimeout(() => {
-      searchInputRef.current?.focus();
-    }, MOBILE_FOCUS_DELAY_MS);
-    return () => window.clearTimeout(focusTimer);
-  }, [isMobileView]);
 
   // Listen for WEB order state changes via WebSocket to notify the client in real-time
   useWebSocket({
@@ -457,9 +448,8 @@ const PageClientes: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [mostrarMenuAvatar]);
 
-  const hasSearchTerm = searchTerm.trim().length > 0;
-  const mostrarSeccionNegocios = !isMobileView || isSearchInputFocused || hasSearchTerm;
-  const mostrarFiltrosCategorias = !isMobileView || hasSearchTerm;
+  const mostrarSeccionNegocios = !isMobileView || isSearchInputFocused;
+  const mostrarFiltrosCategorias = !isMobileView || isSearchInputFocused;
   const mostrarMobileAnuncios = !isSearchInputFocused;
 
   return (
@@ -485,7 +475,7 @@ const PageClientes: React.FC = () => {
               <input
                 ref={searchInputRef}
                 type="text"
-                className={`pc-search-input${isMobileView && !searchTerm.trim() ? ' pc-search-input--mobile-callout' : ''}`}
+                className="pc-search-input"
                 placeholder="Buscar negocio o producto"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
