@@ -1,7 +1,7 @@
 {
   "name": "pos54nwebcrumen",
   "private": true,
-  "version": "2.5.B12",
+  "version": "2.5.B14",
   "type": "module",
   "scripts": {
     "dev": "vite",

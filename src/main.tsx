@@ -5,7 +5,7 @@ import App from './App.tsx'
 import { setupAutoUpdate, registerSWWithUpdate, refreshPage } from './services/swUpdateService'
 
 // Diagnóstico: confirmar que el JS se está ejecutando en el cliente
-console.log('[APP_START] JS ejecutando — versión 2.5.B13', new Date().toISOString());
+console.log('[APP_START] JS ejecutando — versión 2.5.B14', new Date().toISOString());
 
 // Capturar errores globales de JavaScript (útil para debugging en móviles)
 window.onerror = (message, source, lineno, colno, error) => {
