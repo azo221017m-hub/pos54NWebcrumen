@@ -7,8 +7,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt',
-      injectRegister: null, // No inyectar automáticamente, lo haremos manualmente
+      registerType: 'autoUpdate',
       includeAssets: ['vite.svg', 'logoposcrumen.svg', 'logowebposcrumen.svg'],
       manifest: {
         name: 'CRUMENCDT -Comunidad Digital Texcoco | Pedidos en Texcoco | Conectándo Negocios y Clientes',
@@ -42,8 +41,8 @@ export default defineConfig({
         globIgnores: ['**/agradecimientocdt.png'], // Exclude large image (2.49 MB) from precache; served on demand
         // Exclude API endpoints from caching to always fetch fresh data
         navigateFallbackDenylist: [/^\/api/],
-        clientsClaim: true, // Tomar control de las páginas abiertas después de activarse
-        // Limpiar caches antiguos automáticamente
+        clientsClaim: true,
+        skipWaiting: true,
         cleanupOutdatedCaches: true,
         // ID de versión para forzar invalidación de cache en cada deploy
         cacheId: 'crumencdt-v3',
