@@ -58,6 +58,7 @@ const PageClientes: React.FC = () => {
   const [filteredNegocios, setFilteredNegocios] = useState<NegocioPublico[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoriaActiva, setCategoriaActiva] = useState('Todos');
+  const [isMobileView, setIsMobileView] = useState(() => window.matchMedia('(max-width: 600px)').matches);
   const [isLoading, setIsLoading] = useState(true);
   const [pedidosActivos, setPedidosActivos] = useState<Set<number>>(new Set());
   const [seleccionandoNegocio, setSeleccionandoNegocio] = useState<number | null>(null);
@@ -73,6 +74,7 @@ const PageClientes: React.FC = () => {
   // Avatar dropdown
   const [mostrarMenuAvatar, setMostrarMenuAvatar] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Tablero cliente (Mis Pedidos)
   const [mostrarTablero, setMostrarTablero] = useState(false);
@@ -129,6 +131,22 @@ const PageClientes: React.FC = () => {
     cargarNegocios();
     cargarAnunciosVigentes();
   }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 600px)');
+    const handleChange = (event: MediaQueryListEvent) => setIsMobileView(event.matches);
+    setIsMobileView(mediaQuery.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobileView) return;
+    const focusTimer = window.setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 180);
+    return () => window.clearTimeout(focusTimer);
+  }, [isMobileView]);
 
   // Listen for WEB order state changes via WebSocket to notify the client in real-time
   useWebSocket({
@@ -436,6 +454,8 @@ const PageClientes: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [mostrarMenuAvatar]);
 
+  const mostrarSeccionNegocios = !isMobileView || searchTerm.trim().length > 0;
+
   return (
     <div className="pc-page">
       {/* Header */}
@@ -457,8 +477,9 @@ const PageClientes: React.FC = () => {
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
               <input
+                ref={searchInputRef}
                 type="text"
-                className="pc-search-input"
+                className={`pc-search-input${isMobileView && !searchTerm.trim() ? ' pc-search-input--mobile-callout' : ''}`}
                 placeholder="Buscar negocio o producto"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -482,7 +503,8 @@ const PageClientes: React.FC = () => {
             </div>
 
             {/* Category filters — mobile modern list selector */}
-            <div className="pc-mobile-tags">
+            {!isMobileView && (
+              <div className="pc-mobile-tags">
               {CATEGORIAS.map((cat) => (
                 <button
                   key={cat}
@@ -500,7 +522,8 @@ const PageClientes: React.FC = () => {
                   </span>
                 </button>
               ))}
-            </div>
+              </div>
+            )}
           </div>
 
           <div className="pc-header-right">
@@ -708,36 +731,40 @@ const PageClientes: React.FC = () => {
 
           {/* Business cards section with vertical scroll */}
           <div className="pc-content">
-        {isLoading ? (
-          <div className="pc-loading">
-            <div className="pc-spinner" />
-            <p>Activando Comunidad Digital Texcoco</p>
+        {!mostrarSeccionNegocios ? (
+          <div className="pc-mobile-search-hint" role="status" aria-live="polite">
+            <p>Escribe en el buscador para ver negocios y productos.</p>
           </div>
-        ) : filteredNegocios.length === 0 ? (
-          <div className="pc-empty">
-            <svg viewBox="0 0 64 64" fill="none" className="pc-empty-icon">
-              <circle cx="32" cy="32" r="30" stroke="#d1d5db" strokeWidth="3" />
-              <path d="M22 32h20M32 22v20" stroke="#d1d5db" strokeWidth="3" strokeLinecap="round" />
-            </svg>
-            <p>No se encontraron negocios</p>
-            {searchTerm && (
-              <button className="pc-cat-btn" onClick={() => setSearchTerm('')}>
-                Limpiar búsqueda
-              </button>
-            )}
-          </div>
-        ) : (
-          <>
-            <p className="pc-results-count">
-              {filteredNegocios.length} negocio{filteredNegocios.length !== 1 ? 's' : ''} disponible
-              {filteredNegocios.length !== 1 ? 's' : ''}
-            </p>
-            <div className="pc-grid">
-              {filteredNegocios.map((negocio) => {
-                const tieneActivo = pedidosActivos.has(negocio.idNegocio);
-                const cargando = seleccionandoNegocio === negocio.idNegocio;
-                return (
-                  <div key={negocio.idNegocio} className="pc-card">
+        ) : isLoading ? (
+            <div className="pc-loading">
+              <div className="pc-spinner" />
+              <p>Activando Comunidad Digital Texcoco</p>
+            </div>
+          ) : filteredNegocios.length === 0 ? (
+            <div className="pc-empty">
+              <svg viewBox="0 0 64 64" fill="none" className="pc-empty-icon">
+                <circle cx="32" cy="32" r="30" stroke="#d1d5db" strokeWidth="3" />
+                <path d="M22 32h20M32 22v20" stroke="#d1d5db" strokeWidth="3" strokeLinecap="round" />
+              </svg>
+              <p>No se encontraron negocios</p>
+              {searchTerm && (
+                <button className="pc-cat-btn" onClick={() => setSearchTerm('')}>
+                  Limpiar búsqueda
+                </button>
+              )}
+            </div>
+          ) : (
+            <>
+              <p className="pc-results-count">
+                {filteredNegocios.length} negocio{filteredNegocios.length !== 1 ? 's' : ''} disponible
+                {filteredNegocios.length !== 1 ? 's' : ''}
+              </p>
+              <div className="pc-grid">
+                {filteredNegocios.map((negocio) => {
+                  const tieneActivo = pedidosActivos.has(negocio.idNegocio);
+                  const cargando = seleccionandoNegocio === negocio.idNegocio;
+                  return (
+                    <div key={negocio.idNegocio} className="pc-card">
                     {/* Card header / logo */}
                     <div className="pc-card-header">
                       {negocio.logotipo ? (
@@ -821,12 +848,12 @@ const PageClientes: React.FC = () => {
                         </button>
                       )}
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
           </div>
         </main>
 
