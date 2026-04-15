@@ -1082,11 +1082,6 @@
     display: none;
   }
 
-  .pc-cat-btn {
-    padding: 5px 12px;
-    font-size: 0.75rem;
-  }
-
   /* ---- Modern mobile tag list selector ---- */
   .pc-mobile-tags {
     display: flex;
