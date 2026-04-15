@@ -679,34 +679,44 @@ const PageClientes: React.FC = () => {
             )}
           </div>
 
-          {/* Mobile auto-scroll anuncios strip (hidden on desktop) */}
+          {/* Mobile fixed anuncio with crossfade transition */}
           {mostrarMobileAnuncios && (
             <div className="pc-mobile-anuncios">
-              {anuncios.length > 0 ? (
-                <div className="pc-mobile-anuncios-track">
-                  {/* Duplicate items for seamless infinite scroll */}
-                  {[...anuncios, ...anuncios].map((anuncio, idx) => {
-                    const imagenes = getImagenes(anuncio);
-                    const setKey = idx < anuncios.length ? 'a' : 'b';
-                    return (
-                      <div key={`${setKey}-${idx % anuncios.length}`} className="pc-mobile-anuncio-slide">
-                        {imagenes.length > 0 ? (
-                          <img
-                            src={`data:image/jpeg;base64,${imagenes[0]}`}
-                            alt={anuncio.tituloDeAnuncio}
-                            className="pc-mobile-anuncio-img"
-                          />
-                        ) : (
-                          <div className="pc-mobile-anuncio-placeholder" />
-                        )}
-                        {anuncio.tituloDeAnuncio && (
-                          <p className="pc-mobile-anuncio-title">{anuncio.tituloDeAnuncio}</p>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
+              {anuncios.length > 0 ? (() => {
+                const anuncio = anuncios[anuncioActivo];
+                const imagenes = getImagenes(anuncio);
+                return (
+                  <div className="pc-mobile-anuncio-fixed">
+                    {imagenes.length > 0 ? (
+                      <img
+                        key={`${anuncioActivo}-${imagenActivaIdx}`}
+                        src={`data:image/jpeg;base64,${imagenes[imagenActivaIdx]}`}
+                        alt={anuncio.tituloDeAnuncio}
+                        className="pc-mobile-anuncio-fixed-img"
+                      />
+                    ) : (
+                      <div className="pc-mobile-anuncio-placeholder" />
+                    )}
+                    <div className="pc-mobile-anuncio-overlay">
+                      {anuncio.tituloDeAnuncio && (
+                        <p className="pc-mobile-anuncio-title">{anuncio.tituloDeAnuncio}</p>
+                      )}
+                      {anuncios.length > 1 && (
+                        <div className="pc-mobile-anuncio-dots">
+                          {anuncios.map((_, idx) => (
+                            <button
+                              key={idx}
+                              className={`pc-mobile-anuncio-dot${idx === anuncioActivo ? ' pc-mobile-anuncio-dot--active' : ''}`}
+                              onClick={() => { setAnuncioActivo(idx); setImagenActivaIdx(0); }}
+                              aria-label={`Anuncio ${idx + 1}`}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })() : (
                 <div className="pc-banner-content">
                   <p className="pc-banner-small">Anuncios</p>
                   <p className="pc-carousel-detalle">Próximamente promociones y novedades</p>
