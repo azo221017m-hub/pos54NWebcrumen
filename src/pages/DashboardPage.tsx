@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerSaludNegocio, obtenerTopProductosTurno, type ResumenVentas, type SaludNegocio, type TopProductoTurno, type SaludCategoria } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
@@ -177,6 +177,7 @@ const formatQuantity = (cantidad: number): number => {
 
 export const DashboardPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [usuario] = useState<Usuario | null>(getUsuarioFromStorage());
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showConfigSubmenu, setShowConfigSubmenu] = useState(false);
@@ -781,7 +782,22 @@ export const DashboardPage = () => {
     // Verify open turno
     verificarTurno();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas, cargarModeradores, cargarResumenVentas, cargarSaludNegocio, and verificarTurno omitted to prevent infinite refresh loop
-  }, [navigate]);
+  }, [navigate, location.key]);
+
+  // Reload sales and summary when the tab regains focus (e.g. after closing a print popup)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        cargarVentasSolicitadas();
+        cargarResumenVentas();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- stable callbacks
+  }, [cargarVentasSolicitadas, cargarResumenVentas]);
 
   // Early return if not authenticated
   const usuarioData = localStorage.getItem('usuario');

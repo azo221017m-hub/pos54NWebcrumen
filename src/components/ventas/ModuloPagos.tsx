@@ -3,7 +3,7 @@ import './ModuloPagos.css';
 import { obtenerDescuentos } from '../../services/descuentosService';
 import { procesarPagoSimple, procesarPagoMixto, obtenerDetallesPagos } from '../../services/pagosService';
 import { negociosService } from '../../services/negociosService';
-import { imprimirRecibo, enviarReciboWhatsApp } from '../../utils/reciboPagoUtils';
+import { imprimirRecibo, enviarReciboWhatsApp, type DatosRecibo } from '../../utils/reciboPagoUtils';
 import type { DetallePagoRecibo } from '../../utils/reciboPagoUtils';
 import type { Descuento } from '../../types/descuento.types';
 import type { DetallePago, TipoDeVenta } from '../../types/ventasWeb.types';
@@ -56,6 +56,10 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   
   // Estado para procesar pago
   const [procesandoPago, setProcesandoPago] = useState(false);
+
+  // Estado para pantalla de éxito tras procesar pago.
+  // Non-null value means payment was completed; holds the receipt data for the action buttons.
+  const [datosReciboGuardados, setDatosReciboGuardados] = useState<DatosRecibo | null>(null);
 
   // Estado para pagos registrados
   const [pagosRegistrados, setPagosRegistrados] = useState<DetallePago[]>([]);
@@ -399,22 +403,12 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
 
         const cambio = resultado.data?.cambio || 0;
         
-        // Generar recibo según la acción seleccionada
+        // Build receipt data
         const montoEfectivoNum = parseFloat(montoEfectivo);
         const datosRecibo = buildDatosRecibo('EFECTIVO', totalAPagar, null, cambio, undefined, !isNaN(montoEfectivoNum) ? montoEfectivoNum : undefined);
-        if (imprimirChecked) {
-          imprimirRecibo(datosRecibo);
-        }
 
-        alert(`Pago procesado exitosamente${cambio > 0 ? `\nCAMBIO: $${cambio.toFixed(2)}` : ''}`);
-        
-        // Close modal and return to dashboard
-        onClose();
-
-        // Enviar WhatsApp al final, después de asegurar el registro y finalizar el proceso
-        if (whatsappChecked) {
-          enviarReciboWhatsApp(datosRecibo);
-        }
+        // Show success state — user chooses when to print/send and when to close
+        setDatosReciboGuardados(datosRecibo);
       } 
       // Validación para transferencia
       else if (metodoPagoSeleccionado === 'transferencia') {
@@ -440,21 +434,11 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
           return;
         }
 
-        // Generar recibo según la acción seleccionada
+        // Build receipt data
         const datosRecibo = buildDatosRecibo('TRANSFERENCIA', totalAPagar, numeroReferencia);
-        if (imprimirChecked) {
-          imprimirRecibo(datosRecibo);
-        }
 
-        alert('Pago procesado exitosamente');
-        
-        // Close modal and return to dashboard
-        onClose();
-
-        // Enviar WhatsApp al final, después de asegurar el registro y finalizar el proceso
-        if (whatsappChecked) {
-          enviarReciboWhatsApp(datosRecibo);
-        }
+        // Show success state — user chooses when to print/send and when to close
+        setDatosReciboGuardados(datosRecibo);
       }
       // Para mixto
       else {
@@ -518,8 +502,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
           return;
         }
 
-        // Generar recibo según la acción seleccionada
-        // Combinar pagos registrados anteriores + nuevos pagos mixtos
+        // Build receipt data — combine prior registered payments + new mixto payments
         const todosLosPagos: DetallePagoRecibo[] = [
           ...pagosRegistrados.map(p => ({
             formadepago: p.formadepagodetalle,
@@ -533,19 +516,9 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
           })),
         ];
         const datosRecibo = buildDatosRecibo('MIXTO', totalAPagar, undefined, undefined, todosLosPagos);
-        if (imprimirChecked) {
-          imprimirRecibo(datosRecibo);
-        }
 
-        alert(resultado.message || 'Pago procesado exitosamente');
-        
-        // Close modal and return to dashboard
-        onClose();
-
-        // Enviar WhatsApp al final, después de asegurar el registro y finalizar el proceso
-        if (whatsappChecked) {
-          enviarReciboWhatsApp(datosRecibo);
-        }
+        // Show success state — user chooses when to print/send and when to close
+        setDatosReciboGuardados(datosRecibo);
       }
     } catch (error) {
       console.error('Error al procesar pago:', error);
@@ -561,6 +534,42 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   return (
     <div className="modulo-pagos-overlay">
       <div className="modulo-pagos-container">
+
+        {/* ── PANTALLA DE ÉXITO: PAGO PROCESADO ── */}
+        {datosReciboGuardados && (
+          <div className="pago-completado-panel">
+            <div className="pago-completado-icono">✅</div>
+            <h2 className="pago-completado-titulo">PAGO PROCESADO</h2>
+            <p className="pago-completado-subtitulo">El pago fue registrado correctamente.</p>
+            <div className="pago-completado-botones">
+              {parametrosData?.impresionRecibo !== 0 && (
+                <button
+                  className="btn-pago-completado btn-imprimir"
+                  onClick={() => imprimirRecibo(datosReciboGuardados)}
+                >
+                  🖨️ Imprimir PDF
+                </button>
+              )}
+              {parametrosData?.envioWhats !== 0 && (
+                <button
+                  className="btn-pago-completado btn-whatsapp"
+                  onClick={() => enviarReciboWhatsApp(datosReciboGuardados)}
+                >
+                  💬 Enviar WhatsApp
+                </button>
+              )}
+              <button
+                className="btn-pago-completado btn-listo"
+                onClick={onClose}
+              >
+                ✔ Listo
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── FORMULARIO DE PAGO (oculto tras procesar) ── */}
+        {!datosReciboGuardados && (
         <div className="modulo-pagos-content">
           {/* Columna Izquierda */}
           <div className="pagos-columna-izquierda">
@@ -907,6 +916,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
             )}
           </div>
         </div>
+        )} {/* end !datosReciboGuardados */}
       </div>
     </div>
   );
