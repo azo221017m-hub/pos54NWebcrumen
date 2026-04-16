@@ -370,6 +370,7 @@ export const actualizarCliente = async (req: Request, res: Response): Promise<vo
 export const buscarClientesPorTelefono = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idnegocio = req.user?.idNegocio;
+    const usuarioNombre = req.user?.nombre;
 
     if (!idnegocio) {
       res.status(401).json({ message: 'Usuario no autenticado o sin negocio asignado' });
@@ -382,14 +383,28 @@ export const buscarClientesPorTelefono = async (req: AuthRequest, res: Response)
       return;
     }
 
-    const [rows] = await pool.query<Cliente[]>(
-      `SELECT idCliente, nombre, referencia, cumple, puntosfidelidad, telefono, direccion
-       FROM tblposcrumenwebclientes
-       WHERE idnegocio = ? AND telefono LIKE ?
-       ORDER BY nombre ASC
-       LIMIT 10`,
-      [idnegocio, `%${telefono.trim()}%`]
-    );
+    const isSuperUsuario = usuarioNombre === 'SUPERUSUARIO' || idnegocio === 99999;
+
+    let query: string;
+    let params: (number | string)[];
+
+    if (isSuperUsuario) {
+      query = `SELECT idCliente, nombre, referencia, cumple, puntosfidelidad, telefono, direccion
+               FROM tblposcrumenwebclientes
+               WHERE telefono LIKE ?
+               ORDER BY nombre ASC
+               LIMIT 10`;
+      params = [`%${telefono.trim()}%`];
+    } else {
+      query = `SELECT idCliente, nombre, referencia, cumple, puntosfidelidad, telefono, direccion
+               FROM tblposcrumenwebclientes
+               WHERE idnegocio = ? AND telefono LIKE ?
+               ORDER BY nombre ASC
+               LIMIT 10`;
+      params = [idnegocio, `%${telefono.trim()}%`];
+    }
+
+    const [rows] = await pool.query<Cliente[]>(query, params);
 
     res.json(rows);
   } catch (error) {
