@@ -319,6 +319,10 @@ select.form-control {
   font-weight: 600;
 }
 
+.cliente-lookup-telefono {
+  color: #27ae60;
+}
+
 /* Error message below phone input when no client found */
 .campo-error-msg {
   display: block;
