@@ -156,17 +156,6 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
-  const formatCumple = (cumple: Date | string | null): string => {
-    if (!cumple) return '';
-    try {
-      const d = new Date(cumple);
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${day}/${month}`;
-    } catch {
-      return String(cumple);
-    }
-  };
 
   useEffect(() => {
     if (isOpen) {
@@ -464,7 +453,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
               </div>
 
               <div className="form-group">
-                <label htmlFor="telefono-mesa">Teléfono Contacto</label>
+                <label htmlFor="telefono-mesa">Teléfono Cliente</label>
                 <div className="input-search-wrapper">
                   <input
                     ref={telefonoInputRef}
@@ -482,10 +471,10 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
               {mesaClienteInfo && (
                 <div className="cliente-lookup-info">
                   <span className="cliente-lookup-nombre">{mesaClienteInfo.referencia || 'mostrador'}</span>
-                  {mesaClienteInfo.cumple && (
-                    <span className="cliente-lookup-cumple">🎂 {formatCumple(mesaClienteInfo.cumple)}</span>
-                  )}
                   <span className="cliente-lookup-puntos">⭐ {mesaClienteInfo.puntosfidelidad} pts</span>
+                  {mesaClienteInfo.telefono && (
+                    <span className="cliente-lookup-telefono">📞 {mesaClienteInfo.telefono}</span>
+                  )}
                 </div>
               )}
             </>
@@ -495,7 +484,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
           {tipoServicio === 'Llevar' && (
             <>
               <div className="form-group">
-                <label htmlFor="telefono-llevar">Teléfono Contacto</label>
+                <label htmlFor="telefono-llevar">Teléfono Cliente</label>
                 <div className="input-search-wrapper">
                   <input
                     ref={telefonoInputRef}
@@ -513,10 +502,10 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
               {llevarClienteInfo && (
                 <div className="cliente-lookup-info">
                   <span className="cliente-lookup-nombre">{llevarClienteInfo.referencia || 'mostrador'}</span>
-                  {llevarClienteInfo.cumple && (
-                    <span className="cliente-lookup-cumple">🎂 {formatCumple(llevarClienteInfo.cumple)}</span>
-                  )}
                   <span className="cliente-lookup-puntos">⭐ {llevarClienteInfo.puntosfidelidad} pts</span>
+                  {llevarClienteInfo.telefono && (
+                    <span className="cliente-lookup-telefono">📞 {llevarClienteInfo.telefono}</span>
+                  )}
                 </div>
               )}
 
