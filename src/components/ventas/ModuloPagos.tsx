@@ -400,7 +400,8 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
         const cambio = resultado.data?.cambio || 0;
         
         // Generar recibo según la acción seleccionada
-        const datosRecibo = buildDatosRecibo('EFECTIVO', totalAPagar, null, cambio, undefined, parseFloat(montoEfectivo));
+        const montoEfectivoNum = parseFloat(montoEfectivo);
+        const datosRecibo = buildDatosRecibo('EFECTIVO', totalAPagar, null, cambio, undefined, !isNaN(montoEfectivoNum) ? montoEfectivoNum : undefined);
         if (imprimirChecked) {
           imprimirRecibo(datosRecibo);
         }
@@ -728,7 +729,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
                     type="checkbox"
                     name="imprimirRecibo"
                     checked={imprimirChecked}
-                    disabled={parametrosData !== null && parametrosData.impresionRecibo === 0}
+                    disabled={parametrosData?.impresionRecibo === 0}
                     onChange={(e) => setImprimirChecked(e.target.checked)}
                   />
                   <span className="pagos-recibo-icono">🖨️</span>
@@ -739,7 +740,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
                     type="checkbox"
                     name="enviarWhatsApp"
                     checked={whatsappChecked}
-                    disabled={parametrosData !== null && parametrosData.envioWhats === 0}
+                    disabled={parametrosData?.envioWhats === 0}
                     onChange={(e) => setWhatsappChecked(e.target.checked)}
                   />
                   <span className="pagos-recibo-icono">💬</span>
