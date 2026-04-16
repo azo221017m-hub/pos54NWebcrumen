@@ -12,16 +12,6 @@ import TableroCliente from '../../components/tableroCliente/TableroCliente';
 import './PageClientes.css';
 
 const CATEGORIAS = ['Todos', 'Alimentos', 'Bebidas Calientes', 'Cuidado Personal', 'Bebidas Frías'];
-const MOBILE_BREAKPOINT = 600;
-const MOBILE_MEDIA_QUERY = `(max-width: ${MOBILE_BREAKPOINT}px)`;
-
-const CATEGORIA_ICONS: Record<string, string> = {
-  'Todos': '🏪',
-  'Alimentos': '🍽️',
-  'Bebidas Calientes': '☕',
-  'Cuidado Personal': '💆',
-  'Bebidas Frías': '🧊',
-};
 
 function getPrepTime(id: number): string {
   const mins = ((id * 7 + 5) % 20) + 10;
@@ -59,9 +49,7 @@ const PageClientes: React.FC = () => {
   const [negocios, setNegocios] = useState<NegocioPublico[]>([]);
   const [filteredNegocios, setFilteredNegocios] = useState<NegocioPublico[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isSearchInputFocused, setIsSearchInputFocused] = useState(false);
   const [categoriaActiva, setCategoriaActiva] = useState('Todos');
-  const [isMobileView, setIsMobileView] = useState(() => window.matchMedia(MOBILE_MEDIA_QUERY).matches);
   const [isLoading, setIsLoading] = useState(true);
   const [pedidosActivos, setPedidosActivos] = useState<Set<number>>(new Set());
   const [seleccionandoNegocio, setSeleccionandoNegocio] = useState<number | null>(null);
@@ -113,7 +101,6 @@ const PageClientes: React.FC = () => {
   });
 
   // Mobile refresh functionality
-  const [actualizandoMobile, setActualizandoMobile] = useState(false);
 
   useEffect(() => {
     // Load active orders from localStorage (keys: pedidoActivo_{idNegocio})
@@ -136,13 +123,6 @@ const PageClientes: React.FC = () => {
 
     cargarNegocios();
     cargarAnunciosVigentes();
-  }, []);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
-    const handleChange = (event: MediaQueryListEvent) => setIsMobileView(event.matches);
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
   // Listen for WEB order state changes via WebSocket to notify the client in real-time
@@ -175,69 +155,6 @@ const PageClientes: React.FC = () => {
       }
     }
   });
-
-  // Función para manejar la actualización móvil
-  const handleActualizarMobile = async () => {
-    if (!isMobileView) return; // Solo funciona en mobile
-
-    setActualizandoMobile(true);
-
-    try {
-      // Mostrar toast informativo
-      showInfoToast('🔄 Actualizando interfaz móvil...');
-
-      // Limpiar cache del navegador mobile
-      if ('caches' in window) {
-        const cacheNames = await caches.keys();
-        await Promise.all(
-          cacheNames.map(cacheName => caches.delete(cacheName))
-        );
-      }
-
-      // Limpiar localStorage específico (mantener datos de sesión importantes)
-      const keysToKeep = [
-        'clienteLogueado',
-        'clienteData',
-        'idnegocio',
-        'privilegio'
-      ];
-      
-      const allKeys = Object.keys(localStorage);
-      allKeys.forEach(key => {
-        if (!keysToKeep.some(keepKey => key.includes(keepKey))) {
-          localStorage.removeItem(key);
-        }
-      });
-
-      // Recargar datos principales
-      await Promise.all([
-        cargarNegocios(),
-        obtenerAnunciosVigentes().then(anunciosData => {
-          setAnuncios(anunciosData);
-          setAnuncioActivo(0);
-          setImagenActivaIdx(0);
-        }).catch(console.error)
-      ]);
-
-      // Resetear estados de UI
-      setSearchTerm('');
-      setCategoriaActiva('Todos');
-      setIsSearchInputFocused(false);
-      setMostrarMenuAvatar(false);
-      setMostrarTablero(false);
-
-      // Mostrar toast de éxito
-      setTimeout(() => {
-        showSuccessToast('✅ Interfaz móvil actualizada correctamente');
-      }, 500);
-
-    } catch (error) {
-      console.error('Error al actualizar mobile UI:', error);
-      showErrorToast('❌ Error al actualizar la interfaz');
-    } finally {
-      setActualizandoMobile(false);
-    }
-  };
 
   const cargarNegocios = async () => {
     setIsLoading(true);
@@ -514,10 +431,6 @@ const PageClientes: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [mostrarMenuAvatar]);
 
-  const mostrarSeccionNegocios = !isMobileView || isSearchInputFocused;
-  const mostrarFiltrosCategorias = !isMobileView || isSearchInputFocused;
-  const mostrarMobileAnuncios = !isSearchInputFocused;
-
   return (
     <div className="pc-page">
       {/* Header */}
@@ -545,78 +458,27 @@ const PageClientes: React.FC = () => {
                 placeholder="Buscar negocio o producto"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                onFocus={() => setIsSearchInputFocused(true)}
-                onBlur={() => setIsSearchInputFocused(false)}
               />
               {searchTerm && (
                 <button className="pc-search-clear" onClick={() => setSearchTerm('')}>✕</button>
               )}
             </div>
 
-            {/* Category filters below search — desktop horizontal pills */}
-            {mostrarFiltrosCategorias && (
-              <div className="pc-categorias">
-                {CATEGORIAS.map((cat) => (
-                  <button
-                    key={cat}
-                    className={`pc-cat-btn${categoriaActiva === cat ? ' pc-cat-btn--active' : ''}`}
-                    onClick={() => setCategoriaActiva(cat)}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Category filters — mobile modern list selector */}
-            {isMobileView && mostrarFiltrosCategorias && (
-              <div className="pc-mobile-tags">
+            {/* Category filters below search — horizontal pills */}
+            <div className="pc-categorias">
               {CATEGORIAS.map((cat) => (
                 <button
                   key={cat}
-                  className={`pc-mobile-tag-item${categoriaActiva === cat ? ' pc-mobile-tag-item--active' : ''}`}
+                  className={`pc-cat-btn${categoriaActiva === cat ? ' pc-cat-btn--active' : ''}`}
                   onClick={() => setCategoriaActiva(cat)}
                 >
-                  <span className="pc-mobile-tag-icon">
-                    {CATEGORIA_ICONS[cat] || '📌'}
-                  </span>
-                  <span className="pc-mobile-tag-label">{cat}</span>
-                  <span className="pc-mobile-tag-check">
-                    <svg viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="2,6 5,9 10,3" />
-                    </svg>
-                  </span>
+                  {cat}
                 </button>
               ))}
-              </div>
-            )}
+            </div>
           </div>
 
           <div className="pc-header-right">
-            {/* Mobile Refresh Button - only visible on mobile */}
-            {isMobileView && (
-              <button
-                className={`pc-mobile-refresh-btn${actualizandoMobile ? ' pc-mobile-refresh-btn--loading' : ''}`}
-                onClick={handleActualizarMobile}
-                disabled={actualizandoMobile}
-                aria-label="Actualizar interfaz móvil"
-                title="Actualizar interfaz móvil"
-              >
-                <svg 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2"
-                  className={`pc-refresh-icon${actualizandoMobile ? ' pc-refresh-icon--spinning' : ''}`}
-                >
-                  <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-                  <path d="M21 3v5h-5"/>
-                  <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-                  <path d="M3 21v-5h5"/>
-                </svg>
-              </button>
-            )}
-            
             {!clienteLogueado && (
               <div className="pc-header-actions">
                 <div className="pc-btn-row">
@@ -732,7 +594,7 @@ const PageClientes: React.FC = () => {
                   {anuncio.detalleAnuncio && (
                     <p className="pc-carousel-detalle">{anuncio.detalleAnuncio}</p>
                   )}
-                  {imagenes.length > 1 && !isMobileView && (
+                  {imagenes.length > 1 && (
                     <div className="pc-carousel-dots pc-carousel-dots--imagenes">
                       {imagenes.map((_, idx) => (
                         <button
@@ -744,7 +606,7 @@ const PageClientes: React.FC = () => {
                       ))}
                     </div>
                   )}
-                  {anuncios.length > 1 && !isMobileView && (
+                  {anuncios.length > 1 && (
                     <div className="pc-carousel-dots pc-carousel-dots--anuncios">
                       {anuncios.map((_, idx) => (
                         <button
@@ -769,53 +631,7 @@ const PageClientes: React.FC = () => {
             )}
           </div>
 
-          {/* Mobile fixed anuncio with crossfade transition */}
-          {mostrarMobileAnuncios && (
-            <div className="pc-mobile-anuncios">
-              {anuncios.length > 0 ? (() => {
-                const anuncio = anuncios[anuncioActivo];
-                const imagenes = getImagenes(anuncio);
-                return (
-                  <div className="pc-mobile-anuncio-fixed">
-                    {imagenes.length > 0 ? (
-                      <img
-                        key={`${anuncioActivo}-${imagenActivaIdx}`}
-                        src={`data:image/jpeg;base64,${imagenes[imagenActivaIdx]}`}
-                        alt={anuncio.tituloDeAnuncio}
-                        className="pc-mobile-anuncio-fixed-img"
-                      />
-                    ) : (
-                      <div className="pc-mobile-anuncio-placeholder" />
-                    )}
-                    <div className="pc-mobile-anuncio-overlay">
-                      {anuncio.tituloDeAnuncio && (
-                        <p className="pc-mobile-anuncio-title">{anuncio.tituloDeAnuncio}</p>
-                      )}
-                      {anuncios.length > 1 && !isMobileView && (
-                        <div className="pc-mobile-anuncio-dots">
-                          {anuncios.map((_, idx) => (
-                            <button
-                              key={idx}
-                              className={`pc-mobile-anuncio-dot${idx === anuncioActivo ? ' pc-mobile-anuncio-dot--active' : ''}`}
-                              onClick={() => { setAnuncioActivo(idx); setImagenActivaIdx(0); }}
-                              aria-label={`Anuncio ${idx + 1}`}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })() : (
-                <div className="pc-banner-content">
-                  <p className="pc-banner-small">Anuncios</p>
-                  <p className="pc-carousel-detalle">Próximamente promociones y novedades</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* CTA — Promote your business (desktop only, inside sidebar) */}
+          {/* CTA — Promote your business (inside sidebar) */}
           <div className="pc-negocio-cta pc-desktop-cta">
             <p className="pc-negocio-cta-label">¿Tienes Negocio en Texcoco?</p>
             <button type="button" className="pc-negocio-cta-btn" onClick={handleAbrirModalNegocioCta}>
@@ -833,11 +649,7 @@ const PageClientes: React.FC = () => {
 
           {/* Business cards section with vertical scroll */}
           <div className="pc-content">
-        {!mostrarSeccionNegocios ? (
-          <div className="pc-mobile-search-hint" role="status" aria-live="polite">
-            <p>Buscar negocios y productos.</p>
-          </div>
-        ) : isLoading ? (
+        {isLoading ? (
             <div className="pc-loading">
               <div className="pc-spinner" />
               <p>Activando Comunidad Digital Texcoco</p>
@@ -958,34 +770,6 @@ const PageClientes: React.FC = () => {
           )}
           </div>
         </main>
-
-        {/* D: Mobile CTA — Quiero Registrar mi Negocio (mobile only, after negocios) */}
-        <div className="pc-mobile-cta">
-          <div className="pc-negocio-cta">
-            <p className="pc-negocio-cta-label">¿Tienes Negocio en Texcoco?</p>
-            <button type="button" className="pc-negocio-cta-btn" onClick={handleAbrirModalNegocioCta}>
-              Quiero Mostrar mi Negocio Aquí
-            </button>
-          </div>
-        </div>
-
-        {/* E: Mobile action buttons (mobile only, at the bottom) */}
-        {!clienteLogueado && (
-          <div className="pc-mobile-actions">
-            <button
-              className="pc-mobile-action-pedido"
-              onClick={handleAbrirModalLogin}
-            >
-              HACER PEDIDO AHORA
-            </button>
-            <button
-              className="pc-mobile-action-comunidad"
-              onClick={handleAbrirModalRegistro}
-            >
-              CREAR MI ACCESO Gratis
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Footer */}
