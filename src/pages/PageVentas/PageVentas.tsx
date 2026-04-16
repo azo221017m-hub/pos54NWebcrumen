@@ -1587,7 +1587,7 @@ const PageVentas: React.FC = () => {
             onClick={() => scrollCategorias('left')}
             aria-label="Scroll left"
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={16} />
           </button>
           
           <div className="categorias-carousel header-categorias-carousel" ref={categoriasScrollRef}>
@@ -1629,7 +1629,7 @@ const PageVentas: React.FC = () => {
             onClick={() => scrollCategorias('right')}
             aria-label="Scroll right"
           >
-            <ChevronRight size={20} />
+            <ChevronRight size={16} />
           </button>
         </div>
 
