@@ -250,6 +250,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
           });
           setDomicilioFormData(prev => ({
             ...prev,
+            telefonodeentrega: c.telefono || prev.telefonodeentrega,
             cliente: c.referencia || c.nombre || '',
             idcliente: c.idCliente,
             direcciondeentrega: c.direccion || ''
@@ -285,6 +286,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
         });
         setLlevarFormData(prev => ({
           ...prev,
+          telefonocontacto: c.telefono || prev.telefonocontacto,
           cliente: c.referencia || c.nombre || 'mostrador',
           idcliente: c.idCliente
         }));
@@ -354,6 +356,9 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
             direccion: c.direccion ?? null,
             telefono: c.telefono ?? null
           });
+          if (c.telefono) {
+            setMesaFormData(prev => ({ ...prev, telefonocontacto: c.telefono! }));
+          }
         } else {
           setMesaClienteInfo(null);
         }
