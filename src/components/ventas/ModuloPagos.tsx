@@ -57,8 +57,8 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   // Estado para procesar pago
   const [procesandoPago, setProcesandoPago] = useState(false);
 
-  // Estado para pantalla de éxito tras procesar pago
-  const [pagoCompletado, setPagoCompletado] = useState(false);
+  // Estado para pantalla de éxito tras procesar pago.
+  // Non-null value means payment was completed; holds the receipt data for the action buttons.
   const [datosReciboGuardados, setDatosReciboGuardados] = useState<DatosRecibo | null>(null);
 
   // Estado para pagos registrados
@@ -409,7 +409,6 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
 
         // Show success state — user chooses when to print/send and when to close
         setDatosReciboGuardados(datosRecibo);
-        setPagoCompletado(true);
       } 
       // Validación para transferencia
       else if (metodoPagoSeleccionado === 'transferencia') {
@@ -440,7 +439,6 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
 
         // Show success state — user chooses when to print/send and when to close
         setDatosReciboGuardados(datosRecibo);
-        setPagoCompletado(true);
       }
       // Para mixto
       else {
@@ -521,7 +519,6 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
 
         // Show success state — user chooses when to print/send and when to close
         setDatosReciboGuardados(datosRecibo);
-        setPagoCompletado(true);
       }
     } catch (error) {
       console.error('Error al procesar pago:', error);
@@ -539,7 +536,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
       <div className="modulo-pagos-container">
 
         {/* ── PANTALLA DE ÉXITO: PAGO PROCESADO ── */}
-        {pagoCompletado && datosReciboGuardados && (
+        {datosReciboGuardados && (
           <div className="pago-completado-panel">
             <div className="pago-completado-icono">✅</div>
             <h2 className="pago-completado-titulo">PAGO PROCESADO</h2>
@@ -572,7 +569,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
         )}
 
         {/* ── FORMULARIO DE PAGO (oculto tras procesar) ── */}
-        {!pagoCompletado && (
+        {!datosReciboGuardados && (
         <div className="modulo-pagos-content">
           {/* Columna Izquierda */}
           <div className="pagos-columna-izquierda">
@@ -919,7 +916,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
             )}
           </div>
         </div>
-        )} {/* end !pagoCompletado */}
+        )} {/* end !datosReciboGuardados */}
       </div>
     </div>
   );
