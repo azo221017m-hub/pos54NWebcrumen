@@ -1758,14 +1758,22 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
       return;
     }
 
-    // Get current month's date range
+    // Resolve date range: use query params if provided, otherwise default to current month
     const now = new Date();
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-    // Format dates for MySQL (YYYY-MM-DD)
-    const startDate = firstDayOfMonth.toISOString().split('T')[0];
-    const endDate = lastDayOfMonth.toISOString().split('T')[0];
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    const startDate = (typeof req.query.fechaInicio === 'string' && dateRegex.test(req.query.fechaInicio))
+      ? req.query.fechaInicio
+      : firstDayOfMonth.toISOString().split('T')[0];
+    const endDate = (typeof req.query.fechaFin === 'string' && dateRegex.test(req.query.fechaFin))
+      ? req.query.fechaFin
+      : lastDayOfMonth.toISOString().split('T')[0];
+
+    const categoria = typeof req.query.categoria === 'string' ? req.query.categoria.toUpperCase() : 'FINANCIEROS';
+    const categoriasValidas = ['VENTAS', 'COMPRAS', 'INVENTARIO', 'FINANCIEROS'];
+    const categoriaFinal = categoriasValidas.includes(categoria) ? categoria : 'FINANCIEROS';
 
     // 1. Calculate VENTAS (Sales)
     // Sum of tblposcrumenwebventas.totaldeventa where motivomovimiento = 'VENTA'
@@ -1881,7 +1889,13 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
         periodo: {
           inicio: startDate,
           fin: endDate,
-          mes: now.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+          mes: (() => {
+            const dateOpts: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short', year: 'numeric' };
+            const startLabel = new Date(startDate + 'T00:00:00').toLocaleDateString('es-MX', dateOpts);
+            const endLabel = new Date(endDate + 'T00:00:00').toLocaleDateString('es-MX', dateOpts);
+            return `${startLabel} – ${endLabel}`;
+          })(),
+          categoria: categoriaFinal
         }
       }
     });
