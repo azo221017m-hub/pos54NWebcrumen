@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Search, Plus, Minus, ChevronLeft, ChevronRight, StickyNote, Utensils } from 'lucide-react';
 import { obtenerProductosWeb } from '../../services/productosWebService';
-import { negociosService, parametrosService } from '../../services/negociosService';
+import { negociosService } from '../../services/negociosService';
 import { obtenerCategorias } from '../../services/categoriasService';
 import { crearVentaWeb, agregarDetallesAVenta, actualizarVentaWeb, sincronizarDetallesVentaWebSolicitado } from '../../services/ventasWebService';
 import { obtenerModeradores } from '../../services/moderadoresService';
@@ -22,7 +22,7 @@ import ModuloPagos from '../../components/ventas/ModuloPagos';
 import type { MesaFormData, LlevarFormData, DomicilioFormData } from '../../components/ventas/ModalTipoServicio';
 import type { ProductoWeb } from '../../types/productoWeb.types';
 import type { Usuario } from '../../types/usuario.types';
-import type { Negocio, ParametrosNegocio } from '../../types/negocio.types';
+import type { Negocio } from '../../types/negocio.types';
 import type { Categoria } from '../../types/categoria.types';
 import type { TipoServicio } from '../../types/mesa.types';
 import type { VentaWebCreate, VentaWebWithDetails, TipoDeVenta, EstadoDeVenta, EstadoDetalle, EstatusDePago, OrigenVenta } from '../../types/ventasWeb.types';
@@ -150,7 +150,6 @@ const PageVentas: React.FC = () => {
 
   // Imprimir comanda cocina checkbox state (initialized from parametros)
   const [imprimirChecked, setImprimirChecked] = useState(true);
-  const [parametrosNegocio, setParametrosNegocio] = useState<ParametrosNegocio | null>(null);
 
   // Helper: navigate to dashboard or reset state for privilege 2 after completing/canceling a venta
   const handlePostVenta = React.useCallback(() => {
@@ -199,7 +198,6 @@ const PageVentas: React.FC = () => {
         setNegocio(data.negocio);
       }
       if (data?.parametros) {
-        setParametrosNegocio(data.parametros);
         setImprimirChecked(data.parametros.impresionComanda === 1);
       }
     } catch (error) {
