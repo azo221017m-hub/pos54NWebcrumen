@@ -1889,7 +1889,12 @@ export const getBusinessHealth = async (req: AuthRequest, res: Response): Promis
         periodo: {
           inicio: startDate,
           fin: endDate,
-          mes: `${new Date(startDate + 'T00:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })} – ${new Date(endDate + 'T00:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}`,
+          mes: (() => {
+            const dateOpts: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short', year: 'numeric' };
+            const startLabel = new Date(startDate + 'T00:00:00').toLocaleDateString('es-MX', dateOpts);
+            const endLabel = new Date(endDate + 'T00:00:00').toLocaleDateString('es-MX', dateOpts);
+            return `${startLabel} – ${endLabel}`;
+          })(),
           categoria: categoriaFinal
         }
       }

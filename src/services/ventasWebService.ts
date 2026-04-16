@@ -296,6 +296,8 @@ export interface AlertaMargen {
   accion: string;
 }
 
+export type SaludCategoria = 'VENTAS' | 'COMPRAS' | 'INVENTARIO' | 'FINANCIEROS';
+
 // Obtener datos de salud del negocio (Ventas, Costo de Venta, Margen Bruto, % Margen)
 export interface SaludNegocio {
   // New business health metrics
@@ -323,11 +325,9 @@ export interface SaludNegocio {
     inicio: string;
     fin: string;
     mes?: string;
-    categoria?: string;
+    categoria?: SaludCategoria;
   };
 }
-
-export type SaludCategoria = 'VENTAS' | 'COMPRAS' | 'INVENTARIO' | 'FINANCIEROS';
 
 export const obtenerSaludNegocio = async (
   categoria?: SaludCategoria,

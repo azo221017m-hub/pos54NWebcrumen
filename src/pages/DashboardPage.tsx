@@ -329,7 +329,6 @@ export const DashboardPage = () => {
     } catch (error) {
       console.error('Error al cargar salud del negocio:', error);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [saludCategoria, saludFechaInicio, saludFechaFin]);
 
   const calcularNivelInventario = useCallback(async () => {
