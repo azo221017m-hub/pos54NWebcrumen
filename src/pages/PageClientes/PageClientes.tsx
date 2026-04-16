@@ -92,6 +92,18 @@ const PageClientes: React.FC = () => {
   const NEGOCIO_CTA_INITIAL = { nombreNegocio: '', tipoNegocio: '', dudasComentarios: '', interes: 'Vender' };
   const [mostrarModalNegocioCta, setMostrarModalNegocioCta] = useState(false);
   const [negocioCtaData, setNegocioCtaData] = useState(NEGOCIO_CTA_INITIAL);
+
+  // "Quiero ser repartidor CDT" modal
+  const REPARTIDOR_INITIAL = {
+    nombre: '',
+    zonasPreferencia: '',
+    fotoVehiculo: null as File | null,
+    fotoPlacas: null as File | null,
+    fotoRepartidor: null as File | null,
+  };
+  const [mostrarModalRepartidor, setMostrarModalRepartidor] = useState(false);
+  const [repartidorData, setRepartidorData] = useState(REPARTIDOR_INITIAL);
+
   const [registroData, setRegistroData] = useState({
     referencia: '',
     telefono: '',
@@ -156,12 +168,22 @@ const PageClientes: React.FC = () => {
     }
   });
 
+  const shuffleArray = <T,>(arr: T[]): T[] => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+
   const cargarNegocios = async () => {
     setIsLoading(true);
     try {
       const data = await clienteWebService.obtenerNegociosPublico();
-      setNegocios(data);
-      setFilteredNegocios(data);
+      const shuffled = shuffleArray(data);
+      setNegocios(shuffled);
+      setFilteredNegocios(shuffled);
     } finally {
       setIsLoading(false);
     }
@@ -419,6 +441,33 @@ const PageClientes: React.FC = () => {
     setNegocioCtaData(NEGOCIO_CTA_INITIAL);
   };
 
+  const handleAbrirModalRepartidor = () => {
+    setRepartidorData(REPARTIDOR_INITIAL);
+    setMostrarModalRepartidor(true);
+  };
+
+  const handleCerrarModalRepartidor = () => {
+    setMostrarModalRepartidor(false);
+  };
+
+  const handleEnviarWhatsappRepartidor = () => {
+    const { nombre, zonasPreferencia } = repartidorData;
+    if (!nombre.trim() || !zonasPreferencia.trim()) {
+      showInfoToast('Por favor completa los campos de nombre y zonas de preferencia');
+      return;
+    }
+    const fotoInfo = [
+      repartidorData.fotoVehiculo ? `📸 Foto vehículo: ${repartidorData.fotoVehiculo.name}` : '',
+      repartidorData.fotoPlacas ? `📸 Foto placas: ${repartidorData.fotoPlacas.name}` : '',
+      repartidorData.fotoRepartidor ? `📸 Foto repartidor: ${repartidorData.fotoRepartidor.name}` : '',
+    ].filter(Boolean).join('\n');
+    const mensaje = `Solicitud Repartidor CDT\nNombre: ${nombre.trim()}\nZonas de preferencia: ${zonasPreferencia.trim()}${fotoInfo ? '\n' + fotoInfo + '\n(Por favor adjunta tus fotos en este chat)' : ''}`;
+    const url = `whatsapp://send?phone=5527618631&text=${encodeURIComponent(mensaje)}`;
+    window.location.href = url;
+    setMostrarModalRepartidor(false);
+    setRepartidorData(REPARTIDOR_INITIAL);
+  };
+
   // Close avatar dropdown when clicking outside
   useEffect(() => {
     if (!mostrarMenuAvatar) return;
@@ -479,6 +528,12 @@ const PageClientes: React.FC = () => {
           </div>
 
           <div className="pc-header-right">
+            <button
+              className="pc-header-repartidor-btn"
+              onClick={handleAbrirModalRepartidor}
+            >
+              🛵 Quiero ser repartidor CDT!
+            </button>
             {!clienteLogueado && (
               <div className="pc-header-actions">
                 <div className="pc-btn-row">
@@ -974,6 +1029,90 @@ const PageClientes: React.FC = () => {
                   <path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.554 4.118 1.524 5.849L.057 23.516a.5.5 0 00.612.612l5.637-1.476A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.655-.502-5.184-1.381l-.372-.218-3.845 1.007 1.023-3.738-.24-.386A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" />
                 </svg>
                 Enviar Whatsapp
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal — Quiero ser repartidor CDT */}
+      {mostrarModalRepartidor && (
+        <div className="pc-modal-overlay">
+          <div className="pc-modal pc-modal--wide" role="dialog" aria-modal="true" aria-labelledby="repartidor-modal-title">
+            <div className="pc-modal-header">
+              <h2 className="pc-modal-title" id="repartidor-modal-title">🛵 Quiero ser repartidor CDT!</h2>
+              <button className="pc-modal-close" onClick={handleCerrarModalRepartidor} aria-label="Cerrar">✕</button>
+            </div>
+            <div className="pc-modal-body">
+              <div className="pc-form-group">
+                <label className="pc-form-label pc-form-label--required">Nombre completo</label>
+                <input
+                  type="text"
+                  className="pc-form-input"
+                  placeholder="Tu nombre completo"
+                  autoFocus
+                  value={repartidorData.nombre}
+                  onChange={(e) => setRepartidorData(prev => ({ ...prev, nombre: e.target.value }))}
+                />
+              </div>
+              <div className="pc-form-group">
+                <label className="pc-form-label">Fotografía de vehículo</label>
+                <input
+                  type="file"
+                  className="pc-form-input pc-form-file"
+                  accept="image/*"
+                  onChange={(e) => setRepartidorData(prev => ({ ...prev, fotoVehiculo: e.target.files?.[0] ?? null }))}
+                />
+                {repartidorData.fotoVehiculo && (
+                  <span className="pc-file-name">📎 {repartidorData.fotoVehiculo.name}</span>
+                )}
+              </div>
+              <div className="pc-form-group">
+                <label className="pc-form-label">Foto de placas de vehículo</label>
+                <input
+                  type="file"
+                  className="pc-form-input pc-form-file"
+                  accept="image/*"
+                  onChange={(e) => setRepartidorData(prev => ({ ...prev, fotoPlacas: e.target.files?.[0] ?? null }))}
+                />
+                {repartidorData.fotoPlacas && (
+                  <span className="pc-file-name">📎 {repartidorData.fotoPlacas.name}</span>
+                )}
+              </div>
+              <div className="pc-form-group">
+                <label className="pc-form-label">Foto de repartidor</label>
+                <input
+                  type="file"
+                  className="pc-form-input pc-form-file"
+                  accept="image/*"
+                  onChange={(e) => setRepartidorData(prev => ({ ...prev, fotoRepartidor: e.target.files?.[0] ?? null }))}
+                />
+                {repartidorData.fotoRepartidor && (
+                  <span className="pc-file-name">📎 {repartidorData.fotoRepartidor.name}</span>
+                )}
+              </div>
+              <div className="pc-form-group">
+                <label className="pc-form-label pc-form-label--required">Zonas de preferencia</label>
+                <textarea
+                  className="pc-form-input pc-form-textarea"
+                  placeholder="Ej. Centro de Texcoco, San Miguel Coatlinchán, Tepexpan..."
+                  rows={3}
+                  value={repartidorData.zonasPreferencia}
+                  onChange={(e) => setRepartidorData(prev => ({ ...prev, zonasPreferencia: e.target.value }))}
+                />
+              </div>
+              <p className="pc-repartidor-note">
+                Al enviar, te contactaremos por WhatsApp. Si seleccionaste fotos, adjúntalas en el chat después de enviar el mensaje.
+              </p>
+              <button
+                className="pc-modal-btn pc-whatsapp-btn"
+                onClick={handleEnviarWhatsappRepartidor}
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" className="pc-whatsapp-icon" aria-hidden="true">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                  <path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.554 4.118 1.524 5.849L.057 23.516a.5.5 0 00.612.612l5.637-1.476A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.655-.502-5.184-1.381l-.372-.218-3.845 1.007 1.023-3.738-.24-.386A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" />
+                </svg>
+                Enviar Solicitud por WhatsApp
               </button>
             </div>
           </div>
