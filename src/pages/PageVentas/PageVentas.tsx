@@ -12,7 +12,7 @@ import { cambiarEstatusMesa } from '../../services/mesasService';
 import { clearSession } from '../../services/sessionService';
 import { clienteWebService } from '../../services/clienteWebService';
 import { showSuccessToast, showErrorToast } from '../../components/FeedbackToast';
-import { extractShortFolio } from '../../utils/formatters';
+import { extractShortFolio, toDatetimeLocalMexico } from '../../utils/formatters';
 import ModalTipoServicio from '../../components/ventas/ModalTipoServicio';
 import ModalSeleccionVentaPageVentas from '../../components/ventas/ModalSeleccionVentaPageVentas';
 import ModalIniciaTurno from '../../components/turnos/ModalIniciaTurno';
@@ -367,7 +367,7 @@ const PageVentas: React.FC = () => {
           cliente: ventaToLoad.cliente,
           idcliente: null,
           fechaprogramadaventa: ventaToLoad.fechaprogramadaentrega 
-            ? new Date(ventaToLoad.fechaprogramadaentrega).toISOString().slice(0, 16)
+            ? toDatetimeLocalMexico(ventaToLoad.fechaprogramadaentrega)
             : ''
         });
       } else if (ventaToLoad.tipodeventa === 'DOMICILIO') {
@@ -375,7 +375,7 @@ const PageVentas: React.FC = () => {
           cliente: ventaToLoad.cliente,
           idcliente: null,
           fechaprogramadaventa: ventaToLoad.fechaprogramadaentrega 
-            ? new Date(ventaToLoad.fechaprogramadaentrega).toISOString().slice(0, 16)
+            ? toDatetimeLocalMexico(ventaToLoad.fechaprogramadaentrega)
             : '',
           direcciondeentrega: ventaToLoad.direcciondeentrega || '',
           telefonodeentrega: ventaToLoad.telefonodeentrega || '',
