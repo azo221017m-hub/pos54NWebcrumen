@@ -286,6 +286,25 @@ select.form-control {
   flex-shrink: 0;
 }
 
+.btn-buscar-telefono {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #3498db;
+  display: flex;
+  align-items: center;
+  padding: 0.2rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.btn-buscar-telefono:hover {
+  color: #1a6fa8;
+  background: rgba(52, 152, 219, 0.1);
+}
+
 @keyframes spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }

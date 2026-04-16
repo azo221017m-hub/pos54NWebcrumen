@@ -385,7 +385,7 @@ export const buscarClientesPorTelefono = async (req: AuthRequest, res: Response)
     const [rows] = await pool.query<Cliente[]>(
       `SELECT idCliente, nombre, referencia, cumple, puntosfidelidad, telefono, direccion
        FROM tblposcrumenwebclientes
-       WHERE idnegocio = ? AND telefono LIKE ? AND estatus = 1
+       WHERE idnegocio = ? AND telefono LIKE ?
        ORDER BY nombre ASC
        LIMIT 10`,
       [idnegocio, `%${telefono.trim()}%`]
