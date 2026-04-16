@@ -3,7 +3,7 @@ import './ModuloPagos.css';
 import { obtenerDescuentos } from '../../services/descuentosService';
 import { procesarPagoSimple, procesarPagoMixto, obtenerDetallesPagos } from '../../services/pagosService';
 import { negociosService } from '../../services/negociosService';
-import { imprimirRecibo, enviarReciboWhatsApp, type DatosRecibo } from '../../utils/reciboPagoUtils';
+import type { DatosRecibo } from '../../utils/reciboPagoUtils';
 import type { DetallePagoRecibo } from '../../utils/reciboPagoUtils';
 import type { Descuento } from '../../types/descuento.types';
 import type { DetallePago, TipoDeVenta } from '../../types/ventasWeb.types';
@@ -71,10 +71,6 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   // Ref for the flash timeout to allow cleanup
   const flashTimeoutRef = useRef<number | null>(null);
 
-  // Estado para acción del recibo de pago (independientes: ambos, uno o ninguno)
-  const [imprimirChecked, setImprimirChecked] = useState(false);
-  const [whatsappChecked, setWhatsappChecked] = useState(false);
-
   // Estado para datos del negocio (para el recibo)
   const [negocioData, setNegocioData] = useState<Negocio | null>(null);
   const [parametrosData, setParametrosData] = useState<ParametrosNegocio | null>(null);
@@ -122,14 +118,6 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     };
     cargarDatosNegocio();
   }, []);
-
-  // Inicializar checkboxes de recibo según parámetros del negocio
-  useEffect(() => {
-    if (parametrosData) {
-      setImprimirChecked(parametrosData.impresionRecibo === 1);
-      setWhatsappChecked(parametrosData.envioWhats === 1);
-    }
-  }, [parametrosData]);
 
   // Set default payment method to mixto if sale has MIXTO payment
   useEffect(() => {
@@ -542,22 +530,6 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
             <h2 className="pago-completado-titulo">PAGO PROCESADO</h2>
             <p className="pago-completado-subtitulo">El pago fue registrado correctamente.</p>
             <div className="pago-completado-botones">
-              {parametrosData?.impresionRecibo !== 0 && (
-                <button
-                  className="btn-pago-completado btn-imprimir"
-                  onClick={() => imprimirRecibo(datosReciboGuardados)}
-                >
-                  🖨️ Imprimir PDF
-                </button>
-              )}
-              {parametrosData?.envioWhats !== 0 && (
-                <button
-                  className="btn-pago-completado btn-whatsapp"
-                  onClick={() => enviarReciboWhatsApp(datosReciboGuardados)}
-                >
-                  💬 Enviar WhatsApp
-                </button>
-              )}
               <button
                 className="btn-pago-completado btn-listo"
                 onClick={onClose}
@@ -729,35 +701,6 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
 
           {/* Columna Derecha */}
           <div className="pagos-columna-derecha">
-            {/* Selector de Recibo de Pago */}
-            <div className="pagos-recibo-selector">
-              <span className="pagos-recibo-label">Recibo de Pago:</span>
-              <div className="pagos-recibo-opciones">
-                <label className={`pagos-recibo-opcion ${imprimirChecked ? 'activo' : ''} ${parametrosData && parametrosData.impresionRecibo === 0 ? 'deshabilitado' : ''}`}>
-                  <input
-                    type="checkbox"
-                    name="imprimirRecibo"
-                    checked={imprimirChecked}
-                    disabled={parametrosData?.impresionRecibo === 0}
-                    onChange={(e) => setImprimirChecked(e.target.checked)}
-                  />
-                  <span className="pagos-recibo-icono">🖨️</span>
-                  <span>Imprimir</span>
-                </label>
-                <label className={`pagos-recibo-opcion ${whatsappChecked ? 'activo' : ''} ${parametrosData && parametrosData.envioWhats === 0 ? 'deshabilitado' : ''}`}>
-                  <input
-                    type="checkbox"
-                    name="enviarWhatsApp"
-                    checked={whatsappChecked}
-                    disabled={parametrosData?.envioWhats === 0}
-                    onChange={(e) => setWhatsappChecked(e.target.checked)}
-                  />
-                  <span className="pagos-recibo-icono">💬</span>
-                  <span>Enviar WhatsApp</span>
-                </label>
-              </div>
-            </div>
-
             {/* Pagos realizados EFECTIVO */}
             {metodoPagoSeleccionado === 'efectivo' && (
               <div className="pagos-panel-efectivo">
