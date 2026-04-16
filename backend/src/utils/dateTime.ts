@@ -112,6 +112,50 @@ export const getMexicoTimestamp = (): number => {
 };
 
 /**
+ * Validates and normalizes a datetime string to MySQL DATETIME format (YYYY-MM-DD HH:MM:SS).
+ * Accepts strings coming from HTML datetime-local inputs (YYYY-MM-DDTHH:mm or YYYY-MM-DDTHH:mm:ss)
+ * as well as MySQL DATETIME strings (YYYY-MM-DD HH:MM:SS).
+ * Returns the normalized string or null if the input is absent or invalid.
+ * Uses a Date object to detect impossible dates (e.g. February 31st).
+ * @param dateStr Raw datetime string from request body
+ * @returns Normalized 'YYYY-MM-DD HH:MM:SS' string or null
+ */
+export const normalizeDateTimeForMySQL = (dateStr: string | null | undefined): string | null => {
+  if (!dateStr) return null;
+
+  // Replace the ISO 'T' separator with a space to unify format
+  const normalized = String(dateStr).replace('T', ' ');
+
+  // Match 'YYYY-MM-DD HH:MM' or 'YYYY-MM-DD HH:MM:SS'
+  const match = normalized.match(
+    /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})(?::(\d{2}))?$/
+  );
+  if (!match) return null;
+
+  const year = parseInt(match[1], 10);
+  const month = parseInt(match[2], 10);
+  const day = parseInt(match[3], 10);
+  const hours = parseInt(match[4], 10);
+  const minutes = parseInt(match[5], 10);
+  const seconds = parseInt(match[6] ?? '0', 10);
+
+  if (hours > 23 || minutes > 59 || seconds > 59) return null;
+
+  // Use a Date object to validate calendar correctness (handles month lengths and leap years)
+  const d = new Date(year, month - 1, day);
+  if (
+    d.getFullYear() !== year ||
+    d.getMonth() !== month - 1 ||
+    d.getDate() !== day
+  ) {
+    return null;
+  }
+
+  const ss = String(seconds).padStart(2, '0');
+  return `${match[1]}-${match[2]}-${match[3]} ${match[4]}:${match[5]}:${ss}`;
+};
+
+/**
  * Get time components formatted in the configured timezone
  * This is used for generating business codes (folios, claveturno) that should
  * reflect local time

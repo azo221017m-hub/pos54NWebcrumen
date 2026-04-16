@@ -77,6 +77,35 @@ export const extractShortFolio = (folioventa: string): string => {
 };
 
 /**
+ * Formatea una fecha (ISO UTC o Date) como 'YYYY-MM-DDTHH:mm' en la zona horaria de México (UTC-6).
+ * Para uso en <input type="datetime-local" />.
+ */
+export const toDatetimeLocalMexico = (date: Date | string | null | undefined): string => {
+  if (!date) return '';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(d.getTime())) return '';
+
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Etc/GMT+6',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+
+  const parts = formatter.formatToParts(d);
+  const year = parts.find(p => p.type === 'year')?.value ?? '';
+  const month = parts.find(p => p.type === 'month')?.value ?? '';
+  const day = parts.find(p => p.type === 'day')?.value ?? '';
+  const hour = parts.find(p => p.type === 'hour')?.value ?? '';
+  const minute = parts.find(p => p.type === 'minute')?.value ?? '';
+
+  return `${year}-${month}-${day}T${hour}:${minute}`;
+};
+
+/**
  * Debounce para inputs
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

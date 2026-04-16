@@ -12,7 +12,7 @@ import type {
   VentaWebWithDetails,
   FormaDePago
 } from '../types/ventasWeb.types';
-import { getMexicoTimeComponents } from '../utils/dateTime';
+import { getMexicoTimeComponents, normalizeDateTimeForMySQL } from '../utils/dateTime';
 import { websocketService } from '../services/websocket.service';
 
 // Constantes para validación
@@ -432,6 +432,19 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
+    // Validar y normalizar fechaprogramadaentrega si está presente
+    if (ventaData.fechaprogramadaentrega != null) {
+      const normalizedFecha = normalizeDateTimeForMySQL(String(ventaData.fechaprogramadaentrega));
+      if (!normalizedFecha) {
+        res.status(400).json({
+          success: false,
+          message: 'Formato de fechaprogramadaentrega inválido. Use YYYY-MM-DDTHH:mm o YYYY-MM-DD HH:MM:SS'
+        });
+        return;
+      }
+      ventaData.fechaprogramadaentrega = normalizedFecha;
+    }
+
     await connection.beginTransaction();
 
     // Obtener claveturno del turno abierto actual
@@ -727,6 +740,24 @@ export const updateVentaWeb = async (req: AuthRequest, res: Response): Promise<v
         message: 'Solo el negocio puede cancelar pedidos web'
       });
       return;
+    }
+
+    // Validar y normalizar campos de fecha si están presentes
+    const dateFields: Array<'fechaprogramadaentrega' | 'fechapreparacion' | 'fechaenvio' | 'fechaentrega'> =
+      ['fechaprogramadaentrega', 'fechapreparacion', 'fechaenvio', 'fechaentrega'];
+    for (const field of dateFields) {
+      const val = updateData[field];
+      if (val != null) {
+        const normalized = normalizeDateTimeForMySQL(String(val));
+        if (!normalized) {
+          res.status(400).json({
+            success: false,
+            message: `Formato de ${field} inválido. Use YYYY-MM-DDTHH:mm o YYYY-MM-DD HH:MM:SS`
+          });
+          return;
+        }
+        (updateData as Record<string, unknown>)[field] = normalized;
+      }
     }
 
     // Construir query de actualización dinámicamente
