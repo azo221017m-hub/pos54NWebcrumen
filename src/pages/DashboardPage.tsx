@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerSaludNegocio, obtenerTopProductosTurno, type ResumenVentas, type SaludNegocio, type TopProductoTurno } from '../services/ventasWebService';
+import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerSaludNegocio, obtenerTopProductosTurno, type ResumenVentas, type SaludNegocio, type TopProductoTurno, type SaludCategoria } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import jsPDF from 'jspdf';
 import { SessionTimer } from '../components/common/SessionTimer';
@@ -219,6 +219,15 @@ export const DashboardPage = () => {
       fin: ''
     }
   });
+  const [saludCategoria, setSaludCategoria] = useState<SaludCategoria>('FINANCIEROS');
+  const [saludFechaInicio, setSaludFechaInicio] = useState<string>(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+  });
+  const [saludFechaFin, setSaludFechaFin] = useState<string>(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+  });
   const [turnoAbierto, setTurnoAbierto] = useState<Turno | null>(null);
   const [showCierreTurnoModal, setShowCierreTurnoModal] = useState(false);
   const [negocio, setNegocio] = useState<Negocio | null>(null);
@@ -309,14 +318,19 @@ export const DashboardPage = () => {
     }
   }, []);
 
-  const cargarSaludNegocio = useCallback(async () => {
+  const cargarSaludNegocio = useCallback(async (
+    categoria: SaludCategoria = saludCategoria,
+    fechaInicio: string = saludFechaInicio,
+    fechaFin: string = saludFechaFin
+  ) => {
     try {
-      const salud = await obtenerSaludNegocio();
+      const salud = await obtenerSaludNegocio(categoria, fechaInicio, fechaFin);
       setSaludNegocio(salud);
     } catch (error) {
       console.error('Error al cargar salud del negocio:', error);
     }
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [saludCategoria, saludFechaInicio, saludFechaFin]);
 
   const calcularNivelInventario = useCallback(async () => {
     if (!usuario?.idNegocio) return;
@@ -1441,7 +1455,7 @@ export const DashboardPage = () => {
             <div className="cards-grid">
             {privilegio === 5 && (
             <div className="dashboard-card" style={{ position: 'relative' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
                 <div className="card-icon purple">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
@@ -1449,19 +1463,118 @@ export const DashboardPage = () => {
                 </div>
                 <h3 className="card-title" style={{ margin: 0 }}>Salud de mi Negocio</h3>
               </div>
-              
-              {/* Date display in top right */}
-              <div style={{ position: 'absolute', top: '1rem', right: '1rem', fontSize: '0.7rem', color: '#6b7280', fontWeight: '500' }}>
-                {saludNegocio.periodo.mes || (() => {
-                  const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-                  const now = new Date();
-                  return `${meses[now.getMonth()]} ${now.getFullYear()}`;
-                })()}
+
+              {/* Filters: Category listbox + date range */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                {/* Modern Listbox – category selector */}
+                <div style={{ position: 'relative' }}>
+                  <select
+                    value={saludCategoria}
+                    onChange={(e) => {
+                      const cat = e.target.value as SaludCategoria;
+                      setSaludCategoria(cat);
+                      cargarSaludNegocio(cat, saludFechaInicio, saludFechaFin);
+                    }}
+                    style={{
+                      width: '100%',
+                      appearance: 'none',
+                      WebkitAppearance: 'none',
+                      padding: '0.45rem 2rem 0.45rem 0.75rem',
+                      fontSize: '0.72rem',
+                      fontWeight: '600',
+                      color: '#1e3a5f',
+                      backgroundColor: '#eff6ff',
+                      border: '1.5px solid #bfdbfe',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      letterSpacing: '0.04em',
+                      boxShadow: '0 1px 3px rgba(59,130,246,0.08)',
+                      transition: 'border-color 0.2s, box-shadow 0.2s'
+                    }}
+                  >
+                    {(['VENTAS', 'COMPRAS', 'INVENTARIO', 'FINANCIEROS'] as SaludCategoria[]).map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                  {/* Custom chevron icon */}
+                  <svg
+                    viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.5"
+                    style={{ position: 'absolute', right: '0.5rem', top: '50%', transform: 'translateY(-50%)', width: '14px', height: '14px', pointerEvents: 'none' }}
+                  >
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </div>
+
+                {/* Date range pickers */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                    <label style={{ fontSize: '0.58rem', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Fecha inicio
+                    </label>
+                    <input
+                      type="date"
+                      value={saludFechaInicio}
+                      max={saludFechaFin}
+                      onChange={(e) => {
+                        setSaludFechaInicio(e.target.value);
+                        cargarSaludNegocio(saludCategoria, e.target.value, saludFechaFin);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '0.4rem 0.5rem',
+                        fontSize: '0.65rem',
+                        fontWeight: '500',
+                        color: '#374151',
+                        backgroundColor: '#f9fafb',
+                        border: '1.5px solid #e5e7eb',
+                        borderRadius: '8px',
+                        outline: 'none',
+                        cursor: 'pointer',
+                        boxSizing: 'border-box',
+                        transition: 'border-color 0.2s'
+                      }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                    <label style={{ fontSize: '0.58rem', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Fecha fin
+                    </label>
+                    <input
+                      type="date"
+                      value={saludFechaFin}
+                      min={saludFechaInicio}
+                      onChange={(e) => {
+                        setSaludFechaFin(e.target.value);
+                        cargarSaludNegocio(saludCategoria, saludFechaInicio, e.target.value);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '0.4rem 0.5rem',
+                        fontSize: '0.65rem',
+                        fontWeight: '500',
+                        color: '#374151',
+                        backgroundColor: '#f9fafb',
+                        border: '1.5px solid #e5e7eb',
+                        borderRadius: '8px',
+                        outline: 'none',
+                        cursor: 'pointer',
+                        boxSizing: 'border-box',
+                        transition: 'border-color 0.2s'
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Period label */}
+              <div style={{ fontSize: '0.62rem', color: '#6b7280', fontWeight: '500', marginBottom: '0.25rem', textAlign: 'right' }}>
+                {saludNegocio.periodo.mes || ''}
               </div>
               
               {/* New Business Health Metrics */}
               {saludNegocio.ventas > 0 ? (
-                <div style={{ marginTop: '1rem' }}>
+                <div>
                   {/* Main Metrics Grid */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
                     {/* Ventas */}

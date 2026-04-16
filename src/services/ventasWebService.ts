@@ -323,14 +323,26 @@ export interface SaludNegocio {
     inicio: string;
     fin: string;
     mes?: string;
+    categoria?: string;
   };
 }
 
-export const obtenerSaludNegocio = async (): Promise<SaludNegocio> => {
+export type SaludCategoria = 'VENTAS' | 'COMPRAS' | 'INVENTARIO' | 'FINANCIEROS';
+
+export const obtenerSaludNegocio = async (
+  categoria?: SaludCategoria,
+  fechaInicio?: string,
+  fechaFin?: string
+): Promise<SaludNegocio> => {
   try {
     console.log('🔵 ventasWebService: Obteniendo salud del negocio (Métricas financieras)');
+    const params: Record<string, string> = {};
+    if (categoria) params.categoria = categoria;
+    if (fechaInicio) params.fechaInicio = fechaInicio;
+    if (fechaFin) params.fechaFin = fechaFin;
     const response = await apiClient.get<{ success: boolean; data: SaludNegocio }>(
-      `${API_BASE}/dashboard/salud-negocio`
+      `${API_BASE}/dashboard/salud-negocio`,
+      { params }
     );
     console.log('🔵 ventasWebService: Salud del negocio obtenida:', response.data.data);
     return response.data.data;
