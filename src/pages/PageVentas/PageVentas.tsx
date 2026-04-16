@@ -1842,20 +1842,7 @@ const PageVentas: React.FC = () => {
                 <input
                   type="checkbox"
                   checked={imprimirChecked}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setImprimirChecked(checked);
-                    if (parametrosNegocio) {
-                      const updated = { ...parametrosNegocio, impresionComanda: checked ? 1 : 0 };
-                      setParametrosNegocio(updated);
-                      parametrosService.actualizarParametros(parametrosNegocio.idNegocio, updated).catch((err) => {
-                        console.error('Error al actualizar impresionComanda:', err);
-                        setImprimirChecked(!checked);
-                        setParametrosNegocio(parametrosNegocio);
-                        showErrorToast('Error al guardar preferencia de impresión');
-                      });
-                    }
-                  }}
+                  onChange={(e) => setImprimirChecked(e.target.checked)}
                 />
                 Imprimir
               </label>
