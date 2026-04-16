@@ -44,6 +44,7 @@ export interface DatosRecibo {
   // Pago
   formadepago: string;
   importedepago: number;
+  importerecibido?: number;
   referencia?: string | null;
   cambio?: number;
   // Detalle de pagos mixtos
@@ -71,6 +72,7 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
     total,
     formadepago,
     importedepago,
+    importerecibido,
     referencia,
     cambio,
     detallesPagosMixtos,
@@ -124,7 +126,7 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
 
   // Referencia o cambio según forma de pago
   let pagoInfoHtml = `
-    <div class="pago-row"><span>Pago:</span><span>${escapeHtml(formadepago)}</span></div>
+    <div class="pago-row"><span>Pago:</span><span>${importerecibido !== undefined ? fmt(importerecibido) : escapeHtml(formadepago)}</span></div>
     <div class="pago-row"><span>Importe:</span><span>${fmt(importedepago)}</span></div>`;
 
   if (formadepago.toUpperCase() === 'TRANSFERENCIA' && referencia) {
@@ -329,6 +331,7 @@ export function generarTextoWhatsApp(datos: DatosRecibo): string {
     total,
     formadepago,
     importedepago,
+    importerecibido,
     referencia,
     cambio,
     detallesPagosMixtos,
@@ -384,7 +387,7 @@ export function generarTextoWhatsApp(datos: DatosRecibo): string {
   texto += `${padRow('TOTAL', fmt(total))}\n`;
   texto += `\n${linea}\n\n`;
 
-  texto += `Pago: ${formadepago}  ${fmt(importedepago)}\n`;
+  texto += `Pago: ${importerecibido !== undefined ? fmt(importerecibido) : formadepago}  ${fmt(importedepago)}\n`;
   if (formadepago.toUpperCase() === 'TRANSFERENCIA' && referencia) {
     texto += `Referencia: ${referencia}\n`;
   } else if (formadepago.toUpperCase() === 'EFECTIVO' && cambio !== undefined) {

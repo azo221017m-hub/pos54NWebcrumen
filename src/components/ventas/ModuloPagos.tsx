@@ -67,8 +67,9 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   // Ref for the flash timeout to allow cleanup
   const flashTimeoutRef = useRef<number | null>(null);
 
-  // Estado para acción del recibo de pago
-  const [accionRecibo, setAccionRecibo] = useState<'imprimir' | 'whatsapp'>('imprimir');
+  // Estado para acción del recibo de pago (independientes: ambos, uno o ninguno)
+  const [imprimirChecked, setImprimirChecked] = useState(false);
+  const [whatsappChecked, setWhatsappChecked] = useState(false);
 
   // Estado para datos del negocio (para el recibo)
   const [negocioData, setNegocioData] = useState<Negocio | null>(null);
@@ -117,6 +118,14 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     };
     cargarDatosNegocio();
   }, []);
+
+  // Inicializar checkboxes de recibo según parámetros del negocio
+  useEffect(() => {
+    if (parametrosData) {
+      setImprimirChecked(parametrosData.impresionRecibo === 1);
+      setWhatsappChecked(parametrosData.envioWhats === 1);
+    }
+  }, [parametrosData]);
 
   // Set default payment method to mixto if sale has MIXTO payment
   useEffect(() => {
@@ -297,7 +306,8 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     importePago: number,
     referenciaRecibo?: string | null,
     cambioRecibo?: number,
-    detallesPagosMixtos?: DetallePagoRecibo[]
+    detallesPagosMixtos?: DetallePagoRecibo[],
+    importeRecibido?: number
   ) => {
     const fecha = new Date();
     const fechaStr = fecha.toLocaleDateString('es-MX') + ' ' + fecha.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
@@ -325,6 +335,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
       referencia: referenciaRecibo ?? undefined,
       cambio: cambioRecibo,
       detallesPagosMixtos,
+      importerecibido: importeRecibido,
       telefonopedidos: parametrosData?.telefonoPedidos || undefined,
       pie: parametrosData?.pie || undefined,
     };
@@ -389,8 +400,8 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
         const cambio = resultado.data?.cambio || 0;
         
         // Generar recibo según la acción seleccionada
-        const datosRecibo = buildDatosRecibo('EFECTIVO', totalAPagar, null, cambio);
-        if (accionRecibo === 'imprimir') {
+        const datosRecibo = buildDatosRecibo('EFECTIVO', totalAPagar, null, cambio, undefined, parseFloat(montoEfectivo));
+        if (imprimirChecked) {
           imprimirRecibo(datosRecibo);
         }
 
@@ -400,7 +411,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
         onClose();
 
         // Enviar WhatsApp al final, después de asegurar el registro y finalizar el proceso
-        if (accionRecibo === 'whatsapp') {
+        if (whatsappChecked) {
           enviarReciboWhatsApp(datosRecibo);
         }
       } 
@@ -430,7 +441,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
 
         // Generar recibo según la acción seleccionada
         const datosRecibo = buildDatosRecibo('TRANSFERENCIA', totalAPagar, numeroReferencia);
-        if (accionRecibo === 'imprimir') {
+        if (imprimirChecked) {
           imprimirRecibo(datosRecibo);
         }
 
@@ -440,7 +451,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
         onClose();
 
         // Enviar WhatsApp al final, después de asegurar el registro y finalizar el proceso
-        if (accionRecibo === 'whatsapp') {
+        if (whatsappChecked) {
           enviarReciboWhatsApp(datosRecibo);
         }
       }
@@ -521,7 +532,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
           })),
         ];
         const datosRecibo = buildDatosRecibo('MIXTO', totalAPagar, undefined, undefined, todosLosPagos);
-        if (accionRecibo === 'imprimir') {
+        if (imprimirChecked) {
           imprimirRecibo(datosRecibo);
         }
 
@@ -531,7 +542,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
         onClose();
 
         // Enviar WhatsApp al final, después de asegurar el registro y finalizar el proceso
-        if (accionRecibo === 'whatsapp') {
+        if (whatsappChecked) {
           enviarReciboWhatsApp(datosRecibo);
         }
       }
@@ -712,24 +723,24 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
             <div className="pagos-recibo-selector">
               <span className="pagos-recibo-label">Recibo de Pago:</span>
               <div className="pagos-recibo-opciones">
-                <label className={`pagos-recibo-opcion ${accionRecibo === 'imprimir' ? 'activo' : ''}`}>
+                <label className={`pagos-recibo-opcion ${imprimirChecked ? 'activo' : ''} ${parametrosData && parametrosData.impresionRecibo === 0 ? 'deshabilitado' : ''}`}>
                   <input
-                    type="radio"
-                    name="accionRecibo"
-                    value="imprimir"
-                    checked={accionRecibo === 'imprimir'}
-                    onChange={() => setAccionRecibo('imprimir')}
+                    type="checkbox"
+                    name="imprimirRecibo"
+                    checked={imprimirChecked}
+                    disabled={parametrosData !== null && parametrosData.impresionRecibo === 0}
+                    onChange={(e) => setImprimirChecked(e.target.checked)}
                   />
                   <span className="pagos-recibo-icono">🖨️</span>
                   <span>Imprimir</span>
                 </label>
-                <label className={`pagos-recibo-opcion ${accionRecibo === 'whatsapp' ? 'activo' : ''}`}>
+                <label className={`pagos-recibo-opcion ${whatsappChecked ? 'activo' : ''} ${parametrosData && parametrosData.envioWhats === 0 ? 'deshabilitado' : ''}`}>
                   <input
-                    type="radio"
-                    name="accionRecibo"
-                    value="whatsapp"
-                    checked={accionRecibo === 'whatsapp'}
-                    onChange={() => setAccionRecibo('whatsapp')}
+                    type="checkbox"
+                    name="enviarWhatsApp"
+                    checked={whatsappChecked}
+                    disabled={parametrosData !== null && parametrosData.envioWhats === 0}
+                    onChange={(e) => setWhatsappChecked(e.target.checked)}
                   />
                   <span className="pagos-recibo-icono">💬</span>
                   <span>Enviar WhatsApp</span>

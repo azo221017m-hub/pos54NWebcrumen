@@ -293,7 +293,8 @@
   user-select: none;
 }
 
-.pagos-recibo-opcion input[type="radio"] {
+.pagos-recibo-opcion input[type="radio"],
+.pagos-recibo-opcion input[type="checkbox"] {
   display: none;
 }
 
@@ -312,6 +313,12 @@
 .pagos-recibo-opcion:hover:not(.activo) {
   border-color: #90caf9;
   background: #f0f7ff;
+}
+
+.pagos-recibo-opcion.deshabilitado {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* Lista de pagos realizados */
