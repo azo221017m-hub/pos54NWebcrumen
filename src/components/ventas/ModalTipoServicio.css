@@ -254,6 +254,79 @@ select.form-control {
   background: #2980b9;
 }
 
+/* Read-only field style */
+.form-control-readonly {
+  background: #f4f6f8;
+  color: #7f8c8d;
+  cursor: not-allowed;
+  border-color: #dce1e7;
+}
+
+.form-control-readonly:focus {
+  border-color: #dce1e7;
+  box-shadow: none;
+}
+
+/* Input with search icon wrapper */
+.input-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-search-wrapper .form-control {
+  padding-right: 2.2rem;
+}
+
+.search-spinner-icon {
+  position: absolute;
+  right: 0.75rem;
+  color: #3498db;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Client info label shown after a successful phone lookup */
+.cliente-lookup-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  background: #eafaf1;
+  border: 1px solid #27ae60;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.cliente-lookup-nombre {
+  font-weight: 700;
+  color: #1e8449;
+}
+
+.cliente-lookup-cumple {
+  color: #e67e22;
+}
+
+.cliente-lookup-puntos {
+  color: #2980b9;
+  font-weight: 600;
+}
+
+/* Error message below phone input when no client found */
+.campo-error-msg {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  color: #e74c3c;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .modal-content-servicio {

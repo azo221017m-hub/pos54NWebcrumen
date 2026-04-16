@@ -1,21 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Save } from 'lucide-react';
+import { X, Save, Search } from 'lucide-react';
 import { obtenerMesas, cambiarEstatusMesa } from '../../services/mesasService';
-import { obtenerClientes } from '../../services/clientesService';
+import { buscarClientesPorTelefono } from '../../services/clientesService';
 import { verificarMesasOcupadas } from '../../services/ventasWebService';
 import type { Mesa, TipoServicio } from '../../types/mesa.types';
-import type { Cliente } from '../../types/cliente.types';
 import './ModalTipoServicio.css';
 
 export interface MesaFormData {
   idmesa: number | null;
   nombremesa: string;
+  telefonocontacto?: string;
 }
 
 export interface LlevarFormData {
   cliente: string;
   idcliente: number | null;
   fechaprogramadaventa: string;
+  telefonocontacto?: string;
 }
 
 export interface DomicilioFormData {
@@ -34,6 +35,15 @@ export interface ClientePreData {
   telefono: string;
 }
 
+interface ClienteInfo {
+  idCliente: number;
+  referencia: string | null;
+  cumple: Date | string | null;
+  puntosfidelidad: number;
+  direccion: string | null;
+  telefono: string | null;
+}
+
 interface ModalTipoServicioProps {
   tipoServicio: TipoServicio;
   isOpen: boolean;
@@ -43,16 +53,17 @@ interface ModalTipoServicioProps {
   clienteData?: ClientePreData;
 }
 
-// Initial form states
 const INITIAL_MESA_DATA: MesaFormData = {
   idmesa: null,
-  nombremesa: ''
+  nombremesa: '',
+  telefonocontacto: ''
 };
 
 const INITIAL_LLEVAR_DATA: LlevarFormData = {
   cliente: '',
   idcliente: null,
-  fechaprogramadaventa: ''
+  fechaprogramadaventa: '',
+  telefonocontacto: ''
 };
 
 const INITIAL_DOMICILIO_DATA: DomicilioFormData = {
@@ -74,49 +85,49 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
   clienteData
 }) => {
   const [mesas, setMesas] = useState<Mesa[]>([]);
-  const [clientes, setClientes] = useState<Cliente[]>([]);
   const [previousMesaId, setPreviousMesaId] = useState<number | null>(null);
 
-  // Ref for client name input focus
-  const clienteInputRef = useRef<HTMLInputElement>(null);
-
-  // Form data states
   const [mesaFormData, setMesaFormData] = useState<MesaFormData>(INITIAL_MESA_DATA);
   const [llevarFormData, setLlevarFormData] = useState<LlevarFormData>(INITIAL_LLEVAR_DATA);
   const [domicilioFormData, setDomicilioFormData] = useState<DomicilioFormData>(INITIAL_DOMICILIO_DATA);
 
+  // Cliente lookup states – DOMICILIO
+  const [domicilioClienteInfo, setDomicilioClienteInfo] = useState<ClienteInfo | null>(null);
+  const [domicilioSearching, setDomicilioSearching] = useState(false);
+  const [domicilioClienteEncontrado, setDomicilioClienteEncontrado] = useState<boolean | null>(null);
+  const domicilioSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cliente lookup states – LLEVAR
+  const [llevarClienteInfo, setLlevarClienteInfo] = useState<ClienteInfo | null>(null);
+  const [llevarSearching, setLlevarSearching] = useState(false);
+  const llevarSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cliente lookup states – MESA
+  const [mesaClienteInfo, setMesaClienteInfo] = useState<ClienteInfo | null>(null);
+  const [mesaSearching, setMesaSearching] = useState(false);
+  const mesaSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const telefonoInputRef = useRef<HTMLInputElement>(null);
+
   const cargarMesas = async () => {
     try {
       const data = await obtenerMesas();
-      
-      // Optimize: Get occupation status for all mesas in a single call
       const mesasInfo = data.map(m => ({ idmesa: m.idmesa, nombremesa: m.nombremesa }));
       const mesasOcupadasMap = await verificarMesasOcupadas(mesasInfo);
-      
-      // Get usuario for status updates
       const usuarioData = localStorage.getItem('usuario');
       if (!usuarioData) {
         console.warn('⚠️ Usuario no encontrado en localStorage. No se podrán actualizar estados de mesas.');
       }
       const usuario = usuarioData ? JSON.parse(usuarioData) : null;
-      
-      // Validate each mesa and update its status if necessary
       const mesasValidadas = await Promise.all(
         data.map(async (mesa) => {
-          // Check if mesa has ordenado sales
           const tieneVentaOrdenada = mesasOcupadasMap.get(mesa.nombremesa) || false;
-          
-          // If mesa has ordenado sales, it should be OCUPADA
-          // If mesa doesn't have ordenado sales, it should be DISPONIBLE
           const estatusEsperado: 'OCUPADA' | 'DISPONIBLE' = tieneVentaOrdenada ? 'OCUPADA' : 'DISPONIBLE';
-          
-          // If current status doesn't match expected status, update it
           if (mesa.estatusmesa !== estatusEsperado) {
             try {
               if (usuario) {
                 await cambiarEstatusMesa(mesa.idmesa, estatusEsperado, usuario.alias || usuario.nombre);
                 console.log(`Mesa ${mesa.nombremesa} actualizada a ${estatusEsperado}`);
-                // Return mesa with updated status
                 return { ...mesa, estatusmesa: estatusEsperado };
               } else {
                 console.warn(`⚠️ No se pudo actualizar el estatus de la mesa ${mesa.nombremesa} porque no hay usuario autenticado.`);
@@ -125,12 +136,9 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
               console.error(`Error al actualizar estatus de mesa ${mesa.nombremesa}:`, error);
             }
           }
-          
           return mesa;
         })
       );
-      
-      // Filtrar solo mesas disponibles
       const mesasDisponibles = mesasValidadas.filter(m => m.estatusmesa === 'DISPONIBLE');
       setMesas(mesasDisponibles);
     } catch (error) {
@@ -138,16 +146,6 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     }
   };
 
-  const cargarClientes = async () => {
-    try {
-      const data = await obtenerClientes();
-      setClientes(data);
-    } catch (error) {
-      console.error('Error al cargar clientes:', error);
-    }
-  };
-
-  // Helper function to get current datetime in local timezone for datetime-local input
   const getCurrentDateTime = (): string => {
     const now = new Date();
     const year = now.getFullYear();
@@ -158,6 +156,18 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
+  const formatCumple = (cumple: Date | string | null): string => {
+    if (!cumple) return '';
+    try {
+      const d = new Date(cumple);
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${day}/${month}`;
+    } catch {
+      return String(cumple);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       if (tipoServicio === 'Mesa') {
@@ -165,51 +175,186 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
         if (initialData && 'idmesa' in initialData) {
           setMesaFormData(initialData as MesaFormData);
           setPreviousMesaId(initialData.idmesa);
+        } else {
+          setMesaFormData(INITIAL_MESA_DATA);
         }
-      } else {
-        cargarClientes();
-        
-        if (tipoServicio === 'Llevar') {
-          if (initialData && 'fechaprogramadaventa' in initialData && !('direcciondeentrega' in initialData)) {
-            setLlevarFormData(initialData as LlevarFormData);
-          } else {
-            // Pre-fill with client data if available, otherwise default date/time
-            setLlevarFormData({
-              cliente: clienteData?.nombre || '',
-              idcliente: clienteData?.idcliente ?? null,
-              fechaprogramadaventa: getCurrentDateTime()
-            });
-          }
-        } else if (tipoServicio === 'Domicilio') {
-          if (initialData && 'direcciondeentrega' in initialData) {
-            setDomicilioFormData(initialData as DomicilioFormData);
-          } else {
-            // Pre-fill with client data if available, otherwise set default date/time
-            setDomicilioFormData({
-              cliente: clienteData?.nombre || '',
-              idcliente: clienteData?.idcliente ?? null,
-              fechaprogramadaventa: getCurrentDateTime(),
-              direcciondeentrega: '',
-              telefonodeentrega: clienteData?.telefono || '',
-              contactodeentrega: clienteData?.nombre || '',
-              observaciones: ''
-            });
-          }
+        setMesaClienteInfo(null);
+      } else if (tipoServicio === 'Llevar') {
+        if (initialData && 'fechaprogramadaventa' in initialData && !('direcciondeentrega' in initialData)) {
+          setLlevarFormData(initialData as LlevarFormData);
+        } else {
+          setLlevarFormData({
+            cliente: clienteData?.nombre || '',
+            idcliente: clienteData?.idcliente ?? null,
+            fechaprogramadaventa: getCurrentDateTime(),
+            telefonocontacto: ''
+          });
         }
+        setLlevarClienteInfo(null);
+      } else if (tipoServicio === 'Domicilio') {
+        if (initialData && 'direcciondeentrega' in initialData) {
+          setDomicilioFormData(initialData as DomicilioFormData);
+          if ((initialData as DomicilioFormData).cliente) {
+            setDomicilioClienteEncontrado(true);
+          } else {
+            setDomicilioClienteEncontrado(null);
+          }
+        } else {
+          setDomicilioFormData({
+            cliente: clienteData?.nombre || '',
+            idcliente: clienteData?.idcliente ?? null,
+            fechaprogramadaventa: getCurrentDateTime(),
+            direcciondeentrega: '',
+            telefonodeentrega: clienteData?.telefono || '',
+            contactodeentrega: clienteData?.nombre || '',
+            observaciones: ''
+          });
+          setDomicilioClienteEncontrado(clienteData?.nombre ? true : null);
+        }
+        setDomicilioClienteInfo(null);
       }
     }
   }, [isOpen, tipoServicio, initialData, clienteData]);
 
-  // Focus the client name input when Llevar is selected and modal is open
   useEffect(() => {
-    if (isOpen && tipoServicio === 'Llevar') {
-      // Use setTimeout to ensure the input is rendered before focusing
+    if (isOpen && (tipoServicio === 'Domicilio' || tipoServicio === 'Llevar' || tipoServicio === 'Mesa')) {
       const timer = setTimeout(() => {
-        clienteInputRef.current?.focus();
+        telefonoInputRef.current?.focus();
       }, 100);
       return () => clearTimeout(timer);
     }
   }, [isOpen, tipoServicio]);
+
+  const handleDomicilioTelefonoChange = (value: string) => {
+    setDomicilioClienteEncontrado(null);
+    setDomicilioClienteInfo(null);
+    setDomicilioFormData(prev => ({
+      ...prev,
+      telefonodeentrega: value,
+      cliente: '',
+      idcliente: null,
+      direcciondeentrega: ''
+    }));
+
+    if (domicilioSearchTimer.current) clearTimeout(domicilioSearchTimer.current);
+
+    if (!value.trim()) {
+      setDomicilioSearching(false);
+      return;
+    }
+
+    setDomicilioSearching(true);
+    domicilioSearchTimer.current = setTimeout(async () => {
+      try {
+        const resultados = await buscarClientesPorTelefono(value.trim());
+        if (resultados.length > 0) {
+          const c = resultados[0];
+          setDomicilioClienteInfo({
+            idCliente: c.idCliente,
+            referencia: c.referencia ?? null,
+            cumple: c.cumple ?? null,
+            puntosfidelidad: c.puntosfidelidad ?? 0,
+            direccion: c.direccion ?? null,
+            telefono: c.telefono ?? null
+          });
+          setDomicilioFormData(prev => ({
+            ...prev,
+            cliente: c.referencia || c.nombre || '',
+            idcliente: c.idCliente,
+            direcciondeentrega: c.direccion || ''
+          }));
+          setDomicilioClienteEncontrado(true);
+        } else {
+          setDomicilioClienteInfo(null);
+          setDomicilioClienteEncontrado(false);
+        }
+      } catch {
+        setDomicilioClienteInfo(null);
+        setDomicilioClienteEncontrado(false);
+      } finally {
+        setDomicilioSearching(false);
+      }
+    }, 500);
+  };
+
+  const handleLlevarTelefonoChange = (value: string) => {
+    setLlevarFormData(prev => ({ ...prev, telefonocontacto: value, cliente: '', idcliente: null }));
+    setLlevarClienteInfo(null);
+
+    if (llevarSearchTimer.current) clearTimeout(llevarSearchTimer.current);
+
+    if (!value.trim()) {
+      setLlevarSearching(false);
+      return;
+    }
+
+    setLlevarSearching(true);
+    llevarSearchTimer.current = setTimeout(async () => {
+      try {
+        const resultados = await buscarClientesPorTelefono(value.trim());
+        if (resultados.length > 0) {
+          const c = resultados[0];
+          setLlevarClienteInfo({
+            idCliente: c.idCliente,
+            referencia: c.referencia ?? null,
+            cumple: c.cumple ?? null,
+            puntosfidelidad: c.puntosfidelidad ?? 0,
+            direccion: c.direccion ?? null,
+            telefono: c.telefono ?? null
+          });
+          setLlevarFormData(prev => ({
+            ...prev,
+            cliente: c.referencia || c.nombre || 'mostrador',
+            idcliente: c.idCliente
+          }));
+        } else {
+          setLlevarClienteInfo(null);
+          setLlevarFormData(prev => ({ ...prev, cliente: 'mostrador', idcliente: null }));
+        }
+      } catch {
+        setLlevarClienteInfo(null);
+        setLlevarFormData(prev => ({ ...prev, cliente: 'mostrador', idcliente: null }));
+      } finally {
+        setLlevarSearching(false);
+      }
+    }, 500);
+  };
+
+  const handleMesaTelefonoChange = (value: string) => {
+    setMesaFormData(prev => ({ ...prev, telefonocontacto: value }));
+    setMesaClienteInfo(null);
+
+    if (mesaSearchTimer.current) clearTimeout(mesaSearchTimer.current);
+
+    if (!value.trim()) {
+      setMesaSearching(false);
+      return;
+    }
+
+    setMesaSearching(true);
+    mesaSearchTimer.current = setTimeout(async () => {
+      try {
+        const resultados = await buscarClientesPorTelefono(value.trim());
+        if (resultados.length > 0) {
+          const c = resultados[0];
+          setMesaClienteInfo({
+            idCliente: c.idCliente,
+            referencia: c.referencia ?? null,
+            cumple: c.cumple ?? null,
+            puntosfidelidad: c.puntosfidelidad ?? 0,
+            direccion: c.direccion ?? null,
+            telefono: c.telefono ?? null
+          });
+        } else {
+          setMesaClienteInfo(null);
+        }
+      } catch {
+        setMesaClienteInfo(null);
+      } finally {
+        setMesaSearching(false);
+      }
+    }, 500);
+  };
 
   const handleSave = async () => {
     if (tipoServicio === 'Mesa') {
@@ -217,19 +362,14 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
         alert('Por favor seleccione una mesa');
         return;
       }
-      
       try {
-        // Get usuario from localStorage
         const usuarioData = localStorage.getItem('usuario');
         if (!usuarioData) {
           alert('Error: Usuario no autenticado');
           return;
         }
         const usuario = JSON.parse(usuarioData);
-        
-        // Update mesa status to OCUPADA
         await cambiarEstatusMesa(mesaFormData.idmesa, 'OCUPADA', usuario.alias || usuario.nombre);
-        
         onSave(mesaFormData);
       } catch (error) {
         console.error('Error al actualizar estatus de mesa:', error);
@@ -240,37 +380,28 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
         alert('Por favor seleccione la fecha y hora de entrega');
         return;
       }
-      // If cliente is empty, default to 'mostrador'
       const clienteNombre = llevarFormData.cliente.trim() || 'mostrador';
-      onSave({
-        ...llevarFormData,
-        cliente: clienteNombre
-      });
+      onSave({ ...llevarFormData, cliente: clienteNombre });
     } else if (tipoServicio === 'Domicilio') {
+      if (!domicilioFormData.telefonodeentrega.trim()) {
+        alert('Por favor ingrese el teléfono del cliente');
+        return;
+      }
+      if (domicilioClienteEncontrado !== true) {
+        alert('No se encontró cliente con ese número de teléfono. Regístrelo primero en el módulo de Clientes.');
+        return;
+      }
       if (!domicilioFormData.fechaprogramadaventa) {
         alert('Por favor seleccione la fecha y hora de entrega');
         return;
       }
-      if (!domicilioFormData.direcciondeentrega.trim()) {
-        alert('Por favor ingrese la dirección de entrega');
-        return;
-      }
-      if (!domicilioFormData.telefonodeentrega.trim()) {
-        alert('Por favor ingrese el teléfono de contacto');
-        return;
-      }
-      // If cliente is empty, default to 'mostrador'
       const clienteNombre = domicilioFormData.cliente.trim() || 'mostrador';
-      onSave({
-        ...domicilioFormData,
-        cliente: clienteNombre
-      });
+      onSave({ ...domicilioFormData, cliente: clienteNombre });
     }
   };
 
   const handleCancel = async () => {
     try {
-      // If canceling a Mesa service and there was a previously selected mesa, set it back to DISPONIBLE
       if (tipoServicio === 'Mesa' && previousMesaId) {
         const usuarioData = localStorage.getItem('usuario');
         if (usuarioData) {
@@ -281,11 +412,13 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     } catch (error) {
       console.error('Error al actualizar estatus de mesa:', error);
     }
-    
-    // Reset all forms to initial state
     setMesaFormData(INITIAL_MESA_DATA);
     setLlevarFormData(INITIAL_LLEVAR_DATA);
     setDomicilioFormData(INITIAL_DOMICILIO_DATA);
+    setDomicilioClienteInfo(null);
+    setDomicilioClienteEncontrado(null);
+    setLlevarClienteInfo(null);
+    setMesaClienteInfo(null);
     setPreviousMesaId(null);
     onClose();
   };
@@ -303,67 +436,107 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
         </div>
 
         <div className="modal-body-servicio">
+          {/* ── MESA ── */}
           {tipoServicio === 'Mesa' && (
-            <div className="form-group">
-              <label htmlFor="mesa">Seleccionar Mesa *</label>
-              <select
-                id="mesa"
-                className="form-control"
-                value={mesaFormData.idmesa || ''}
-                onChange={(e) => {
-                  const selectedMesa = mesas.find(m => m.idmesa === Number(e.target.value));
-                  setMesaFormData({
-                    idmesa: Number(e.target.value),
-                    nombremesa: selectedMesa?.nombremesa || ''
-                  });
-                }}
-              >
-                <option value="">Seleccione una mesa</option>
-                {mesas.map((mesa) => (
-                  <option key={mesa.idmesa} value={mesa.idmesa}>
-                    {mesa.numeromesa} {mesa.nombremesa}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {tipoServicio === 'Llevar' && (
             <>
               <div className="form-group">
-                <label htmlFor="cliente">Nombre del Cliente *</label>
-                <input
-                  ref={clienteInputRef}
-                  type="text"
-                  id="cliente"
+                <label htmlFor="mesa">Seleccionar Mesa *</label>
+                <select
+                  id="mesa"
                   className="form-control"
-                  list="clientes-list-llevar"
-                  value={llevarFormData.cliente}
+                  value={mesaFormData.idmesa || ''}
                   onChange={(e) => {
-                    const inputValue = e.target.value;
-                    const selectedCliente = clientes.find(c => c.nombre === inputValue);
-                    setLlevarFormData(prev => ({
+                    const selectedMesa = mesas.find(m => m.idmesa === Number(e.target.value));
+                    setMesaFormData(prev => ({
                       ...prev,
-                      cliente: inputValue,
-                      idcliente: selectedCliente?.idCliente || null
+                      idmesa: Number(e.target.value),
+                      nombremesa: selectedMesa?.nombremesa || ''
                     }));
                   }}
-                  placeholder="Escriba o seleccione un cliente"
-                />
-                <datalist id="clientes-list-llevar">
-                  {clientes.map((cliente) => (
-                    <option key={cliente.idCliente} value={cliente.nombre}>
-                      {cliente.telefono || ''}
+                >
+                  <option value="">Seleccione una mesa</option>
+                  {mesas.map((mesa) => (
+                    <option key={mesa.idmesa} value={mesa.idmesa}>
+                      {mesa.numeromesa} {mesa.nombremesa}
                     </option>
                   ))}
-                </datalist>
+                </select>
               </div>
 
               <div className="form-group">
-                <label htmlFor="fechaprogramada">Fecha y Hora de Entrega *</label>
+                <label htmlFor="telefono-mesa">Teléfono Contacto</label>
+                <div className="input-search-wrapper">
+                  <input
+                    ref={telefonoInputRef}
+                    type="tel"
+                    id="telefono-mesa"
+                    className="form-control"
+                    value={mesaFormData.telefonocontacto || ''}
+                    onChange={(e) => handleMesaTelefonoChange(e.target.value)}
+                    placeholder="Buscar cliente por teléfono"
+                  />
+                  {mesaSearching && <Search size={16} className="search-spinner-icon" />}
+                </div>
+              </div>
+
+              {mesaClienteInfo && (
+                <div className="cliente-lookup-info">
+                  <span className="cliente-lookup-nombre">{mesaClienteInfo.referencia || 'mostrador'}</span>
+                  {mesaClienteInfo.cumple && (
+                    <span className="cliente-lookup-cumple">🎂 {formatCumple(mesaClienteInfo.cumple)}</span>
+                  )}
+                  <span className="cliente-lookup-puntos">⭐ {mesaClienteInfo.puntosfidelidad} pts</span>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ── LLEVAR ── */}
+          {tipoServicio === 'Llevar' && (
+            <>
+              <div className="form-group">
+                <label htmlFor="telefono-llevar">Teléfono Contacto</label>
+                <div className="input-search-wrapper">
+                  <input
+                    ref={telefonoInputRef}
+                    type="tel"
+                    id="telefono-llevar"
+                    className="form-control"
+                    value={llevarFormData.telefonocontacto || ''}
+                    onChange={(e) => handleLlevarTelefonoChange(e.target.value)}
+                    placeholder="Buscar cliente por teléfono"
+                  />
+                  {llevarSearching && <Search size={16} className="search-spinner-icon" />}
+                </div>
+              </div>
+
+              {llevarClienteInfo && (
+                <div className="cliente-lookup-info">
+                  <span className="cliente-lookup-nombre">{llevarClienteInfo.referencia || 'mostrador'}</span>
+                  {llevarClienteInfo.cumple && (
+                    <span className="cliente-lookup-cumple">🎂 {formatCumple(llevarClienteInfo.cumple)}</span>
+                  )}
+                  <span className="cliente-lookup-puntos">⭐ {llevarClienteInfo.puntosfidelidad} pts</span>
+                </div>
+              )}
+
+              <div className="form-group">
+                <label htmlFor="cliente-llevar">Nombre del Cliente (auto)</label>
+                <input
+                  type="text"
+                  id="cliente-llevar"
+                  className="form-control form-control-readonly"
+                  value={llevarFormData.cliente}
+                  readOnly
+                  placeholder="Se completa al buscar por teléfono"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="fechaprogramada-llevar">Fecha y Hora de Entrega *</label>
                 <input
                   type="datetime-local"
-                  id="fechaprogramada"
+                  id="fechaprogramada-llevar"
                   className="form-control"
                   value={llevarFormData.fechaprogramadaventa}
                   onChange={(e) => setLlevarFormData(prev => ({ ...prev, fechaprogramadaventa: e.target.value }))}
@@ -372,54 +545,38 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
             </>
           )}
 
+          {/* ── DOMICILIO ── */}
           {tipoServicio === 'Domicilio' && (
             <>
+              {/* 1. Teléfono del cliente – EDITABLE – PRIMER CAMPO */}
               <div className="form-group">
-                <label htmlFor="cliente-domicilio">Nombre del Cliente *</label>
-                <input
-                  type="text"
-                  id="cliente-domicilio"
-                  className="form-control"
-                  list="clientes-list-domicilio"
-                  value={domicilioFormData.cliente}
-                  onChange={(e) => {
-                    const inputValue = e.target.value;
-                    const selectedCliente = clientes.find(c => c.nombre === inputValue);
-                    
-                    if (selectedCliente) {
-                      // Auto-fill fields when a client is selected
-                      setDomicilioFormData(prev => ({
-                        ...prev,
-                        cliente: inputValue,
-                        idcliente: selectedCliente.idCliente,
-                        direcciondeentrega: selectedCliente.direccion || '',
-                        telefonodeentrega: selectedCliente.telefono || '',
-                        contactodeentrega: selectedCliente.referencia || ''
-                      }));
-                    } else {
-                      // Clear auto-filled fields when switching to a new client
-                      setDomicilioFormData(prev => ({
-                        ...prev,
-                        cliente: inputValue,
-                        idcliente: null,
-                        // Only clear fields if they were previously auto-filled (idcliente was set)
-                        direcciondeentrega: prev.idcliente ? '' : prev.direcciondeentrega,
-                        telefonodeentrega: prev.idcliente ? '' : prev.telefonodeentrega,
-                        contactodeentrega: prev.idcliente ? '' : prev.contactodeentrega
-                      }));
-                    }
-                  }}
-                  placeholder="Escriba o seleccione un cliente"
-                />
-                <datalist id="clientes-list-domicilio">
-                  {clientes.map((cliente) => (
-                    <option key={cliente.idCliente} value={cliente.nombre}>
-                      {cliente.telefono || ''}
-                    </option>
-                  ))}
-                </datalist>
+                <label htmlFor="telefono-domicilio">Teléfono del Cliente *</label>
+                <div className="input-search-wrapper">
+                  <input
+                    ref={telefonoInputRef}
+                    type="tel"
+                    id="telefono-domicilio"
+                    className="form-control"
+                    value={domicilioFormData.telefonodeentrega}
+                    onChange={(e) => handleDomicilioTelefonoChange(e.target.value)}
+                    placeholder="Ingrese el teléfono para buscar cliente"
+                  />
+                  {domicilioSearching && <Search size={16} className="search-spinner-icon" />}
+                </div>
+                {domicilioClienteEncontrado === false && domicilioFormData.telefonodeentrega.trim() !== '' && (
+                  <span className="campo-error-msg">
+                    ⚠ No se encontró cliente con ese teléfono. Regístrelo primero en el módulo de Clientes.
+                  </span>
+                )}
+                {domicilioClienteEncontrado === true && domicilioClienteInfo && (
+                  <div className="cliente-lookup-info">
+                    <span className="cliente-lookup-nombre">{domicilioClienteInfo.referencia || domicilioFormData.cliente}</span>
+                    <span className="cliente-lookup-puntos">⭐ {domicilioClienteInfo.puntosfidelidad} pts</span>
+                  </div>
+                )}
               </div>
 
+              {/* 2. Fecha y hora de entrega – EDITABLE */}
               <div className="form-group">
                 <label htmlFor="fechaprogramada-domicilio">Fecha y Hora de Entrega *</label>
                 <input
@@ -431,35 +588,37 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                 />
               </div>
 
+              {/* 3. Dirección de entrega – READ-ONLY */}
               <div className="form-group">
-                <label htmlFor="direccion">Dirección de Entrega *</label>
+                <label htmlFor="direccion-domicilio">Dirección de Entrega</label>
                 <input
                   type="text"
-                  id="direccion"
-                  className="form-control"
+                  id="direccion-domicilio"
+                  className="form-control form-control-readonly"
                   value={domicilioFormData.direcciondeentrega}
-                  onChange={(e) => setDomicilioFormData(prev => ({ ...prev, direcciondeentrega: e.target.value }))}
-                  placeholder="Calle, número, colonia"
+                  readOnly
+                  placeholder="Se completa al encontrar cliente por teléfono"
                 />
               </div>
 
+              {/* 4. Nombre del cliente – READ-ONLY – en la posición antigua del teléfono */}
               <div className="form-group">
-                <label htmlFor="telefono">Teléfono de Contacto *</label>
-                <input
-                  type="tel"
-                  id="telefono"
-                  className="form-control"
-                  value={domicilioFormData.telefonodeentrega}
-                  onChange={(e) => setDomicilioFormData(prev => ({ ...prev, telefonodeentrega: e.target.value }))}
-                  placeholder="Número de teléfono"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="contacto">Referencia del Cliente</label>
+                <label htmlFor="cliente-domicilio">Nombre del Cliente</label>
                 <input
                   type="text"
-                  id="contacto"
+                  id="cliente-domicilio"
+                  className="form-control form-control-readonly"
+                  value={domicilioFormData.cliente}
+                  readOnly
+                  placeholder="Se completa al encontrar cliente por teléfono"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="contacto-domicilio">Referencia del Cliente</label>
+                <input
+                  type="text"
+                  id="contacto-domicilio"
                   className="form-control"
                   value={domicilioFormData.contactodeentrega}
                   onChange={(e) => setDomicilioFormData(prev => ({ ...prev, contactodeentrega: e.target.value }))}
@@ -468,9 +627,9 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
               </div>
 
               <div className="form-group">
-                <label htmlFor="observaciones">Nota Adicional del Pedido</label>
+                <label htmlFor="observaciones-domicilio">Nota Adicional del Pedido</label>
                 <textarea
-                  id="observaciones"
+                  id="observaciones-domicilio"
                   className="form-control"
                   value={domicilioFormData.observaciones}
                   onChange={(e) => setDomicilioFormData(prev => ({ ...prev, observaciones: e.target.value }))}

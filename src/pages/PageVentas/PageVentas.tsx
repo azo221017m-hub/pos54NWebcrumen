@@ -741,9 +741,11 @@ const PageVentas: React.FC = () => {
       
       if (tipoServicio === 'Mesa' && mesaData) {
         cliente = `Mesa: ${mesaData.nombremesa}`;
+        telefonodeentrega = mesaData.telefonocontacto || null;
       } else if (tipoServicio === 'Llevar' && llevarData) {
         cliente = llevarData.cliente;
         fechaprogramadaentrega = llevarData.fechaprogramadaventa;
+        telefonodeentrega = llevarData.telefonocontacto || null;
       } else if (tipoServicio === 'Domicilio' && domicilioData) {
         cliente = domicilioData.cliente;
         fechaprogramadaentrega = domicilioData.fechaprogramadaventa;

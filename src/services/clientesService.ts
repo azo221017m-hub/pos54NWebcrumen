@@ -47,6 +47,21 @@ export const actualizarCliente = async (idCliente: number, cliente: ClienteUpdat
   return response.data;
 };
 
+// Buscar clientes por teléfono (búsqueda parcial, limitado al negocio autenticado)
+export const buscarClientesPorTelefono = async (telefono: string): Promise<Cliente[]> => {
+  try {
+    if (!telefono || telefono.trim().length === 0) return [];
+    const response = await apiClient.get<Cliente[]>(`${API_BASE}/buscar-por-telefono`, {
+      params: { telefono: telefono.trim() }
+    });
+    if (Array.isArray(response.data)) return response.data;
+    return [];
+  } catch (error) {
+    console.error('clientesService - Error al buscar clientes por teléfono:', error);
+    return [];
+  }
+};
+
 // Eliminar un cliente
 export const eliminarCliente = async (idCliente: number): Promise<number> => {
   await apiClient.delete(`${API_BASE}/${idCliente}`);
