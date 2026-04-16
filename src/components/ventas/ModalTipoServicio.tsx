@@ -521,7 +521,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
               )}
 
               <div className="form-group">
-                <label htmlFor="cliente-llevar">Nombre del Cliente</label>
+                <label htmlFor="cliente-llevar">Nombre del Cliente (auto)</label>
                 <input
                   type="text"
                   id="cliente-llevar"

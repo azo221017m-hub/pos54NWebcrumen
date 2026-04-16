@@ -8,11 +8,13 @@ import {
   buscarClientesPorTelefono
 } from '../controllers/clientes.controller';
 import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
+import { apiLimiter } from '../middlewares/rateLimit';
 
 const router = Router();
 
 // Aplicar middleware de autenticación a todas las rutas
 router.use(authMiddleware);
+router.use(apiLimiter);
 
 // Rutas CRUD
 router.get('/buscar-por-telefono', buscarClientesPorTelefono);
