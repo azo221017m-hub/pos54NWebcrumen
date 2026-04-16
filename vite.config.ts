@@ -42,8 +42,8 @@ export default defineConfig({
         globIgnores: ['**/agradecimientocdt.png'], // Exclude large image (2.49 MB) from precache; served on demand
         // Exclude API endpoints from caching to always fetch fresh data
         navigateFallbackDenylist: [/^\/api/],
-        // Activar el nuevo SW inmediatamente sin esperar a que el usuario confirme
-        skipWaiting: true,
+        // NO activar automáticamente: esperar a que el usuario confirme la actualización
+        skipWaiting: false,
         clientsClaim: true, // Tomar control de las páginas abiertas después de activarse
         // Limpiar caches antiguos automáticamente
         cleanupOutdatedCaches: true,

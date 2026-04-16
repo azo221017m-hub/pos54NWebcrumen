@@ -153,10 +153,69 @@ const corsOptions = {
 app.use(helmet()); // Seguridad
 app.use(cors(corsOptions)); // CORS configurado
 
+// Token personalizado: fecha en formato CLF con zona horaria local configurada
+// Esto corrige el comportamiento de Morgan que por defecto muestra +0000 (UTC)
+// aun cuando process.env.TZ está configurado dentro del proceso vía dotenv.
+morgan.token('date-clf-local', () => {
+  const tz = process.env.TZ || 'America/Mexico_City';
+  const now = new Date();
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  const partsDate = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).formatToParts(now);
+
+  const get = (type: string) =>
+    partsDate.find(p => p.type === type)?.value ?? '00';
+
+  const day = get('day');
+  const month = months[parseInt(get('month'), 10) - 1] ?? 'UNK';
+  const year = get('year');
+  const hour = get('hour');
+  const minute = get('minute');
+  const second = get('second');
+
+  // Obtener offset como "+0600" o "-0600"
+  const tzPart = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    timeZoneName: 'shortOffset'
+  }).formatToParts(now).find(p => p.type === 'timeZoneName')?.value ?? 'GMT';
+
+  let offset = '+0000';
+  const matchOffset = tzPart.match(/GMT([+-])(\d{2}):?(\d{2})/);
+  if (matchOffset) {
+    const sign = matchOffset[1];
+    const h = matchOffset[2];
+    const m = matchOffset[3];
+    offset = `${sign}${h}${m}`;
+  } else {
+    // Caso GMT+5 (sin minutos) - capturar un solo grupo de horas
+    const matchHourOnly = tzPart.match(/GMT([+-])(\d{1,2})$/);
+    if (matchHourOnly) {
+      const sign = matchHourOnly[1];
+      const h = matchHourOnly[2].padStart(2, '0');
+      offset = `${sign}${h}00`;
+    }
+  }
+
+  return `${day}/${month}/${year}:${hour}:${minute}:${second} ${offset}`;
+});
+
+// Formato 'combined' con fecha en zona horaria local
+const MORGAN_FORMAT_LOCAL =
+  ':remote-addr - :remote-user [:date-clf-local] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"';
+
 // Configuración de logging mejorada
-// Usar formato 'combined' en producción y 'dev' en desarrollo
+// Usar formato local en producción y 'dev' en desarrollo
 // Skip logging de 304 responses para reducir ruido en consola
-app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev', {
+app.use(morgan(process.env.NODE_ENV === 'production' ? MORGAN_FORMAT_LOCAL : 'dev', {
   skip: (_req, res) => {
     // Skip 304 responses para reducir mensajes en consola
     return res.statusCode === 304;

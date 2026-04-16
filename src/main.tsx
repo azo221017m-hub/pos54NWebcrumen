@@ -2,7 +2,6 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { setupAutoUpdate } from './services/swUpdateService'
 
 // Diagnóstico: confirmar que el JS se está ejecutando en el cliente
 console.log('[APP_START] JS ejecutando — versión 2.5.B13', new Date().toISOString());
@@ -73,7 +72,12 @@ createRoot(document.getElementById('root')!).render(
 // Registrar Service Worker con manejo de actualizaciones
 // Se hace después del render para no bloquear la carga inicial
 if (import.meta.env.PROD) {
-  // Solo en producción: registrar SW con actualización automática
-  // skipWaiting: true en workbox config asegura activación inmediata del nuevo SW
-  setupAutoUpdate();
+  // Solo en producción: registrar SW con notificación opcional al usuario
+  // NO se aplica la actualización automáticamente; se muestra un banner para que el usuario decida
+  import('./services/swUpdateService').then(({ setupPromptUpdate }) => {
+    setupPromptUpdate((workbox) => {
+      // Disparar evento personalizado para que UpdateNotification muestre el banner
+      window.dispatchEvent(new CustomEvent('swUpdateAvailable', { detail: { workbox } }));
+    });
+  });
 }
