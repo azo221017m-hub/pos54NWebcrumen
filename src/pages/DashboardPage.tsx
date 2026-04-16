@@ -1439,7 +1439,7 @@ export const DashboardPage = () => {
             </div>
 
             <div className="cards-grid">
-            {privilegio === 1 && (
+            {privilegio === 5 && (
             <div className="dashboard-card" style={{ position: 'relative' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                 <div className="card-icon purple">
