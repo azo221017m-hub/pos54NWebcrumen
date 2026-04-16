@@ -860,7 +860,8 @@ const PageVentas: React.FC = () => {
 
   const imprimirComandaCocina = (items: ItemComanda[]) => {
     const ahora = new Date();
-    const horaEnvio = ahora.toLocaleString('es-MX', {
+    const fechaHoraLabel = ahora.toLocaleString('es-MX', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
       hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
 
@@ -882,18 +883,28 @@ const PageVentas: React.FC = () => {
     }
 
     const nombreNegocio = negocio?.nombreNegocio || 'POS Crumen';
+    const rfcHtml = negocio?.rfcnegocio
+      ? `<div class="rfc">${negocio.rfcnegocio}</div>`
+      : '';
+    const direccionHtml = negocio?.direccionfiscalnegocio
+      ? `<div class="direccion">${negocio.direccionfiscalnegocio}</div>`
+      : '';
 
-    const filas = items.map(item => {
+    const folioHtml = currentFolioVenta
+      ? `<div class="folio">Comanda | ${tipoDeVentaLabel}${clienteLabel ? ` | ${clienteLabel}` : ''}</div>`
+      : `<div class="folio">${tipoDeVentaLabel}${clienteLabel ? ` | ${clienteLabel}` : ''}</div>`;
+
+    const itemsHtml = items.map(item => {
       const mods = item.moderadoresNames && item.moderadoresNames.length > 0
         ? item.moderadoresNames.join(', ')
         : '';
       const obs = item.notas || '';
-      return `<tr>
-        <td class="cant-col">${item.cantidad}</td>
-        <td class="prod-col">${item.producto.nombre}</td>
-        <td class="mod-col">${mods}</td>
-        <td class="obs-col">${obs}</td>
-      </tr>`;
+      const modHtml = mods ? `<div class="mod">${mods}</div>` : '';
+      return `<div class="item">
+        <div class="item-nombre">${item.producto.nombre}</div>
+        <div class="item-detalle"><span>Cant: ${item.cantidad}</span>${obs ? `<span>${obs}</span>` : ''}</div>
+        ${modHtml}
+      </div>`;
     }).join('');
 
     const html = `<!DOCTYPE html>
@@ -913,20 +924,15 @@ const PageVentas: React.FC = () => {
       background: #fff;
     }
     .negocio-name { font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 4px; }
-    .header-info { font-size: 11px; text-align: center; margin-bottom: 4px; }
+    .rfc { font-size: 10px; text-align: center; margin-bottom: 2px; }
+    .direccion { font-size: 10px; text-align: center; margin-bottom: 2px; }
+    .folio { font-size: 11px; text-align: center; font-weight: bold; margin-top: 4px; }
+    .fecha { font-size: 10px; text-align: center; margin-bottom: 4px; }
     .divider { border: none; border-top: 1px dashed #000; margin: 4px 0; }
-    table { width: 100%; border-collapse: collapse; }
-    th {
-      font-size: 10px;
-      text-align: left;
-      border-bottom: 1px solid #000;
-      padding: 2px 2px;
-    }
-    td { font-size: 10px; padding: 2px 2px; vertical-align: top; }
-    .cant-col { width: 10%; text-align: center; }
-    .prod-col { width: 38%; }
-    .mod-col { width: 28%; font-style: italic; }
-    .obs-col { width: 24%; font-size: 9px; }
+    .item { margin: 3px 0; }
+    .item-nombre { font-size: 12px; font-weight: bold; }
+    .item-detalle { display: flex; justify-content: space-between; font-size: 10px; padding-left: 4px; }
+    .mod { font-size: 10px; padding-left: 8px; font-style: italic; }
     .footer-label { font-size: 12px; font-weight: bold; text-align: center; margin-top: 4px; padding-top: 4px; letter-spacing: 1px; }
     @media print {
       html, body { width: 80mm; }
@@ -936,19 +942,12 @@ const PageVentas: React.FC = () => {
 </head>
 <body>
   <div class="negocio-name">${nombreNegocio}</div>
-  <div class="header-info">${tipoDeVentaLabel} | ${clienteLabel} | ${horaEnvio}</div>
+  ${rfcHtml}
+  ${direccionHtml}
+  ${folioHtml}
+  <div class="fecha">${fechaHoraLabel}</div>
   <hr class="divider"/>
-  <table>
-    <thead>
-      <tr>
-        <th class="cant-col">Cant</th>
-        <th class="prod-col">Producto</th>
-        <th class="mod-col">Moderadores</th>
-        <th class="obs-col">Notas</th>
-      </tr>
-    </thead>
-    <tbody>${filas}</tbody>
-  </table>
+  ${itemsHtml}
   <hr class="divider"/>
   <div class="footer-label">COMANDA DE COCINA</div>
   <script>

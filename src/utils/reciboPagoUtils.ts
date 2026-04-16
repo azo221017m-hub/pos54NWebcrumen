@@ -162,7 +162,7 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Courier New', Courier, monospace;
-      font-size: 11px;
+      font-size: 12px;
       width: 58mm;
       max-width: 58mm;
       padding: 4mm 3mm;
@@ -171,30 +171,30 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
     }
     .center { text-align: center; }
     .negocio {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: bold;
       text-align: center;
       margin-bottom: 2px;
     }
     .rfc, .direccion {
-      font-size: 9px;
+      font-size: 10px;
       text-align: center;
       margin-bottom: 2px;
     }
     .encabezado {
-      font-size: 9px;
+      font-size: 10px;
       text-align: center;
       margin: 4px 0;
       white-space: pre-wrap;
     }
     .folio {
-      font-size: 10px;
+      font-size: 11px;
       text-align: center;
       font-weight: bold;
       margin-top: 4px;
     }
     .fecha {
-      font-size: 9px;
+      font-size: 10px;
       text-align: center;
       margin-bottom: 4px;
     }
@@ -207,17 +207,17 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
       margin: 3px 0;
     }
     .item-nombre {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: bold;
     }
     .item-detalle {
       display: flex;
       justify-content: space-between;
-      font-size: 10px;
+      font-size: 11px;
       padding-left: 4px;
     }
     .mod {
-      font-size: 9px;
+      font-size: 10px;
       padding-left: 8px;
       color: #555;
       font-style: italic;
@@ -228,13 +228,13 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
     .total-row {
       display: flex;
       justify-content: space-between;
-      font-size: 10px;
+      font-size: 11px;
       padding: 1px 0;
     }
     .total-final {
       display: flex;
       justify-content: space-between;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: bold;
       padding: 2px 0;
     }
@@ -244,17 +244,17 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
     .pago-row {
       display: flex;
       justify-content: space-between;
-      font-size: 10px;
+      font-size: 11px;
       padding: 1px 0;
     }
     .pie {
-      font-size: 9px;
+      font-size: 10px;
       text-align: center;
       margin-top: 6px;
       white-space: pre-wrap;
     }
     .telefono-pedidos {
-      font-size: 9px;
+      font-size: 10px;
       text-align: center;
       margin-top: 4px;
     }
