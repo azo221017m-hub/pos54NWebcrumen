@@ -100,6 +100,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
   // Cliente lookup states – LLEVAR
   const [llevarClienteInfo, setLlevarClienteInfo] = useState<ClienteInfo | null>(null);
   const [llevarSearching, setLlevarSearching] = useState(false);
+  const [llevarClienteEncontrado, setLlevarClienteEncontrado] = useState<boolean | null>(null);
   const llevarSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Cliente lookup states – MESA
@@ -180,6 +181,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
           });
         }
         setLlevarClienteInfo(null);
+        setLlevarClienteEncontrado(null);
       } else if (tipoServicio === 'Domicilio') {
         if (initialData && 'direcciondeentrega' in initialData) {
           setDomicilioFormData(initialData as DomicilioFormData);
@@ -266,9 +268,45 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     }, 500);
   };
 
+  const ejecutarBusquedaLlevar = async (telefono: string) => {
+    if (!telefono.trim()) return;
+    setLlevarSearching(true);
+    try {
+      const resultados = await buscarClientesPorTelefono(telefono.trim());
+      if (resultados.length > 0) {
+        const c = resultados[0];
+        setLlevarClienteInfo({
+          idCliente: c.idCliente,
+          referencia: c.referencia ?? null,
+          cumple: c.cumple ?? null,
+          puntosfidelidad: c.puntosfidelidad ?? 0,
+          direccion: c.direccion ?? null,
+          telefono: c.telefono ?? null
+        });
+        setLlevarFormData(prev => ({
+          ...prev,
+          cliente: c.referencia || c.nombre || 'mostrador',
+          idcliente: c.idCliente
+        }));
+        setLlevarClienteEncontrado(true);
+      } else {
+        setLlevarClienteInfo(null);
+        setLlevarClienteEncontrado(false);
+        setLlevarFormData(prev => ({ ...prev, cliente: 'mostrador', idcliente: null }));
+      }
+    } catch {
+      setLlevarClienteInfo(null);
+      setLlevarClienteEncontrado(false);
+      setLlevarFormData(prev => ({ ...prev, cliente: 'mostrador', idcliente: null }));
+    } finally {
+      setLlevarSearching(false);
+    }
+  };
+
   const handleLlevarTelefonoChange = (value: string) => {
     setLlevarFormData(prev => ({ ...prev, telefonocontacto: value, cliente: '', idcliente: null }));
     setLlevarClienteInfo(null);
+    setLlevarClienteEncontrado(null);
 
     if (llevarSearchTimer.current) clearTimeout(llevarSearchTimer.current);
 
@@ -278,35 +316,17 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     }
 
     setLlevarSearching(true);
-    llevarSearchTimer.current = setTimeout(async () => {
-      try {
-        const resultados = await buscarClientesPorTelefono(value.trim());
-        if (resultados.length > 0) {
-          const c = resultados[0];
-          setLlevarClienteInfo({
-            idCliente: c.idCliente,
-            referencia: c.referencia ?? null,
-            cumple: c.cumple ?? null,
-            puntosfidelidad: c.puntosfidelidad ?? 0,
-            direccion: c.direccion ?? null,
-            telefono: c.telefono ?? null
-          });
-          setLlevarFormData(prev => ({
-            ...prev,
-            cliente: c.referencia || c.nombre || 'mostrador',
-            idcliente: c.idCliente
-          }));
-        } else {
-          setLlevarClienteInfo(null);
-          setLlevarFormData(prev => ({ ...prev, cliente: 'mostrador', idcliente: null }));
-        }
-      } catch {
-        setLlevarClienteInfo(null);
-        setLlevarFormData(prev => ({ ...prev, cliente: 'mostrador', idcliente: null }));
-      } finally {
-        setLlevarSearching(false);
-      }
+    llevarSearchTimer.current = setTimeout(() => {
+      ejecutarBusquedaLlevar(value);
     }, 500);
+  };
+
+  const handleLlevarTelefonoKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (llevarSearchTimer.current) clearTimeout(llevarSearchTimer.current);
+      ejecutarBusquedaLlevar(llevarFormData.telefonocontacto || '');
+    }
   };
 
   const handleMesaTelefonoChange = (value: string) => {
@@ -493,10 +513,31 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                     className="form-control"
                     value={llevarFormData.telefonocontacto || ''}
                     onChange={(e) => handleLlevarTelefonoChange(e.target.value)}
+                    onKeyDown={handleLlevarTelefonoKeyDown}
                     placeholder="Buscar cliente por teléfono"
                   />
-                  {llevarSearching && <Search size={16} className="search-spinner-icon" />}
+                  {llevarSearching
+                    ? <Search size={16} className="search-spinner-icon" />
+                    : (
+                      <button
+                        type="button"
+                        className="btn-buscar-telefono"
+                        onClick={() => {
+                          if (llevarSearchTimer.current) clearTimeout(llevarSearchTimer.current);
+                          ejecutarBusquedaLlevar(llevarFormData.telefonocontacto || '');
+                        }}
+                        title="Buscar cliente"
+                      >
+                        <Search size={16} />
+                      </button>
+                    )
+                  }
                 </div>
+                {llevarClienteEncontrado === false && (llevarFormData.telefonocontacto || '').trim() !== '' && (
+                  <span className="campo-error-msg">
+                    ⚠ No se encontró cliente con ese teléfono. Regístrelo primero en el módulo de Clientes.
+                  </span>
+                )}
               </div>
 
               {llevarClienteInfo && (
