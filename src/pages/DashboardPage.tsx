@@ -246,8 +246,8 @@ export const DashboardPage = () => {
     icono: '🟢',
     insumosAfectados: 0
   });
-  const [topProductosMayor, setTopProductosMayor] = useState<TopProductoTurno[]>([]);
-  const [topProductosMenor, setTopProductosMenor] = useState<TopProductoTurno[]>([]);
+  const [_topProductosMayor, setTopProductosMayor] = useState<TopProductoTurno[]>([]);
+  const [_topProductosMenor, setTopProductosMenor] = useState<TopProductoTurno[]>([]);
   const [topInsumosStockMayor, setTopInsumosStockMayor] = useState<Insumo[]>([]);
   const [topInsumosStockMenor, setTopInsumosStockMenor] = useState<Insumo[]>([]);
 
