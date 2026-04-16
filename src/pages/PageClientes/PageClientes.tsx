@@ -649,30 +649,7 @@ const PageClientes: React.FC = () => {
                   {anuncio.detalleAnuncio && (
                     <p className="pc-carousel-detalle">{anuncio.detalleAnuncio}</p>
                   )}
-                  {imagenes.length > 1 && (
-                    <div className="pc-carousel-dots pc-carousel-dots--imagenes">
-                      {imagenes.map((_, idx) => (
-                        <button
-                          key={idx}
-                          className={`pc-carousel-dot${idx === imagenActivaIdx ? ' pc-carousel-dot--active' : ''}`}
-                          onClick={() => setImagenActivaIdx(idx)}
-                          aria-label={`Imagen ${idx + 1}`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  {anuncios.length > 1 && (
-                    <div className="pc-carousel-dots pc-carousel-dots--anuncios">
-                      {anuncios.map((_, idx) => (
-                        <button
-                          key={idx}
-                          className={`pc-carousel-dot${idx === anuncioActivo ? ' pc-carousel-dot--active' : ''}`}
-                          onClick={() => { setAnuncioActivo(idx); setImagenActivaIdx(0); }}
-                          aria-label={`Anuncio ${idx + 1}`}
-                        />
-                      ))}
-                    </div>
-                  )}
+
                 </div>
               );
             })() : (
