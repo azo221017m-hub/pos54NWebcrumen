@@ -366,6 +366,41 @@ export const actualizarCliente = async (req: Request, res: Response): Promise<vo
   }
 };
 
+// Buscar clientes por teléfono (búsqueda parcial)
+export const buscarClientesPorTelefono = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({ message: 'Usuario no autenticado o sin negocio asignado' });
+      return;
+    }
+
+    const telefono = req.query.telefono;
+    if (!telefono || typeof telefono !== 'string' || telefono.trim().length === 0) {
+      res.json([]);
+      return;
+    }
+
+    const [rows] = await pool.query<Cliente[]>(
+      `SELECT idCliente, nombre, referencia, cumple, puntosfidelidad, telefono, direccion
+       FROM tblposcrumenwebclientes
+       WHERE idnegocio = ? AND telefono LIKE ? AND estatus = 1
+       ORDER BY nombre ASC
+       LIMIT 10`,
+      [idnegocio, `%${telefono.trim()}%`]
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error('Error al buscar clientes por teléfono:', error);
+    res.status(500).json({
+      message: 'Error al buscar clientes por teléfono',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+};
+
 // Eliminar cliente
 export const eliminarCliente = async (req: Request, res: Response): Promise<void> => {
   try {

@@ -4,7 +4,8 @@ import {
   obtenerClientePorId,
   crearCliente,
   actualizarCliente,
-  eliminarCliente
+  eliminarCliente,
+  buscarClientesPorTelefono
 } from '../controllers/clientes.controller';
 import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 
@@ -14,6 +15,7 @@ const router = Router();
 router.use(authMiddleware);
 
 // Rutas CRUD
+router.get('/buscar-por-telefono', buscarClientesPorTelefono);
 router.get('/', obtenerClientes);
 router.get('/:idCliente', obtenerClientePorId);
 router.post('/', crearCliente);
