@@ -248,6 +248,8 @@ export const DashboardPage = () => {
   });
   const [topProductosMayor, setTopProductosMayor] = useState<TopProductoTurno[]>([]);
   const [topProductosMenor, setTopProductosMenor] = useState<TopProductoTurno[]>([]);
+  const [topInsumosStockMayor, setTopInsumosStockMayor] = useState<Insumo[]>([]);
+  const [topInsumosStockMenor, setTopInsumosStockMenor] = useState<Insumo[]>([]);
 
   // Track already-notified order IDs to avoid duplicate sound alerts
   const notifiedOrdersRef = useRef<Set<number>>(new Set());
@@ -377,6 +379,18 @@ export const DashboardPage = () => {
           insumosAfectados: 0
         });
       }
+
+      // Top 10 con mayor stock_actual
+      const mayor = [...insumos]
+        .sort((a, b) => Number(b.stock_actual || 0) - Number(a.stock_actual || 0))
+        .slice(0, 10);
+      setTopInsumosStockMayor(mayor);
+
+      // Top 10 donde stock_actual <= stock_minimo
+      const menor = insumos
+        .filter((insumo: Insumo) => Number(insumo.stock_actual || 0) <= Number(insumo.stock_minimo || 0))
+        .slice(0, 10);
+      setTopInsumosStockMenor(menor);
     } catch (error) {
       console.error('Error al calcular nivel de inventario:', error);
     }
@@ -2088,55 +2102,59 @@ export const DashboardPage = () => {
                 </div>
               </div>
 
-              {/* TOP10 productos del turno */}
-              {(topProductosMayor.length > 0 || topProductosMenor.length > 0) && (
+              {/* TOP10 inventario */}
+              {(topInsumosStockMayor.length > 0 || topInsumosStockMenor.length > 0) && (
                 <div style={{
                   marginTop: '0.5rem',
                   display: 'flex',
                   gap: '0.4rem'
                 }}>
-                  {/* Sección A: Mayor importe */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontSize: '0.55rem',
-                      fontWeight: '700',
-                      color: '#10b981',
-                      textTransform: 'uppercase',
-                      marginBottom: '0.2rem',
-                      letterSpacing: '0.2px'
-                    }}>▲ Top Mayor</div>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.5rem' }}>
-                      <tbody>
-                        {topProductosMayor.map((p, i) => (
-                          <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                            <td style={{ padding: '1px 2px', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '0', width: '70%' }} title={p.nombreproducto}>{p.nombreproducto}</td>
-                            <td style={{ padding: '1px 2px', color: '#10b981', fontWeight: '600', textAlign: 'right', whiteSpace: 'nowrap' }}>${p.importetotal.toFixed(0)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  {/* Sección B: Menor importe */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontSize: '0.55rem',
-                      fontWeight: '700',
-                      color: '#f59e0b',
-                      textTransform: 'uppercase',
-                      marginBottom: '0.2rem',
-                      letterSpacing: '0.2px'
-                    }}>▼ Top Menor</div>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.5rem' }}>
-                      <tbody>
-                        {topProductosMenor.map((p, i) => (
-                          <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                            <td style={{ padding: '1px 2px', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '0', width: '70%' }} title={p.nombreproducto}>{p.nombreproducto}</td>
-                            <td style={{ padding: '1px 2px', color: '#f59e0b', fontWeight: '600', textAlign: 'right', whiteSpace: 'nowrap' }}>${p.importetotal.toFixed(0)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  {/* Sección A: Mayor stock_actual */}
+                  {topInsumosStockMayor.length > 0 && (
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontSize: '0.55rem',
+                        fontWeight: '700',
+                        color: '#10b981',
+                        textTransform: 'uppercase',
+                        marginBottom: '0.2rem',
+                        letterSpacing: '0.2px'
+                      }}>▲ Top Mayor</div>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.5rem' }}>
+                        <tbody>
+                          {topInsumosStockMayor.map((insumo, i) => (
+                            <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                              <td style={{ padding: '1px 2px', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '0', width: '70%' }} title={insumo.nombre}>{insumo.nombre}</td>
+                              <td style={{ padding: '1px 2px', color: '#10b981', fontWeight: '600', textAlign: 'right', whiteSpace: 'nowrap' }}>{Number(insumo.stock_actual).toFixed(0)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  {/* Sección B: stock_actual <= stock_minimo */}
+                  {topInsumosStockMenor.length > 0 && (
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontSize: '0.55rem',
+                        fontWeight: '700',
+                        color: '#ef4444',
+                        textTransform: 'uppercase',
+                        marginBottom: '0.2rem',
+                        letterSpacing: '0.2px'
+                      }}>▼ Top Menor</div>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.5rem' }}>
+                        <tbody>
+                          {topInsumosStockMenor.map((insumo, i) => (
+                            <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                              <td style={{ padding: '1px 2px', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '0', width: '70%' }} title={insumo.nombre}>{insumo.nombre}</td>
+                              <td style={{ padding: '1px 2px', color: '#ef4444', fontWeight: '600', textAlign: 'right', whiteSpace: 'nowrap' }}>{Number(insumo.stock_actual).toFixed(0)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
