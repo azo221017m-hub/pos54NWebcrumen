@@ -248,8 +248,6 @@ export const DashboardPage = () => {
   });
   const [topProductosMayor, setTopProductosMayor] = useState<TopProductoTurno[]>([]);
   const [topProductosMenor, setTopProductosMenor] = useState<TopProductoTurno[]>([]);
-  const [topInventarioMayor, setTopInventarioMayor] = useState<Insumo[]>([]);
-  const [topInventarioMenor, setTopInventarioMenor] = useState<Insumo[]>([]);
 
   // Track already-notified order IDs to avoid duplicate sound alerts
   const notifiedOrdersRef = useRef<Set<number>>(new Set());
@@ -352,18 +350,6 @@ export const DashboardPage = () => {
           advertencia++;
         }
       });
-
-      // Top 10 mayor stock_actual
-      const mayor = [...insumos]
-        .sort((a, b) => Number(b.stock_actual || 0) - Number(a.stock_actual || 0))
-        .slice(0, 10);
-      setTopInventarioMayor(mayor);
-
-      // Top 10 productos con stock_actual <= stock_minimo
-      const menor = insumos
-        .filter((i: Insumo) => Number(i.stock_actual || 0) <= Number(i.stock_minimo || 0))
-        .slice(0, 10);
-      setTopInventarioMenor(menor);
       
       // Determinar el nivel general basado en prioridad
       if (criticos > 0) {
@@ -2102,14 +2088,14 @@ export const DashboardPage = () => {
                 </div>
               </div>
 
-              {/* TOP10 inventario */}
-              {(topInventarioMayor.length > 0 || topInventarioMenor.length > 0) && (
+              {/* TOP10 productos del turno */}
+              {(topProductosMayor.length > 0 || topProductosMenor.length > 0) && (
                 <div style={{
                   marginTop: '0.5rem',
                   display: 'flex',
                   gap: '0.4rem'
                 }}>
-                  {/* Sección A: Mayor stock_actual */}
+                  {/* Sección A: Mayor importe */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
                       fontSize: '0.55rem',
@@ -2121,16 +2107,16 @@ export const DashboardPage = () => {
                     }}>▲ Top Mayor</div>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.5rem' }}>
                       <tbody>
-                        {topInventarioMayor.map((p, i) => (
+                        {topProductosMayor.map((p, i) => (
                           <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                            <td style={{ padding: '1px 2px', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '0', width: '70%' }} title={p.nombre}>{p.nombre}</td>
-                            <td style={{ padding: '1px 2px', color: '#10b981', fontWeight: '600', textAlign: 'right', whiteSpace: 'nowrap' }}>{Number(p.stock_actual).toFixed(0)}</td>
+                            <td style={{ padding: '1px 2px', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '0', width: '70%' }} title={p.nombreproducto}>{p.nombreproducto}</td>
+                            <td style={{ padding: '1px 2px', color: '#10b981', fontWeight: '600', textAlign: 'right', whiteSpace: 'nowrap' }}>${p.importetotal.toFixed(0)}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                  {/* Sección B: stock_actual <= stock_minimo */}
+                  {/* Sección B: Menor importe */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
                       fontSize: '0.55rem',
@@ -2142,10 +2128,10 @@ export const DashboardPage = () => {
                     }}>▼ Top Menor</div>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.5rem' }}>
                       <tbody>
-                        {topInventarioMenor.map((p, i) => (
+                        {topProductosMenor.map((p, i) => (
                           <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                            <td style={{ padding: '1px 2px', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '0', width: '70%' }} title={p.nombre}>{p.nombre}</td>
-                            <td style={{ padding: '1px 2px', color: '#f59e0b', fontWeight: '600', textAlign: 'right', whiteSpace: 'nowrap' }}>{Number(p.stock_actual).toFixed(0)}</td>
+                            <td style={{ padding: '1px 2px', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '0', width: '70%' }} title={p.nombreproducto}>{p.nombreproducto}</td>
+                            <td style={{ padding: '1px 2px', color: '#f59e0b', fontWeight: '600', textAlign: 'right', whiteSpace: 'nowrap' }}>${p.importetotal.toFixed(0)}</td>
                           </tr>
                         ))}
                       </tbody>
