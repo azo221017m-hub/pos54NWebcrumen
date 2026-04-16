@@ -357,7 +357,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
             telefono: c.telefono ?? null
           });
           if (c.telefono) {
-            setMesaFormData(prev => ({ ...prev, telefonocontacto: c.telefono! }));
+            setMesaFormData(prev => ({ ...prev, telefonocontacto: c.telefono ?? '' }));
           }
         } else {
           setMesaClienteInfo(null);

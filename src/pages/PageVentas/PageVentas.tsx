@@ -1850,6 +1850,9 @@ const PageVentas: React.FC = () => {
                       setParametrosNegocio(updated);
                       parametrosService.actualizarParametros(parametrosNegocio.idNegocio, updated).catch((err) => {
                         console.error('Error al actualizar impresionComanda:', err);
+                        setImprimirChecked(!checked);
+                        setParametrosNegocio(parametrosNegocio);
+                        showErrorToast('Error al guardar preferencia de impresión');
                       });
                     }
                   }}
