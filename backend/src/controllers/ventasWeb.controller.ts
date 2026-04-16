@@ -743,7 +743,7 @@ export const updateVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     }
 
     // Validar y normalizar campos de fecha si están presentes
-    const dateFields: Array<keyof VentaWebUpdate & ('fechaprogramadaentrega' | 'fechapreparacion' | 'fechaenvio' | 'fechaentrega')> =
+    const dateFields: Array<'fechaprogramadaentrega' | 'fechapreparacion' | 'fechaenvio' | 'fechaentrega'> =
       ['fechaprogramadaentrega', 'fechapreparacion', 'fechaenvio', 'fechaentrega'];
     for (const field of dateFields) {
       const val = updateData[field];

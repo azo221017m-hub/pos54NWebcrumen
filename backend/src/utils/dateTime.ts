@@ -116,6 +116,7 @@ export const getMexicoTimestamp = (): number => {
  * Accepts strings coming from HTML datetime-local inputs (YYYY-MM-DDTHH:mm or YYYY-MM-DDTHH:mm:ss)
  * as well as MySQL DATETIME strings (YYYY-MM-DD HH:MM:SS).
  * Returns the normalized string or null if the input is absent or invalid.
+ * Uses a Date object to detect impossible dates (e.g. February 31st).
  * @param dateStr Raw datetime string from request body
  * @returns Normalized 'YYYY-MM-DD HH:MM:SS' string or null
  */
@@ -131,15 +132,24 @@ export const normalizeDateTimeForMySQL = (dateStr: string | null | undefined): s
   );
   if (!match) return null;
 
+  const year = parseInt(match[1], 10);
   const month = parseInt(match[2], 10);
   const day = parseInt(match[3], 10);
   const hours = parseInt(match[4], 10);
   const minutes = parseInt(match[5], 10);
   const seconds = parseInt(match[6] ?? '0', 10);
 
-  if (month < 1 || month > 12) return null;
-  if (day < 1 || day > 31) return null;
   if (hours > 23 || minutes > 59 || seconds > 59) return null;
+
+  // Use a Date object to validate calendar correctness (handles month lengths and leap years)
+  const d = new Date(year, month - 1, day);
+  if (
+    d.getFullYear() !== year ||
+    d.getMonth() !== month - 1 ||
+    d.getDate() !== day
+  ) {
+    return null;
+  }
 
   const ss = String(seconds).padStart(2, '0');
   return `${match[1]}-${match[2]}-${match[3]} ${match[4]}:${match[5]}:${ss}`;
