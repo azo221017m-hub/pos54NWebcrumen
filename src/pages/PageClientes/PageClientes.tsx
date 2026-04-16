@@ -112,6 +112,9 @@ const PageClientes: React.FC = () => {
     password: ''
   });
 
+  // Mobile refresh functionality
+  const [actualizandoMobile, setActualizandoMobile] = useState(false);
+
   useEffect(() => {
     // Load active orders from localStorage (keys: pedidoActivo_{idNegocio})
     const activos = new Set<number>();
@@ -172,6 +175,69 @@ const PageClientes: React.FC = () => {
       }
     }
   });
+
+  // Función para manejar la actualización móvil
+  const handleActualizarMobile = async () => {
+    if (!isMobileView) return; // Solo funciona en mobile
+
+    setActualizandoMobile(true);
+
+    try {
+      // Mostrar toast informativo
+      showInfoToast('🔄 Actualizando interfaz móvil...');
+
+      // Limpiar cache del navegador mobile
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(
+          cacheNames.map(cacheName => caches.delete(cacheName))
+        );
+      }
+
+      // Limpiar localStorage específico (mantener datos de sesión importantes)
+      const keysToKeep = [
+        'clienteLogueado',
+        'clienteData',
+        'idnegocio',
+        'privilegio'
+      ];
+      
+      const allKeys = Object.keys(localStorage);
+      allKeys.forEach(key => {
+        if (!keysToKeep.some(keepKey => key.includes(keepKey))) {
+          localStorage.removeItem(key);
+        }
+      });
+
+      // Recargar datos principales
+      await Promise.all([
+        cargarNegocios(),
+        obtenerAnunciosVigentes().then(anunciosData => {
+          setAnuncios(anunciosData);
+          setAnuncioActivo(0);
+          setImagenActivaIdx(0);
+        }).catch(console.error)
+      ]);
+
+      // Resetear estados de UI
+      setSearchTerm('');
+      setCategoriaActiva('Todos');
+      setIsSearchInputFocused(false);
+      setMostrarMenuAvatar(false);
+      setMostrarTablero(false);
+
+      // Mostrar toast de éxito
+      setTimeout(() => {
+        showSuccessToast('✅ Interfaz móvil actualizada correctamente');
+      }, 500);
+
+    } catch (error) {
+      console.error('Error al actualizar mobile UI:', error);
+      showErrorToast('❌ Error al actualizar la interfaz');
+    } finally {
+      setActualizandoMobile(false);
+    }
+  };
 
   const cargarNegocios = async () => {
     setIsLoading(true);
@@ -527,6 +593,30 @@ const PageClientes: React.FC = () => {
           </div>
 
           <div className="pc-header-right">
+            {/* Mobile Refresh Button - only visible on mobile */}
+            {isMobileView && (
+              <button
+                className={`pc-mobile-refresh-btn${actualizandoMobile ? ' pc-mobile-refresh-btn--loading' : ''}`}
+                onClick={handleActualizarMobile}
+                disabled={actualizandoMobile}
+                aria-label="Actualizar interfaz móvil"
+                title="Actualizar interfaz móvil"
+              >
+                <svg 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2"
+                  className={`pc-refresh-icon${actualizandoMobile ? ' pc-refresh-icon--spinning' : ''}`}
+                >
+                  <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                  <path d="M21 3v5h-5"/>
+                  <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                  <path d="M3 21v-5h5"/>
+                </svg>
+              </button>
+            )}
+            
             {!clienteLogueado && (
               <div className="pc-header-actions">
                 <div className="pc-btn-row">
@@ -642,7 +732,7 @@ const PageClientes: React.FC = () => {
                   {anuncio.detalleAnuncio && (
                     <p className="pc-carousel-detalle">{anuncio.detalleAnuncio}</p>
                   )}
-                  {imagenes.length > 1 && (
+                  {imagenes.length > 1 && !isMobileView && (
                     <div className="pc-carousel-dots pc-carousel-dots--imagenes">
                       {imagenes.map((_, idx) => (
                         <button
@@ -654,7 +744,7 @@ const PageClientes: React.FC = () => {
                       ))}
                     </div>
                   )}
-                  {anuncios.length > 1 && (
+                  {anuncios.length > 1 && !isMobileView && (
                     <div className="pc-carousel-dots pc-carousel-dots--anuncios">
                       {anuncios.map((_, idx) => (
                         <button
@@ -701,7 +791,7 @@ const PageClientes: React.FC = () => {
                       {anuncio.tituloDeAnuncio && (
                         <p className="pc-mobile-anuncio-title">{anuncio.tituloDeAnuncio}</p>
                       )}
-                      {anuncios.length > 1 && (
+                      {anuncios.length > 1 && !isMobileView && (
                         <div className="pc-mobile-anuncio-dots">
                           {anuncios.map((_, idx) => (
                             <button
@@ -745,7 +835,7 @@ const PageClientes: React.FC = () => {
           <div className="pc-content">
         {!mostrarSeccionNegocios ? (
           <div className="pc-mobile-search-hint" role="status" aria-live="polite">
-            <p>Escribe en el buscador para ver negocios y productos.</p>
+            <p>Buscar negocios y productos.</p>
           </div>
         ) : isLoading ? (
             <div className="pc-loading">
