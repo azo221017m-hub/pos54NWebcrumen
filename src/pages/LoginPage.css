@@ -2,24 +2,29 @@
    LOGIN PAGE — Modern SaaS 2025–2026 redesign
    ============================================= */
 
-/* Page wrapper — overlay on top of PageClientes background */
+/* Page wrapper with animated gradient */
 .login-page {
   min-height: 100vh;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(4, 18, 42, 0.72);
-  backdrop-filter: blur(7px);
-  -webkit-backdrop-filter: blur(7px);
+  background: linear-gradient(135deg, #0d4f8a 0%, #0ea5c0 35%, #14b8a6 65%, #4ade80 100%);
+  background-size: 300% 300%;
+  animation: gradientShift 18s ease infinite;
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 9999;
   overflow-y: auto;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* ---- Background blobs & clouds ---- */
