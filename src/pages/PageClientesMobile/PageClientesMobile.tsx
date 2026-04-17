@@ -471,25 +471,19 @@ const PageClientesMobile: React.FC = () => {
           return imagenes.length > 0 ? (
             <>
               <img
+                key={`${anuncioActivo}-${imagenActivaIdx}`}
                 src={`data:image/jpeg;base64,${imagenes[imagenActivaIdx]}`}
                 alt={anuncio!.tituloDeAnuncio}
                 className="pcm-anuncios-hero-img"
               />
-              {anuncio!.tituloDeAnuncio && (
+              {(anuncio!.tituloDeAnuncio || anuncio!.detalleAnuncio) && (
                 <div className="pcm-anuncios-overlay">
-                  <span className="pcm-anuncios-titulo">{anuncio!.tituloDeAnuncio}</span>
-                </div>
-              )}
-              {anuncios.length > 1 && (
-                <div className="pcm-anuncios-dots">
-                  {anuncios.map((_, i) => (
-                    <button
-                      key={i}
-                      className={`pcm-anuncios-dot${i === anuncioActivo ? ' pcm-anuncios-dot--active' : ''}`}
-                      onClick={() => { setAnuncioActivo(i); setImagenActivaIdx(0); }}
-                      aria-label={`Anuncio ${i + 1}`}
-                    />
-                  ))}
+                  {anuncio!.tituloDeAnuncio && (
+                    <span className="pcm-anuncios-titulo">{anuncio!.tituloDeAnuncio}</span>
+                  )}
+                  {anuncio!.detalleAnuncio && (
+                    <span className="pcm-anuncios-detalle">{anuncio!.detalleAnuncio}</span>
+                  )}
                 </div>
               )}
             </>
