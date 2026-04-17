@@ -1589,6 +1589,7 @@
   /* Page scrolls naturally — no more "PDF zoom" effect */
   .pc-page {
     height: auto;
+    min-height: 100vh;
     min-height: 100dvh;
     overflow-x: hidden;
     overflow-y: auto;
@@ -1830,6 +1831,7 @@
   /* ---- Modals: full-screen on mobile ---- */
   .pc-modal {
     max-width: 100%;
+    max-height: 92vh;
     max-height: 92dvh;
     border-radius: 16px;
     margin: 0 4px;
