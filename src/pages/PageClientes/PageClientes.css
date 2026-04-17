@@ -1580,3 +1580,289 @@
   border-radius: 0 6px 6px 0;
   margin-bottom: 12px;
 }
+
+/* =============================================
+   MOBILE (≤600px) — App-like full-screen layout
+   ============================================= */
+@media (max-width: 600px) {
+
+  /* Page scrolls naturally — no more "PDF zoom" effect */
+  .pc-page {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  /* ---- Header: compact 2-row layout ---- */
+  .pc-header {
+    padding: 8px 12px 6px;
+  }
+
+  /* Row layout: logo+right on top row; search/categories on second row */
+  .pc-header-top {
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    align-items: center;
+  }
+
+  /* Logo: small and inline */
+  .pc-logo-area {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pc-logo {
+    width: 36px;
+    height: 36px;
+    transform: scale(1);
+    transform-origin: center;
+  }
+
+  /* Tagline: hidden on mobile to save space */
+  .pc-tagline {
+    display: none;
+  }
+
+  /* Search + categories: second row, full width */
+  .pc-header-center {
+    order: 3;
+    flex: 0 0 100%;
+    padding: 4px 0 0;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .pc-search-wrapper {
+    max-width: 100%;
+  }
+
+  .pc-search-input {
+    padding: 10px 36px 10px 38px;
+    font-size: 0.88rem;
+  }
+
+  /* Category pills: more compact */
+  .pc-categorias {
+    gap: 6px;
+  }
+
+  .pc-cat-btn {
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  /* Right side: compact, wraps cleanly beside logo */
+  .pc-header-right {
+    flex: 1;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .pc-header-repartidor-btn {
+    font-size: 0.7rem;
+    padding: 5px 8px;
+    margin-bottom: 0;
+  }
+
+  /* Action buttons: row instead of column, smaller */
+  .pc-header-actions {
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .pc-btn-row {
+    flex: 0 0 auto;
+  }
+
+  .pc-header-iniciar-btn {
+    font-size: 0.72rem;
+    padding: 6px 10px;
+    white-space: nowrap;
+  }
+
+  .pc-header-comunidad-btn {
+    font-size: 0.68rem;
+    padding: 5px 8px;
+    white-space: nowrap;
+  }
+
+  /* ---- Layout: no wasted horizontal padding ---- */
+  .pc-layout {
+    padding: 12px;
+    gap: 0;
+    overflow: visible;
+    min-height: 0;
+    flex: 0 0 auto;
+  }
+
+  /* Sidebar: hidden on mobile — saves massive vertical space */
+  .pc-sidebar {
+    display: none !important;
+  }
+
+  /* Main area: natural height, full width */
+  .pc-main {
+    overflow: visible;
+    min-height: 0;
+    width: 100%;
+  }
+
+  /* Content: natural page scroll (handled by pc-page) */
+  .pc-content {
+    overflow: visible;
+    padding-right: 0;
+    min-height: 0;
+  }
+
+  /* Results count */
+  .pc-results-count {
+    font-size: 0.82rem;
+    margin-bottom: 10px;
+  }
+
+  /* ---- Grid: 1 column on small phones ---- */
+  .pc-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-bottom: 24px;
+  }
+
+  /* ---- Cards: horizontal grid layout (app-style) ---- */
+  /* image column left, body+footer stacked on right */
+  .pc-card {
+    display: grid;
+    grid-template-columns: 104px 1fr;
+    grid-template-rows: 1fr auto;
+    min-height: 104px;
+    border-radius: 12px;
+  }
+
+  .pc-card-header {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    height: auto;
+    min-height: 104px;
+    border-radius: 12px 0 0 12px;
+  }
+
+  .pc-card-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .pc-card-body {
+    grid-column: 2;
+    grid-row: 1;
+    padding: 10px 12px 6px;
+    min-width: 0;
+  }
+
+  .pc-card-name {
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pc-card-tipo {
+    font-size: 0.78rem;
+    margin-bottom: 5px;
+  }
+
+  .pc-card-meta {
+    margin-bottom: 5px;
+    font-size: 0.78rem;
+  }
+
+  .pc-badges-row {
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+
+  .pc-badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+  }
+
+  /* Card footer: right column, second row */
+  .pc-card-footer {
+    grid-column: 2;
+    grid-row: 2;
+    padding: 0 10px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .pc-ver-btn {
+    padding: 7px 14px;
+    font-size: 0.82rem;
+    border-radius: 8px;
+    white-space: nowrap;
+    width: auto;
+  }
+
+  /* ---- Footer: centered, minimal ---- */
+  .pc-footer {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 10px 12px;
+    gap: 4px;
+  }
+
+  .pc-footer-badges {
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .pc-footer-badge {
+    font-size: 0.72rem;
+  }
+
+  /* ---- Modals: full-screen on mobile ---- */
+  .pc-modal {
+    max-width: 100%;
+    max-height: 92vh;
+    max-height: 92dvh;
+    border-radius: 16px;
+    margin: 0 4px;
+  }
+
+  .pc-modal--wide {
+    max-width: 100%;
+  }
+
+  .pc-modal-header {
+    padding: 16px 18px;
+  }
+
+  .pc-modal-body {
+    padding: 16px 18px;
+    gap: 12px;
+  }
+
+  .pc-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  /* ---- Loading / Empty states ---- */
+  .pc-loading,
+  .pc-empty {
+    padding: 48px 20px;
+  }
+
+  /* ---- Turno error banner ---- */
+  .pc-turno-error {
+    font-size: 0.82rem;
+    padding: 10px 12px;
+  }
+}
