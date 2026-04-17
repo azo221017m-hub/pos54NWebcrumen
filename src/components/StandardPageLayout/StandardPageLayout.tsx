@@ -46,7 +46,7 @@ const StandardPageLayout: React.FC<StandardPageLayoutProps> = ({
   heroDescription,
   children,
   loading = false,
-  loadingMessage = 'Cargando...',
+  loadingMessage: _loadingMessage,
   isEmpty = false,
   emptyIcon,
   emptyMessage = 'No hay datos disponibles'
@@ -88,6 +88,7 @@ const StandardPageLayout: React.FC<StandardPageLayoutProps> = ({
           <button
             className="btn-action"
             onClick={actionButton.onClick}
+            disabled={loading}
           >
             {actionButton.icon}
             {actionButton.text}
@@ -109,9 +110,33 @@ const StandardPageLayout: React.FC<StandardPageLayoutProps> = ({
       <main className="standard-page-main">
         <div className="standard-page-content">
           {loading ? (
-            <div className="standard-loading-container">
-              <div className="spinner" />
-              <p>{loadingMessage}</p>
+            <div className="skeleton-cards-grid">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div className="skeleton-card" key={i}>
+                  <div className="skeleton-card-header">
+                    <div className="skeleton-line title" />
+                    <div className="skeleton-line badge" />
+                  </div>
+                  <div className="skeleton-card-body">
+                    <div className="skeleton-field">
+                      <div className="skeleton-line label" />
+                      <div className="skeleton-line value" />
+                    </div>
+                    <div className="skeleton-field">
+                      <div className="skeleton-line label" />
+                      <div className="skeleton-line value short" />
+                    </div>
+                    <div className="skeleton-field">
+                      <div className="skeleton-line label" />
+                      <div className="skeleton-line value" />
+                    </div>
+                  </div>
+                  <div className="skeleton-card-footer">
+                    <div className="skeleton-btn" />
+                    <div className="skeleton-btn" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : isEmpty ? (
             <>

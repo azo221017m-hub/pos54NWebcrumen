@@ -17,7 +17,7 @@ export const ConfigUsuarios: React.FC = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [usuarioEditar, setUsuarioEditar] = useState<Usuario | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
   const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
