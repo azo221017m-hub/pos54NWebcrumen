@@ -11,9 +11,6 @@ import { useWebSocket } from '../../hooks/useWebSocket';
 import TableroCliente from '../../components/tableroCliente/TableroCliente';
 import './PageClientesMobile.css';
 
-const CATEGORIAS = ['Todos', 'Alimentos', 'Bebidas Calientes', 'Cuidado Personal', 'Bebidas Frías'];
-void CATEGORIAS; // kept for future use
-
 function getPrepTime(id: number): string {
   const mins = ((id * 7 + 5) % 20) + 10;
   return `${mins}-${mins + 5} min`;
@@ -49,8 +46,8 @@ const PageClientesMobile: React.FC = () => {
   const [negocios, setNegocios] = useState<NegocioPublico[]>([]);
   const [filteredNegocios, setFilteredNegocios] = useState<NegocioPublico[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [categoriaActiva, setCategoriaActiva] = useState('Todos');
-  void setCategoriaActiva; // setter kept for future category filter use
+  // categoriaActiva drives the search filter; setter available for future category pills
+  const [categoriaActiva, _setCategoriaActiva] = useState('Todos');
   const [isLoading, setIsLoading] = useState(true);
   const [pedidosActivos, setPedidosActivos] = useState<Set<number>>(new Set());
   const [seleccionandoNegocio, setSeleccionandoNegocio] = useState<number | null>(null);
@@ -530,7 +527,7 @@ const PageClientesMobile: React.FC = () => {
             ref={searchInputRef}
             type="text"
             className="pcm-search-input"
-            placeholder="buscar producto o negocio"
+            placeholder="Buscar producto o negocio"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
