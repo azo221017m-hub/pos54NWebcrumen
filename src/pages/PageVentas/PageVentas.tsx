@@ -9,7 +9,7 @@ import { obtenerModeradores } from '../../services/moderadoresService';
 import { obtenerModeradoresRef } from '../../services/moderadoresRefService';
 import { verificarTurnoAbierto } from '../../services/turnosService';
 import { cambiarEstatusMesa } from '../../services/mesasService';
-import { clearSession } from '../../services/sessionService';
+import { clearSession, setSkipBeforeUnload } from '../../services/sessionService';
 import { clienteWebService } from '../../services/clienteWebService';
 import { showSuccessToast, showErrorToast } from '../../components/FeedbackToast';
 import { extractShortFolio, toDatetimeLocalMexico } from '../../utils/formatters';
@@ -22,7 +22,7 @@ import ModuloPagos from '../../components/ventas/ModuloPagos';
 import type { MesaFormData, LlevarFormData, DomicilioFormData } from '../../components/ventas/ModalTipoServicio';
 import type { ProductoWeb } from '../../types/productoWeb.types';
 import type { Usuario } from '../../types/usuario.types';
-import type { Negocio } from '../../types/negocio.types';
+import type { Negocio, ParametrosNegocio } from '../../types/negocio.types';
 import type { Categoria } from '../../types/categoria.types';
 import type { TipoServicio } from '../../types/mesa.types';
 import type { VentaWebCreate, VentaWebWithDetails, TipoDeVenta, EstadoDeVenta, EstadoDetalle, EstatusDePago, OrigenVenta } from '../../types/ventasWeb.types';
@@ -151,6 +151,13 @@ const PageVentas: React.FC = () => {
   // Imprimir comanda cocina checkbox state (initialized from parametros)
   const [imprimirChecked, setImprimirChecked] = useState(true);
 
+  // Parametros del negocio (para control de impresión/whatsapp)
+  const [parametros, setParametros] = useState<ParametrosNegocio | null>(null);
+
+  // Modal comanda state
+  const [showComandaModal, setShowComandaModal] = useState(false);
+  const [pendingComandaItems, setPendingComandaItems] = useState<ItemComanda[]>([]);
+
   // Helper: navigate to dashboard or reset state for privilege 2 after completing/canceling a venta
   const handlePostVenta = React.useCallback(() => {
     if (privilegio === 2) {
@@ -199,6 +206,7 @@ const PageVentas: React.FC = () => {
       }
       if (data?.parametros) {
         setImprimirChecked(data.parametros.impresionComanda === 1);
+        setParametros(data.parametros);
       }
     } catch (error) {
       console.error('Error al cargar negocio:', error);
@@ -922,13 +930,13 @@ const PageVentas: React.FC = () => {
     body {
       font-family: 'Courier New', Courier, monospace;
       font-size: 12px;
-      width: 80mm;
-      max-width: 80mm;
-      padding: 3mm 2mm;
+      width: 58mm;
+      max-width: 58mm;
+      padding: 4mm 3mm;
       color: #000;
       background: #fff;
     }
-    .negocio-name { font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 4px; }
+    .negocio { font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 2px; }
     .rfc { font-size: 10px; text-align: center; margin-bottom: 2px; }
     .direccion { font-size: 10px; text-align: center; margin-bottom: 2px; }
     .folio { font-size: 11px; text-align: center; font-weight: bold; margin-top: 4px; }
@@ -936,17 +944,17 @@ const PageVentas: React.FC = () => {
     .divider { border: none; border-top: 1px dashed #000; margin: 4px 0; }
     .item { margin: 3px 0; }
     .item-nombre { font-size: 12px; font-weight: bold; }
-    .item-detalle { display: flex; justify-content: space-between; font-size: 10px; padding-left: 4px; }
+    .item-detalle { display: flex; justify-content: space-between; font-size: 11px; padding-left: 4px; }
     .mod { font-size: 10px; padding-left: 8px; font-style: italic; }
     .footer-label { font-size: 12px; font-weight: bold; text-align: center; margin-top: 4px; padding-top: 4px; letter-spacing: 1px; }
     @media print {
-      html, body { width: 80mm; }
-      @page { size: 80mm auto; margin: 0; }
+      html, body { width: 58mm; }
+      @page { size: 58mm auto; margin: 0; }
     }
   </style>
 </head>
 <body>
-  <div class="negocio-name">${nombreNegocio}</div>
+  <div class="negocio">${nombreNegocio}</div>
   ${rfcHtml}
   ${direccionHtml}
   ${folioHtml}
@@ -972,6 +980,64 @@ const PageVentas: React.FC = () => {
     } else {
       URL.revokeObjectURL(url);
     }
+  };
+
+  const generarTextoComandaWhatsApp = (items: ItemComanda[]): string => {
+    const ahora = new Date();
+    const fechaHoraLabel = ahora.toLocaleString('es-MX', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    const nombreNegocio = negocio?.nombreNegocio || 'POS Crumen';
+    const tipoDeVentaMap: Record<TipoServicio, string> = {
+      'Mesa': 'MESA', 'Llevar': 'LLEVAR', 'Domicilio': 'DOMICILIO'
+    };
+    const tipoDeVentaLabel = tipoDeVentaMap[tipoServicio] || 'MESA';
+    let clienteLabel = '';
+    if (tipoServicio === 'Mesa' && mesaData) clienteLabel = mesaData.nombremesa || '';
+    else if (tipoServicio === 'Llevar' && llevarData) clienteLabel = llevarData.cliente || 'mostrador';
+    else if (tipoServicio === 'Domicilio' && domicilioData) clienteLabel = domicilioData.cliente || 'mostrador';
+
+    const linea = '────────────────';
+    let texto = `${nombreNegocio}\n`;
+    texto += `COMANDA DE COCINA\n`;
+    const folioLine = currentFolioVenta
+      ? `Comanda | ${tipoDeVentaLabel}${clienteLabel ? ` | ${clienteLabel}` : ''}`
+      : `${tipoDeVentaLabel}${clienteLabel ? ` | ${clienteLabel}` : ''}`;
+    texto += `${folioLine}\n`;
+    texto += `${fechaHoraLabel}\n`;
+    texto += `\n${linea}\n\n`;
+    items.forEach(item => {
+      texto += `${item.producto.nombre}\n`;
+      texto += `  Cant: ${item.cantidad}\n`;
+      if (item.moderadoresNames && item.moderadoresNames.length > 0) {
+        texto += `  _${item.moderadoresNames.join(', ')}_\n`;
+      }
+      if (item.notas) texto += `  Nota: ${item.notas}\n`;
+      texto += `\n`;
+    });
+    texto += `${linea}\n`;
+    return texto;
+  };
+
+  const handleGenerarComandaPDF = () => {
+    if (comanda.length === 0) {
+      showErrorToast('No hay productos en la comanda');
+      return;
+    }
+    setPendingComandaItems([...comanda]);
+    setShowComandaModal(true);
+  };
+
+  const handleImprimirComandaModal = () => {
+    imprimirComandaCocina(pendingComandaItems);
+  };
+
+  const handleEnviarComandaWhatsApp = () => {
+    const texto = generarTextoComandaWhatsApp(pendingComandaItems);
+    setSkipBeforeUnload(true);
+    window.location.href = `whatsapp://send?text=${encodeURIComponent(texto)}`;
+    setTimeout(() => setSkipBeforeUnload(false), 1500);
   };
 
   const handleProducir = async () => {
@@ -1879,6 +1945,13 @@ const PageVentas: React.FC = () => {
                 {currentEstadoDeVenta === 'ESPERAR' && (
                   <button className="btn-eliminar-espera" onClick={handleEliminarEspera} disabled={!isServiceConfigured}>ELIMINAR ESPERA</button>
                 )}
+                <button
+                  className="btn-generar-comanda-pdf"
+                  onClick={handleGenerarComandaPDF}
+                  disabled={comanda.length === 0}
+                >
+                  Generar Comanda PDF
+                </button>
               </>
             )}
             {isClienteMode && (
@@ -2183,6 +2256,41 @@ const PageVentas: React.FC = () => {
               : (item.moderadores || null),
           }))}
         />
+      )}
+
+      {/* Modal Comanda */}
+      {showComandaModal && (
+        <div className="modal-overlay">
+          <div className="modal-comanda-content">
+            <div className="comanda-completado-icono">🧾</div>
+            <h2 className="comanda-completado-titulo">COMANDA GENERADA</h2>
+            <p className="comanda-completado-subtitulo">Seleccione una acción para la comanda.</p>
+            <div className="comanda-completado-botones">
+              <button
+                className="btn-comanda-completado btn-comanda-listo"
+                onClick={() => setShowComandaModal(false)}
+              >
+                ✔ Cerrar
+              </button>
+              {parametros?.impresionComanda === 1 && (
+                <button
+                  className="btn-comanda-completado btn-comanda-imprimir"
+                  onClick={handleImprimirComandaModal}
+                >
+                  🖨 Imprimir
+                </button>
+              )}
+              {parametros?.envioMensaje === 1 && (
+                <button
+                  className="btn-comanda-completado btn-comanda-whatsapp"
+                  onClick={handleEnviarComandaWhatsApp}
+                >
+                  📲 Enviar WhatsApp
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
