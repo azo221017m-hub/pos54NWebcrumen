@@ -44,6 +44,10 @@ function renderStars(calificacion: number | null) {
   );
 }
 
+const isMobileDevice = () =>
+  /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+  window.innerWidth <= 768;
+
 const PageClientes: React.FC = () => {
   const navigate = useNavigate();
   const [negocios, setNegocios] = useState<NegocioPublico[]>([]);
@@ -113,6 +117,12 @@ const PageClientes: React.FC = () => {
   });
 
   // Mobile refresh functionality
+
+  useEffect(() => {
+    if (isMobileDevice()) {
+      navigate('/clientes-mobile', { replace: true });
+    }
+  }, [navigate]);
 
   useEffect(() => {
     // Load active orders from localStorage (keys: pedidoActivo_{idNegocio})
