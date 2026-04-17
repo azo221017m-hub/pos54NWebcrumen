@@ -131,7 +131,10 @@
    SEARCH BAR (outside header)
    ============================================ */
 .pcm-search-outer {
-  padding: 12px 14px 6px;
+  padding-top: 12px;
+  padding-bottom: 6px;
+  padding-left: max(8px, env(safe-area-inset-left));
+  padding-right: max(8px, env(safe-area-inset-right));
   flex-shrink: 0;
 }
 
@@ -316,7 +319,10 @@
    ============================================ */
 .pcm-main {
   flex: 1;
-  padding: 12px 14px 24px;
+  padding-top: 12px;
+  padding-bottom: 24px;
+  padding-left: max(8px, env(safe-area-inset-left));
+  padding-right: max(8px, env(safe-area-inset-right));
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   /* Thin green scrollbar */
@@ -1265,12 +1271,12 @@
    ============================================ */
 @media (min-width: 601px) {
   .pcm-page {
-    max-width: 480px;
-    margin: 0 auto;
-    border-left: 1px solid #e5e7eb;
-    border-right: 1px solid #e5e7eb;
-    box-shadow: 0 0 40px rgba(0,0,0,0.08);
-    min-height: 100vh;
+    max-width: none;
+    margin: 0;
+    border-left: none;
+    border-right: none;
+    box-shadow: none;
+    min-height: 100dvh;
   }
 
   .pcm-fab {
