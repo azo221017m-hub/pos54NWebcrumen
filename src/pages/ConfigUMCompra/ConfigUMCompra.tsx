@@ -17,7 +17,7 @@ export const ConfigUMCompra: React.FC = () => {
   const [unidades, setUnidades] = useState<UMCompra[]>([]);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [umEditar, setUmEditar] = useState<UMCompra | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
   const privilegio = Number(localStorage.getItem('privilegio') || '0');
 
