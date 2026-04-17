@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import '../../styles/StandardPageLayout.css';
 
+const SKELETON_CARD_COUNT = 6;
+
 interface StandardPageLayoutProps {
   // Header props
   showBackButton?: boolean;
@@ -110,7 +112,7 @@ const StandardPageLayout: React.FC<StandardPageLayoutProps> = ({
         <div className="standard-page-content">
           {loading ? (
             <div className="skeleton-cards-grid">
-              {Array.from({ length: 6 }).map((_, i) => (
+              {Array.from({ length: SKELETON_CARD_COUNT }).map((_, i) => (
                 <div key={i} className="skeleton-card">
                   <div className="skeleton-card-header">
                     <div className="skeleton-line skeleton-title" />
