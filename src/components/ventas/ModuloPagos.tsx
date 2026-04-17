@@ -5,6 +5,7 @@ import { procesarPagoSimple, procesarPagoMixto, obtenerDetallesPagos } from '../
 import { negociosService } from '../../services/negociosService';
 import type { DatosRecibo } from '../../utils/reciboPagoUtils';
 import type { DetallePagoRecibo } from '../../utils/reciboPagoUtils';
+import { imprimirRecibo, enviarReciboWhatsApp } from '../../utils/reciboPagoUtils';
 import type { Descuento } from '../../types/descuento.types';
 import type { DetallePago, TipoDeVenta } from '../../types/ventasWeb.types';
 import type { Negocio, ParametrosNegocio } from '../../types/negocio.types';
@@ -536,6 +537,22 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
               >
                 ✔ Listo
               </button>
+              {parametrosData?.impresionRecibo === 1 && (
+                <button
+                  className="btn-pago-completado btn-imprimir"
+                  onClick={() => imprimirRecibo(datosReciboGuardados)}
+                >
+                  🖨 Imprimir
+                </button>
+              )}
+              {parametrosData?.envioWhats === 1 && (
+                <button
+                  className="btn-pago-completado btn-whatsapp"
+                  onClick={() => enviarReciboWhatsApp(datosReciboGuardados)}
+                >
+                  📲 Enviar WhatsApp
+                </button>
+              )}
             </div>
           </div>
         )}
