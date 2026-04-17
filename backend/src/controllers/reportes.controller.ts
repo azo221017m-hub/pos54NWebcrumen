@@ -247,7 +247,7 @@ export const getReporteGastos = async (req: AuthRequest, res: Response): Promise
        FROM tblposcrumenwebdetallemovimientos dm
        WHERE dm.idnegocio = ?
          AND dm.tipomovimiento = 'SALIDA'
-         AND dm.motivomovimiento NOT IN ('VENTA', 'CONSUMO')
+         AND dm.motivomovimiento NOT IN ('VENTA')
          AND dm.estatusmovimiento = 'PROCESADO'
          AND DATE(dm.fechamovimiento) BETWEEN ? AND ?
        ORDER BY dm.fechamovimiento DESC, dm.iddetallemovimiento DESC`,
@@ -331,15 +331,23 @@ export const getReporteFlujo = async (req: AuthRequest, res: Response): Promise<
       [idnegocio, startDate, endDate]
     );
 
-    // Salidas: compras + gastos por día
+    // Salidas: compras (ENTRADA) + gastos (SALIDA) por día
+    // For ENTRADA (compras): cantidad is positive, costo is unit cost → total = cantidad * costo
+    // For SALIDA (gastos): cantidad is stored negative → ABS(cantidad) * costo
     const [salidasRows] = await pool.execute<RowDataPacket[]>(
       `SELECT
          DATE(dm.fechamovimiento) AS fecha,
-         COALESCE(SUM(dm.cantidad * dm.costo), 0) AS salidas
+         COALESCE(SUM(
+           CASE
+             WHEN dm.tipomovimiento = 'ENTRADA' AND dm.motivomovimiento = 'COMPRA'
+               THEN dm.cantidad * dm.costo
+             WHEN dm.tipomovimiento = 'SALIDA' AND dm.motivomovimiento IN ('MERMA', 'AJUSTE_MANUAL', 'CONSUMO')
+               THEN ABS(dm.cantidad) * dm.costo
+             ELSE 0
+           END
+         ), 0) AS salidas
        FROM tblposcrumenwebdetallemovimientos dm
        WHERE dm.idnegocio = ?
-         AND dm.tipomovimiento IN ('ENTRADA', 'SALIDA')
-         AND dm.motivomovimiento IN ('COMPRA', 'MERMA', 'AJUSTE_MANUAL', 'CONSUMO')
          AND dm.estatusmovimiento = 'PROCESADO'
          AND DATE(dm.fechamovimiento) BETWEEN ? AND ?
        GROUP BY DATE(dm.fechamovimiento)`,
