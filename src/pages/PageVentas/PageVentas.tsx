@@ -1945,13 +1945,15 @@ const PageVentas: React.FC = () => {
                 {currentEstadoDeVenta === 'ESPERAR' && (
                   <button className="btn-eliminar-espera" onClick={handleEliminarEspera} disabled={!isServiceConfigured}>ELIMINAR ESPERA</button>
                 )}
-                <button
-                  className="btn-generar-comanda-pdf"
-                  onClick={handleGenerarComandaPDF}
-                  disabled={comanda.length === 0}
-                >
-                  Generar Comanda PDF
-                </button>
+                {isLoadedFromDashboard && (
+                  <button
+                    className="btn-generar-comanda-pdf"
+                    onClick={handleGenerarComandaPDF}
+                    disabled={comanda.length === 0}
+                  >
+                    Comanda Cliente
+                  </button>
+                )}
               </>
             )}
             {isClienteMode && (
