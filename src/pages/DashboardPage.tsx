@@ -2,11 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerSaludNegocio, obtenerTopProductosTurno, type ResumenVentas, type SaludNegocio, type TopProductoTurno, type SaludCategoria } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
-import jsPDF from 'jspdf';
-import { SessionTimer } from '../components/common/SessionTimer';
 import { clearSession } from '../services/sessionService';
-import { obtenerModeradores } from '../services/moderadoresService';
-import type { Moderador } from '../types/moderador.types';
 import { obtenerDetallesPagos } from '../services/pagosService';
 import { verificarTurnoAbierto, cerrarTurnoActual } from '../services/turnosService';
 import type { Turno } from '../types/turno.types';
@@ -190,7 +186,6 @@ export const DashboardPage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [ventasSolicitadas, setVentasSolicitadas] = useState<VentaWebWithDetails[]>([]);
   const [tipoVentaFilter, setTipoVentaFilter] = useState<TipoVentaFilterOption>(TIPO_VENTA_FILTER_ALL);
-  const [moderadores, setModeradores] = useState<Moderador[]>([]);
   const [pagosRegistrados, setPagosRegistrados] = useState<Record<string, number>>({});
   const [resumenVentas, setResumenVentas] = useState<ResumenVentas>({
     totalCobrado: 0,
@@ -299,16 +294,6 @@ export const DashboardPage = () => {
       console.error('Error al cargar comandas del día:', error);
     }
   }, []);
-
-  const cargarModeradores = useCallback(async () => {
-    if (!usuario?.idNegocio) return;
-    try {
-      const mods = await obtenerModeradores(usuario.idNegocio);
-      setModeradores(mods);
-    } catch (error) {
-      console.error('Error al cargar moderadores:', error);
-    }
-  }, [usuario?.idNegocio]);
 
   const cargarResumenVentas = useCallback(async () => {
     try {
@@ -476,166 +461,6 @@ export const DashboardPage = () => {
     }
   };
 
-  // Helper function to resolve moderador names from IDs
-  const resolveModeradoresNames = useCallback((moderadoresStr: string | null): string[] => {
-    if (!moderadoresStr || moderadoresStr === '' || moderadoresStr === '0') {
-      return [];
-    }
-    
-    // Special case for LIMPIO
-    if (moderadoresStr === 'LIMPIO') {
-      return ['LIMPIO'];
-    }
-
-    // Parse comma-separated IDs
-    const ids = moderadoresStr.split(',')
-      .map(id => id.trim())
-      .filter(id => id !== '' && id !== '0')
-      .map(id => parseInt(id, 10))
-      .filter(id => !isNaN(id));
-
-    // Resolve names
-    const names = ids
-      .map(id => moderadores.find(m => m.idmoderador === id)?.nombremoderador)
-      .filter((name): name is string => !!name);
-
-    return names;
-  }, [moderadores]);
-
-  const handleGenerateComandaPDF = (venta: VentaWebWithDetails) => {
-    try {
-      const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: [80, 200] // Ticket size: 80mm width
-      });
-
-      // PDF Constants
-      const PRODUCT_NAME_MAX_LENGTH = 20;
-      const PRODUCT_NAME_WRAP_WIDTH = 28;
-      const NOTES_WRAP_WIDTH = 55;
-
-      let yPos = 10;
-      const lineHeight = 5;
-      const pageWidth = 80;
-
-      // Header
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('POS CRUMEN', pageWidth / 2, yPos, { align: 'center' });
-      yPos += lineHeight * 1.5;
-
-      doc.setFontSize(12);
-      doc.text('COMANDA', pageWidth / 2, yPos, { align: 'center' });
-      yPos += lineHeight * 1.5;
-
-      // Sale info
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Folio: ${getShortFolio(venta.tipodeventa, venta.idventa)}`, 5, yPos);
-      yPos += lineHeight;
-      doc.text(`Tipo: ${venta.tipodeventa}`, 5, yPos);
-      yPos += lineHeight;
-      doc.text(`Cliente: ${venta.cliente}`, 5, yPos);
-      yPos += lineHeight;
-      doc.text(`Fecha: ${new Date(venta.fechadeventa).toLocaleString()}`, 5, yPos);
-      yPos += lineHeight * 1.5;
-
-      // Line separator
-      doc.line(5, yPos, pageWidth - 5, yPos);
-      yPos += lineHeight;
-
-      // Products header
-      doc.setFont('helvetica', 'bold');
-      doc.text('Cant.', 5, yPos);
-      doc.text('Producto', 15, yPos);
-      doc.text('P.Unit', 48, yPos, { align: 'right' });
-      doc.text('Subtotal', pageWidth - 5, yPos, { align: 'right' });
-      yPos += lineHeight;
-
-      doc.line(5, yPos, pageWidth - 5, yPos);
-      yPos += lineHeight;
-
-      // Products
-      doc.setFont('helvetica', 'normal');
-      venta.detalles.forEach((detalle) => {
-        // Check if we need a new page
-        if (yPos > 180) {
-          doc.addPage();
-          yPos = 10;
-        }
-
-        // Cantidad
-        doc.text(`${detalle.cantidad}`, 5, yPos);
-        
-        // Product name - wrap if too long
-        const productName = detalle.nombreproducto;
-        if (productName.length > PRODUCT_NAME_MAX_LENGTH) {
-          const lines = doc.splitTextToSize(productName, PRODUCT_NAME_WRAP_WIDTH);
-          doc.text(lines, 15, yPos);
-          yPos += lineHeight * (lines.length - 1);
-        } else {
-          doc.text(productName, 15, yPos);
-        }
-        
-        // Precio unitario
-        doc.text(`$${Number(detalle.preciounitario).toFixed(2)}`, 48, yPos, { align: 'right' });
-        
-        // Subtotal (cantidad * preciounitario)
-        const subtotal = detalle.cantidad * Number(detalle.preciounitario);
-        doc.text(`$${subtotal.toFixed(2)}`, pageWidth - 5, yPos, { align: 'right' });
-        yPos += lineHeight;
-
-        // Moderadores if any
-        const moderadoresNames = resolveModeradoresNames(detalle.moderadores);
-        if (moderadoresNames.length > 0) {
-          doc.setFontSize(8);
-          doc.setFont('helvetica', 'bold');
-          const moderadoresText = `  Mod: ${moderadoresNames.join(', ')}`;
-          const moderadoresLines = doc.splitTextToSize(moderadoresText, NOTES_WRAP_WIDTH);
-          doc.text(moderadoresLines, 15, yPos);
-          yPos += lineHeight * moderadoresLines.length;
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
-        }
-
-        // Observations if any
-        if (detalle.observaciones) {
-          doc.setFontSize(8);
-          doc.setFont('helvetica', 'italic');
-          const observacionesText = `  * ${detalle.observaciones}`;
-          const observacionesLines = doc.splitTextToSize(observacionesText, NOTES_WRAP_WIDTH);
-          doc.text(observacionesLines, 15, yPos);
-          yPos += lineHeight * observacionesLines.length;
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
-        }
-      });
-
-      yPos += lineHeight * 0.5;
-      doc.line(5, yPos, pageWidth - 5, yPos);
-      yPos += lineHeight;
-
-      // Totals
-      doc.setFont('helvetica', 'bold');
-      doc.text('TOTAL:', 5, yPos);
-      doc.text(`$${Number(venta.totaldeventa).toFixed(2)}`, pageWidth - 5, yPos, { align: 'right' });
-      yPos += lineHeight * 2;
-
-      // Footer
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Gracias por su preferencia', pageWidth / 2, yPos, { align: 'center' });
-
-      // Print the PDF
-      doc.autoPrint();
-      window.open(doc.output('bloburl'), '_blank');
-    } catch (error) {
-      console.error('Error al generar PDF:', error);
-      alert('Error al generar la comanda en PDF');
-    }
-  };
-
   const handleVerDetalle = (venta: VentaWebWithDetails) => {
     // Navigate to sales page with the sale data
     navigate('/ventas', { state: { ventaToLoad: venta } });
@@ -757,8 +582,6 @@ export const DashboardPage = () => {
 
     // Load sales with ORDENADO and ESPERAR status
     cargarVentasSolicitadas();
-    // Load moderadores for PDF generation
-    cargarModeradores();
     // Load sales summary for current shift
     cargarResumenVentas();
     // Load business health data
@@ -886,7 +709,7 @@ export const DashboardPage = () => {
         </div>
 
         <div className="header-right">
-          <SessionTimer />
+          {/* SessionTimer hidden per design: session expiration logic continues in background */}
           <div className="user-menu-container">
             <button 
               className="user-icon-button"
@@ -2272,22 +2095,7 @@ export const DashboardPage = () => {
                             ${calcularImporteMostrar(venta, pagosRegistrados).toFixed(2)}
                           </span>
                           <div className="venta-card-actions">
-                            <button 
-                              className="btn-comanda"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleGenerateComandaPDF(venta);
-                              }}
-                              title="Generar comanda PDF"
-                            >
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                <polyline points="14 2 14 8 20 8"/>
-                                <line x1="16" y1="13" x2="8" y2="13"/>
-                                <line x1="16" y1="17" x2="8" y2="17"/>
-                                <polyline points="10 9 9 9 8 9"/>
-                              </svg>
-                            </button>
+
                             {venta.estadodeventa !== 'ESPERAR' && (
                               <button 
                                 className="btn-pagar"
@@ -2329,7 +2137,7 @@ export const DashboardPage = () => {
                                     handleVerDetalle(venta);
                                   }}
                                 >
-                                  Ver detalle
+                                  Ver Comanda
                                 </button>
                               )
                             ) : null}
