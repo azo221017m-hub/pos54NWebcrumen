@@ -11,8 +11,6 @@ import { useWebSocket } from '../../hooks/useWebSocket';
 import TableroCliente from '../../components/tableroCliente/TableroCliente';
 import './PageClientesMobile.css';
 
-const CATEGORIAS = ['Todos', 'Alimentos', 'Bebidas Calientes', 'Cuidado Personal', 'Bebidas Frías'];
-
 function getPrepTime(id: number): string {
   const mins = ((id * 7 + 5) % 20) + 10;
   return `${mins}-${mins + 5} min`;
@@ -48,7 +46,8 @@ const PageClientesMobile: React.FC = () => {
   const [negocios, setNegocios] = useState<NegocioPublico[]>([]);
   const [filteredNegocios, setFilteredNegocios] = useState<NegocioPublico[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [categoriaActiva, setCategoriaActiva] = useState('Todos');
+  // categoriaActiva drives the search filter; setter available for future category pills
+  const [categoriaActiva, _setCategoriaActiva] = useState('Todos');
   const [isLoading, setIsLoading] = useState(true);
   const [pedidosActivos, setPedidosActivos] = useState<Set<number>>(new Set());
   const [seleccionandoNegocio, setSeleccionandoNegocio] = useState<number | null>(null);
@@ -464,71 +463,61 @@ const PageClientesMobile: React.FC = () => {
 
   return (
     <div className="pcm-page">
-      {/* ── Header ── */}
-      <header className="pcm-header">
-        <div className="pcm-header-particles" aria-hidden="true">
-          <span /><span /><span /><span />
-        </div>
-
-        {/* Row 1: Logo + Title + Avatar */}
-        <div className="pcm-header-row1">
-          <div className="pcm-logo-area">
-            <img src="/logowebposcrumencdt.svg" alt="CRUMEN54N" className="pcm-logo" />
-            <span className="pcm-brand-name">CRUMEN54N</span>
-          </div>
-
-          <div className="pcm-header-actions">
-            {!clienteLogueado && (
-              <button className="pcm-btn-hacer-pedido" onClick={handleAbrirModalLogin}>
-                Hacer Pedido
-              </button>
-            )}
-            {clienteLogueado && clienteData && (
-              <div className="pcm-avatar-container" ref={avatarRef}>
-                <button
-                  className="pcm-avatar-btn"
-                  onClick={() => setMostrarMenuAvatar(!mostrarMenuAvatar)}
-                  aria-label="Menú de usuario"
-                  aria-expanded={mostrarMenuAvatar}
-                >
-                  <span className="pcm-avatar-initial">
-                    {(clienteData.referencia || clienteData.nombre || clienteData.telefono || '?').charAt(0).toUpperCase()}
-                  </span>
-                </button>
-                {mostrarMenuAvatar && (
-                  <div className="pcm-avatar-menu" role="menu">
-                    <div className="pcm-avatar-menu-name">
-                      {clienteData.referencia || clienteData.nombre || clienteData.telefono}
-                    </div>
+      {/* ── Anuncios Hero ── */}
+      <div className="pcm-anuncios-hero">
+        {(() => {
+          const anuncio = anuncios.length > 0 ? anuncios[anuncioActivo] : null;
+          const imagenes = anuncio ? getImagenes(anuncio) : [];
+          return imagenes.length > 0 ? (
+            <>
+              <img
+                src={`data:image/jpeg;base64,${imagenes[imagenActivaIdx]}`}
+                alt={anuncio!.tituloDeAnuncio}
+                className="pcm-anuncios-hero-img"
+              />
+              {anuncio!.tituloDeAnuncio && (
+                <div className="pcm-anuncios-overlay">
+                  <span className="pcm-anuncios-titulo">{anuncio!.tituloDeAnuncio}</span>
+                </div>
+              )}
+              {anuncios.length > 1 && (
+                <div className="pcm-anuncios-dots">
+                  {anuncios.map((_, i) => (
                     <button
-                      className="pcm-avatar-menu-item"
-                      onClick={() => { setMostrarTablero(true); setMostrarMenuAvatar(false); }}
-                      role="menuitem"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="pcm-menu-icon">
-                        <rect x="3" y="3" width="7" height="7" rx="1" />
-                        <rect x="14" y="3" width="7" height="7" rx="1" />
-                        <rect x="3" y="14" width="7" height="7" rx="1" />
-                        <rect x="14" y="14" width="7" height="7" rx="1" />
-                      </svg>
-                      Mis Pedidos
-                    </button>
-                    <button className="pcm-avatar-menu-logout" onClick={handleLogout} role="menuitem">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="pcm-menu-icon">
-                        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
-                        <polyline points="16 17 21 12 16 7" />
-                        <line x1="21" y1="12" x2="9" y2="12" />
-                      </svg>
-                      Cerrar sesión
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+                      key={i}
+                      className={`pcm-anuncios-dot${i === anuncioActivo ? ' pcm-anuncios-dot--active' : ''}`}
+                      onClick={() => { setAnuncioActivo(i); setImagenActivaIdx(0); }}
+                      aria-label={`Anuncio ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="pcm-anuncios-placeholder" aria-hidden="true">
+              <span className="pcm-anuncios-placeholder-text">anuncios</span>
+            </div>
+          );
+        })()}
 
-        {/* Row 2: Search bar */}
+        {/* Funciones Cliente — green circle button bottom-left */}
+        <button
+          className="pcm-funciones-btn"
+          onClick={() => setMostrarMenuComunidad(true)}
+          aria-label="Funciones cliente"
+        >
+          {clienteLogueado && clienteData ? (
+            <span className="pcm-funciones-initial">
+              {(clienteData.referencia || clienteData.nombre || clienteData.telefono || '?').charAt(0).toUpperCase()}
+            </span>
+          ) : (
+            <span className="pcm-funciones-label">funciones<br />cliente</span>
+          )}
+        </button>
+      </div>
+
+      {/* ── Search Bar ── */}
+      <div className="pcm-search-outer">
         <div className="pcm-search-wrapper">
           <svg className="pcm-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="11" cy="11" r="8" />
@@ -538,7 +527,7 @@ const PageClientesMobile: React.FC = () => {
             ref={searchInputRef}
             type="text"
             className="pcm-search-input"
-            placeholder="Buscar negocio o producto..."
+            placeholder="Buscar producto o negocio"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -546,20 +535,7 @@ const PageClientesMobile: React.FC = () => {
             <button className="pcm-search-clear" onClick={() => setSearchTerm('')} aria-label="Limpiar búsqueda">✕</button>
           )}
         </div>
-
-        {/* Row 3: Category pills */}
-        <div className="pcm-categorias">
-          {CATEGORIAS.map((cat) => (
-            <button
-              key={cat}
-              className={`pcm-cat-btn${categoriaActiva === cat ? ' pcm-cat-btn--active' : ''}`}
-              onClick={() => setCategoriaActiva(cat)}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      </header>
+      </div>
 
       {/* Turno error banner */}
       {turnoError && (
@@ -573,38 +549,6 @@ const PageClientesMobile: React.FC = () => {
           <button className="pcm-turno-error-close" onClick={() => setTurnoError(null)} aria-label="Cerrar">✕</button>
         </div>
       )}
-
-      {/* Anuncios strip (horizontal banner at top of content) */}
-      {anuncios.length > 0 && (() => {
-        const anuncio = anuncios[anuncioActivo];
-        const imagenes = getImagenes(anuncio);
-        return imagenes.length > 0 ? (
-          <div className="pcm-anuncios-strip">
-            <img
-              src={`data:image/jpeg;base64,${imagenes[imagenActivaIdx]}`}
-              alt={anuncio.tituloDeAnuncio}
-              className="pcm-anuncios-img"
-            />
-            {anuncio.tituloDeAnuncio && (
-              <div className="pcm-anuncios-overlay">
-                <span className="pcm-anuncios-titulo">{anuncio.tituloDeAnuncio}</span>
-              </div>
-            )}
-            {anuncios.length > 1 && (
-              <div className="pcm-anuncios-dots">
-                {anuncios.map((_, i) => (
-                  <button
-                    key={i}
-                    className={`pcm-anuncios-dot${i === anuncioActivo ? ' pcm-anuncios-dot--active' : ''}`}
-                    onClick={() => { setAnuncioActivo(i); setImagenActivaIdx(0); }}
-                    aria-label={`Anuncio ${i + 1}`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        ) : null;
-      })()}
 
       {/* Main scrollable content */}
       <main className="pcm-main">
@@ -632,140 +576,157 @@ const PageClientesMobile: React.FC = () => {
             )}
           </div>
         ) : (
-          <>
-            <p className="pcm-results-count">
-              {filteredNegocios.length} negocio{filteredNegocios.length !== 1 ? 's' : ''} disponible
-              {filteredNegocios.length !== 1 ? 's' : ''}
-            </p>
+          <div className="pcm-list">
+            {filteredNegocios.map((negocio) => {
+              const tieneActivo = pedidosActivos.has(negocio.idNegocio);
+              const cargando = seleccionandoNegocio === negocio.idNegocio;
+              return (
+                <div key={negocio.idNegocio} className="pcm-card">
+                  {/* Logo panel */}
+                  <div className="pcm-card-logo-wrap">
+                    {negocio.logotipo ? (
+                      <img src={negocio.logotipo} alt={negocio.nombreNegocio} className="pcm-card-logo" />
+                    ) : (
+                      <div className="pcm-card-logo-placeholder">
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="pcm-store-icon">
+                          <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" />
+                        </svg>
+                      </div>
+                    )}
+                    {negocio.nuevoweb === 1 && (
+                      <span className="pcm-badge pcm-badge--nuevo" aria-label="Nuevo negocio">NUEVO</span>
+                    )}
+                  </div>
 
-            <div className="pcm-list">
-              {filteredNegocios.map((negocio) => {
-                const tieneActivo = pedidosActivos.has(negocio.idNegocio);
-                const cargando = seleccionandoNegocio === negocio.idNegocio;
-                return (
-                  <div key={negocio.idNegocio} className="pcm-card">
-                    {/* Card: horizontal — logo left, info right */}
-                    <div className="pcm-card-logo-wrap">
-                      {negocio.logotipo ? (
-                        <img src={negocio.logotipo} alt={negocio.nombreNegocio} className="pcm-card-logo" />
-                      ) : (
-                        <div className="pcm-card-logo-placeholder">
-                          <svg viewBox="0 0 24 24" fill="currentColor" className="pcm-store-icon">
-                            <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" />
-                          </svg>
-                        </div>
-                      )}
-                      {negocio.nuevoweb === 1 && (
-                        <span className="pcm-badge pcm-badge--nuevo" aria-label="Nuevo negocio">NUEVO</span>
-                      )}
+                  <div className="pcm-card-body">
+                    <div className="pcm-card-top">
+                      <h3 className="pcm-card-name">{negocio.nombreNegocio}</h3>
+                      <p className="pcm-card-tipo">{negocio.tipoNegocio || 'Negocio'}</p>
                     </div>
 
-                    <div className="pcm-card-body">
-                      <div className="pcm-card-top">
-                        <h3 className="pcm-card-name">{negocio.nombreNegocio}</h3>
-                        <p className="pcm-card-tipo">{negocio.tipoNegocio || 'Negocio'}</p>
-                      </div>
-
-                      <div className="pcm-card-meta">
-                        {renderStars(negocio.calificacion)}
-                        <span className="pcm-card-separator">·</span>
-                        <span className="pcm-card-time">⏱ {getPrepTime(negocio.idNegocio)}</span>
-                      </div>
-
-                      {(negocio.abiertoahoraweb === 1 || negocio.promocionhoyweb === 1 || negocio.entregarapidaweb === 1) && (
-                        <div className="pcm-badges-row">
-                          {negocio.abiertoahoraweb === 1 && (
-                            <span className="pcm-badge pcm-badge--abierto">🟢 Abierto</span>
-                          )}
-                          {negocio.promocionhoyweb === 1 && (
-                            <span className="pcm-badge pcm-badge--promocion">🏷️ Promo</span>
-                          )}
-                          {negocio.entregarapidaweb === 1 && (
-                            <span className="pcm-badge pcm-badge--entrega">⚡ Rápido</span>
-                          )}
-                        </div>
-                      )}
-
-                      {tieneActivo && clienteLogueado && (
-                        <div className="pcm-active-order">
-                          <svg viewBox="0 0 20 20" fill="#16a34a" className="pcm-active-icon">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                          <span>Pedido activo</span>
-                          <button className="pcm-ver-pedido-btn" onClick={() => handleVerPedido(negocio.idNegocio)}>
-                            Ver
-                          </button>
-                        </div>
-                      )}
+                    <div className="pcm-card-meta">
+                      {renderStars(negocio.calificacion)}
+                      <span className="pcm-card-separator">·</span>
+                      <span className="pcm-card-time">⏱ {getPrepTime(negocio.idNegocio)}</span>
                     </div>
 
-                    {/* CTA button aligned right */}
-                    <div className="pcm-card-cta">
-                      {clienteLogueado && negocio.abiertoahoraweb === 1 && (
-                        <button
-                          className={`pcm-ver-btn${cargando ? ' pcm-ver-btn--loading' : ''}`}
-                          onClick={() => handleSeleccionarNegocio(negocio)}
-                          disabled={!!seleccionandoNegocio}
-                        >
-                          {cargando ? (
-                            <span className="pcm-btn-spinner" />
-                          ) : (
-                            <>
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="pcm-ver-icon">
-                                <path d="M9 18l6-6-6-6" />
-                              </svg>
-                            </>
-                          )}
+                    {(negocio.abiertoahoraweb === 1 || negocio.promocionhoyweb === 1 || negocio.entregarapidaweb === 1) && (
+                      <div className="pcm-badges-row">
+                        {negocio.abiertoahoraweb === 1 && (
+                          <span className="pcm-badge pcm-badge--abierto">🟢 Abierto</span>
+                        )}
+                        {negocio.promocionhoyweb === 1 && (
+                          <span className="pcm-badge pcm-badge--promocion">🏷️ Promo</span>
+                        )}
+                        {negocio.entregarapidaweb === 1 && (
+                          <span className="pcm-badge pcm-badge--entrega">⚡ Rápido</span>
+                        )}
+                      </div>
+                    )}
+
+                    {tieneActivo && clienteLogueado && (
+                      <div className="pcm-active-order">
+                        <svg viewBox="0 0 20 20" fill="#16a34a" className="pcm-active-icon">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <span>Pedido activo</span>
+                        <button className="pcm-ver-pedido-btn" onClick={() => handleVerPedido(negocio.idNegocio)}>
+                          Ver
                         </button>
-                      )}
-                      {!clienteLogueado && negocio.abiertoahoraweb === 1 && (
-                        <button
-                          className="pcm-ver-btn pcm-ver-btn--login"
-                          onClick={handleAbrirModalLogin}
-                        >
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CTA button */}
+                  <div className="pcm-card-cta">
+                    {clienteLogueado && negocio.abiertoahoraweb === 1 && (
+                      <button
+                        className={`pcm-ver-btn${cargando ? ' pcm-ver-btn--loading' : ''}`}
+                        onClick={() => handleSeleccionarNegocio(negocio)}
+                        disabled={!!seleccionandoNegocio}
+                      >
+                        {cargando ? (
+                          <span className="pcm-btn-spinner" />
+                        ) : (
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="pcm-ver-icon">
                             <path d="M9 18l6-6-6-6" />
                           </svg>
-                        </button>
-                      )}
-                    </div>
+                        )}
+                      </button>
+                    )}
+                    {!clienteLogueado && negocio.abiertoahoraweb === 1 && (
+                      <button
+                        className="pcm-ver-btn pcm-ver-btn--login"
+                        onClick={handleAbrirModalLogin}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="pcm-ver-icon">
+                          <path d="M9 18l6-6-6-6" />
+                        </svg>
+                      </button>
+                    )}
                   </div>
-                );
-              })}
-            </div>
-          </>
+                </div>
+              );
+            })}
+          </div>
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="pcm-footer">
-        <p>CRUMEN54N · Texcoco</p>
-        <div className="pcm-footer-badges">
-          <span className="pcm-footer-badge">✔ Negocios locales</span>
-          <span className="pcm-footer-badge">✔ Pedidos rápidos</span>
-        </div>
-      </footer>
-
-      {/* FAB — Comunidad (floating action button) */}
-      <button
-        className="pcm-fab"
-        onClick={() => setMostrarMenuComunidad(true)}
-        aria-label="Comunidad"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="pcm-fab-icon">
-          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-          <circle cx="9" cy="7" r="4" />
-          <path d="M23 21v-2a4 4 0 00-3-3.87" />
-          <path d="M16 3.13a4 4 0 010 7.75" />
-        </svg>
-      </button>
-
-      {/* Bottom sheet — Comunidad menu */}
+      {/* Bottom sheet — Funciones Cliente (login + avatar + comunidad) */}
       {mostrarMenuComunidad && (
         <div className="pcm-sheet-overlay" onClick={() => setMostrarMenuComunidad(false)}>
           <div className="pcm-sheet" onClick={(e) => e.stopPropagation()}>
             <div className="pcm-sheet-handle" />
-            <h3 className="pcm-sheet-title">Comunidad CDT</h3>
+
+            {/* Logged-in: show client name + account actions */}
+            {clienteLogueado && clienteData && (
+              <>
+                <div className="pcm-sheet-cliente-row">
+                  <span className="pcm-sheet-cliente-avatar">
+                    {(clienteData.referencia || clienteData.nombre || clienteData.telefono || '?').charAt(0).toUpperCase()}
+                  </span>
+                  <span className="pcm-sheet-cliente-name">
+                    {clienteData.referencia || clienteData.nombre || clienteData.telefono}
+                  </span>
+                </div>
+                <button className="pcm-sheet-item" onClick={() => { setMostrarTablero(true); setMostrarMenuComunidad(false); }}>
+                  <span className="pcm-sheet-item-icon">📦</span>
+                  <div>
+                    <div className="pcm-sheet-item-label">Mis Pedidos</div>
+                    <div className="pcm-sheet-item-sub">Ver estado de mis pedidos activos</div>
+                  </div>
+                </button>
+                <button className="pcm-sheet-item" onClick={() => { handleLogout(); setMostrarMenuComunidad(false); }}>
+                  <span className="pcm-sheet-item-icon">🚪</span>
+                  <div>
+                    <div className="pcm-sheet-item-label">Cerrar sesión</div>
+                    <div className="pcm-sheet-item-sub">Salir de mi cuenta</div>
+                  </div>
+                </button>
+              </>
+            )}
+
+            {/* Not logged-in: show login & register */}
+            {!clienteLogueado && (
+              <>
+                <button className="pcm-sheet-item" onClick={() => { setMostrarMenuComunidad(false); handleAbrirModalLogin(); }}>
+                  <span className="pcm-sheet-item-icon">🛒</span>
+                  <div>
+                    <div className="pcm-sheet-item-label">Iniciar Pedidos</div>
+                    <div className="pcm-sheet-item-sub">Inicia sesión para hacer pedidos</div>
+                  </div>
+                </button>
+                <button className="pcm-sheet-item" onClick={() => { setMostrarMenuComunidad(false); handleAbrirModalRegistro(); }}>
+                  <span className="pcm-sheet-item-icon">🎉</span>
+                  <div>
+                    <div className="pcm-sheet-item-label">CREAR MI ACCESO Gratis</div>
+                    <div className="pcm-sheet-item-sub">Únirme a la comunidad digital</div>
+                  </div>
+                </button>
+              </>
+            )}
+
+            {/* Comunidad options always visible */}
             <button className="pcm-sheet-item" onClick={handleAbrirModalNegocioCta}>
               <span className="pcm-sheet-item-icon">🏪</span>
               <div>
@@ -780,15 +741,7 @@ const PageClientesMobile: React.FC = () => {
                 <div className="pcm-sheet-item-sub">Aplica como repartidor de la comunidad</div>
               </div>
             </button>
-            {!clienteLogueado && (
-              <button className="pcm-sheet-item" onClick={() => { setMostrarMenuComunidad(false); handleAbrirModalRegistro(); }}>
-                <span className="pcm-sheet-item-icon">🎉</span>
-                <div>
-                  <div className="pcm-sheet-item-label">CREAR MI ACCESO Gratis</div>
-                  <div className="pcm-sheet-item-sub">Únirme a la comunidad digital</div>
-                </div>
-              </button>
-            )}
+
             <button className="pcm-sheet-cancel" onClick={() => setMostrarMenuComunidad(false)}>Cancelar</button>
           </div>
         </div>
