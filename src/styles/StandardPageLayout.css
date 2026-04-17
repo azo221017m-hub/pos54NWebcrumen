@@ -318,15 +318,135 @@
 }
 
 /* ===================================
-   ESTADOS - Loading y Empty
+   ESTADOS - Loading (Skeleton) y Empty
    =================================== */
-.standard-loading-container {
+
+/* ---- Skeleton shimmer animation ---- */
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+
+.skeleton-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  padding: 0.5rem;
+}
+
+.skeleton-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
+  gap: 1rem;
+}
+
+/* Shared shimmer base */
+.skeleton-line,
+.skeleton-title,
+.skeleton-badge,
+.skeleton-btn {
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-card-header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  gap: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  gap: 1rem;
+}
+
+.skeleton-title {
+  height: 20px;
+  flex: 1;
+  max-width: 65%;
+}
+
+.skeleton-badge {
+  height: 22px;
+  width: 64px;
+  border-radius: 50px;
+}
+
+.skeleton-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.skeleton-line {
+  height: 14px;
+  width: 100%;
+}
+
+.skeleton-line-short {
+  width: 60%;
+}
+
+.skeleton-card-footer {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.skeleton-btn {
+  flex: 1;
+  height: 36px;
+  border-radius: 6px;
+}
+
+/* Stagger the shimmer on each card for a wave-like effect */
+.skeleton-card:nth-child(2) .skeleton-line,
+.skeleton-card:nth-child(2) .skeleton-title,
+.skeleton-card:nth-child(2) .skeleton-badge,
+.skeleton-card:nth-child(2) .skeleton-btn {
+  animation-delay: 0.1s;
+}
+.skeleton-card:nth-child(3) .skeleton-line,
+.skeleton-card:nth-child(3) .skeleton-title,
+.skeleton-card:nth-child(3) .skeleton-badge,
+.skeleton-card:nth-child(3) .skeleton-btn {
+  animation-delay: 0.2s;
+}
+.skeleton-card:nth-child(4) .skeleton-line,
+.skeleton-card:nth-child(4) .skeleton-title,
+.skeleton-card:nth-child(4) .skeleton-badge,
+.skeleton-card:nth-child(4) .skeleton-btn {
+  animation-delay: 0.3s;
+}
+.skeleton-card:nth-child(5) .skeleton-line,
+.skeleton-card:nth-child(5) .skeleton-title,
+.skeleton-card:nth-child(5) .skeleton-badge,
+.skeleton-card:nth-child(5) .skeleton-btn {
+  animation-delay: 0.4s;
+}
+.skeleton-card:nth-child(6) .skeleton-line,
+.skeleton-card:nth-child(6) .skeleton-title,
+.skeleton-card:nth-child(6) .skeleton-badge,
+.skeleton-card:nth-child(6) .skeleton-btn {
+  animation-delay: 0.5s;
+}
+
+@media (max-width: 768px) {
+  .skeleton-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 }
 
 .standard-empty-state {
