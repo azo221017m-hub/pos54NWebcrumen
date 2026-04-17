@@ -22,6 +22,7 @@ import ConfigTurnos from '../pages/ConfigTurnos/ConfigTurnos';
 import ConfigAnuncios from '../pages/ConfigAnuncios/ConfigAnuncios';
 import PageVentas from '../pages/PageVentas/PageVentas';
 import PageClientes from '../pages/PageClientes/PageClientes';
+import PageClientesMobile from '../pages/PageClientesMobile/PageClientesMobile';
 import MovimientosInventario from '../pages/MovimientosInventario/MovimientosInventario';
 import PageGastos from '../pages/PageGastos/PageGastos';
 import ProtectedRoute from './ProtectedRoute';
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
   {
     path: '/clientes',
     element: <PageClientes />,
+  },
+  {
+    path: '/clientes-mobile',
+    element: <PageClientesMobile />,
   },
   // Rutas protegidas (requieren sesión activa)
   {
