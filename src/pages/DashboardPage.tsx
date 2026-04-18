@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerSaludNegocio, obtenerTopProductosTurno, type ResumenVentas, type SaludNegocio, type TopProductoTurno, type SaludCategoria } from '../services/ventasWebService';
+import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerTopProductosTurno, type ResumenVentas, type TopProductoTurno } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import { clearSession } from '../services/sessionService';
 import { obtenerDetallesPagos } from '../services/pagosService';
@@ -199,31 +199,6 @@ export const DashboardPage = () => {
     ventasPorTipoDeVenta: [],
     descuentosPorTipo: []
   });
-  const [, setSaludNegocio] = useState<SaludNegocio>({
-    ventas: 0,
-    costoVenta: 0,
-    margenBruto: 0,
-    porcentajeMargen: 0,
-    gastos: 0,
-    utilidadOperativa: 0,
-    valorInventario: 0,
-    totalVentas: 0,
-    totalGastos: 0,
-    totalCompras: 0,
-    periodo: {
-      inicio: '',
-      fin: ''
-    }
-  });
-  const [saludCategoria, _setSaludCategoria] = useState<SaludCategoria>('FINANCIEROS');
-  const [saludFechaInicio, _setSaludFechaInicio] = useState<string>(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-  });
-  const [saludFechaFin, _setSaludFechaFin] = useState<string>(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
-  });
   const [turnoAbierto, setTurnoAbierto] = useState<Turno | null>(null);
   const [showCierreTurnoModal, setShowCierreTurnoModal] = useState(false);
   const [negocio, setNegocio] = useState<Negocio | null>(null);
@@ -305,19 +280,6 @@ export const DashboardPage = () => {
       console.error('Error al cargar resumen de ventas:', error);
     }
   }, []);
-
-  const cargarSaludNegocio = useCallback(async (
-    categoria: SaludCategoria = saludCategoria,
-    fechaInicio: string = saludFechaInicio,
-    fechaFin: string = saludFechaFin
-  ) => {
-    try {
-      const salud = await obtenerSaludNegocio(categoria, fechaInicio, fechaFin);
-      setSaludNegocio(salud);
-    } catch (error) {
-      console.error('Error al cargar salud del negocio:', error);
-    }
-  }, [saludCategoria, saludFechaInicio, saludFechaFin]);
 
   const calcularNivelInventario = useCallback(async () => {
     if (!usuario?.idNegocio) return;
@@ -536,12 +498,7 @@ export const DashboardPage = () => {
         debouncedRefresh('ventas', () => {
           cargarVentasSolicitadas();
           cargarResumenVentas();
-          cargarSaludNegocio();
           cargarTopProductosTurno();
-        });
-      } else if (data.type === 'gasto_update') {
-        debouncedRefresh('gastos', () => {
-          cargarSaludNegocio();
         });
       } else if (data.type === 'turno_update') {
         debouncedRefresh('turno', () => {
@@ -584,8 +541,6 @@ export const DashboardPage = () => {
     cargarVentasSolicitadas();
     // Load sales summary for current shift
     cargarResumenVentas();
-    // Load business health data
-    cargarSaludNegocio();
     // Calculate inventory level
     calcularNivelInventario();
     // Load top products for current shift
@@ -604,7 +559,7 @@ export const DashboardPage = () => {
 
     // Verify open turno
     verificarTurno();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas, cargarModeradores, cargarResumenVentas, cargarSaludNegocio, and verificarTurno omitted to prevent infinite refresh loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas, cargarResumenVentas, calcularNivelInventario, cargarTopProductosTurno y verificarTurno omitidos para evitar ciclos de recarga
   }, [navigate, location.key]);
 
   // Reload sales and summary when the tab regains focus (e.g. after closing a print popup)
@@ -1571,8 +1526,9 @@ export const DashboardPage = () => {
                 </div>
                 <h3 className="card-title" style={{ margin: 0 }}>Inventario</h3>
               </div>
-              {/* Indicador de Nivel de Inventario - Más compacto */}
+              {/* Indicador de Nivel de Inventario */}
               <div style={{
+                marginTop: '0.75rem',
                 padding: '0.5rem',
                 backgroundColor: `${nivelInventario.color}15`,
                 border: `1px solid ${nivelInventario.color}`,
