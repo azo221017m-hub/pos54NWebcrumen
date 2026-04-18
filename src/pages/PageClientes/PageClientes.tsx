@@ -106,6 +106,7 @@ const PageClientes: React.FC = () => {
     fotoRepartidor: null as File | null,
   };
   const [mostrarModalRepartidor, setMostrarModalRepartidor] = useState(false);
+  const [mostrarImagenRepartidor, setMostrarImagenRepartidor] = useState(false);
   const [repartidorData, setRepartidorData] = useState(REPARTIDOR_INITIAL);
 
   const [registroData, setRegistroData] = useState({
@@ -453,6 +454,11 @@ const PageClientes: React.FC = () => {
 
   const handleAbrirModalRepartidor = () => {
     setRepartidorData(REPARTIDOR_INITIAL);
+    setMostrarImagenRepartidor(true);
+  };
+
+  const handleCerrarImagenRepartidor = () => {
+    setMostrarImagenRepartidor(false);
     setMostrarModalRepartidor(true);
   };
 
@@ -1018,6 +1024,16 @@ const PageClientes: React.FC = () => {
                 Enviar Whatsapp
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Imagen previa — repartidorxscdt.png */}
+      {mostrarImagenRepartidor && (
+        <div className="pc-modal-overlay">
+          <div className="pc-imagen-repartidor-container">
+            <button className="pc-imagen-repartidor-close" onClick={handleCerrarImagenRepartidor} aria-label="Cerrar imagen">✕</button>
+            <img src="/repartidorxscdt.png" alt="Quiero ser repartidor CDT" className="pc-imagen-repartidor" />
           </div>
         </div>
       )}
