@@ -80,6 +80,7 @@ const PageClientesMobile: React.FC = () => {
 
   const NEGOCIO_CTA_INITIAL = { nombreNegocio: '', tipoNegocio: '', dudasComentarios: '', interes: 'Vender' };
   const [mostrarModalNegocioCta, setMostrarModalNegocioCta] = useState(false);
+  const [mostrarImagenNegocio, setMostrarImagenNegocio] = useState(false);
   const [negocioCtaData, setNegocioCtaData] = useState(NEGOCIO_CTA_INITIAL);
 
   const REPARTIDOR_INITIAL = {
@@ -401,6 +402,11 @@ const PageClientesMobile: React.FC = () => {
   const handleAbrirModalNegocioCta = () => {
     setNegocioCtaData(NEGOCIO_CTA_INITIAL);
     setMostrarMenuComunidad(false);
+    setMostrarImagenNegocio(true);
+  };
+
+  const handleCerrarImagenNegocio = () => {
+    setMostrarImagenNegocio(false);
     setMostrarModalNegocioCta(true);
   };
 
@@ -840,6 +846,16 @@ const PageClientesMobile: React.FC = () => {
           <div className="pcm-agradecimiento-modal">
             <button className="pcm-agradecimiento-close" onClick={handleCerrarModalAgradecimiento} aria-label="Cerrar">✕</button>
             <img src="/agradecimientocdt.png" alt="¡Gracias por unirte a la comunidad!" className="pcm-agradecimiento-img" />
+          </div>
+        </div>
+      )}
+
+      {/* Imagen previa — negociosCDT.JPG */}
+      {mostrarImagenNegocio && (
+        <div className="pcm-sheet-overlay pcm-sheet-overlay--imagen-repartidor">
+          <div className="pcm-imagen-repartidor-container">
+            <button className="pcm-imagen-repartidor-close" onClick={handleCerrarImagenNegocio} aria-label="Cerrar imagen">✕</button>
+            <img src="/negociosCDT.JPG" alt="Quiero mostrar mi negocio aquí" className="pcm-imagen-repartidor" />
           </div>
         </div>
       )}
