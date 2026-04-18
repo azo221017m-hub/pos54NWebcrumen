@@ -95,6 +95,7 @@ const PageClientes: React.FC = () => {
   // "Quiero mostrar mi negocio" modal
   const NEGOCIO_CTA_INITIAL = { nombreNegocio: '', tipoNegocio: '', dudasComentarios: '', interes: 'Vender' };
   const [mostrarModalNegocioCta, setMostrarModalNegocioCta] = useState(false);
+  const [mostrarImagenNegocio, setMostrarImagenNegocio] = useState(false);
   const [negocioCtaData, setNegocioCtaData] = useState(NEGOCIO_CTA_INITIAL);
 
   // "Quiero ser repartidor CDT" modal
@@ -431,6 +432,11 @@ const PageClientes: React.FC = () => {
 
   const handleAbrirModalNegocioCta = () => {
     setNegocioCtaData(NEGOCIO_CTA_INITIAL);
+    setMostrarImagenNegocio(true);
+  };
+
+  const handleCerrarImagenNegocio = () => {
+    setMostrarImagenNegocio(false);
     setMostrarModalNegocioCta(true);
   };
 
@@ -944,6 +950,16 @@ const PageClientes: React.FC = () => {
               alt="¡Gracias por unirte a la comunidad!"
               className="pc-agradecimiento-img"
             />
+          </div>
+        </div>
+      )}
+
+      {/* Imagen previa — negociosCDT.JPG */}
+      {mostrarImagenNegocio && (
+        <div className="pc-modal-overlay">
+          <div className="pc-imagen-repartidor-container">
+            <button className="pc-imagen-repartidor-close" onClick={handleCerrarImagenNegocio} aria-label="Cerrar imagen">✕</button>
+            <img src="/negociosCDT.JPG" alt="Quiero mostrar mi negocio aquí" className="pc-imagen-repartidor" />
           </div>
         </div>
       )}
