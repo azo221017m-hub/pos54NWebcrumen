@@ -1621,6 +1621,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
           totalOrdenado: 0,
           totalVentasCobradas: 0,
           totalGastos: 0,
+          totalCompras: 0,
           totalDescuentos: 0,
           metaTurno: 0,
           hasTurnoAbierto: false,
@@ -1652,17 +1653,34 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const totalOrdenado = Number(salesRows[0]?.totalOrdenado) || 0;
     const totalVentasCobradas = Number(salesRows[0]?.totalVentasCobradas) || 0;
 
-    // Get total gastos: tipodeventa='MOVIMIENTO', estadodeventa='COBRADO', referencia='GASTO'
+    // Get total gastos del mes actual: referencia='GASTO', estatuspago='PAGADO'
+    // Requested grouped by descripcionmov; we aggregate groups into dashboard total.
     const [gastosRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT COALESCE(SUM(totaldeventa), 0) as totalGastos
+      `SELECT descripcionmov, COALESCE(SUM(totaldeventa), 0) as total
        FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND tipodeventa = 'MOVIMIENTO'
-         AND estadodeventa = 'COBRADO'
-         AND referencia = 'GASTO'`,
-      [claveturno, idnegocio]
+       WHERE idnegocio = ?
+         AND referencia = 'GASTO'
+         AND estatuspago = 'PAGADO'
+         AND YEAR(fechadeventa) = YEAR(CURDATE())
+         AND MONTH(fechadeventa) = MONTH(CURDATE())
+       GROUP BY descripcionmov`,
+      [idnegocio]
     );
-    const totalGastos = Number(gastosRows[0]?.totalGastos) || 0;
+    const totalGastos = gastosRows.reduce((sum, row) => sum + (Number(row.total) || 0), 0);
+
+    // Get total compras del mes actual from inventory movements detail:
+    // SUM(cantidad * costo) where motivomovimiento='COMPRA' and estatusmovimiento='PROCESADO'
+    const [comprasRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(cantidad * costo), 0) as totalCompras
+       FROM tblposcrumenwebdetallemovimientos
+       WHERE idnegocio = ?
+         AND motivomovimiento = 'COMPRA'
+         AND estatusmovimiento = 'PROCESADO'
+         AND YEAR(fechamovimiento) = YEAR(CURDATE())
+         AND MONTH(fechamovimiento) = MONTH(CURDATE())`,
+      [idnegocio]
+    );
+    const totalCompras = Number(comprasRows[0]?.totalCompras) || 0;
 
     // Get total descuentos: estadodeventa='COBRADO', descripcionmov='VENTA'
     const [descuentosTotalRows] = await pool.execute<RowDataPacket[]>(
@@ -1756,6 +1774,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
         totalOrdenado,
         totalVentasCobradas,
         totalGastos,
+        totalCompras,
         totalDescuentos,
         metaTurno: metaturno,
         hasTurnoAbierto: true,
