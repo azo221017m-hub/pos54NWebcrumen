@@ -254,7 +254,6 @@ export interface ResumenVentas {
   totalOrdenado: number;
   totalVentasCobradas: number;
   totalGastos: number;
-  totalCompras: number;
   totalDescuentos: number;
   metaTurno: number;
   hasTurnoAbierto: boolean;
@@ -279,7 +278,6 @@ export const obtenerResumenVentas = async (): Promise<ResumenVentas> => {
       totalOrdenado: 0,
       totalVentasCobradas: 0,
       totalGastos: 0,
-      totalCompras: 0,
       totalDescuentos: 0,
       metaTurno: 0,
       hasTurnoAbierto: false,

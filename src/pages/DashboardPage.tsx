@@ -192,7 +192,6 @@ export const DashboardPage = () => {
     totalOrdenado: 0,
     totalVentasCobradas: 0,
     totalGastos: 0,
-    totalCompras: 0,
     totalDescuentos: 0,
     metaTurno: 0,
     hasTurnoAbierto: false,
@@ -1557,15 +1556,6 @@ export const DashboardPage = () => {
                     {nivelInventario.mensaje}
                   </div>
                 </div>
-              </div>
-
-              <div style={{ marginTop: '0.75rem' }}>
-                <p style={{ fontSize: '0.65rem', color: '#9ca3af', marginBottom: '0.2rem', fontWeight: '500' }}>
-                  Compras:
-                </p>
-                <p style={{ fontSize: '1.1rem', fontWeight: '700', color: '#10b981', margin: 0 }}>
-                  ${resumenVentas.totalCompras.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </p>
               </div>
 
               {/* TOP10 inventario */}
