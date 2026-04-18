@@ -276,7 +276,22 @@ export const obtenerResumenVentas = async (): Promise<ResumenVentas> => {
       `${API_BASE}/resumen/turno-actual`
     );
     console.log('🔵 ventasWebService: Resumen de ventas obtenido:', response.data.data);
-    return response.data.data;
+    const data = response.data.data;
+    // Ensure all numeric fields have safe defaults to prevent toLocaleString errors
+    return {
+      totalCobrado: data?.totalCobrado ?? 0,
+      totalOrdenado: data?.totalOrdenado ?? 0,
+      totalVentasCobradas: data?.totalVentasCobradas ?? 0,
+      totalGastos: data?.totalGastos ?? 0,
+      totalCompras: data?.totalCompras ?? 0,
+      totalDescuentos: data?.totalDescuentos ?? 0,
+      metaTurno: data?.metaTurno ?? 0,
+      hasTurnoAbierto: data?.hasTurnoAbierto ?? false,
+      ventasPorFormaDePago: data?.ventasPorFormaDePago ?? [],
+      ventasPorTipoDeVenta: data?.ventasPorTipoDeVenta ?? [],
+      descuentosPorTipo: data?.descuentosPorTipo ?? [],
+      gastosPorDescripcion: data?.gastosPorDescripcion ?? []
+    };
   } catch (error) {
     console.error('🔴 ventasWebService: Error al obtener resumen de ventas:', error);
     // Return empty data on error
