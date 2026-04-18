@@ -249,17 +249,24 @@ export interface DescuentoPorTipo {
   total: number;
 }
 
+export interface GastoPorDescripcion {
+  descripcionmov: string;
+  total: number;
+}
+
 export interface ResumenVentas {
   totalCobrado: number;
   totalOrdenado: number;
   totalVentasCobradas: number;
   totalGastos: number;
+  totalCompras: number;
   totalDescuentos: number;
   metaTurno: number;
   hasTurnoAbierto: boolean;
   ventasPorFormaDePago: VentaPorFormaDePago[];
   ventasPorTipoDeVenta: VentaPorTipoDeVenta[];
   descuentosPorTipo: DescuentoPorTipo[];
+  gastosPorDescripcion: GastoPorDescripcion[];
 }
 
 export const obtenerResumenVentas = async (): Promise<ResumenVentas> => {
@@ -278,12 +285,14 @@ export const obtenerResumenVentas = async (): Promise<ResumenVentas> => {
       totalOrdenado: 0,
       totalVentasCobradas: 0,
       totalGastos: 0,
+      totalCompras: 0,
       totalDescuentos: 0,
       metaTurno: 0,
       hasTurnoAbierto: false,
       ventasPorFormaDePago: [],
       ventasPorTipoDeVenta: [],
-      descuentosPorTipo: []
+      descuentosPorTipo: [],
+      gastosPorDescripcion: []
     };
   }
 };

@@ -1621,12 +1621,14 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
           totalOrdenado: 0,
           totalVentasCobradas: 0,
           totalGastos: 0,
+          totalCompras: 0,
           totalDescuentos: 0,
           metaTurno: 0,
           hasTurnoAbierto: false,
           ventasPorFormaDePago: [],
           ventasPorTipoDeVenta: [],
-          descuentosPorTipo: []
+          descuentosPorTipo: [],
+          gastosPorDescripcion: []
         }
       });
       return;
@@ -1652,17 +1654,52 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const totalOrdenado = Number(salesRows[0]?.totalOrdenado) || 0;
     const totalVentasCobradas = Number(salesRows[0]?.totalVentasCobradas) || 0;
 
-    // Get total gastos: tipodeventa='MOVIMIENTO', estadodeventa='COBRADO', referencia='GASTO'
+    // Get total gastos del mes actual: referencia='GASTO', estatuspago='PAGADO', agrupado por descripcionmov
+    const { year: yG, month: mG } = getMexicoTimeComponents();
+    const inicioMesGastos = `${yG}-${mG}-01 00:00:00`;
+    // Last day of current month
+    const lastDayGastos = new Date(Number(yG), Number(mG), 0).getDate();
+    const finMesGastos = `${yG}-${mG}-${String(lastDayGastos).padStart(2, '0')} 23:59:59`;
+
     const [gastosRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT COALESCE(SUM(totaldeventa), 0) as totalGastos
+      `SELECT descripcionmov,
+              COALESCE(SUM(totaldeventa), 0) as totalGasto
        FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND tipodeventa = 'MOVIMIENTO'
-         AND estadodeventa = 'COBRADO'
-         AND referencia = 'GASTO'`,
-      [claveturno, idnegocio]
+       WHERE idnegocio = ?
+         AND referencia = 'GASTO'
+         AND estatuspago = 'PAGADO'
+         AND fechadeventa BETWEEN ? AND ?
+       GROUP BY descripcionmov`,
+      [idnegocio, inicioMesGastos, finMesGastos]
     );
-    const totalGastos = Number(gastosRows[0]?.totalGastos) || 0;
+    const gastosPorDescripcion = gastosRows.map(row => ({
+      descripcionmov: row.descripcionmov || 'SIN_DESCRIPCION',
+      total: Number(row.totalGasto) || 0
+    }));
+    const totalGastos = gastosPorDescripcion.reduce((sum, g) => sum + g.total, 0);
+
+    // Get total compras del mes actual: SUM(cantidad*costo) from detallemovimientos
+    // WHERE motivomovimiento='COMPRA', estatusmovimiento='PROCESADO', mes en curso (día 1 al día actual)
+    const { day: dC } = getMexicoTimeComponents();
+    const inicioMesCompras = `${yG}-${mG}-01 00:00:00`;
+    const finDiaActualCompras = `${yG}-${mG}-${dC} 23:59:59`;
+
+    let totalCompras = 0;
+    try {
+      const [comprasRows] = await pool.execute<RowDataPacket[]>(
+        `SELECT COALESCE(SUM(cantidad * costo), 0) as totalCompras
+         FROM tblposcrumenwebdetallemovimientos
+         WHERE idnegocio = ?
+           AND motivomovimiento = 'COMPRA'
+           AND estatusmovimiento = 'PROCESADO'
+           AND fechamovimiento BETWEEN ? AND ?`,
+        [idnegocio, inicioMesCompras, finDiaActualCompras]
+      );
+      totalCompras = Number(comprasRows[0]?.totalCompras) || 0;
+    } catch (comprasError) {
+      console.warn('⚠️ No se pudo obtener totalCompras (tabla puede no existir):', comprasError);
+      totalCompras = 0;
+    }
 
     // Get total descuentos: estadodeventa='COBRADO', descripcionmov='VENTA'
     const [descuentosTotalRows] = await pool.execute<RowDataPacket[]>(
@@ -1756,12 +1793,14 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
         totalOrdenado,
         totalVentasCobradas,
         totalGastos,
+        totalCompras,
         totalDescuentos,
         metaTurno: metaturno,
         hasTurnoAbierto: true,
         ventasPorFormaDePago,
         ventasPorTipoDeVenta,
-        descuentosPorTipo
+        descuentosPorTipo,
+        gastosPorDescripcion
       }
     });
   } catch (error) {

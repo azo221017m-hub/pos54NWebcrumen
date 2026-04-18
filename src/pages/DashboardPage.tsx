@@ -192,12 +192,14 @@ export const DashboardPage = () => {
     totalOrdenado: 0,
     totalVentasCobradas: 0,
     totalGastos: 0,
+    totalCompras: 0,
     totalDescuentos: 0,
     metaTurno: 0,
     hasTurnoAbierto: false,
     ventasPorFormaDePago: [],
     ventasPorTipoDeVenta: [],
-    descuentosPorTipo: []
+    descuentosPorTipo: [],
+    gastosPorDescripcion: []
   });
   const [turnoAbierto, setTurnoAbierto] = useState<Turno | null>(null);
   const [showCierreTurnoModal, setShowCierreTurnoModal] = useState(false);
@@ -1439,11 +1441,21 @@ export const DashboardPage = () => {
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: '0.65rem', color: '#9ca3af', marginBottom: '0.3rem', fontWeight: '500' }}>
-                    Gastos:
+                    Gastos (Mes):
                   </p>
                   <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#ef4444', margin: 0 }}>
                     ${resumenVentas.totalGastos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
+                  {(resumenVentas.gastosPorDescripcion || []).length > 0 && (
+                    <div style={{ marginTop: '0.3rem' }}>
+                      {(resumenVentas.gastosPorDescripcion || []).map((g, idx) => (
+                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.5rem', color: '#6b7280', lineHeight: '1.4' }}>
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }} title={g.descripcionmov}>{g.descripcionmov}</span>
+                          <span style={{ fontWeight: '600', color: '#ef4444' }}>${g.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: '0.65rem', color: '#9ca3af', marginBottom: '0.3rem', fontWeight: '500' }}>
@@ -1554,6 +1566,46 @@ export const DashboardPage = () => {
                     marginTop: '0.1rem'
                   }}>
                     {nivelInventario.mensaje}
+                  </div>
+                </div>
+              </div>
+
+              {/* Label COMPRAS del mes */}
+              <div style={{
+                marginTop: '0.75rem',
+                padding: '0.5rem',
+                backgroundColor: '#eff6ff',
+                border: '1px solid #3b82f6',
+                borderRadius: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem'
+              }}>
+                <span style={{ fontSize: '1rem' }}>🛒</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontSize: '0.65rem',
+                    fontWeight: '700',
+                    color: '#3b82f6',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.3px'
+                  }}>
+                    Compras
+                  </div>
+                  <div style={{
+                    fontSize: '1.1rem',
+                    fontWeight: '700',
+                    color: '#1d4ed8',
+                    marginTop: '0.1rem'
+                  }}>
+                    ${resumenVentas.totalCompras.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div style={{
+                    fontSize: '0.5rem',
+                    color: '#6b7280',
+                    marginTop: '0.1rem'
+                  }}>
+                    Mes en curso
                   </div>
                 </div>
               </div>
