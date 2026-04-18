@@ -1323,7 +1323,7 @@ export const DashboardPage = () => {
                                 </span>
                               </div>
                               <span style={{ fontSize: '0.7rem', fontWeight: '700', color: color }}>
-                                ${item.total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                ${(item.total ?? 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                               </span>
                             </div>
                             <div style={{ width: '100%', height: '20px', backgroundColor: '#f3f4f6', borderRadius: '10px', overflow: 'hidden' }}>
@@ -1388,7 +1388,7 @@ export const DashboardPage = () => {
                                 </span>
                               </div>
                               <span style={{ fontSize: '0.7rem', fontWeight: '700', color: item.color }}>
-                                ${item.total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                ${(item.total ?? 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                               </span>
                             </div>
                             <div style={{ width: '100%', height: '20px', backgroundColor: '#f3f4f6', borderRadius: '10px', overflow: 'hidden' }}>
@@ -1428,7 +1428,7 @@ export const DashboardPage = () => {
                     Cobrado:
                   </p>
                   <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#3b82f6', margin: 0 }}>
-                    ${resumenVentas.totalCobrado.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ${(resumenVentas.totalCobrado ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div style={{ flex: 1 }}>
@@ -1436,7 +1436,7 @@ export const DashboardPage = () => {
                     Ordenado:
                   </p>
                   <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#f97316', margin: 0 }}>
-                    ${resumenVentas.totalOrdenado.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ${(resumenVentas.totalOrdenado ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div style={{ flex: 1 }}>
@@ -1444,14 +1444,14 @@ export const DashboardPage = () => {
                     Gastos (Mes):
                   </p>
                   <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#ef4444', margin: 0 }}>
-                    ${resumenVentas.totalGastos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ${(resumenVentas.totalGastos ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                   {(resumenVentas.gastosPorDescripcion || []).length > 0 && (
                     <div style={{ marginTop: '0.3rem' }}>
                       {(resumenVentas.gastosPorDescripcion || []).map((g, idx) => (
                         <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.5rem', color: '#6b7280', lineHeight: '1.4' }}>
                           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }} title={g.descripcionmov}>{g.descripcionmov}</span>
-                          <span style={{ fontWeight: '600', color: '#ef4444' }}>${g.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          <span style={{ fontWeight: '600', color: '#ef4444' }}>${(g.total ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                       ))}
                     </div>
@@ -1462,7 +1462,7 @@ export const DashboardPage = () => {
                     Descuentos:
                   </p>
                   <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#8b5cf6', margin: 0 }}>
-                    ${resumenVentas.totalDescuentos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ${(resumenVentas.totalDescuentos ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>
@@ -1477,7 +1477,7 @@ export const DashboardPage = () => {
                         Meta de Venta
                       </span>
                       <span style={{ fontSize: '0.65rem', fontWeight: '700', color: '#6b7280' }}>
-                        ${resumenVentas.metaTurno.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ${(resumenVentas.metaTurno ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
                     {(() => {
@@ -1514,7 +1514,7 @@ export const DashboardPage = () => {
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span style={{ fontSize: '0.6rem', color: '#9ca3af' }}>
-                              Cobrado: ${resumenVentas.totalCobrado.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              Cobrado: ${(resumenVentas.totalCobrado ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
                             <span style={{ fontSize: '0.6rem', fontWeight: '600', color: barColor }}>
                               {goalReached ? '¡Meta alcanzada!' : `${pct.toFixed(1)}% de la meta`}
@@ -1598,7 +1598,7 @@ export const DashboardPage = () => {
                     color: '#1d4ed8',
                     marginTop: '0.1rem'
                   }}>
-                    ${resumenVentas.totalCompras.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ${(resumenVentas.totalCompras ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <div style={{
                     fontSize: '0.5rem',
