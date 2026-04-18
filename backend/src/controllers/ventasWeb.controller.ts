@@ -1612,52 +1612,48 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
       [idnegocio]
     );
 
-    if (turnoRows.length === 0) {
-      // No hay turno abierto, retornar valores en 0
-      res.json({
-        success: true,
-        data: {
-          totalCobrado: 0,
-          totalOrdenado: 0,
-          totalVentasCobradas: 0,
-          totalGastos: 0,
-          totalCompras: 0,
-          totalDescuentos: 0,
-          metaTurno: 0,
-          hasTurnoAbierto: false,
-          ventasPorFormaDePago: [],
-          ventasPorTipoDeVenta: [],
-          descuentosPorTipo: [],
-          gastosPorDescripcion: []
-        }
-      });
-      return;
-    }
+    const hasTurnoAbierto = turnoRows.length > 0;
+    const claveturno = hasTurnoAbierto ? turnoRows[0].claveturno : null;
+    const metaturno = hasTurnoAbierto ? (Number(turnoRows[0].metaturno) || 0) : 0;
 
-    const turnoActual = turnoRows[0];
-    const claveturno = turnoActual.claveturno;
-    const metaturno = Number(turnoActual.metaturno) || 0;
+    // Get date components for today and current month
+    const { year: yG, month: mG, day: dC } = getMexicoTimeComponents();
+    const inicioHoy = `${yG}-${mG}-${dC} 00:00:00`;
+    const finHoy = `${yG}-${mG}-${dC} 23:59:59`;
 
-    // Use single query with conditional aggregation for better performance
-    // Only count sales with descripcionmov='VENTA' per business rules
-    const [salesRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT 
+    // ── Ventas Hoy ──
+    // When turno is open: filter by claveturno (shift-based)
+    // When no turno open: filter by today's date range (so today's data still shows)
+    let salesQuery: string;
+    let salesParams: (string | number)[];
+    if (hasTurnoAbierto) {
+      salesQuery = `SELECT 
         COALESCE(SUM(CASE WHEN estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalCobrado,
         COALESCE(SUM(CASE WHEN estadodeventa = 'ORDENADO' THEN totaldeventa ELSE 0 END), 0) as totalOrdenado,
         COALESCE(SUM(CASE WHEN estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalVentasCobradas
        FROM tblposcrumenwebventas 
-       WHERE claveturno = ? AND idnegocio = ? AND descripcionmov = 'VENTA'`,
-      [claveturno, idnegocio]
-    );
+       WHERE claveturno = ? AND idnegocio = ? AND descripcionmov = 'VENTA'`;
+      salesParams = [claveturno!, idnegocio];
+    } else {
+      salesQuery = `SELECT 
+        COALESCE(SUM(CASE WHEN estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalCobrado,
+        COALESCE(SUM(CASE WHEN estadodeventa = 'ORDENADO' THEN totaldeventa ELSE 0 END), 0) as totalOrdenado,
+        COALESCE(SUM(CASE WHEN estadodeventa = 'COBRADO' THEN totaldeventa ELSE 0 END), 0) as totalVentasCobradas
+       FROM tblposcrumenwebventas 
+       WHERE idnegocio = ? AND descripcionmov = 'VENTA' AND fechadeventa BETWEEN ? AND ?`;
+      salesParams = [idnegocio, inicioHoy, finHoy];
+    }
+
+    const [salesRows] = await pool.execute<RowDataPacket[]>(salesQuery, salesParams);
 
     const totalCobrado = Number(salesRows[0]?.totalCobrado) || 0;
     const totalOrdenado = Number(salesRows[0]?.totalOrdenado) || 0;
     const totalVentasCobradas = Number(salesRows[0]?.totalVentasCobradas) || 0;
 
-    // Get total gastos del mes actual: referencia='GASTO', estatuspago='PAGADO', agrupado por descripcionmov
-    const { year: yG, month: mG } = getMexicoTimeComponents();
+    // ── Gastos del mes actual ──
+    // referencia='GASTO', estatuspago='PAGADO', agrupado por descripcionmov
+    // Always calculated regardless of turno status (monthly metric)
     const inicioMesGastos = `${yG}-${mG}-01 00:00:00`;
-    // Last day of current month
     const lastDayGastos = new Date(Number(yG), Number(mG), 0).getDate();
     const finMesGastos = `${yG}-${mG}-${String(lastDayGastos).padStart(2, '0')} 23:59:59`;
 
@@ -1678,9 +1674,10 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     }));
     const totalGastos = gastosPorDescripcion.reduce((sum, g) => sum + g.total, 0);
 
-    // Get total compras del mes actual: SUM(cantidad*costo) from detallemovimientos
-    // WHERE motivomovimiento='COMPRA', estatusmovimiento='PROCESADO', mes en curso (día 1 al día actual)
-    const { day: dC } = getMexicoTimeComponents();
+    // ── Compras del mes actual ──
+    // SUM(cantidad*costo) from detallemovimientos
+    // WHERE motivomovimiento='COMPRA', estatusmovimiento='PROCESADO', mes en curso
+    // Always calculated regardless of turno status (monthly metric)
     const inicioMesCompras = `${yG}-${mG}-01 00:00:00`;
     const finDiaActualCompras = `${yG}-${mG}-${dC} 23:59:59`;
 
@@ -1701,35 +1698,63 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
       totalCompras = 0;
     }
 
-    // Get total descuentos: estadodeventa='COBRADO', descripcionmov='VENTA'
-    const [descuentosTotalRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT COALESCE(SUM(descuentos), 0) as totalDescuentos
+    // ── Descuentos ──
+    // When turno open: filter by claveturno; when no turno: filter by today's date
+    let descuentosQuery: string;
+    let descuentosParams: (string | number)[];
+    if (hasTurnoAbierto) {
+      descuentosQuery = `SELECT COALESCE(SUM(descuentos), 0) as totalDescuentos
        FROM tblposcrumenwebventas
        WHERE claveturno = ? AND idnegocio = ?
          AND estadodeventa = 'COBRADO'
-         AND descripcionmov = 'VENTA'`,
-      [claveturno, idnegocio]
-    );
+         AND descripcionmov = 'VENTA'`;
+      descuentosParams = [claveturno!, idnegocio];
+    } else {
+      descuentosQuery = `SELECT COALESCE(SUM(descuentos), 0) as totalDescuentos
+       FROM tblposcrumenwebventas
+       WHERE idnegocio = ?
+         AND estadodeventa = 'COBRADO'
+         AND descripcionmov = 'VENTA'
+         AND fechadeventa BETWEEN ? AND ?`;
+      descuentosParams = [idnegocio, inicioHoy, finHoy];
+    }
+    const [descuentosTotalRows] = await pool.execute<RowDataPacket[]>(descuentosQuery, descuentosParams);
     const totalDescuentos = Number(descuentosTotalRows[0]?.totalDescuentos) || 0;
 
-    // Get sales grouped by formadepago directly from tblposcrumenwebventas
-    // Criteria: descripcionmov='VENTA', estadodeventa='COBRADO'
-    const [formaDePagoRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT 
+    // ── Ventas por forma de pago ──
+    // When turno open: filter by claveturno; when no turno: filter by today's date
+    let fpQuery: string;
+    let fpParams: (string | number)[];
+    if (hasTurnoAbierto) {
+      fpQuery = `SELECT 
         formadepago,
         COALESCE(SUM(totaldeventa), 0) as total
        FROM tblposcrumenwebventas 
        WHERE claveturno = ? AND idnegocio = ? AND estadodeventa = 'COBRADO'
          AND descripcionmov = 'VENTA'
        GROUP BY formadepago
-       ORDER BY total DESC`,
-      [claveturno, idnegocio]
-    );
+       ORDER BY total DESC`;
+      fpParams = [claveturno!, idnegocio];
+    } else {
+      fpQuery = `SELECT 
+        formadepago,
+        COALESCE(SUM(totaldeventa), 0) as total
+       FROM tblposcrumenwebventas 
+       WHERE idnegocio = ? AND estadodeventa = 'COBRADO'
+         AND descripcionmov = 'VENTA'
+         AND fechadeventa BETWEEN ? AND ?
+       GROUP BY formadepago
+       ORDER BY total DESC`;
+      fpParams = [idnegocio, inicioHoy, finHoy];
+    }
+    const [formaDePagoRows] = await pool.execute<RowDataPacket[]>(fpQuery, fpParams);
 
-    // Get sales grouped by tipodeventa (sale type: MESA, DOMICILIO, LLEVAR, ONLINE)
-    // Only count COBRADO + descripcionmov='VENTA' per business rules
-    const [tipoDeVentaRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT 
+    // ── Ventas por tipo de venta ──
+    // When turno open: filter by claveturno; when no turno: filter by today's date
+    let tvQuery: string;
+    let tvParams: (string | number)[];
+    if (hasTurnoAbierto) {
+      tvQuery = `SELECT 
         tipodeventa,
         COALESCE(SUM(totaldeventa), 0) as total
        FROM tblposcrumenwebventas 
@@ -1739,15 +1764,31 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
          AND descripcionmov = 'VENTA'
          AND tipodeventa IN ('MESA', 'DOMICILIO', 'ONLINE', 'LLEVAR')
        GROUP BY tipodeventa
-       ORDER BY total DESC`,
-      [claveturno, idnegocio]
-    );
+       ORDER BY total DESC`;
+      tvParams = [claveturno!, idnegocio];
+    } else {
+      tvQuery = `SELECT 
+        tipodeventa,
+        COALESCE(SUM(totaldeventa), 0) as total
+       FROM tblposcrumenwebventas 
+       WHERE idnegocio = ? 
+         AND estadodeventa = 'COBRADO'
+         AND descripcionmov = 'VENTA'
+         AND tipodeventa IN ('MESA', 'DOMICILIO', 'ONLINE', 'LLEVAR')
+         AND fechadeventa BETWEEN ? AND ?
+       GROUP BY tipodeventa
+       ORDER BY total DESC`;
+      tvParams = [idnegocio, inicioHoy, finHoy];
+    }
+    const [tipoDeVentaRows] = await pool.execute<RowDataPacket[]>(tvQuery, tvParams);
 
-    // Get discounts grouped by type from tblposcrumenwebdescuentos
+    // ── Descuentos por tipo ──
     let descuentosRows: RowDataPacket[] = [];
     try {
-      const [rows] = await pool.execute<RowDataPacket[]>(
-        `SELECT 
+      let descTipoQuery: string;
+      let descTipoParams: (string | number)[];
+      if (hasTurnoAbierto) {
+        descTipoQuery = `SELECT 
           COALESCE(d.tipodescuento, 'SIN_TIPO') as tipodescuento,
           COUNT(*) as cantidad,
           COALESCE(SUM(v.descuentos), 0) as total
@@ -1759,12 +1800,27 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
            AND v.estadodeventa = 'COBRADO'
            AND v.descuentos > 0
          GROUP BY COALESCE(d.tipodescuento, 'SIN_TIPO')
-         ORDER BY total DESC`,
-        [claveturno, idnegocio]
-      );
+         ORDER BY total DESC`;
+        descTipoParams = [claveturno!, idnegocio];
+      } else {
+        descTipoQuery = `SELECT 
+          COALESCE(d.tipodescuento, 'SIN_TIPO') as tipodescuento,
+          COUNT(*) as cantidad,
+          COALESCE(SUM(v.descuentos), 0) as total
+         FROM tblposcrumenwebventas v
+         LEFT JOIN tblposcrumenwebdescuentos d 
+           ON v.detalledescuento = d.nombre AND v.idnegocio = d.idnegocio
+         WHERE v.idnegocio = ? 
+           AND v.estadodeventa = 'COBRADO'
+           AND v.descuentos > 0
+           AND v.fechadeventa BETWEEN ? AND ?
+         GROUP BY COALESCE(d.tipodescuento, 'SIN_TIPO')
+         ORDER BY total DESC`;
+        descTipoParams = [idnegocio, inicioHoy, finHoy];
+      }
+      const [rows] = await pool.execute<RowDataPacket[]>(descTipoQuery, descTipoParams);
       descuentosRows = rows;
     } catch (descuentosError) {
-      // If tblposcrumenwebdescuentos doesn't exist or has issues, just continue without discounts data
       console.warn('⚠️ No se pudo obtener descuentos por tipo (tabla puede no existir):', descuentosError);
       descuentosRows = [];
     }
@@ -1796,7 +1852,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
         totalCompras,
         totalDescuentos,
         metaTurno: metaturno,
-        hasTurnoAbierto: true,
+        hasTurnoAbierto,
         ventasPorFormaDePago,
         ventasPorTipoDeVenta,
         descuentosPorTipo,
