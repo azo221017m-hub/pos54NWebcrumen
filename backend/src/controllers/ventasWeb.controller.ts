@@ -1654,19 +1654,22 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const totalVentasCobradas = Number(salesRows[0]?.totalVentasCobradas) || 0;
 
     // Get total gastos del mes actual: referencia='GASTO', estatuspago='PAGADO'
-    // Requested grouped by descripcionmov; we aggregate groups into dashboard total.
+    // Requested grouped by descripcionmov (aggregated in subquery and returned as single total).
     const [gastosRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT descripcionmov, COALESCE(SUM(totaldeventa), 0) as total
-       FROM tblposcrumenwebventas
-       WHERE idnegocio = ?
-         AND referencia = 'GASTO'
-         AND estatuspago = 'PAGADO'
-         AND YEAR(fechadeventa) = YEAR(CURDATE())
-         AND MONTH(fechadeventa) = MONTH(CURDATE())
-       GROUP BY descripcionmov`,
+      `SELECT COALESCE(SUM(g.totalPorDescripcion), 0) as totalGastos
+       FROM (
+         SELECT descripcionmov, COALESCE(SUM(totaldeventa), 0) as totalPorDescripcion
+         FROM tblposcrumenwebventas
+         WHERE idnegocio = ?
+           AND referencia = 'GASTO'
+           AND estatuspago = 'PAGADO'
+           AND fechadeventa >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+           AND fechadeventa < DATE_FORMAT(CURDATE() + INTERVAL 1 MONTH, '%Y-%m-01')
+         GROUP BY descripcionmov
+       ) g`,
       [idnegocio]
     );
-    const totalGastos = gastosRows.reduce((sum, row) => sum + (Number(row.total) || 0), 0);
+    const totalGastos = Number(gastosRows[0]?.totalGastos) || 0;
 
     // Get total compras del mes actual from inventory movements detail:
     // SUM(cantidad * costo) where motivomovimiento='COMPRA' and estatusmovimiento='PROCESADO'
@@ -1676,8 +1679,8 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
        WHERE idnegocio = ?
          AND motivomovimiento = 'COMPRA'
          AND estatusmovimiento = 'PROCESADO'
-         AND YEAR(fechamovimiento) = YEAR(CURDATE())
-         AND MONTH(fechamovimiento) = MONTH(CURDATE())`,
+         AND fechamovimiento >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+         AND fechamovimiento < DATE_FORMAT(CURDATE() + INTERVAL 1 MONTH, '%Y-%m-01')`,
       [idnegocio]
     );
     const totalCompras = Number(comprasRows[0]?.totalCompras) || 0;
