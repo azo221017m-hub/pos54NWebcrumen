@@ -15,24 +15,6 @@ import type { Negocio } from '../types/negocio.types';
 import TableroComandasPagadas from '../components/comandasPagadas/TableroComandasPagadas';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { extractShortFolio } from '../utils/formatters';
-import {
-  obtenerEstadoResultados,
-  obtenerReporteVentas,
-  obtenerReporteCompras,
-  obtenerReporteCostos,
-  obtenerReporteGastos,
-  obtenerReporteRentabilidad,
-  obtenerReporteFlujo,
-  REPORTES_INFO,
-  type TipoReporte,
-  type EstadoResultados,
-  type DetalleVenta,
-  type DetalleCompra,
-  type DetalleCosto,
-  type DetalleGasto,
-  type RentabilidadProducto,
-  type FlujoCaja,
-} from '../services/reportesService';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -217,7 +199,7 @@ export const DashboardPage = () => {
     ventasPorTipoDeVenta: [],
     descuentosPorTipo: []
   });
-  const [saludNegocio, setSaludNegocio] = useState<SaludNegocio>({
+  const [, setSaludNegocio] = useState<SaludNegocio>({
     ventas: 0,
     costoVenta: 0,
     margenBruto: 0,
@@ -264,25 +246,6 @@ export const DashboardPage = () => {
   const [_topProductosMenor, setTopProductosMenor] = useState<TopProductoTurno[]>([]);
   const [topInsumosStockMayor, setTopInsumosStockMayor] = useState<Insumo[]>([]);
   const [topInsumosStockMenor, setTopInsumosStockMenor] = useState<Insumo[]>([]);
-
-  // Reportes Financieros state
-  const [reporteActivo, setReporteActivo] = useState<TipoReporte>('estado-resultados');
-  const [reporteFechaInicio, setReporteFechaInicio] = useState<string>(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-  });
-  const [reporteFechaFin, setReporteFechaFin] = useState<string>(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
-  });
-  const [reporteLoading, setReporteLoading] = useState(false);
-  const [reporteEstadoResultados, setReporteEstadoResultados] = useState<EstadoResultados | null>(null);
-  const [reporteVentas, setReporteVentas] = useState<DetalleVenta[]>([]);
-  const [reporteCompras, setReporteCompras] = useState<DetalleCompra[]>([]);
-  const [reporteCostos, setReporteCostos] = useState<DetalleCosto[]>([]);
-  const [reporteGastos, setReporteGastos] = useState<DetalleGasto[]>([]);
-  const [reporteRentabilidad, setReporteRentabilidad] = useState<RentabilidadProducto[]>([]);
-  const [reporteFlujo, setReporteFlujo] = useState<FlujoCaja[]>([]);
 
   // Track already-notified order IDs to avoid duplicate sound alerts
   const notifiedOrdersRef = useRef<Set<number>>(new Set());
@@ -355,57 +318,6 @@ export const DashboardPage = () => {
       console.error('Error al cargar salud del negocio:', error);
     }
   }, [saludCategoria, saludFechaInicio, saludFechaFin]);
-
-  const cargarReporte = useCallback(async (
-    tipo: TipoReporte = reporteActivo,
-    fechaInicio: string = reporteFechaInicio,
-    fechaFin: string = reporteFechaFin
-  ) => {
-    setReporteLoading(true);
-    try {
-      switch (tipo) {
-        case 'estado-resultados': {
-          const data = await obtenerEstadoResultados(fechaInicio, fechaFin);
-          setReporteEstadoResultados(data);
-          break;
-        }
-        case 'ventas': {
-          const data = await obtenerReporteVentas(fechaInicio, fechaFin);
-          setReporteVentas(data);
-          break;
-        }
-        case 'compras': {
-          const data = await obtenerReporteCompras(fechaInicio, fechaFin);
-          setReporteCompras(data);
-          break;
-        }
-        case 'costos': {
-          const data = await obtenerReporteCostos(fechaInicio, fechaFin);
-          setReporteCostos(data);
-          break;
-        }
-        case 'gastos': {
-          const data = await obtenerReporteGastos(fechaInicio, fechaFin);
-          setReporteGastos(data);
-          break;
-        }
-        case 'rentabilidad': {
-          const data = await obtenerReporteRentabilidad(fechaInicio, fechaFin);
-          setReporteRentabilidad(data);
-          break;
-        }
-        case 'flujo': {
-          const data = await obtenerReporteFlujo(fechaInicio, fechaFin);
-          setReporteFlujo(data);
-          break;
-        }
-      }
-    } catch (error) {
-      console.error('Error al cargar reporte:', error);
-    } finally {
-      setReporteLoading(false);
-    }
-  }, [reporteActivo, reporteFechaInicio, reporteFechaFin]);
 
   const calcularNivelInventario = useCallback(async () => {
     if (!usuario?.idNegocio) return;
@@ -674,8 +586,6 @@ export const DashboardPage = () => {
     cargarResumenVentas();
     // Load business health data
     cargarSaludNegocio();
-    // Load financial reports (initial load)
-    cargarReporte();
     // Calculate inventory level
     calcularNivelInventario();
     // Load top products for current shift
@@ -908,7 +818,7 @@ export const DashboardPage = () => {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
                 </svg>
-                Salud de mi negocio
+                Mi Día
               </button>
               )}
               <button 
@@ -1395,316 +1305,6 @@ export const DashboardPage = () => {
             </div>
 
             <div className="cards-grid">
-            {privilegio === 5 && (
-            <div className="dashboard-card" style={{ position: 'relative' }}>
-              {/* Header */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                <div className="card-icon purple">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                  </svg>
-                </div>
-                <h3 className="card-title" style={{ margin: 0 }}>Reportes Financieros</h3>
-              </div>
-
-              {/* Date range pickers */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem', marginBottom: '0.75rem' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                  <label style={{ fontSize: '0.58rem', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Fecha inicio
-                  </label>
-                  <input
-                    type="date"
-                    value={reporteFechaInicio}
-                    max={reporteFechaFin}
-                    onChange={(e) => {
-                      setReporteFechaInicio(e.target.value);
-                      cargarReporte(reporteActivo, e.target.value, reporteFechaFin);
-                    }}
-                    style={{ width: '100%', padding: '0.4rem 0.5rem', fontSize: '0.65rem', fontWeight: '500', color: '#374151', backgroundColor: '#f9fafb', border: '1.5px solid #e5e7eb', borderRadius: '8px', outline: 'none', cursor: 'pointer', boxSizing: 'border-box' }}
-                  />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                  <label style={{ fontSize: '0.58rem', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Fecha fin
-                  </label>
-                  <input
-                    type="date"
-                    value={reporteFechaFin}
-                    min={reporteFechaInicio}
-                    onChange={(e) => {
-                      setReporteFechaFin(e.target.value);
-                      cargarReporte(reporteActivo, reporteFechaInicio, e.target.value);
-                    }}
-                    style={{ width: '100%', padding: '0.4rem 0.5rem', fontSize: '0.65rem', fontWeight: '500', color: '#374151', backgroundColor: '#f9fafb', border: '1.5px solid #e5e7eb', borderRadius: '8px', outline: 'none', cursor: 'pointer', boxSizing: 'border-box' }}
-                  />
-                </div>
-              </div>
-
-              {/* Report type selector */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginBottom: '0.75rem' }}>
-                {REPORTES_INFO.map((r) => (
-                  <button
-                    key={r.tipo}
-                    onClick={() => {
-                      setReporteActivo(r.tipo);
-                      cargarReporte(r.tipo, reporteFechaInicio, reporteFechaFin);
-                    }}
-                    style={{
-                      padding: '0.25rem 0.5rem',
-                      fontSize: '0.6rem',
-                      fontWeight: '600',
-                      border: `1.5px solid ${r.color}`,
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      backgroundColor: reporteActivo === r.tipo ? r.color : 'transparent',
-                      color: reporteActivo === r.tipo ? '#fff' : r.color,
-                      transition: 'all 0.15s',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {r.emoji} {r.titulo}
-                  </button>
-                ))}
-              </div>
-
-              {/* Loading indicator */}
-              {reporteLoading && (
-                <div style={{ textAlign: 'center', padding: '1rem', fontSize: '0.7rem', color: '#6b7280' }}>
-                  Cargando...
-                </div>
-              )}
-
-              {/* ── 1. Estado de Resultados ── */}
-              {!reporteLoading && reporteActivo === 'estado-resultados' && (
-                reporteEstadoResultados ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                    {[
-                      { label: 'Ventas Totales', value: reporteEstadoResultados.ventas_totales, color: '#3b82f6', bg: '#eff6ff' },
-                      { label: 'Costo de Ventas', value: reporteEstadoResultados.costo_ventas, color: '#475569', bg: '#f8fafc' },
-                      { label: 'Utilidad Bruta', value: reporteEstadoResultados.utilidad_bruta, color: '#10b981', bg: '#f0fdf4' },
-                      { label: 'Gastos', value: reporteEstadoResultados.gastos, color: '#f59e0b', bg: '#fef3c7' },
-                      { label: 'Utilidad Neta', value: reporteEstadoResultados.utilidad_neta, color: reporteEstadoResultados.utilidad_neta >= 0 ? '#0ea5e9' : '#dc2626', bg: '#dbeafe' },
-                    ].map((item) => (
-                      <div key={item.label} style={{ padding: '0.6rem', backgroundColor: item.bg, borderRadius: '8px', border: `1px solid ${item.color}33` }}>
-                        <div style={{ fontSize: '0.52rem', color: '#6b7280', marginBottom: '0.2rem', fontWeight: '500' }}>{item.label}</div>
-                        <div style={{ fontSize: '0.95rem', fontWeight: '700', color: item.color }}>
-                          ${item.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="card-stat" style={{ fontSize: '0.65rem', color: '#9ca3af' }}>Sin datos</div>
-                )
-              )}
-
-              {/* ── 2. Ventas ── */}
-              {!reporteLoading && reporteActivo === 'ventas' && (
-                reporteVentas.length > 0 ? (
-                  <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.55rem' }}>
-                      <thead>
-                        <tr style={{ backgroundColor: '#f3f4f6' }}>
-                          {['Fecha', 'Producto', 'Cant.', 'Precio', 'Total', 'Usuario'].map((h) => (
-                            <th key={h} style={{ padding: '0.3rem 0.4rem', textAlign: 'left', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {reporteVentas.slice(0, 20).map((row, i) => (
-                          <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                            <td style={{ padding: '0.25rem 0.4rem', whiteSpace: 'nowrap' }}>{row.fechadetalleventa}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={row.nombreproducto}>{row.nombreproducto}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', textAlign: 'right' }}>{Number(row.cantidad).toFixed(0)}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', textAlign: 'right' }}>${Number(row.preciounitario).toFixed(2)}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', textAlign: 'right', fontWeight: '600', color: '#10b981' }}>${Number(row.total).toFixed(2)}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', maxWidth: '60px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.usuarioauditoria}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    {reporteVentas.length > 20 && (
-                      <div style={{ fontSize: '0.55rem', color: '#9ca3af', textAlign: 'center', marginTop: '0.3rem' }}>
-                        Mostrando 20 de {reporteVentas.length} registros
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="card-stat" style={{ fontSize: '0.65rem', color: '#9ca3af' }}>Sin datos</div>
-                )
-              )}
-
-              {/* ── 3. Compras ── */}
-              {!reporteLoading && reporteActivo === 'compras' && (
-                reporteCompras.length > 0 ? (
-                  <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.55rem' }}>
-                      <thead>
-                        <tr style={{ backgroundColor: '#f3f4f6' }}>
-                          {['Fecha', 'Proveedor', 'Insumo', 'Cant.', 'Costo', 'Total'].map((h) => (
-                            <th key={h} style={{ padding: '0.3rem 0.4rem', textAlign: 'left', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {reporteCompras.slice(0, 20).map((row, i) => (
-                          <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                            <td style={{ padding: '0.25rem 0.4rem', whiteSpace: 'nowrap' }}>{row.fechamovimiento}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', maxWidth: '70px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={row.proveedor}>{row.proveedor || '—'}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', maxWidth: '70px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={row.nombreinsumo}>{row.nombreinsumo}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', textAlign: 'right' }}>{Number(row.cantidad).toFixed(2)}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', textAlign: 'right' }}>${Number(row.costo).toFixed(2)}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', textAlign: 'right', fontWeight: '600', color: '#3b82f6' }}>${Number(row.total).toFixed(2)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    {reporteCompras.length > 20 && (
-                      <div style={{ fontSize: '0.55rem', color: '#9ca3af', textAlign: 'center', marginTop: '0.3rem' }}>
-                        Mostrando 20 de {reporteCompras.length} registros
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="card-stat" style={{ fontSize: '0.65rem', color: '#9ca3af' }}>Sin datos</div>
-                )
-              )}
-
-              {/* ── 4. Costos ── */}
-              {!reporteLoading && reporteActivo === 'costos' && (
-                reporteCostos.length > 0 ? (
-                  <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.55rem' }}>
-                      <thead>
-                        <tr style={{ backgroundColor: '#f3f4f6' }}>
-                          {['Producto', 'Costo Unit.', 'Cantidad', 'Total Costo'].map((h) => (
-                            <th key={h} style={{ padding: '0.3rem 0.4rem', textAlign: 'left', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {reporteCostos.slice(0, 20).map((row, i) => (
-                          <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                            <td style={{ padding: '0.25rem 0.4rem', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={row.nombreproducto}>{row.nombreproducto}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', textAlign: 'right' }}>${Number(row.costounitario).toFixed(2)}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', textAlign: 'right' }}>{Number(row.cantidad).toFixed(2)}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', textAlign: 'right', fontWeight: '600', color: '#8b5cf6' }}>${Number(row.total_costo).toFixed(2)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    {reporteCostos.length > 20 && (
-                      <div style={{ fontSize: '0.55rem', color: '#9ca3af', textAlign: 'center', marginTop: '0.3rem' }}>
-                        Mostrando 20 de {reporteCostos.length} registros
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="card-stat" style={{ fontSize: '0.65rem', color: '#9ca3af' }}>Sin datos</div>
-                )
-              )}
-
-              {/* ── 5. Gastos ── */}
-              {!reporteLoading && reporteActivo === 'gastos' && (
-                reporteGastos.length > 0 ? (
-                  <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.55rem' }}>
-                      <thead>
-                        <tr style={{ backgroundColor: '#f3f4f6' }}>
-                          {['Fecha', 'Categoría', 'Costo', 'Usuario'].map((h) => (
-                            <th key={h} style={{ padding: '0.3rem 0.4rem', textAlign: 'left', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {reporteGastos.slice(0, 20).map((row, i) => (
-                          <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                            <td style={{ padding: '0.25rem 0.4rem', whiteSpace: 'nowrap' }}>{row.fechamovimiento}</td>
-                            <td style={{ padding: '0.25rem 0.4rem' }}>{row.categoria}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', textAlign: 'right', fontWeight: '600', color: '#f59e0b' }}>${Number(row.costo).toFixed(2)}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', maxWidth: '60px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.usuarioauditoria}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    {reporteGastos.length > 20 && (
-                      <div style={{ fontSize: '0.55rem', color: '#9ca3af', textAlign: 'center', marginTop: '0.3rem' }}>
-                        Mostrando 20 de {reporteGastos.length} registros
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="card-stat" style={{ fontSize: '0.65rem', color: '#9ca3af' }}>Sin datos</div>
-                )
-              )}
-
-              {/* ── 6. Rentabilidad ── */}
-              {!reporteLoading && reporteActivo === 'rentabilidad' && (
-                reporteRentabilidad.length > 0 ? (
-                  <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.55rem' }}>
-                      <thead>
-                        <tr style={{ backgroundColor: '#f3f4f6' }}>
-                          {['Producto', 'Ventas', 'Costos', 'Utilidad', 'Margen%'].map((h) => (
-                            <th key={h} style={{ padding: '0.3rem 0.4rem', textAlign: 'left', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {reporteRentabilidad.slice(0, 20).map((row, i) => (
-                          <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                            <td style={{ padding: '0.25rem 0.4rem', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={row.nombreproducto}>{row.nombreproducto}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', textAlign: 'right' }}>${Number(row.ventas).toFixed(2)}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', textAlign: 'right' }}>${Number(row.costos).toFixed(2)}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', textAlign: 'right', fontWeight: '600', color: Number(row.utilidad) >= 0 ? '#10b981' : '#ef4444' }}>${Number(row.utilidad).toFixed(2)}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', textAlign: 'right', fontWeight: '600', color: '#f97316' }}>{Number(row.margen).toFixed(1)}%</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    {reporteRentabilidad.length > 20 && (
-                      <div style={{ fontSize: '0.55rem', color: '#9ca3af', textAlign: 'center', marginTop: '0.3rem' }}>
-                        Mostrando 20 de {reporteRentabilidad.length} registros
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="card-stat" style={{ fontSize: '0.65rem', color: '#9ca3af' }}>Sin datos</div>
-                )
-              )}
-
-              {/* ── 7. Flujo de Caja ── */}
-              {!reporteLoading && reporteActivo === 'flujo' && (
-                reporteFlujo.length > 0 ? (
-                  <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.55rem' }}>
-                      <thead>
-                        <tr style={{ backgroundColor: '#f3f4f6' }}>
-                          {['Fecha', 'Entradas', 'Salidas', 'Balance'].map((h) => (
-                            <th key={h} style={{ padding: '0.3rem 0.4rem', textAlign: 'left', fontWeight: '600', color: '#374151', whiteSpace: 'nowrap' }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {reporteFlujo.map((row, i) => (
-                          <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                            <td style={{ padding: '0.25rem 0.4rem', whiteSpace: 'nowrap' }}>{row.fecha}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', textAlign: 'right', color: '#10b981', fontWeight: '600' }}>${Number(row.entradas).toFixed(2)}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', textAlign: 'right', color: '#ef4444', fontWeight: '600' }}>${Number(row.salidas).toFixed(2)}</td>
-                            <td style={{ padding: '0.25rem 0.4rem', textAlign: 'right', fontWeight: '700', color: Number(row.balance) >= 0 ? '#0ea5e9' : '#dc2626' }}>${Number(row.balance).toFixed(2)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="card-stat" style={{ fontSize: '0.65rem', color: '#9ca3af' }}>Sin datos</div>
-                )
-              )}
-            </div>
-            )}
-
             {/* Card de Ventas Hoy - Rediseñado según mockup */}
             <div className="dashboard-card" style={{ position: 'relative' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
@@ -1971,14 +1571,8 @@ export const DashboardPage = () => {
                 </div>
                 <h3 className="card-title" style={{ margin: 0 }}>Inventario</h3>
               </div>
-              <p className="card-text">Valor de Inventario</p>
-              <div className="card-stat">
-                ${saludNegocio.valorInventario.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </div>
-              
               {/* Indicador de Nivel de Inventario - Más compacto */}
               <div style={{
-                marginTop: '0.75rem',
                 padding: '0.5rem',
                 backgroundColor: `${nivelInventario.color}15`,
                 border: `1px solid ${nivelInventario.color}`,
