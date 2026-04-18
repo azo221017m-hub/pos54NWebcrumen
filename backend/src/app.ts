@@ -32,7 +32,6 @@ import pagosRoutes from './routes/pagos.routes';
 import movimientosRoutes from './routes/movimientos.routes';
 import gastosRoutes from './routes/gastos.routes';
 import anunciosRoutes from './routes/anuncios.routes';
-import reportesRoutes from './routes/reportes.routes';
 
 // Cargar dotenv según el ambiente
 // En desarrollo: desde el directorio del proyecto
@@ -285,7 +284,6 @@ app.use('/api/pagos', pagosRoutes);
 app.use('/api/movimientos', movimientosRoutes);
 app.use('/api/gastos', gastosRoutes);
 app.use('/api/anuncios', anunciosRoutes);
-app.use('/api/reportes', reportesRoutes);
 
 // Manejo de rutas no encontradas (404)
 app.use((_req: Request, res: Response) => {
