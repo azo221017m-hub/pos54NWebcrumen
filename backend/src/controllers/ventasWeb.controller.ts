@@ -1636,6 +1636,10 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const turnoActual = turnoRows[0];
     const claveturno = turnoActual.claveturno;
     const metaturno = Number(turnoActual.metaturno) || 0;
+    const now = new Date();
+    const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const nextMonthStart = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}-01`;
 
     // Use single query with conditional aggregation for better performance
     // Only count sales with descripcionmov='VENTA' per business rules
@@ -1663,11 +1667,11 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
          WHERE idnegocio = ?
            AND referencia = 'GASTO'
            AND estatuspago = 'PAGADO'
-           AND fechadeventa >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
-           AND fechadeventa < DATE_FORMAT(CURDATE() + INTERVAL 1 MONTH, '%Y-%m-01')
+           AND fechadeventa >= ?
+           AND fechadeventa < ?
          GROUP BY descripcionmov
        ) g`,
-      [idnegocio]
+      [idnegocio, monthStart, nextMonthStart]
     );
     const totalGastos = Number(gastosRows[0]?.totalGastos) || 0;
 
@@ -1679,9 +1683,9 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
        WHERE idnegocio = ?
          AND motivomovimiento = 'COMPRA'
          AND estatusmovimiento = 'PROCESADO'
-         AND fechamovimiento >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
-         AND fechamovimiento < DATE_FORMAT(CURDATE() + INTERVAL 1 MONTH, '%Y-%m-01')`,
-      [idnegocio]
+         AND fechamovimiento >= ?
+         AND fechamovimiento < ?`,
+      [idnegocio, monthStart, nextMonthStart]
     );
     const totalCompras = Number(comprasRows[0]?.totalCompras) || 0;
 
