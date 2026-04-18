@@ -1621,6 +1621,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
           totalOrdenado: 0,
           totalVentasCobradas: 0,
           totalGastos: 0,
+          totalCompras: 0,
           totalDescuentos: 0,
           metaTurno: 0,
           hasTurnoAbierto: false,
@@ -1635,6 +1636,10 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const turnoActual = turnoRows[0];
     const claveturno = turnoActual.claveturno;
     const metaturno = Number(turnoActual.metaturno) || 0;
+    const now = new Date();
+    const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const nextMonthStart = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}-01`;
 
     // Use single query with conditional aggregation for better performance
     // Only count sales with descripcionmov='VENTA' per business rules
@@ -1652,17 +1657,37 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const totalOrdenado = Number(salesRows[0]?.totalOrdenado) || 0;
     const totalVentasCobradas = Number(salesRows[0]?.totalVentasCobradas) || 0;
 
-    // Get total gastos: tipodeventa='MOVIMIENTO', estadodeventa='COBRADO', referencia='GASTO'
+    // Get total gastos del mes actual: referencia='GASTO', estatuspago='PAGADO'
+    // Requested grouped by descripcionmov (aggregated in subquery and returned as single total).
     const [gastosRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT COALESCE(SUM(totaldeventa), 0) as totalGastos
-       FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND tipodeventa = 'MOVIMIENTO'
-         AND estadodeventa = 'COBRADO'
-         AND referencia = 'GASTO'`,
-      [claveturno, idnegocio]
+      `SELECT COALESCE(SUM(g.totalPorDescripcion), 0) as totalGastos
+       FROM (
+         SELECT descripcionmov, COALESCE(SUM(totaldeventa), 0) as totalPorDescripcion
+         FROM tblposcrumenwebventas
+         WHERE idnegocio = ?
+           AND referencia = 'GASTO'
+           AND estatuspago = 'PAGADO'
+           AND fechadeventa >= ?
+           AND fechadeventa < ?
+         GROUP BY descripcionmov
+       ) g`,
+      [idnegocio, monthStart, nextMonthStart]
     );
     const totalGastos = Number(gastosRows[0]?.totalGastos) || 0;
+
+    // Get total compras del mes actual from inventory movements detail:
+    // SUM(cantidad * costo) where motivomovimiento='COMPRA' and estatusmovimiento='PROCESADO'
+    const [comprasRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(cantidad * costo), 0) as totalCompras
+       FROM tblposcrumenwebdetallemovimientos
+       WHERE idnegocio = ?
+         AND motivomovimiento = 'COMPRA'
+         AND estatusmovimiento = 'PROCESADO'
+         AND fechamovimiento >= ?
+         AND fechamovimiento < ?`,
+      [idnegocio, monthStart, nextMonthStart]
+    );
+    const totalCompras = Number(comprasRows[0]?.totalCompras) || 0;
 
     // Get total descuentos: estadodeventa='COBRADO', descripcionmov='VENTA'
     const [descuentosTotalRows] = await pool.execute<RowDataPacket[]>(
@@ -1756,6 +1781,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
         totalOrdenado,
         totalVentasCobradas,
         totalGastos,
+        totalCompras,
         totalDescuentos,
         metaTurno: metaturno,
         hasTurnoAbierto: true,
