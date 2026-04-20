@@ -1553,3 +1553,67 @@
 .btn-en-camino:active {
   transform: translateY(0);
 }
+
+.dashboard-post-cierre-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 1rem;
+}
+
+.dashboard-post-cierre-modal {
+  width: min(460px, 100%);
+  background: #fff;
+  border-radius: 14px;
+  padding: 1.25rem;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.dashboard-post-cierre-modal h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #111827;
+}
+
+.dashboard-post-cierre-modal p {
+  margin: 0;
+  color: #4b5563;
+  font-size: 0.9rem;
+}
+
+.dashboard-post-cierre-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.dashboard-post-cierre-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: #fff;
+}
+
+.dashboard-post-cierre-btn-print {
+  background: #0ea5e9;
+  flex: 1;
+}
+
+.dashboard-post-cierre-btn-whatsapp {
+  background: #22c55e;
+  flex: 1;
+}
+
+.dashboard-post-cierre-btn-close {
+  background: #6b7280;
+  align-self: flex-end;
+}

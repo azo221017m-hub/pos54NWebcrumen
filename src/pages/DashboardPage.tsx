@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerTopProductosTurno, type ResumenVentas, type TopProductoTurno } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
-import { clearSession } from '../services/sessionService';
+import { clearSession, setSkipBeforeUnload } from '../services/sessionService';
 import { obtenerDetallesPagos } from '../services/pagosService';
 import { verificarTurnoAbierto, cerrarTurnoActual } from '../services/turnosService';
 import type { Turno } from '../types/turno.types';
@@ -54,6 +54,67 @@ interface DatosCierreTurno {
   };
   estatusCierre: 'sin_novedades' | 'cuentas_pendientes';
 }
+
+interface ResumenCierreTurno {
+  claveTurno: string;
+  numeroTurno: number | null;
+  retiroFondo: number;
+  totalArqueo: number;
+  estatusCierre: 'sin_novedades' | 'cuentas_pendientes';
+  detalleDenominaciones: DatosCierreTurno['detalleDenominaciones'];
+  fechaCierreISO: string;
+}
+
+const WHATSAPP_NAVIGATION_DELAY_MS = 1500;
+
+const etiquetasDenominaciones: Record<keyof DatosCierreTurno['detalleDenominaciones'], string> = {
+  billete1000: 'Billetes de 1000',
+  billete500: 'Billetes de 500',
+  billete200: 'Billetes de 200',
+  billete100: 'Billetes de 100',
+  billete50: 'Billetes de 50',
+  billete20: 'Billetes de 20',
+  moneda10: 'Monedas de 10',
+  moneda5: 'Monedas de 5',
+  moneda1: 'Monedas de 1',
+  moneda050: 'Monedas de 0.50'
+};
+
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+
+const generarTextoDetalleCorte = (detalle: ResumenCierreTurno): string => {
+  const formatCurrency = (amount: number) =>
+    `$${Number(amount || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  const fechaCierre = new Date(detalle.fechaCierreISO).toLocaleString('es-MX');
+  const encabezado = [
+    'CORTE FIN DE TURNO',
+    `Fecha: ${fechaCierre}`,
+    `Turno: ${detalle.numeroTurno ?? '-'}`,
+    `Clave: ${detalle.claveTurno}`,
+    `Estatus: ${detalle.estatusCierre === 'sin_novedades' ? 'SIN NOVEDADES' : 'CUENTAS PENDIENTES'}`,
+    `Retiro Fondo: ${formatCurrency(detalle.retiroFondo)}`,
+    `Arqueo Caja: ${formatCurrency(detalle.totalArqueo)}`,
+    '',
+    'Detalle denominaciones:'
+  ];
+
+  const denominaciones = (Object.keys(detalle.detalleDenominaciones) as Array<keyof DatosCierreTurno['detalleDenominaciones']>)
+    .filter((key) => Number(detalle.detalleDenominaciones[key]) > 0)
+    .map((key) => `- ${etiquetasDenominaciones[key]}: ${detalle.detalleDenominaciones[key]}`);
+
+  if (denominaciones.length === 0) {
+    denominaciones.push('- Sin denominaciones capturadas');
+  }
+
+  return [...encabezado, ...denominaciones].join('\n');
+};
 
 const getUsuarioFromStorage = (): Usuario | null => {
   const usuarioData = localStorage.getItem('usuario');
@@ -189,6 +250,8 @@ export const DashboardPage = () => {
   });
   const [turnoAbierto, setTurnoAbierto] = useState<Turno | null>(null);
   const [showCierreTurnoModal, setShowCierreTurnoModal] = useState(false);
+  const [showDetalleCorteModal, setShowDetalleCorteModal] = useState(false);
+  const [detalleUltimoCierre, setDetalleUltimoCierre] = useState<ResumenCierreTurno | null>(null);
   const [negocio, setNegocio] = useState<Negocio | null>(null);
   const [abiertoAhoraWeb, setAbiertoAhoraWeb] = useState<boolean>(false);
   const [ventasEnCamino, setVentasEnCamino] = useState<Set<number>>(new Set());
@@ -212,6 +275,7 @@ export const DashboardPage = () => {
 
   // Track already-notified order IDs to avoid duplicate sound alerts
   const notifiedOrdersRef = useRef<Set<number>>(new Set());
+  const whatsappTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleLogout = useCallback(() => {
     // Limpiar completamente la sesión
@@ -396,10 +460,21 @@ export const DashboardPage = () => {
   const handleCierreTurnoSubmit = async (datosFormulario: DatosCierreTurno) => {
     try {
       console.log('Datos de cierre de turno:', datosFormulario);
+      const detalleCierre: ResumenCierreTurno = {
+        claveTurno: datosFormulario.idTurno,
+        numeroTurno: turnoAbierto?.numeroturno ?? null,
+        retiroFondo: datosFormulario.retiroFondo,
+        totalArqueo: datosFormulario.totalArqueo,
+        estatusCierre: datosFormulario.estatusCierre,
+        detalleDenominaciones: datosFormulario.detalleDenominaciones,
+        fechaCierreISO: new Date().toISOString()
+      };
       // Call the service to close the turno
       await cerrarTurnoActual(datosFormulario);
       console.log('Turno cerrado exitosamente');
       setShowCierreTurnoModal(false);
+      setDetalleUltimoCierre(detalleCierre);
+      setShowDetalleCorteModal(true);
       // Refresh the turno status and sales summary
       await verificarTurno();
       await cargarResumenVentas();
@@ -409,6 +484,59 @@ export const DashboardPage = () => {
       console.error('Error al cerrar turno:', error);
       showErrorToast('Error al cerrar el turno. Por favor intente nuevamente.');
     }
+  };
+
+  const handleImprimirDetalleCorte = () => {
+    if (!detalleUltimoCierre) return;
+
+    const textoDetalle = generarTextoDetalleCorte(detalleUltimoCierre);
+    const ventana = window.open('', '_blank', 'width=340,height=700');
+    if (!ventana) {
+      showErrorToast('No se pudo abrir la ventana de impresión. Verifica los pop-ups.');
+      return;
+    }
+
+    ventana.document.write(`<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Corte Fin de Turno</title>
+  <style>
+    body { font-family: 'Courier New', Courier, monospace; font-size: 12px; width: 58mm; margin: 0; padding: 8px; }
+    pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
+    @media print {
+      html, body { width: 58mm; }
+      @page { size: 58mm auto; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+  <pre>${escapeHtml(textoDetalle)}</pre>
+</body>
+</html>`);
+    ventana.document.close();
+    ventana.focus();
+    setTimeout(() => {
+      ventana.print();
+      ventana.close();
+    }, 500);
+  };
+
+  const handleEnviarDetalleCorteWhatsApp = () => {
+    if (!detalleUltimoCierre) return;
+    const textoDetalle = generarTextoDetalleCorte(detalleUltimoCierre);
+
+    setSkipBeforeUnload(true);
+    window.location.href = `whatsapp://send?text=${encodeURIComponent(textoDetalle)}`;
+
+    if (whatsappTimeoutRef.current) {
+      clearTimeout(whatsappTimeoutRef.current);
+    }
+
+    whatsappTimeoutRef.current = setTimeout(() => {
+      setSkipBeforeUnload(false);
+      whatsappTimeoutRef.current = null;
+    }, WHATSAPP_NAVIGATION_DELAY_MS);
   };
 
   const handleVerDetalle = (venta: VentaWebWithDetails) => {
@@ -564,6 +692,16 @@ export const DashboardPage = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- stable callbacks
   }, [cargarVentasSolicitadas, cargarResumenVentas]);
+
+  useEffect(() => {
+    return () => {
+      if (whatsappTimeoutRef.current) {
+        clearTimeout(whatsappTimeoutRef.current);
+        whatsappTimeoutRef.current = null;
+      }
+      setSkipBeforeUnload(false);
+    };
+  }, []);
 
   // Early return if not authenticated
   const usuarioData = localStorage.getItem('usuario');
@@ -1917,6 +2055,40 @@ export const DashboardPage = () => {
           onCancel={handleCierreTurnoCancel}
           onSubmit={handleCierreTurnoSubmit}
         />
+      )}
+
+      {showDetalleCorteModal && detalleUltimoCierre && (
+        <div className="dashboard-post-cierre-overlay">
+          <div className="dashboard-post-cierre-modal">
+            <h3>Detalle del corte de fin de turno</h3>
+            <p>
+              Turno {detalleUltimoCierre.numeroTurno ?? '-'} ({detalleUltimoCierre.claveTurno})
+            </p>
+            <div className="dashboard-post-cierre-actions">
+              <button
+                type="button"
+                className="dashboard-post-cierre-btn dashboard-post-cierre-btn-print"
+                onClick={handleImprimirDetalleCorte}
+              >
+                🖨 Imprimir
+              </button>
+              <button
+                type="button"
+                className="dashboard-post-cierre-btn dashboard-post-cierre-btn-whatsapp"
+                onClick={handleEnviarDetalleCorteWhatsApp}
+              >
+                📲 Enviar WhatsApp
+              </button>
+            </div>
+            <button
+              type="button"
+              className="dashboard-post-cierre-btn dashboard-post-cierre-btn-close"
+              onClick={() => setShowDetalleCorteModal(false)}
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
