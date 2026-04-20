@@ -134,21 +134,6 @@ const getShortFolio = (tipodeventa: TipoDeVenta, idventa: number): string => {
   return `${tipodeventa.charAt(0)}${idventa}`;
 };
 
-// Helper to distribute MIXTO total proportionally between EFECTIVO and TRANSFERENCIA
-const distribuirMixto = (efectivoAPI: number, transferenciaAPI: number, mixtoAPI: number): { efectivo: number; transferencia: number } => {
-  const baseTotal = efectivoAPI + transferenciaAPI;
-  if (baseTotal > 0) {
-    return {
-      efectivo: efectivoAPI + mixtoAPI * (efectivoAPI / baseTotal),
-      transferencia: transferenciaAPI + mixtoAPI * (transferenciaAPI / baseTotal)
-    };
-  }
-  return {
-    efectivo: efectivoAPI + mixtoAPI / 2,
-    transferencia: transferenciaAPI + mixtoAPI / 2
-  };
-};
-
 // Helper to calculate display amount for MIXTO sales
 const calcularImporteMostrar = (venta: VentaWebWithDetails, pagosRegistrados: Record<string, number>): number => {
   const total = Number(venta.totaldeventa) || 0;
@@ -197,6 +182,7 @@ export const DashboardPage = () => {
     metaTurno: 0,
     hasTurnoAbierto: false,
     ventasPorFormaDePago: [],
+    ventasPorFormaDePagoPorTipo: [],
     ventasPorTipoDeVenta: [],
     descuentosPorTipo: [],
     gastosPorDescripcion: []
@@ -1361,55 +1347,78 @@ export const DashboardPage = () => {
                 Forma de Pago
               </h4>
 
-              {/* Gráfico de Barras Horizontales - EFECTIVO y TRANSFERENCIA (MIXTO distribuido) */}
+              {/* Totales por forma de pago desglosados por tipo de venta */}
               <div style={{ marginBottom: '1rem' }}>
                 {(() => {
-                  const apiDataFP = resumenVentas.ventasPorFormaDePago || [];
-                  const efectivoAPI = apiDataFP.find(item => item.formadepago === 'EFECTIVO')?.total || 0;
-                  const transferenciaAPI = apiDataFP.find(item => item.formadepago === 'TRANSFERENCIA')?.total || 0;
-                  const mixtoAPI = apiDataFP.find(item => item.formadepago === 'MIXTO')?.total || 0;
-                  const { efectivo: efectivoTotal, transferencia: transferenciaTotal } = distribuirMixto(efectivoAPI, transferenciaAPI, mixtoAPI);
-                  const datosFP = [
-                    { formadepago: 'EFECTIVO', total: efectivoTotal, color: '#10b981' },
-                    { formadepago: 'TRANSFERENCIA', total: transferenciaTotal, color: '#8b5cf6' }
-                  ];
-                  const totalFP = datosFP.reduce((sum, item) => sum + item.total, 0) || 1;
+                  const coloresTipoVenta: Record<string, string> = {
+                    MESA: '#3b82f6',
+                    DOMICILIO: '#f59e0b',
+                    LLEVAR: '#f97316',
+                    ONLINE: '#8b5cf6'
+                  };
+                  const datosAgrupados = resumenVentas.ventasPorFormaDePagoPorTipo || [];
+                  if (datosAgrupados.length === 0) {
+                    return (
+                      <p style={{ fontSize: '0.65rem', color: '#9ca3af', textAlign: 'center' }}>
+                        {resumenVentas.hasTurnoAbierto ? 'Sin ventas registradas' : 'Sin turno abierto'}
+                      </p>
+                    );
+                  }
+                  const gruposMap = new Map<string, { formadepago: string; total: number; tipos: Array<{ tipodeventa: string; total: number }> }>();
+                  for (const item of datosAgrupados) {
+                    const formadepago = item.formadepago || 'Sin especificar';
+                    const tipodeventa = item.tipodeventa || 'Sin especificar';
+                    const total = Number(item.total) || 0;
+                    const grupoExistente = gruposMap.get(formadepago);
+                    if (!grupoExistente) {
+                      gruposMap.set(formadepago, {
+                        formadepago,
+                        total,
+                        tipos: [{ tipodeventa, total }]
+                      });
+                    } else {
+                      grupoExistente.total += total;
+                      grupoExistente.tipos.push({ tipodeventa, total });
+                    }
+                  }
+                  const grupos = Array.from(gruposMap.values()).sort((a, b) => b.total - a.total);
                   return (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                      {datosFP.map((item, index) => {
-                        const percentage = totalFP > 0 ? (item.total / totalFP) * 100 : 0;
+                      {grupos.map((grupo, index) => {
+                        const totalGrupo = grupo.total || 1;
+                        const tiposOrdenados = [...grupo.tipos].sort((a, b) => b.total - a.total);
                         return (
-                          <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                          <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', padding: '0.5rem', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                <div style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: item.color }}></div>
                                 <span style={{ fontSize: '0.65rem', color: '#374151', fontWeight: '600' }}>
-                                  {item.formadepago}
+                                  {grupo.formadepago}
                                 </span>
                               </div>
-                              <span style={{ fontSize: '0.7rem', fontWeight: '700', color: item.color }}>
-                                ${(item.total ?? 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                              <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#111827' }}>
+                                ${(grupo.total ?? 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                               </span>
                             </div>
-                            <div style={{ width: '100%', height: '20px', backgroundColor: '#f3f4f6', borderRadius: '10px', overflow: 'hidden' }}>
-                              <div style={{
-                                width: `${percentage}%`,
-                                height: '100%',
-                                backgroundColor: item.color,
-                                borderRadius: '10px',
-                                transition: 'width 0.3s ease',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'flex-end',
-                                paddingRight: percentage > 15 ? '0.5rem' : '0'
-                              }}>
-                                {percentage > 15 && (
-                                  <span style={{ fontSize: '0.6rem', fontWeight: '700', color: 'white' }}>
-                                    {percentage.toFixed(0)}%
-                                  </span>
-                                )}
-                              </div>
-                            </div>
+                            {tiposOrdenados.map((tipo, idx) => {
+                              const percentage = totalGrupo > 0 ? (tipo.total / totalGrupo) * 100 : 0;
+                              const color = coloresTipoVenta[tipo.tipodeventa] || '#9ca3af';
+                              return (
+                                <div key={`${tipo.tipodeventa}-${idx}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                      <div style={{ width: '7px', height: '7px', borderRadius: '2px', backgroundColor: color }}></div>
+                                      <span style={{ fontSize: '0.6rem', color: '#4b5563', fontWeight: '600' }}>{tipo.tipodeventa}</span>
+                                    </div>
+                                    <span style={{ fontSize: '0.6rem', color: color, fontWeight: '700' }}>
+                                      ${(tipo.total ?? 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                    </span>
+                                  </div>
+                                  <div style={{ width: '100%', height: '10px', backgroundColor: '#e5e7eb', borderRadius: '5px', overflow: 'hidden' }}>
+                                    <div style={{ width: `${percentage}%`, height: '100%', backgroundColor: color, borderRadius: '5px', transition: 'width 0.3s ease' }}></div>
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         );
                       })}
