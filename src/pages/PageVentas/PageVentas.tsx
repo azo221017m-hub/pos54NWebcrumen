@@ -925,6 +925,7 @@ const PageVentas: React.FC = () => {
     const itemsHtml = items.map(item => {
       const precioUnitario = Number(item.producto.precio) || 0;
       const subtotal = precioUnitario * (Number(item.cantidad) || 0);
+      const cantidadLabel = escapeHtml(String(item.cantidad));
       const mods = item.moderadoresNames && item.moderadoresNames.length > 0
         ? escapeHtml(item.moderadoresNames.filter(Boolean).join(', '))
         : '';
@@ -934,7 +935,7 @@ const PageVentas: React.FC = () => {
       return `<div class="item">
         <div class="item-nombre">${escapeHtml(item.producto.nombre)}</div>
         <div class="item-detalle">
-          <span>Cant: ${item.cantidad}</span>
+          <span>Cant: ${cantidadLabel}</span>
           <span>P.Unit: $${precioUnitario.toFixed(2)}</span>
         </div>
         <div class="item-subtotal">
@@ -1009,8 +1010,8 @@ const PageVentas: React.FC = () => {
   <hr class="divider"/>
   ${itemsHtml}
   <div class="resumen">
-    <div class="resumen-linea"><span>Total productos:</span><span>${totalProductos}</span></div>
-    <div class="resumen-linea total"><span>Total comanda:</span><span>$${totalComanda.toFixed(2)}</span></div>
+    <div class="resumen-linea"><span>Total productos:</span><span>${escapeHtml(String(totalProductos))}</span></div>
+    <div class="resumen-linea total"><span>Total comanda:</span><span>$${escapeHtml(totalComanda.toFixed(2))}</span></div>
   </div>
   <hr class="divider"/>
   <div class="footer-label">COMANDA DE COCINA</div>
