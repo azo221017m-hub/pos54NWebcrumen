@@ -200,8 +200,13 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   };
 
   const montoDescuento = descuentoSeleccionado ? calcularDescuento(descuentoSeleccionado) : 0;
+  const esDescuentoCienPorciento = descuentoSeleccionado
+    ? esTipoPorcentaje(descuentoSeleccionado.tipodescuento) && Number(descuentoSeleccionado.valor) === 100
+    : false;
   // Prevent negative totals - discount cannot exceed the total amount
   const nuevoTotal = Math.max(0, totalCuenta - montoDescuento);
+  const totalAPagarActual = descuentoSeleccionado ? nuevoTotal : totalCuenta;
+  const esCobroEnCerosNoPermitido = totalAPagarActual === 0 && !esDescuentoCienPorciento;
 
   // Calculate sum of registered payments for MIXTO
   const sumaPagosRegistrados = pagosRegistrados.reduce((sum, pago) => sum + Number(pago.totaldepago || 0), 0);
@@ -348,6 +353,11 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
     
     const totalAPagar = descuentoSeleccionado ? nuevoTotal : totalCuenta;
     const descuento = descuentoSeleccionado ? calcularDescuento(descuentoSeleccionado) : 0;
+
+    if (totalAPagar === 0 && !esDescuentoCienPorciento) {
+      alert('Solo se puede cobrar en $0.00 cuando el descuento es exactamente del 100%');
+      return;
+    }
     
     setProcesandoPago(true);
 
@@ -518,7 +528,10 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
 
   // COBRAR disabled: also disable in MIXTO when sum of importes < montoACobrar
   const sumaPagosMixtos = pagosMixtos.reduce((sum, p) => sum + (Number(p.importe) || 0), 0);
-  const cobrarDisabled = procesandoPago || !ventaId || (metodoPagoSeleccionado === 'mixto' && sumaPagosMixtos < montoACobrar);
+  const cobrarDisabled = procesandoPago
+    || !ventaId
+    || esCobroEnCerosNoPermitido
+    || (metodoPagoSeleccionado === 'mixto' && sumaPagosMixtos < montoACobrar);
 
   return (
     <div className="modulo-pagos-overlay">
