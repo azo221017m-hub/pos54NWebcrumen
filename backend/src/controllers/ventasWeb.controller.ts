@@ -1721,66 +1721,27 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const [descuentosTotalRows] = await pool.execute<RowDataPacket[]>(descuentosQuery, descuentosParams);
     const totalDescuentos = Number(descuentosTotalRows[0]?.totalDescuentos) || 0;
 
-    // ── Ventas por forma de pago ──
-    // When turno open: filter by claveturno; when no turno: filter by today's date
-    let fpQuery: string;
-    let fpParams: (string | number)[];
+    // ── Ventas por forma de pago y tipo de venta (solo turno abierto) ──
+    // Requerido para indicador Ventas Hoy: agrupar por forma de pago, desglosado por tipo de venta.
+    let formaPagoTipoRows: RowDataPacket[] = [];
     if (hasTurnoAbierto) {
-      fpQuery = `SELECT 
-        formadepago,
-        COALESCE(SUM(totaldeventa), 0) as total
-       FROM tblposcrumenwebventas 
-       WHERE claveturno = ? AND idnegocio = ? AND estadodeventa = 'COBRADO'
-         AND descripcionmov = 'VENTA'
-       GROUP BY formadepago
-       ORDER BY total DESC`;
-      fpParams = [claveturno!, idnegocio];
-    } else {
-      fpQuery = `SELECT 
-        formadepago,
-        COALESCE(SUM(totaldeventa), 0) as total
-       FROM tblposcrumenwebventas 
-       WHERE idnegocio = ? AND estadodeventa = 'COBRADO'
-         AND descripcionmov = 'VENTA'
-         AND fechadeventa BETWEEN ? AND ?
-       GROUP BY formadepago
-       ORDER BY total DESC`;
-      fpParams = [idnegocio, inicioHoy, finHoy];
+      const [rows] = await pool.execute<RowDataPacket[]>(
+        `SELECT
+          formadepago,
+          tipodeventa,
+          COALESCE(SUM(totaldeventa), 0) as total
+         FROM tblposcrumenwebventas
+         WHERE claveturno = ?
+           AND idnegocio = ?
+           AND estadodeventa = 'COBRADO'
+           AND descripcionmov = 'VENTA'
+           AND tipodeventa IN ('MESA', 'DOMICILIO', 'ONLINE', 'LLEVAR')
+         GROUP BY formadepago, tipodeventa
+         ORDER BY formadepago ASC, total DESC`,
+        [claveturno!, idnegocio]
+      );
+      formaPagoTipoRows = rows;
     }
-    const [formaDePagoRows] = await pool.execute<RowDataPacket[]>(fpQuery, fpParams);
-
-    // ── Ventas por tipo de venta ──
-    // When turno open: filter by claveturno; when no turno: filter by today's date
-    let tvQuery: string;
-    let tvParams: (string | number)[];
-    if (hasTurnoAbierto) {
-      tvQuery = `SELECT 
-        tipodeventa,
-        COALESCE(SUM(totaldeventa), 0) as total
-       FROM tblposcrumenwebventas 
-       WHERE claveturno = ? 
-         AND idnegocio = ? 
-         AND estadodeventa = 'COBRADO'
-         AND descripcionmov = 'VENTA'
-         AND tipodeventa IN ('MESA', 'DOMICILIO', 'ONLINE', 'LLEVAR')
-       GROUP BY tipodeventa
-       ORDER BY total DESC`;
-      tvParams = [claveturno!, idnegocio];
-    } else {
-      tvQuery = `SELECT 
-        tipodeventa,
-        COALESCE(SUM(totaldeventa), 0) as total
-       FROM tblposcrumenwebventas 
-       WHERE idnegocio = ? 
-         AND estadodeventa = 'COBRADO'
-         AND descripcionmov = 'VENTA'
-         AND tipodeventa IN ('MESA', 'DOMICILIO', 'ONLINE', 'LLEVAR')
-         AND fechadeventa BETWEEN ? AND ?
-       GROUP BY tipodeventa
-       ORDER BY total DESC`;
-      tvParams = [idnegocio, inicioHoy, finHoy];
-    }
-    const [tipoDeVentaRows] = await pool.execute<RowDataPacket[]>(tvQuery, tvParams);
 
     // ── Descuentos por tipo ──
     let descuentosRows: RowDataPacket[] = [];
@@ -1826,15 +1787,26 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     }
 
     // Format data for charts
-    const ventasPorFormaDePago = formaDePagoRows.map(row => ({
+    const ventasPorFormaDePagoPorTipo = formaPagoTipoRows.map(row => ({
       formadepago: row.formadepago || 'Sin especificar',
-      total: Number(row.total) || 0
-    }));
-
-    const ventasPorTipoDeVenta = tipoDeVentaRows.map(row => ({
       tipodeventa: row.tipodeventa || 'Sin especificar',
       total: Number(row.total) || 0
     }));
+
+    const ventasPorFormaDePagoMap = new Map<string, number>();
+    const ventasPorTipoDeVentaMap = new Map<string, number>();
+    for (const row of ventasPorFormaDePagoPorTipo) {
+      ventasPorFormaDePagoMap.set(row.formadepago, (ventasPorFormaDePagoMap.get(row.formadepago) || 0) + row.total);
+      ventasPorTipoDeVentaMap.set(row.tipodeventa, (ventasPorTipoDeVentaMap.get(row.tipodeventa) || 0) + row.total);
+    }
+
+    const ventasPorFormaDePago = Array.from(ventasPorFormaDePagoMap.entries())
+      .map(([formadepago, total]) => ({ formadepago, total }))
+      .sort((a, b) => b.total - a.total);
+
+    const ventasPorTipoDeVenta = Array.from(ventasPorTipoDeVentaMap.entries())
+      .map(([tipodeventa, total]) => ({ tipodeventa, total }))
+      .sort((a, b) => b.total - a.total);
 
     const descuentosPorTipo = descuentosRows.map(row => ({
       tipo: row.tipodescuento || 'SIN_TIPO',
@@ -1854,6 +1826,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
         metaTurno: metaturno,
         hasTurnoAbierto,
         ventasPorFormaDePago,
+        ventasPorFormaDePagoPorTipo,
         ventasPorTipoDeVenta,
         descuentosPorTipo,
         gastosPorDescripcion
