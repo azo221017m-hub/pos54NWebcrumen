@@ -12,7 +12,7 @@ import type {
   VentaWebWithDetails,
   FormaDePago
 } from '../types/ventasWeb.types';
-import { getMexicoTimeComponents, normalizeDateTimeForMySQL } from '../utils/dateTime';
+import { formatMySQLDateTime, getMexicoTimeComponents, normalizeDateTimeForMySQL } from '../utils/dateTime';
 import { websocketService } from '../services/websocket.service';
 
 // Constantes para validación
@@ -476,6 +476,8 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
     // Insertar venta con folioventa vacío (se actualizará después con el formato completo)
     const folioventa = '';
 
+    const fechaHoraRegistro = formatMySQLDateTime();
+
     // Insertar venta con todos los campos requeridos
     const [ventaResult] = await connection.execute<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebventas (
@@ -485,12 +487,16 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
         totaldeventa, cliente, direcciondeentrega, contactodeentrega, 
         telefonodeentrega, propinadeventa, formadepago, estatusdepago, 
         descripcionmov, origenventa, claveturno, idnegocio, usuarioauditoria, fechamodificacionauditoria
-      ) VALUES (?, ?, ?, NOW(), ?, NOW(), NOW(), NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         ventaData.tipodeventa,
         folioventa,
         ventaData.estadodeventa || 'SOLICITADO', // Estado inicial o proporcionado
+        fechaHoraRegistro,
         ventaData.fechaprogramadaentrega || null, // Fecha de entrega para DOMICILIO o LLEVAR
+        fechaHoraRegistro,
+        fechaHoraRegistro,
+        fechaHoraRegistro,
         subtotal,
         descuentos,
         impuestos,
@@ -506,7 +512,8 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
         ventaData.origenventa || null, // Origen de la venta: 'SITIO' o 'WEB'
         claveturno, // Clave de turno actual del usuario que hizo login
         idnegocio,
-        usuarioauditoria
+        usuarioauditoria,
+        fechaHoraRegistro
       ]
     );
 
