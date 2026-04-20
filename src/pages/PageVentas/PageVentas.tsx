@@ -936,7 +936,7 @@ const PageVentas: React.FC = () => {
         <div class="item-nombre">${escapeHtml(item.producto.nombre)}</div>
         <div class="item-detalle">
           <span>Cant: ${cantidadLabel}</span>
-          <span>P.Unit: $${precioUnitario.toFixed(2)}</span>
+          <span>Precio: $${precioUnitario.toFixed(2)}</span>
         </div>
         <div class="item-subtotal">
           <span>Subtotal:</span>
