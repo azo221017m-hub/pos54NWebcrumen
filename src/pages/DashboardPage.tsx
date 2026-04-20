@@ -65,7 +65,12 @@ interface ResumenCierreTurno {
   fechaCierreISO: string;
 }
 
+// Mantiene el mismo retardo usado en recibos para permitir que whatsapp:// abra la app nativa
 const WHATSAPP_NAVIGATION_DELAY_MS = 1500;
+// Tamaño de popup para vista previa de ticket angosto (58mm) antes de imprimir
+const PRINT_POPUP_WINDOW_FEATURES = 'width=340,height=700';
+// Espera breve para que el popup termine de renderizar antes de lanzar print()
+const PRINT_WINDOW_READY_DELAY_MS = 500;
 
 const etiquetasDenominaciones: Record<keyof DatosCierreTurno['detalleDenominaciones'], string> = {
   billete1000: 'Billetes de 1000',
@@ -92,7 +97,16 @@ const generarTextoDetalleCorte = (detalle: ResumenCierreTurno): string => {
   const formatCurrency = (amount: number) =>
     `$${Number(amount || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  const fechaCierre = new Date(detalle.fechaCierreISO).toLocaleString('es-MX');
+  const fechaFormatter = new Intl.DateTimeFormat('es-MX', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+  const fechaCierre = fechaFormatter.format(new Date(detalle.fechaCierreISO));
   const encabezado = [
     'CORTE FIN DE TURNO',
     `Fecha: ${fechaCierre}`,
@@ -115,6 +129,25 @@ const generarTextoDetalleCorte = (detalle: ResumenCierreTurno): string => {
 
   return [...encabezado, ...denominaciones].join('\n');
 };
+
+const generarHtmlDetalleCorte = (textoDetalle: string): string => `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Corte Fin de Turno</title>
+  <style>
+    body { font-family: 'Courier New', Courier, monospace; font-size: 12px; width: 58mm; margin: 0; padding: 8px; }
+    pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
+    @media print {
+      html, body { width: 58mm; }
+      @page { size: 58mm auto; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+  <pre>${escapeHtml(textoDetalle)}</pre>
+</body>
+</html>`;
 
 const getUsuarioFromStorage = (): Usuario | null => {
   const usuarioData = localStorage.getItem('usuario');
@@ -276,6 +309,7 @@ export const DashboardPage = () => {
   // Track already-notified order IDs to avoid duplicate sound alerts
   const notifiedOrdersRef = useRef<Set<number>>(new Set());
   const whatsappTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const managedSkipBeforeUnloadRef = useRef(false);
 
   const handleLogout = useCallback(() => {
     // Limpiar completamente la sesión
@@ -460,6 +494,8 @@ export const DashboardPage = () => {
   const handleCierreTurnoSubmit = async (datosFormulario: DatosCierreTurno) => {
     try {
       console.log('Datos de cierre de turno:', datosFormulario);
+      // Call the service to close the turno
+      await cerrarTurnoActual(datosFormulario);
       const detalleCierre: ResumenCierreTurno = {
         claveTurno: datosFormulario.idTurno,
         numeroTurno: turnoAbierto?.numeroturno ?? null,
@@ -469,8 +505,6 @@ export const DashboardPage = () => {
         detalleDenominaciones: datosFormulario.detalleDenominaciones,
         fechaCierreISO: new Date().toISOString()
       };
-      // Call the service to close the turno
-      await cerrarTurnoActual(datosFormulario);
       console.log('Turno cerrado exitosamente');
       setShowCierreTurnoModal(false);
       setDetalleUltimoCierre(detalleCierre);
@@ -490,36 +524,18 @@ export const DashboardPage = () => {
     if (!detalleUltimoCierre) return;
 
     const textoDetalle = generarTextoDetalleCorte(detalleUltimoCierre);
-    const ventana = window.open('', '_blank', 'width=340,height=700');
+    const ventana = window.open('', '_blank', PRINT_POPUP_WINDOW_FEATURES);
     if (!ventana) {
       showErrorToast('No se pudo abrir la ventana de impresión. Verifica los pop-ups.');
       return;
     }
 
-    ventana.document.write(`<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>Corte Fin de Turno</title>
-  <style>
-    body { font-family: 'Courier New', Courier, monospace; font-size: 12px; width: 58mm; margin: 0; padding: 8px; }
-    pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
-    @media print {
-      html, body { width: 58mm; }
-      @page { size: 58mm auto; margin: 0; }
-    }
-  </style>
-</head>
-<body>
-  <pre>${escapeHtml(textoDetalle)}</pre>
-</body>
-</html>`);
+    ventana.document.write(generarHtmlDetalleCorte(textoDetalle));
     ventana.document.close();
     ventana.focus();
     setTimeout(() => {
       ventana.print();
-      ventana.close();
-    }, 500);
+    }, PRINT_WINDOW_READY_DELAY_MS);
   };
 
   const handleEnviarDetalleCorteWhatsApp = () => {
@@ -527,6 +543,7 @@ export const DashboardPage = () => {
     const textoDetalle = generarTextoDetalleCorte(detalleUltimoCierre);
 
     setSkipBeforeUnload(true);
+    managedSkipBeforeUnloadRef.current = true;
     window.location.href = `whatsapp://send?text=${encodeURIComponent(textoDetalle)}`;
 
     if (whatsappTimeoutRef.current) {
@@ -535,6 +552,7 @@ export const DashboardPage = () => {
 
     whatsappTimeoutRef.current = setTimeout(() => {
       setSkipBeforeUnload(false);
+      managedSkipBeforeUnloadRef.current = false;
       whatsappTimeoutRef.current = null;
     }, WHATSAPP_NAVIGATION_DELAY_MS);
   };
@@ -699,7 +717,10 @@ export const DashboardPage = () => {
         clearTimeout(whatsappTimeoutRef.current);
         whatsappTimeoutRef.current = null;
       }
-      setSkipBeforeUnload(false);
+      if (managedSkipBeforeUnloadRef.current) {
+        setSkipBeforeUnload(false);
+        managedSkipBeforeUnloadRef.current = false;
+      }
     };
   }, []);
 
