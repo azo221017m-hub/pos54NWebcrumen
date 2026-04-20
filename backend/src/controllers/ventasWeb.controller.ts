@@ -1651,7 +1651,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const totalVentasCobradas = Number(salesRows[0]?.totalVentasCobradas) || 0;
 
     // ── Gastos del mes actual ──
-    // referencia='GASTO', estatuspago='PAGADO', agrupado por descripcionmov
+    // referencia='GASTO', estatusdepago='PAGADO', agrupado por descripcionmov
     // Always calculated regardless of turno status (monthly metric)
     const inicioMesGastos = `${yG}-${mG}-01 00:00:00`;
     const lastDayGastos = new Date(Number(yG), Number(mG), 0).getDate();
@@ -1663,7 +1663,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
        FROM tblposcrumenwebventas
        WHERE idnegocio = ?
          AND referencia = 'GASTO'
-         AND estatuspago = 'PAGADO'
+         AND estatusdepago = 'PAGADO'
          AND fechadeventa BETWEEN ? AND ?
        GROUP BY descripcionmov`,
       [idnegocio, inicioMesGastos, finMesGastos]
