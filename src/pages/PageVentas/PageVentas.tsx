@@ -877,13 +877,15 @@ const PageVentas: React.FC = () => {
       day: '2-digit', month: '2-digit', year: 'numeric',
       hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
-    const escapeHtml = (value: string): string =>
-      value
+    const escapeHtml = (value?: string | null): string => {
+      if (!value) return '';
+      return value
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+    };
 
     // Determine TIPODEVENTA and CLIENTE for the header
     const tipoDeVentaMap: Record<TipoServicio, string> = {
@@ -924,7 +926,7 @@ const PageVentas: React.FC = () => {
       const precioUnitario = Number(item.producto.precio) || 0;
       const subtotal = precioUnitario * (Number(item.cantidad) || 0);
       const mods = item.moderadoresNames && item.moderadoresNames.length > 0
-        ? escapeHtml(item.moderadoresNames.join(', '))
+        ? escapeHtml(item.moderadoresNames.filter(Boolean).join(', '))
         : '';
       const obs = item.notas ? escapeHtml(item.notas) : '';
       const modHtml = mods ? `<div class="mod"><span class="label">Moderadores:</span> ${mods}</div>` : '';
@@ -952,7 +954,7 @@ const PageVentas: React.FC = () => {
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+      font-family: system-ui, 'Segoe UI', Arial, Helvetica, sans-serif;
       font-size: 13px;
       line-height: 1.25;
       width: 58mm;
