@@ -877,6 +877,13 @@ const PageVentas: React.FC = () => {
       day: '2-digit', month: '2-digit', year: 'numeric',
       hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
+    const escapeHtml = (value: string): string =>
+      value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 
     // Determine TIPODEVENTA and CLIENTE for the header
     const tipoDeVentaMap: Record<TipoServicio, string> = {
@@ -896,27 +903,44 @@ const PageVentas: React.FC = () => {
     }
 
     const nombreNegocio = negocio?.nombreNegocio || 'POS Crumen';
+    const totalProductos = items.reduce((sum, item) => sum + (Number(item.cantidad) || 0), 0);
+    const totalComanda = items.reduce((sum, item) => {
+      const cantidad = Number(item.cantidad) || 0;
+      const precioUnitario = Number(item.producto.precio) || 0;
+      return sum + (cantidad * precioUnitario);
+    }, 0);
     const rfcHtml = negocio?.rfcnegocio
-      ? `<div class="rfc">${negocio.rfcnegocio}</div>`
+      ? `<div class="rfc">${escapeHtml(negocio.rfcnegocio)}</div>`
       : '';
     const direccionHtml = negocio?.direccionfiscalnegocio
-      ? `<div class="direccion">${negocio.direccionfiscalnegocio}</div>`
+      ? `<div class="direccion">${escapeHtml(negocio.direccionfiscalnegocio)}</div>`
       : '';
 
     const folioHtml = currentFolioVenta
-      ? `<div class="folio">Comanda | ${tipoDeVentaLabel}${clienteLabel ? ` | ${clienteLabel}` : ''}</div>`
-      : `<div class="folio">${tipoDeVentaLabel}${clienteLabel ? ` | ${clienteLabel}` : ''}</div>`;
+      ? `<div class="folio">Comanda | ${escapeHtml(tipoDeVentaLabel)}${clienteLabel ? ` | ${escapeHtml(clienteLabel)}` : ''}</div>`
+      : `<div class="folio">${escapeHtml(tipoDeVentaLabel)}${clienteLabel ? ` | ${escapeHtml(clienteLabel)}` : ''}</div>`;
 
     const itemsHtml = items.map(item => {
+      const precioUnitario = Number(item.producto.precio) || 0;
+      const subtotal = precioUnitario * (Number(item.cantidad) || 0);
       const mods = item.moderadoresNames && item.moderadoresNames.length > 0
-        ? item.moderadoresNames.join(', ')
+        ? escapeHtml(item.moderadoresNames.join(', '))
         : '';
-      const obs = item.notas || '';
-      const modHtml = mods ? `<div class="mod">${mods}</div>` : '';
+      const obs = item.notas ? escapeHtml(item.notas) : '';
+      const modHtml = mods ? `<div class="mod"><span class="label">Moderadores:</span> ${mods}</div>` : '';
+      const obsHtml = obs ? `<div class="obs"><span class="label">Nota:</span> ${obs}</div>` : '';
       return `<div class="item">
-        <div class="item-nombre">${item.producto.nombre}</div>
-        <div class="item-detalle"><span>Cant: ${item.cantidad}</span>${obs ? `<span>${obs}</span>` : ''}</div>
+        <div class="item-nombre">${escapeHtml(item.producto.nombre)}</div>
+        <div class="item-detalle">
+          <span>Cant: ${item.cantidad}</span>
+          <span>P.Unit: $${precioUnitario.toFixed(2)}</span>
+        </div>
+        <div class="item-subtotal">
+          <span>Subtotal:</span>
+          <span>$${subtotal.toFixed(2)}</span>
+        </div>
         ${modHtml}
+        ${obsHtml}
       </div>`;
     }).join('');
 
@@ -928,25 +952,46 @@ const PageVentas: React.FC = () => {
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 12px;
+      font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+      font-size: 13px;
+      line-height: 1.25;
       width: 58mm;
       max-width: 58mm;
       padding: 4mm 3mm;
       color: #000;
       background: #fff;
+      text-rendering: geometricPrecision;
+      -webkit-font-smoothing: antialiased;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
     }
-    .negocio { font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 2px; }
-    .rfc { font-size: 10px; text-align: center; margin-bottom: 2px; }
-    .direccion { font-size: 10px; text-align: center; margin-bottom: 2px; }
-    .folio { font-size: 11px; text-align: center; font-weight: bold; margin-top: 4px; }
-    .fecha { font-size: 10px; text-align: center; margin-bottom: 4px; }
-    .divider { border: none; border-top: 1px dashed #000; margin: 4px 0; }
-    .item { margin: 3px 0; }
-    .item-nombre { font-size: 12px; font-weight: bold; }
-    .item-detalle { display: flex; justify-content: space-between; font-size: 11px; padding-left: 4px; }
-    .mod { font-size: 10px; padding-left: 8px; font-style: italic; }
-    .footer-label { font-size: 12px; font-weight: bold; text-align: center; margin-top: 4px; padding-top: 4px; letter-spacing: 1px; }
+    .negocio { font-size: 14px; font-weight: 700; text-align: center; margin-bottom: 2px; letter-spacing: 0.2px; }
+    .rfc, .direccion { font-size: 10px; text-align: center; margin-bottom: 2px; }
+    .folio { font-size: 11px; text-align: center; font-weight: 700; margin-top: 4px; }
+    .fecha { font-size: 10px; text-align: center; margin-bottom: 4px; font-weight: 500; }
+    .divider { border: none; border-top: 1px solid #000; margin: 5px 0; }
+    .item { margin: 5px 0; }
+    .item-nombre { font-size: 12px; font-weight: 700; }
+    .item-detalle, .item-subtotal {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      padding-left: 4px;
+      margin-top: 1px;
+    }
+    .item-subtotal { font-weight: 700; }
+    .mod, .obs { font-size: 10px; padding-left: 8px; margin-top: 1px; }
+    .label { font-weight: 700; }
+    .resumen { margin-top: 6px; border-top: 1px solid #000; padding-top: 4px; }
+    .resumen-linea {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 600;
+      margin: 1px 0;
+    }
+    .resumen-linea.total { font-size: 12px; font-weight: 800; }
+    .footer-label { font-size: 12px; font-weight: 700; text-align: center; margin-top: 6px; padding-top: 4px; letter-spacing: 0.6px; }
     @media print {
       html, body { width: 58mm; }
       @page { size: 58mm auto; margin: 0; }
@@ -954,13 +999,17 @@ const PageVentas: React.FC = () => {
   </style>
 </head>
 <body>
-  <div class="negocio">${nombreNegocio}</div>
+  <div class="negocio">${escapeHtml(nombreNegocio)}</div>
   ${rfcHtml}
   ${direccionHtml}
   ${folioHtml}
-  <div class="fecha">${fechaHoraLabel}</div>
+  <div class="fecha">${escapeHtml(fechaHoraLabel)}</div>
   <hr class="divider"/>
   ${itemsHtml}
+  <div class="resumen">
+    <div class="resumen-linea"><span>Total productos:</span><span>${totalProductos}</span></div>
+    <div class="resumen-linea total"><span>Total comanda:</span><span>$${totalComanda.toFixed(2)}</span></div>
+  </div>
   <hr class="divider"/>
   <div class="footer-label">COMANDA DE COCINA</div>
   <script>
