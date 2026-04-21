@@ -583,11 +583,17 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
     res.json({ 
       message: 'Turno cerrado exitosamente',
       idturno,
-      productosVendidos: productosVendidosRows.map((producto) => ({
-        nombreproducto: producto.nombreproducto,
-        cantidadtotal: Number(producto.cantidadtotal) || 0,
-        totalproducto: Number(producto.totalproducto) || 0
-      }))
+      productosVendidos: productosVendidosRows.map((producto) => {
+        const nombreproducto = typeof producto.nombreproducto === 'string' && producto.nombreproducto.trim().length > 0
+          ? producto.nombreproducto.trim()
+          : 'Producto sin nombre';
+
+        return {
+          nombreproducto,
+          cantidadtotal: Number(producto.cantidadtotal) || 0,
+          totalproducto: Number(producto.totalproducto) || 0
+        };
+      })
     });
   } catch (error) {
     if (connection) {
