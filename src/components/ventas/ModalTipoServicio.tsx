@@ -10,6 +10,7 @@ export interface MesaFormData {
   idmesa: number | null;
   nombremesa: string;
   telefonocontacto?: string;
+  referencia?: string;
 }
 
 export interface LlevarFormData {
@@ -17,6 +18,7 @@ export interface LlevarFormData {
   idcliente: number | null;
   fechaprogramadaventa: string;
   telefonocontacto?: string;
+  referencia?: string;
 }
 
 export interface DomicilioFormData {
@@ -27,6 +29,7 @@ export interface DomicilioFormData {
   telefonodeentrega: string;
   contactodeentrega: string;
   observaciones: string;
+  referencia?: string;
 }
 
 export interface ClientePreData {
@@ -57,14 +60,16 @@ interface ModalTipoServicioProps {
 const INITIAL_MESA_DATA: MesaFormData = {
   idmesa: null,
   nombremesa: '',
-  telefonocontacto: ''
+  telefonocontacto: '',
+  referencia: ''
 };
 
 const INITIAL_LLEVAR_DATA: LlevarFormData = {
   cliente: '',
   idcliente: null,
   fechaprogramadaventa: '',
-  telefonocontacto: ''
+  telefonocontacto: '',
+  referencia: ''
 };
 
 const INITIAL_DOMICILIO_DATA: DomicilioFormData = {
@@ -74,7 +79,8 @@ const INITIAL_DOMICILIO_DATA: DomicilioFormData = {
   direcciondeentrega: '',
   telefonodeentrega: '',
   contactodeentrega: '',
-  observaciones: ''
+  observaciones: '',
+  referencia: ''
 };
 
 const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
@@ -169,7 +175,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
         if (initialData && 'idmesa' in initialData) {
           setMesaFormData(initialData as MesaFormData);
           setPreviousMesaId(initialData.idmesa);
-          setMesaReferencia((initialData.telefonocontacto || '').trim());
+          setMesaReferencia((initialData.referencia || '').trim());
         } else {
           setMesaFormData(INITIAL_MESA_DATA);
           setMesaReferencia('');
@@ -178,13 +184,14 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
       } else if (tipoServicio === 'Llevar') {
         if (initialData && 'fechaprogramadaventa' in initialData && !('direcciondeentrega' in initialData)) {
           setLlevarFormData(initialData as LlevarFormData);
-          setLlevarReferencia((initialData.cliente || '').trim());
+          setLlevarReferencia((initialData.referencia || '').trim());
         } else {
           setLlevarFormData({
             cliente: clienteData?.nombre || '',
             idcliente: clienteData?.idcliente ?? null,
             fechaprogramadaventa: getCurrentDateTime(),
-            telefonocontacto: ''
+            telefonocontacto: '',
+            referencia: ''
           });
           setLlevarReferencia('');
         }
@@ -193,7 +200,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
       } else if (tipoServicio === 'Domicilio') {
         if (initialData && 'direcciondeentrega' in initialData) {
           setDomicilioFormData(initialData as DomicilioFormData);
-          setDomicilioReferencia((initialData.cliente || '').trim());
+          setDomicilioReferencia((initialData.referencia || '').trim());
           if ((initialData as DomicilioFormData).cliente) {
             setDomicilioClienteEncontrado(true);
           } else {
@@ -207,7 +214,8 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
             direcciondeentrega: '',
             telefonodeentrega: clienteData?.telefono || '',
             contactodeentrega: clienteData?.nombre || '',
-            observaciones: ''
+            observaciones: '',
+            referencia: ''
           });
           setDomicilioReferencia('');
           setDomicilioClienteEncontrado(clienteData?.nombre ? true : null);
@@ -232,6 +240,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     setDomicilioClienteInfo(null);
     setDomicilioFormData(prev => ({
       ...prev,
+      referencia: value,
       cliente: '',
       idcliente: null,
       telefonodeentrega: '',
@@ -262,6 +271,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
           });
           setDomicilioFormData(prev => ({
             ...prev,
+            referencia: c.referencia || value,
             telefonodeentrega: c.telefono || prev.telefonodeentrega,
             cliente: c.nombre || '',
             idcliente: c.idCliente,
@@ -300,6 +310,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
         });
         setLlevarFormData(prev => ({
           ...prev,
+          referencia: c.referencia || referencia,
           telefonocontacto: c.telefono || prev.telefonocontacto,
           cliente: c.nombre || 'mostrador',
           idcliente: c.idCliente
@@ -308,12 +319,12 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
       } else {
         setLlevarClienteInfo(null);
         setLlevarClienteEncontrado(false);
-        setLlevarFormData(prev => ({ ...prev, cliente: '', idcliente: null, telefonocontacto: '' }));
+        setLlevarFormData(prev => ({ ...prev, cliente: 'mostrador', idcliente: null, telefonocontacto: '', referencia }));
       }
     } catch {
       setLlevarClienteInfo(null);
       setLlevarClienteEncontrado(false);
-      setLlevarFormData(prev => ({ ...prev, cliente: '', idcliente: null, telefonocontacto: '' }));
+      setLlevarFormData(prev => ({ ...prev, cliente: 'mostrador', idcliente: null, telefonocontacto: '', referencia }));
     } finally {
       setLlevarSearching(false);
     }
@@ -321,7 +332,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
 
   const handleLlevarReferenciaChange = (value: string) => {
     setLlevarReferencia(value);
-    setLlevarFormData(prev => ({ ...prev, telefonocontacto: '', cliente: '', idcliente: null }));
+    setLlevarFormData(prev => ({ ...prev, telefonocontacto: '', cliente: '', idcliente: null, referencia: value }));
     setLlevarClienteInfo(null);
     setLlevarClienteEncontrado(null);
 
@@ -348,7 +359,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
 
   const handleMesaReferenciaChange = (value: string) => {
     setMesaReferencia(value);
-    setMesaFormData(prev => ({ ...prev, telefonocontacto: '' }));
+    setMesaFormData(prev => ({ ...prev, telefonocontacto: '', referencia: value }));
     setMesaClienteInfo(null);
 
     if (mesaSearchTimer.current) clearTimeout(mesaSearchTimer.current);
@@ -373,7 +384,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
             direccion: c.direccion ?? null,
             telefono: c.telefono ?? null
           });
-          setMesaFormData(prev => ({ ...prev, telefonocontacto: c.telefono ?? '' }));
+          setMesaFormData(prev => ({ ...prev, telefonocontacto: c.telefono ?? '', referencia: c.referencia || value }));
         } else {
           setMesaClienteInfo(null);
         }
@@ -590,7 +601,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
 
               {llevarClienteInfo && (
                 <div className="cliente-lookup-info">
-                  <span className="cliente-lookup-nombre">{llevarClienteInfo.nombre || 'mostrador'}</span>
+                  <span className="cliente-lookup-nombre">{llevarClienteInfo.nombre}</span>
                   <span className="cliente-lookup-puntos">⭐ {llevarClienteInfo.puntosfidelidad} pts</span>
                   {llevarClienteInfo.telefono && (
                     <span className="cliente-lookup-telefono">📞 {llevarClienteInfo.telefono}</span>

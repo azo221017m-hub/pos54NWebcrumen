@@ -365,10 +365,13 @@ const PageVentas: React.FC = () => {
       setComanda(itemsComanda);
 
       // Set service data based on type
+      const referenciaVenta = (ventaToLoad as { referencia?: string | null }).referencia ?? '';
+
       if (ventaToLoad.tipodeventa === 'MESA') {
         setMesaData({
           idmesa: null,
-          nombremesa: ventaToLoad.cliente.replace('Mesa: ', '')
+          nombremesa: ventaToLoad.cliente.replace('Mesa: ', ''),
+          referencia: referenciaVenta
         });
       } else if (ventaToLoad.tipodeventa === 'LLEVAR') {
         setLlevarData({
@@ -376,7 +379,8 @@ const PageVentas: React.FC = () => {
           idcliente: null,
           fechaprogramadaventa: ventaToLoad.fechaprogramadaentrega 
             ? toDatetimeLocalMexico(ventaToLoad.fechaprogramadaentrega)
-            : ''
+            : '',
+          referencia: referenciaVenta
         });
       } else if (ventaToLoad.tipodeventa === 'DOMICILIO') {
         setDomicilioData({
@@ -388,7 +392,8 @@ const PageVentas: React.FC = () => {
           direcciondeentrega: ventaToLoad.direcciondeentrega || '',
           telefonodeentrega: ventaToLoad.telefonodeentrega || '',
           contactodeentrega: ventaToLoad.contactodeentrega || '',
-          observaciones: ventaToLoad.detalles[0]?.observaciones || ''
+          observaciones: ventaToLoad.detalles[0]?.observaciones || '',
+          referencia: referenciaVenta
         });
       }
     }
@@ -514,7 +519,8 @@ const PageVentas: React.FC = () => {
               direcciondeentrega: cs.direccion,
               telefonodeentrega: cs.telefono,
               contactodeentrega: cs.nombre,
-              observaciones: ''
+              observaciones: '',
+              referencia: cs.referencia || ''
             });
           } else {
             // Auto-configure Llevar using client's name
@@ -522,7 +528,8 @@ const PageVentas: React.FC = () => {
             setLlevarData({
               cliente: cs.nombre,
               idcliente: cs.idCliente,
-              fechaprogramadaventa: fechaHora
+              fechaprogramadaventa: fechaHora,
+              referencia: cs.referencia || ''
             });
           }
           setIsServiceConfigured(true);
