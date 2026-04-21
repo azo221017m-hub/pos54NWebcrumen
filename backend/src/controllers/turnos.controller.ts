@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
-import { getMexicoTimeComponents } from '../utils/dateTime';
+import { formatMySQLDateTime, getMexicoTimeComponents } from '../utils/dateTime';
 import { websocketService } from '../services/websocket.service';
 
 // Constantes
@@ -202,6 +202,9 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
     // Generar claveturno antes de insertar
     const claveturno = generarClaveTurno(idusuario, idnegocio);
 
+    // Timestamp de negocio en UTC-6 para persistencia consistente
+    const fechaOperacionUtc6 = formatMySQLDateTime();
+
     // Insertar el nuevo turno en tblposcrumenwebturnos con numeroturno calculado
     const [result] = await connection.query<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebturnos (
@@ -213,8 +216,8 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
         usuarioturno,
         idnegocio,
         metaturno
-      ) VALUES (?, NOW(), NULL, 'abierto', ?, ?, ?, ?)`,
-      [numeroturno, claveturno, usuarioturno, idnegocio, metaturno || null]
+      ) VALUES (?, ?, NULL, 'abierto', ?, ?, ?, ?)`,
+      [numeroturno, fechaOperacionUtc6, claveturno, usuarioturno, idnegocio, metaturno || null]
     );
 
     const idturno = result.insertId;
@@ -254,7 +257,7 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
         'MOVIMIENTO',
         '',
         'COBRADO',
-        NOW(),
+        ?,
         NULL,
         NULL,
         NULL,
@@ -274,9 +277,9 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
         ?,
         ?,
         ?,
-        NOW()
+        ?
       )`,
-      [fondoCajaValue, fondoCajaValue, REFERENCIA_FONDO_CAJA, claveturno, idnegocio, usuarioturno]
+      [fechaOperacionUtc6, fondoCajaValue, fondoCajaValue, REFERENCIA_FONDO_CAJA, claveturno, idnegocio, usuarioturno, fechaOperacionUtc6]
     );
 
     const idventa = ventaResult.insertId;
@@ -362,13 +365,14 @@ export const actualizarTurno = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    // Si se está cerrando el turno, actualizar fechafinturno
+    // Si se está cerrando el turno, actualizar fechafinturno en UTC-6
     if (estatusturno === 'cerrado') {
+      const fechaCierreUtc6 = formatMySQLDateTime();
       await pool.query(
         `UPDATE tblposcrumenwebturnos 
-         SET estatusturno = ?, fechafinturno = NOW()
+         SET estatusturno = ?, fechafinturno = ?
          WHERE idturno = ?`,
-        [estatusturno, idturno]
+        [estatusturno, fechaCierreUtc6, idturno]
       );
     } else {
       await pool.query(
@@ -469,6 +473,9 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
     const claveturno = turno.claveturno;
     const metaturno = turno.metaturno;
 
+    // Timestamp de cierre en UTC-6 para operaciones de fin de turno
+    const fechaCierreUtc6 = formatMySQLDateTime();
+
     // Si el estatus de cierre es 'sin_novedades', insertar registro MOVIMIENTO
     if (estatusCierre === 'sin_novedades' && retiroFondo && retiroFondo > 0) {
       console.log('Insertando venta MOVIMIENTO por retiro de fondo:', retiroFondo);
@@ -487,11 +494,12 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
           totaldeventa, cliente, direcciondeentrega, contactodeentrega, 
           telefonodeentrega, propinadeventa, formadepago, importedepago, estatusdepago, 
           referencia, tiempototaldeventa, claveturno, idnegocio, usuarioauditoria, fechamodificacionauditoria, detalledescuento
-        ) VALUES (?, ?, ?, NOW(), NULL, NULL, NULL, NULL, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, ?, ?, ?, ?, NULL, ?, ?, ?, NOW(), NULL)`,
+        ) VALUES (?, ?, ?, ?, NULL, NULL, NULL, NULL, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, ?, ?, ?, ?, NULL, ?, ?, ?, ?, NULL)`,
         [
           'MOVIMIENTO',          // tipodeventa
           '',                    // folioventa (se actualiza después)
           'COBRADO',             // estadodeventa
+          fechaCierreUtc6,       // fechadeventa
           retiroFondoNegativo,   // subtotal (NEGATIVO)
           0,                     // descuentos
           0,                     // impuestos
@@ -502,7 +510,8 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
           REFERENCIA_FONDO_CAJA, // referencia
           claveturno,            // claveturno
           idnegocio,             // idnegocio
-          usuarioauditoria       // usuarioauditoria
+          usuarioauditoria,      // usuarioauditoria
+          fechaCierreUtc6        // fechamodificacionauditoria
         ]
       );
 
@@ -552,9 +561,9 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
     // Cerrar el turno
     await connection.query(
       `UPDATE tblposcrumenwebturnos 
-       SET estatusturno = 'cerrado', fechafinturno = NOW(), logrometa = ?
+       SET estatusturno = 'cerrado', fechafinturno = ?, logrometa = ?
        WHERE idturno = ?`,
-      [logrometa, idturno]
+      [fechaCierreUtc6, logrometa, idturno]
     );
 
     const [productosVendidosRows] = await connection.query<ProductoVendidoTurno[]>(
