@@ -110,6 +110,7 @@ const PageVentas: React.FC = () => {
   const [selectedProductoIdForMod, setSelectedProductoIdForMod] = useState<number | null>(null);
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
   const [modSelectionMode, setModSelectionMode] = useState<'options' | 'list'>('options');
+  const [modListSelectionType, setModListSelectionType] = useState<'solo-con' | 'sin'>('solo-con');
   const [tempSelectedModeradoresIds, setTempSelectedModeradoresIds] = useState<number[]>([]);
   
   // Nota states
@@ -468,14 +469,7 @@ const PageVentas: React.FC = () => {
         return prevComanda.map(item => {
           if (item.moderadores && item.moderadores !== 'LIMPIO' && 
               (!item.moderadoresNames || item.moderadoresNames[0] === MODERADORES_PLACEHOLDER)) {
-            // Parse comma-separated IDs and resolve to names
-            const moderadorIds = item.moderadores
-              .split(',')
-              .map(id => Number(id.trim()))
-              .filter(id => !isNaN(id) && id > 0); // Filter out invalid IDs
-            const modNames = moderadorIds
-              .map(id => moderadores.find(m => m.idmoderador === id)?.nombremoderador)
-              .filter(Boolean) as string[];
+            const modNames = resolveModeradoresNames(item.moderadores);
             
             return {
               ...item,
@@ -584,6 +578,31 @@ const PageVentas: React.FC = () => {
     return (itemModerators || '') === (moderadores || '');
   };
 
+  const parseModeradorIds = (moderadoresValue: string | undefined): number[] => {
+    if (!moderadoresValue || moderadoresValue === 'LIMPIO') return [];
+    const normalizedValue = moderadoresValue.startsWith('SIN:')
+      ? moderadoresValue.replace('SIN:', '')
+      : moderadoresValue;
+
+    return normalizedValue
+      .split(',')
+      .map(id => Number(id.trim()))
+      .filter(id => !isNaN(id) && id > 0);
+  };
+
+  const resolveModeradoresNames = (moderadoresValue: string): string[] => {
+    const moderadorIds = parseModeradorIds(moderadoresValue);
+    const modNames = moderadorIds
+      .map(id => moderadores.find(m => m.idmoderador === id)?.nombremoderador)
+      .filter(Boolean) as string[];
+
+    if (moderadoresValue.startsWith('SIN:')) {
+      return modNames.map(name => `SIN ${name}`);
+    }
+
+    return modNames;
+  };
+
   const isValidItemIndex = (index: number | null): boolean => {
     return index !== null && index >= 0 && index < comanda.length;
   };
@@ -592,6 +611,7 @@ const PageVentas: React.FC = () => {
     setShowModModal(false);
     setSelectedProductoIdForMod(null);
     setSelectedItemIndex(null);
+    setModListSelectionType('solo-con');
     setTempSelectedModeradoresIds([]);
   };
 
@@ -682,6 +702,7 @@ const PageVentas: React.FC = () => {
     // Set selectedItemIndex to null to indicate this is for a new product, not an existing comanda item
     setSelectedItemIndex(null);
     setModSelectionMode('options');
+    setModListSelectionType('solo-con');
     // Clear previously selected moderadores when opening the modal
     setTempSelectedModeradoresIds([]);
     setShowModModal(true);
@@ -1277,6 +1298,25 @@ const PageVentas: React.FC = () => {
   };
 
   const handleModeradorSelection = (selectedModeradores: number[]) => {
+    if (modListSelectionType === 'sin') {
+      const modNames = selectedModeradores
+        .map(id => moderadores.find(m => m.idmoderador === id)?.nombremoderador)
+        .filter(Boolean) as string[];
+
+      if (modNames.length === 0) {
+        // In "SIN" mode an empty selection means there is nothing to exclude,
+        // so we persist it as LIMPIO to keep existing no-modifiers behavior.
+        handleModLimpio();
+        return;
+      }
+
+      updateComandaWithModerador(
+        `SIN:${selectedModeradores.join(',')}`,
+        modNames.map(name => `SIN ${name}`)
+      );
+      return;
+    }
+
     // Get moderadores names
     const modNames = selectedModeradores
       .map(id => moderadores.find(m => m.idmoderador === id)?.nombremoderador)
@@ -1349,15 +1389,28 @@ const PageVentas: React.FC = () => {
   };
 
   const handleModSoloCon = () => {
+    setModListSelectionType('solo-con');
     // Initialize tempSelectedModeradoresIds with current moderadores if editing an existing item
     if (selectedItemIndex !== null && isValidItemIndex(selectedItemIndex)) {
       const currentItem = comanda[selectedItemIndex];
-      const currentMods = currentItem.moderadores?.split(',').map(Number) || [];
+      const currentMods = parseModeradorIds(currentItem.moderadores);
       setTempSelectedModeradoresIds(currentMods);
     } else {
       setTempSelectedModeradoresIds([]);
     }
     // Show the moderadores list for selection
+    setModSelectionMode('list');
+  };
+
+  const handleModSin = () => {
+    setModListSelectionType('sin');
+    if (selectedItemIndex !== null && isValidItemIndex(selectedItemIndex)) {
+      const currentItem = comanda[selectedItemIndex];
+      const currentMods = parseModeradorIds(currentItem.moderadores);
+      setTempSelectedModeradoresIds(currentMods);
+    } else {
+      setTempSelectedModeradoresIds([]);
+    }
     setModSelectionMode('list');
   };
 
@@ -2246,6 +2299,15 @@ const PageVentas: React.FC = () => {
                     <span className="mod-option-label">SOLO CON</span>
                     <p className="mod-option-description">Seleccionar específicas</p>
                   </button>
+
+                  <button 
+                    className="btn-mod-option btn-sin"
+                    onClick={handleModSin}
+                  >
+                    <div className="mod-option-icon">🚫</div>
+                    <span className="mod-option-label">SIN</span>
+                    <p className="mod-option-description">Excluir moderadores específicos</p>
+                  </button>
                 </div>
                 <div className="modal-actions">
                   <button className="btn-modal-close" onClick={closeModModal}>
@@ -2263,7 +2325,7 @@ const PageVentas: React.FC = () => {
                   >
                     ← Volver
                   </button>
-                  <h3>Seleccionar Moderadores</h3>
+                  <h3>{modListSelectionType === 'sin' ? 'Seleccionar Moderadores para SIN' : 'Seleccionar Moderadores'}</h3>
                 </div>
                 <div className="moderadores-list">
                   {selectedProductoIdForMod !== null && getAvailableModeradores(selectedProductoIdForMod).map((mod) => {
