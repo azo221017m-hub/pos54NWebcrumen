@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Save, Search } from 'lucide-react';
 import { obtenerMesas, cambiarEstatusMesa } from '../../services/mesasService';
-import { buscarClientesPorTelefono } from '../../services/clientesService';
+import { buscarClientesPorReferencia } from '../../services/clientesService';
 import { verificarMesasOcupadas } from '../../services/ventasWebService';
 import type { Mesa, TipoServicio } from '../../types/mesa.types';
 import './ModalTipoServicio.css';
@@ -37,6 +37,7 @@ export interface ClientePreData {
 
 interface ClienteInfo {
   idCliente: number;
+  nombre: string;
   referencia: string | null;
   cumple: Date | string | null;
   puntosfidelidad: number;
@@ -95,20 +96,23 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
   const [domicilioClienteInfo, setDomicilioClienteInfo] = useState<ClienteInfo | null>(null);
   const [domicilioSearching, setDomicilioSearching] = useState(false);
   const [domicilioClienteEncontrado, setDomicilioClienteEncontrado] = useState<boolean | null>(null);
+  const [domicilioReferencia, setDomicilioReferencia] = useState('');
   const domicilioSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Cliente lookup states – LLEVAR
   const [llevarClienteInfo, setLlevarClienteInfo] = useState<ClienteInfo | null>(null);
   const [llevarSearching, setLlevarSearching] = useState(false);
   const [llevarClienteEncontrado, setLlevarClienteEncontrado] = useState<boolean | null>(null);
+  const [llevarReferencia, setLlevarReferencia] = useState('');
   const llevarSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Cliente lookup states – MESA
   const [mesaClienteInfo, setMesaClienteInfo] = useState<ClienteInfo | null>(null);
   const [mesaSearching, setMesaSearching] = useState(false);
+  const [mesaReferencia, setMesaReferencia] = useState('');
   const mesaSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const telefonoInputRef = useRef<HTMLInputElement>(null);
+  const referenciaInputRef = useRef<HTMLInputElement>(null);
 
   const cargarMesas = async () => {
     try {
@@ -165,13 +169,16 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
         if (initialData && 'idmesa' in initialData) {
           setMesaFormData(initialData as MesaFormData);
           setPreviousMesaId(initialData.idmesa);
+          setMesaReferencia((initialData.telefonocontacto || '').trim());
         } else {
           setMesaFormData(INITIAL_MESA_DATA);
+          setMesaReferencia('');
         }
         setMesaClienteInfo(null);
       } else if (tipoServicio === 'Llevar') {
         if (initialData && 'fechaprogramadaventa' in initialData && !('direcciondeentrega' in initialData)) {
           setLlevarFormData(initialData as LlevarFormData);
+          setLlevarReferencia((initialData.cliente || '').trim());
         } else {
           setLlevarFormData({
             cliente: clienteData?.nombre || '',
@@ -179,12 +186,14 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
             fechaprogramadaventa: getCurrentDateTime(),
             telefonocontacto: ''
           });
+          setLlevarReferencia('');
         }
         setLlevarClienteInfo(null);
         setLlevarClienteEncontrado(null);
       } else if (tipoServicio === 'Domicilio') {
         if (initialData && 'direcciondeentrega' in initialData) {
           setDomicilioFormData(initialData as DomicilioFormData);
+          setDomicilioReferencia((initialData.cliente || '').trim());
           if ((initialData as DomicilioFormData).cliente) {
             setDomicilioClienteEncontrado(true);
           } else {
@@ -200,6 +209,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
             contactodeentrega: clienteData?.nombre || '',
             observaciones: ''
           });
+          setDomicilioReferencia('');
           setDomicilioClienteEncontrado(clienteData?.nombre ? true : null);
         }
         setDomicilioClienteInfo(null);
@@ -210,20 +220,21 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
   useEffect(() => {
     if (isOpen && (tipoServicio === 'Domicilio' || tipoServicio === 'Llevar' || tipoServicio === 'Mesa')) {
       const timer = setTimeout(() => {
-        telefonoInputRef.current?.focus();
+        referenciaInputRef.current?.focus();
       }, 100);
       return () => clearTimeout(timer);
     }
   }, [isOpen, tipoServicio]);
 
-  const handleDomicilioTelefonoChange = (value: string) => {
+  const handleDomicilioReferenciaChange = (value: string) => {
+    setDomicilioReferencia(value);
     setDomicilioClienteEncontrado(null);
     setDomicilioClienteInfo(null);
     setDomicilioFormData(prev => ({
       ...prev,
-      telefonodeentrega: value,
       cliente: '',
       idcliente: null,
+      telefonodeentrega: '',
       direcciondeentrega: ''
     }));
 
@@ -237,11 +248,12 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     setDomicilioSearching(true);
     domicilioSearchTimer.current = setTimeout(async () => {
       try {
-        const resultados = await buscarClientesPorTelefono(value.trim());
+        const resultados = await buscarClientesPorReferencia(value.trim());
         if (resultados.length > 0) {
           const c = resultados[0];
           setDomicilioClienteInfo({
             idCliente: c.idCliente,
+            nombre: c.nombre,
             referencia: c.referencia ?? null,
             cumple: c.cumple ?? null,
             puntosfidelidad: c.puntosfidelidad ?? 0,
@@ -251,9 +263,10 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
           setDomicilioFormData(prev => ({
             ...prev,
             telefonodeentrega: c.telefono || prev.telefonodeentrega,
-            cliente: c.referencia || c.nombre || '',
+            cliente: c.nombre || '',
             idcliente: c.idCliente,
-            direcciondeentrega: c.direccion || ''
+            direcciondeentrega: c.direccion || '',
+            contactodeentrega: c.nombre || prev.contactodeentrega
           }));
           setDomicilioClienteEncontrado(true);
         } else {
@@ -269,15 +282,16 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     }, 500);
   };
 
-  const ejecutarBusquedaLlevar = async (telefono: string) => {
-    if (!telefono.trim()) return;
+  const ejecutarBusquedaLlevar = async (referencia: string) => {
+    if (!referencia.trim()) return;
     setLlevarSearching(true);
     try {
-      const resultados = await buscarClientesPorTelefono(telefono.trim());
+      const resultados = await buscarClientesPorReferencia(referencia.trim());
       if (resultados.length > 0) {
         const c = resultados[0];
         setLlevarClienteInfo({
           idCliente: c.idCliente,
+          nombre: c.nombre,
           referencia: c.referencia ?? null,
           cumple: c.cumple ?? null,
           puntosfidelidad: c.puntosfidelidad ?? 0,
@@ -287,26 +301,27 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
         setLlevarFormData(prev => ({
           ...prev,
           telefonocontacto: c.telefono || prev.telefonocontacto,
-          cliente: c.referencia || c.nombre || 'mostrador',
+          cliente: c.nombre || 'mostrador',
           idcliente: c.idCliente
         }));
         setLlevarClienteEncontrado(true);
       } else {
         setLlevarClienteInfo(null);
         setLlevarClienteEncontrado(false);
-        setLlevarFormData(prev => ({ ...prev, cliente: 'mostrador', idcliente: null }));
+        setLlevarFormData(prev => ({ ...prev, cliente: '', idcliente: null, telefonocontacto: '' }));
       }
     } catch {
       setLlevarClienteInfo(null);
       setLlevarClienteEncontrado(false);
-      setLlevarFormData(prev => ({ ...prev, cliente: 'mostrador', idcliente: null }));
+      setLlevarFormData(prev => ({ ...prev, cliente: '', idcliente: null, telefonocontacto: '' }));
     } finally {
       setLlevarSearching(false);
     }
   };
 
-  const handleLlevarTelefonoChange = (value: string) => {
-    setLlevarFormData(prev => ({ ...prev, telefonocontacto: value, cliente: '', idcliente: null }));
+  const handleLlevarReferenciaChange = (value: string) => {
+    setLlevarReferencia(value);
+    setLlevarFormData(prev => ({ ...prev, telefonocontacto: '', cliente: '', idcliente: null }));
     setLlevarClienteInfo(null);
     setLlevarClienteEncontrado(null);
 
@@ -323,16 +338,17 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     }, 500);
   };
 
-  const handleLlevarTelefonoKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleLlevarReferenciaKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       if (llevarSearchTimer.current) clearTimeout(llevarSearchTimer.current);
-      ejecutarBusquedaLlevar(llevarFormData.telefonocontacto || '');
+      ejecutarBusquedaLlevar(llevarReferencia);
     }
   };
 
-  const handleMesaTelefonoChange = (value: string) => {
-    setMesaFormData(prev => ({ ...prev, telefonocontacto: value }));
+  const handleMesaReferenciaChange = (value: string) => {
+    setMesaReferencia(value);
+    setMesaFormData(prev => ({ ...prev, telefonocontacto: '' }));
     setMesaClienteInfo(null);
 
     if (mesaSearchTimer.current) clearTimeout(mesaSearchTimer.current);
@@ -345,20 +361,19 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     setMesaSearching(true);
     mesaSearchTimer.current = setTimeout(async () => {
       try {
-        const resultados = await buscarClientesPorTelefono(value.trim());
+        const resultados = await buscarClientesPorReferencia(value.trim());
         if (resultados.length > 0) {
           const c = resultados[0];
           setMesaClienteInfo({
             idCliente: c.idCliente,
+            nombre: c.nombre,
             referencia: c.referencia ?? null,
             cumple: c.cumple ?? null,
             puntosfidelidad: c.puntosfidelidad ?? 0,
             direccion: c.direccion ?? null,
             telefono: c.telefono ?? null
           });
-          if (c.telefono) {
-            setMesaFormData(prev => ({ ...prev, telefonocontacto: c.telefono ?? '' }));
-          }
+          setMesaFormData(prev => ({ ...prev, telefonocontacto: c.telefono ?? '' }));
         } else {
           setMesaClienteInfo(null);
         }
@@ -397,12 +412,12 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
       const clienteNombre = llevarFormData.cliente.trim() || 'mostrador';
       onSave({ ...llevarFormData, cliente: clienteNombre });
     } else if (tipoServicio === 'Domicilio') {
-      if (!domicilioFormData.telefonodeentrega.trim()) {
-        alert('Por favor ingrese el teléfono del cliente');
+      if (!domicilioReferencia.trim()) {
+        alert('Por favor ingrese la referencia del cliente');
         return;
       }
       if (domicilioClienteEncontrado !== true) {
-        alert('No se encontró cliente con ese número de teléfono. Regístrelo primero en el módulo de Clientes.');
+        alert('No se encontró cliente con esa referencia. Regístrelo primero en el módulo de Clientes.');
         return;
       }
       if (!domicilioFormData.fechaprogramadaventa) {
@@ -432,7 +447,11 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
     setDomicilioClienteInfo(null);
     setDomicilioClienteEncontrado(null);
     setLlevarClienteInfo(null);
+    setLlevarClienteEncontrado(null);
     setMesaClienteInfo(null);
+    setDomicilioReferencia('');
+    setLlevarReferencia('');
+    setMesaReferencia('');
     setPreviousMesaId(null);
     onClose();
   };
@@ -453,6 +472,22 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
           {/* ── MESA ── */}
           {tipoServicio === 'Mesa' && (
             <>
+              <div className="form-group">
+                <label htmlFor="referencia-mesa">Referencia Cliente</label>
+                <div className="input-search-wrapper">
+                  <input
+                    ref={referenciaInputRef}
+                    type="text"
+                    id="referencia-mesa"
+                    className="form-control"
+                    value={mesaReferencia}
+                    onChange={(e) => handleMesaReferenciaChange(e.target.value)}
+                    placeholder="Buscar cliente por referencia"
+                  />
+                  {mesaSearching && <Search size={16} className="search-spinner-icon" />}
+                </div>
+              </div>
+
               <div className="form-group">
                 <label htmlFor="mesa">Seleccionar Mesa *</label>
                 <select
@@ -478,24 +513,32 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
               </div>
 
               <div className="form-group">
+                <label htmlFor="nombrecliente-mesa">Nombre Cliente</label>
+                <input
+                  type="text"
+                  id="nombrecliente-mesa"
+                  className="form-control form-control-readonly"
+                  value={mesaClienteInfo?.nombre || ''}
+                  readOnly
+                  placeholder="Se completa al buscar por referencia"
+                />
+              </div>
+
+              <div className="form-group">
                 <label htmlFor="telefono-mesa">Teléfono Cliente</label>
-                <div className="input-search-wrapper">
-                  <input
-                    ref={telefonoInputRef}
-                    type="tel"
-                    id="telefono-mesa"
-                    className="form-control"
-                    value={mesaFormData.telefonocontacto || ''}
-                    onChange={(e) => handleMesaTelefonoChange(e.target.value)}
-                    placeholder="Buscar cliente por teléfono"
-                  />
-                  {mesaSearching && <Search size={16} className="search-spinner-icon" />}
-                </div>
+                <input
+                  type="text"
+                  id="telefono-mesa"
+                  className="form-control form-control-readonly"
+                  value={mesaFormData.telefonocontacto || ''}
+                  readOnly
+                  placeholder="Se completa al buscar por referencia"
+                />
               </div>
 
               {mesaClienteInfo && (
                 <div className="cliente-lookup-info">
-                  <span className="cliente-lookup-nombre">{mesaClienteInfo.referencia || 'mostrador'}</span>
+                  <span className="cliente-lookup-nombre">{mesaClienteInfo.nombre}</span>
                   <span className="cliente-lookup-puntos">⭐ {mesaClienteInfo.puntosfidelidad} pts</span>
                   {mesaClienteInfo.telefono && (
                     <span className="cliente-lookup-telefono">📞 {mesaClienteInfo.telefono}</span>
@@ -509,17 +552,17 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
           {tipoServicio === 'Llevar' && (
             <>
               <div className="form-group">
-                <label htmlFor="telefono-llevar">Teléfono Cliente</label>
+                <label htmlFor="referencia-llevar">Referencia Cliente</label>
                 <div className="input-search-wrapper">
                   <input
-                    ref={telefonoInputRef}
-                    type="tel"
-                    id="telefono-llevar"
+                    ref={referenciaInputRef}
+                    type="text"
+                    id="referencia-llevar"
                     className="form-control"
-                    value={llevarFormData.telefonocontacto || ''}
-                    onChange={(e) => handleLlevarTelefonoChange(e.target.value)}
-                    onKeyDown={handleLlevarTelefonoKeyDown}
-                    placeholder="Buscar cliente por teléfono"
+                    value={llevarReferencia}
+                    onChange={(e) => handleLlevarReferenciaChange(e.target.value)}
+                    onKeyDown={handleLlevarReferenciaKeyDown}
+                    placeholder="Buscar cliente por referencia"
                   />
                   {llevarSearching
                     ? <Search size={16} className="search-spinner-icon" />
@@ -529,7 +572,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                         className="btn-buscar-telefono"
                         onClick={() => {
                           if (llevarSearchTimer.current) clearTimeout(llevarSearchTimer.current);
-                          ejecutarBusquedaLlevar(llevarFormData.telefonocontacto || '');
+                          ejecutarBusquedaLlevar(llevarReferencia);
                         }}
                         title="Buscar cliente"
                       >
@@ -538,16 +581,16 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                     )
                   }
                 </div>
-                {llevarClienteEncontrado === false && (llevarFormData.telefonocontacto || '').trim() !== '' && (
+                {llevarClienteEncontrado === false && llevarReferencia.trim() !== '' && (
                   <span className="campo-error-msg">
-                    ⚠ No se encontró cliente con ese teléfono. Regístrelo primero en el módulo de Clientes.
+                    ⚠ No se encontró cliente con esa referencia. Regístrelo primero en el módulo de Clientes.
                   </span>
                 )}
               </div>
 
               {llevarClienteInfo && (
                 <div className="cliente-lookup-info">
-                  <span className="cliente-lookup-nombre">{llevarClienteInfo.referencia || 'mostrador'}</span>
+                  <span className="cliente-lookup-nombre">{llevarClienteInfo.nombre || 'mostrador'}</span>
                   <span className="cliente-lookup-puntos">⭐ {llevarClienteInfo.puntosfidelidad} pts</span>
                   {llevarClienteInfo.telefono && (
                     <span className="cliente-lookup-telefono">📞 {llevarClienteInfo.telefono}</span>
@@ -563,7 +606,19 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                   className="form-control form-control-readonly"
                   value={llevarFormData.cliente}
                   readOnly
-                  placeholder="Se completa al buscar por teléfono"
+                  placeholder="Se completa al buscar por referencia"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="telefono-llevar">Teléfono Cliente (auto)</label>
+                <input
+                  type="text"
+                  id="telefono-llevar"
+                  className="form-control form-control-readonly"
+                  value={llevarFormData.telefonocontacto || ''}
+                  readOnly
+                  placeholder="Se completa al buscar por referencia"
                 />
               </div>
 
@@ -583,32 +638,56 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
           {/* ── DOMICILIO ── */}
           {tipoServicio === 'Domicilio' && (
             <>
-              {/* 1. Teléfono del cliente – EDITABLE – PRIMER CAMPO */}
+              {/* 1. Referencia del cliente – EDITABLE – PRIMER CAMPO */}
               <div className="form-group">
-                <label htmlFor="telefono-domicilio">Teléfono del Cliente *</label>
+                <label htmlFor="referencia-domicilio">Referencia Cliente *</label>
                 <div className="input-search-wrapper">
                   <input
-                    ref={telefonoInputRef}
-                    type="tel"
-                    id="telefono-domicilio"
+                    ref={referenciaInputRef}
+                    type="text"
+                    id="referencia-domicilio"
                     className="form-control"
-                    value={domicilioFormData.telefonodeentrega}
-                    onChange={(e) => handleDomicilioTelefonoChange(e.target.value)}
-                    placeholder="Ingrese el teléfono para buscar cliente"
+                    value={domicilioReferencia}
+                    onChange={(e) => handleDomicilioReferenciaChange(e.target.value)}
+                    placeholder="Ingrese referencia para buscar cliente"
                   />
                   {domicilioSearching && <Search size={16} className="search-spinner-icon" />}
                 </div>
-                {domicilioClienteEncontrado === false && domicilioFormData.telefonodeentrega.trim() !== '' && (
+                {domicilioClienteEncontrado === false && domicilioReferencia.trim() !== '' && (
                   <span className="campo-error-msg">
-                    ⚠ No se encontró cliente con ese teléfono. Regístrelo primero en el módulo de Clientes.
+                    ⚠ No se encontró cliente con esa referencia. Regístrelo primero en el módulo de Clientes.
                   </span>
                 )}
                 {domicilioClienteEncontrado === true && domicilioClienteInfo && (
                   <div className="cliente-lookup-info">
-                    <span className="cliente-lookup-nombre">{domicilioClienteInfo.referencia || domicilioFormData.cliente}</span>
+                    <span className="cliente-lookup-nombre">{domicilioClienteInfo.nombre || domicilioFormData.cliente}</span>
                     <span className="cliente-lookup-puntos">⭐ {domicilioClienteInfo.puntosfidelidad} pts</span>
                   </div>
                 )}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="cliente-domicilio">Nombre del Cliente</label>
+                <input
+                  type="text"
+                  id="cliente-domicilio"
+                  className="form-control form-control-readonly"
+                  value={domicilioFormData.cliente}
+                  readOnly
+                  placeholder="Se completa al buscar por referencia"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="telefono-domicilio">Teléfono del Cliente</label>
+                <input
+                  type="text"
+                  id="telefono-domicilio"
+                  className="form-control form-control-readonly"
+                  value={domicilioFormData.telefonodeentrega}
+                  readOnly
+                  placeholder="Se completa al buscar por referencia"
+                />
               </div>
 
               {/* 2. Fecha y hora de entrega – EDITABLE */}
@@ -632,20 +711,7 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                   className="form-control form-control-readonly"
                   value={domicilioFormData.direcciondeentrega}
                   readOnly
-                  placeholder="Se completa al encontrar cliente por teléfono"
-                />
-              </div>
-
-              {/* 4. Nombre del cliente – READ-ONLY – en la posición antigua del teléfono */}
-              <div className="form-group">
-                <label htmlFor="cliente-domicilio">Nombre del Cliente</label>
-                <input
-                  type="text"
-                  id="cliente-domicilio"
-                  className="form-control form-control-readonly"
-                  value={domicilioFormData.cliente}
-                  readOnly
-                  placeholder="Se completa al encontrar cliente por teléfono"
+                  placeholder="Se completa al encontrar cliente por referencia"
                 />
               </div>
 
