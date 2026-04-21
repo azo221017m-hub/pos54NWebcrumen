@@ -22,6 +22,12 @@ interface Turno extends RowDataPacket {
   totalventas?: number;
 }
 
+interface ProductoVendidoTurno extends RowDataPacket {
+  nombreproducto: string;
+  cantidadtotal: number;
+  totalproducto: number;
+}
+
 // Función auxiliar para generar claveturno
 // Formato: [AAMMDD]+[idnegocio]+[idusuario]+[HHMMSS]
 // Usa hora del servidor en zona horaria de México
@@ -551,6 +557,23 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
       [logrometa, idturno]
     );
 
+    const [productosVendidosRows] = await connection.query<ProductoVendidoTurno[]>(
+      `SELECT
+         d.nombreproducto,
+         COALESCE(SUM(d.cantidad), 0) AS cantidadtotal,
+         COALESCE(SUM(d.subtotal), 0) AS totalproducto
+       FROM tblposcrumenwebdetalleventas d
+       INNER JOIN tblposcrumenwebventas v ON d.idventa = v.idventa
+       WHERE v.claveturno = ?
+         AND v.idnegocio = ?
+         AND v.estadodeventa = 'COBRADO'
+         AND v.estatusdepago = 'PAGADO'
+         AND v.descripcionmov = 'VENTA'
+       GROUP BY d.nombreproducto
+       ORDER BY COALESCE(NULLIF(TRIM(d.nombreproducto), ''), 'Producto sin nombre') ASC`,
+      [claveturno, idnegocio]
+    );
+
     await connection.commit();
 
     console.log('Turno cerrado exitosamente');
@@ -559,7 +582,18 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
 
     res.json({ 
       message: 'Turno cerrado exitosamente',
-      idturno
+      idturno,
+      productosVendidos: productosVendidosRows.map((producto) => {
+        const nombreproducto = typeof producto.nombreproducto === 'string' && producto.nombreproducto.trim().length > 0
+          ? producto.nombreproducto.trim()
+          : 'Producto sin nombre';
+
+        return {
+          nombreproducto,
+          cantidadtotal: Number(producto.cantidadtotal) || 0,
+          totalproducto: Number(producto.totalproducto) || 0
+        };
+      })
     });
   } catch (error) {
     if (connection) {

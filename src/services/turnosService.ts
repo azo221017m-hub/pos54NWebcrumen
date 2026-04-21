@@ -3,6 +3,31 @@ import type { Turno, TurnoUpdate } from '../types/turno.types';
 
 const API_BASE = '/turnos';
 
+export interface ProductoVendidoCierre {
+  nombreproducto: string;
+  cantidadtotal: number;
+  totalproducto: number;
+}
+
+export interface CerrarTurnoResponse {
+  message: string;
+  idturno: number;
+  productosVendidos?: ProductoVendidoCierre[];
+}
+
+export interface DetalleDenominacionesCierre {
+  billete1000: number;
+  billete500: number;
+  billete200: number;
+  billete100: number;
+  billete50: number;
+  billete20: number;
+  moneda10: number;
+  moneda5: number;
+  moneda1: number;
+  moneda050: number;
+}
+
 // Obtener todos los turnos del negocio autenticado
 export const obtenerTurnos = async (): Promise<Turno[]> => {
   try {
@@ -80,12 +105,12 @@ export const cerrarTurnoActual = async (datosFormulario?: {
   idTurno: string;
   retiroFondo: number;
   totalArqueo: number;
-  detalleDenominaciones: any;
+  detalleDenominaciones: DetalleDenominacionesCierre;
   estatusCierre: 'sin_novedades' | 'cuentas_pendientes';
-}): Promise<{ message: string; idturno: number }> => {
+}): Promise<CerrarTurnoResponse> => {
   try {
     console.log('Servicio: Cerrando turno actual');
-    const response = await apiClient.post<{ message: string; idturno: number }>(`${API_BASE}/cerrar-actual`, datosFormulario || {});
+    const response = await apiClient.post<CerrarTurnoResponse>(`${API_BASE}/cerrar-actual`, datosFormulario || {});
     console.log('Servicio: Turno actual cerrado');
     return response.data;
   } catch (error) {

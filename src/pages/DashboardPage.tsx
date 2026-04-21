@@ -4,7 +4,7 @@ import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerTopP
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import { clearSession, setSkipBeforeUnload } from '../services/sessionService';
 import { obtenerDetallesPagos } from '../services/pagosService';
-import { verificarTurnoAbierto, cerrarTurnoActual } from '../services/turnosService';
+import { verificarTurnoAbierto, cerrarTurnoActual, type ProductoVendidoCierre } from '../services/turnosService';
 import type { Turno } from '../types/turno.types';
 import CierreTurno from '../components/turnos/CierreTurno/CierreTurno';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../components/FeedbackToast';
@@ -63,6 +63,7 @@ interface ResumenCierreTurno {
   estatusCierre: 'sin_novedades' | 'cuentas_pendientes';
   detalleDenominaciones: DatosCierreTurno['detalleDenominaciones'];
   fechaCierreISO: string;
+  productosVendidos: ProductoVendidoCierre[];
 }
 
 // Mantiene el mismo retardo usado en recibos para permitir que whatsapp:// abra la app nativa
@@ -127,7 +128,23 @@ const generarTextoDetalleCorte = (detalle: ResumenCierreTurno): string => {
     denominaciones.push('- Sin denominaciones capturadas');
   }
 
-  return [...encabezado, ...denominaciones].join('\n');
+  const formatCantidad = (cantidad: number): string => {
+    const qty = Number(cantidad) || 0;
+    return qty % 1 === 0 ? String(Math.floor(qty)) : qty.toFixed(2);
+  };
+
+  const productosVendidosLista = detalle.productosVendidos ?? [];
+  const productosVendidos = productosVendidosLista.length > 0
+    ? productosVendidosLista.map((producto) => `- ${producto.nombreproducto} | ${formatCantidad(producto.cantidadtotal)} | ${formatCurrency(producto.totalproducto)}`)
+    : ['- Sin productos vendidos'];
+
+  return [
+    ...encabezado,
+    ...denominaciones,
+    '',
+    'Productos vendidos (Nombre | Cantidad | Total):',
+    ...productosVendidos
+  ].join('\n');
 };
 
 const generarHtmlDetalleCorte = (textoDetalle: string): string => `<!DOCTYPE html>
@@ -495,7 +512,7 @@ export const DashboardPage = () => {
     try {
       console.log('Datos de cierre de turno:', datosFormulario);
       // Call the service to close the turno
-      await cerrarTurnoActual(datosFormulario);
+      const cierreTurnoResponse = await cerrarTurnoActual(datosFormulario);
       const detalleCierre: ResumenCierreTurno = {
         claveTurno: datosFormulario.idTurno,
         numeroTurno: turnoAbierto?.numeroturno ?? null,
@@ -503,7 +520,8 @@ export const DashboardPage = () => {
         totalArqueo: datosFormulario.totalArqueo,
         estatusCierre: datosFormulario.estatusCierre,
         detalleDenominaciones: datosFormulario.detalleDenominaciones,
-        fechaCierreISO: new Date().toISOString()
+        fechaCierreISO: new Date().toISOString(),
+        productosVendidos: cierreTurnoResponse.productosVendidos ?? []
       };
       console.log('Turno cerrado exitosamente');
       setShowCierreTurnoModal(false);
