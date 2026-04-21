@@ -133,8 +133,9 @@ const generarTextoDetalleCorte = (detalle: ResumenCierreTurno): string => {
     return qty % 1 === 0 ? String(Math.floor(qty)) : qty.toFixed(2);
   };
 
-  const productosVendidos = detalle.productosVendidos.length > 0
-    ? detalle.productosVendidos.map((producto) => `- ${producto.nombreproducto} | ${formatCantidad(producto.cantidadtotal)} | ${formatCurrency(producto.totalproducto)}`)
+  const productosVendidosLista = detalle.productosVendidos ?? [];
+  const productosVendidos = productosVendidosLista.length > 0
+    ? productosVendidosLista.map((producto) => `- ${producto.nombreproducto} | ${formatCantidad(producto.cantidadtotal)} | ${formatCurrency(producto.totalproducto)}`)
     : ['- Sin productos vendidos'];
 
   return [
