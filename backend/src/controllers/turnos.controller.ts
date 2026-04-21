@@ -570,7 +570,7 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
          AND v.estatusdepago = 'PAGADO'
          AND v.descripcionmov = 'VENTA'
        GROUP BY d.nombreproducto
-       ORDER BY d.nombreproducto ASC`,
+       ORDER BY COALESCE(NULLIF(TRIM(d.nombreproducto), ''), 'Producto sin nombre') ASC`,
       [claveturno, idnegocio]
     );
 
