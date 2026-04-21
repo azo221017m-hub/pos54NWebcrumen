@@ -401,6 +401,40 @@ export const buscarClientesPorTelefono = async (req: AuthRequest, res: Response)
   }
 };
 
+// Buscar clientes por referencia (búsqueda parcial o completa, sin filtro de negocio/privilegio)
+// Usado desde PageVentas (ModalTipoServicio) para autocompletar por referencia.
+export const buscarClientesPorReferencia = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ message: 'Usuario no autenticado' });
+      return;
+    }
+
+    const referencia = req.query.referencia;
+    if (!referencia || typeof referencia !== 'string' || referencia.trim().length === 0) {
+      res.json([]);
+      return;
+    }
+
+    const query = `SELECT idCliente, nombre, referencia, cumple, puntosfidelidad, telefono, direccion
+               FROM tblposcrumenwebclientes
+               WHERE referencia LIKE ?
+               ORDER BY nombre ASC
+               LIMIT 10`;
+    const params = [`%${referencia.trim()}%`];
+
+    const [rows] = await pool.query<Cliente[]>(query, params);
+
+    res.json(rows);
+  } catch (error) {
+    console.error('Error al buscar clientes por referencia:', error);
+    res.status(500).json({
+      message: 'Error al buscar clientes por referencia',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+};
+
 // Eliminar cliente
 export const eliminarCliente = async (req: Request, res: Response): Promise<void> => {
   try {

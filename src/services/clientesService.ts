@@ -62,6 +62,21 @@ export const buscarClientesPorTelefono = async (telefono: string): Promise<Clien
   }
 };
 
+// Buscar clientes por referencia (búsqueda parcial o completa)
+export const buscarClientesPorReferencia = async (referencia: string): Promise<Cliente[]> => {
+  try {
+    if (!referencia || referencia.trim().length === 0) return [];
+    const response = await apiClient.get<Cliente[]>(`${API_BASE}/buscar-por-referencia`, {
+      params: { referencia: referencia.trim() }
+    });
+    if (Array.isArray(response.data)) return response.data;
+    return [];
+  } catch (error) {
+    console.error('clientesService - Error al buscar clientes por referencia:', error);
+    return [];
+  }
+};
+
 // Eliminar un cliente
 export const eliminarCliente = async (idCliente: number): Promise<number> => {
   await apiClient.delete(`${API_BASE}/${idCliente}`);

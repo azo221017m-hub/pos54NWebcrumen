@@ -5,7 +5,8 @@ import {
   crearCliente,
   actualizarCliente,
   eliminarCliente,
-  buscarClientesPorTelefono
+  buscarClientesPorTelefono,
+  buscarClientesPorReferencia
 } from '../controllers/clientes.controller';
 import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 import { apiLimiter } from '../middlewares/rateLimit';
@@ -18,6 +19,7 @@ router.use(apiLimiter);
 
 // Rutas CRUD
 router.get('/buscar-por-telefono', buscarClientesPorTelefono);
+router.get('/buscar-por-referencia', buscarClientesPorReferencia);
 router.get('/', obtenerClientes);
 router.get('/:idCliente', obtenerClientePorId);
 router.post('/', crearCliente);
