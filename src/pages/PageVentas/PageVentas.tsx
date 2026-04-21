@@ -1304,6 +1304,8 @@ const PageVentas: React.FC = () => {
         .filter(Boolean) as string[];
 
       if (modNames.length === 0) {
+        // In "SIN" mode an empty selection means there is nothing to exclude,
+        // so we persist it as LIMPIO to keep existing no-modifiers behavior.
         handleModLimpio();
         return;
       }
@@ -2304,7 +2306,7 @@ const PageVentas: React.FC = () => {
                   >
                     <div className="mod-option-icon">🚫</div>
                     <span className="mod-option-label">SIN</span>
-                    <p className="mod-option-description">Quitar moderadores seleccionados</p>
+                    <p className="mod-option-description">Excluir moderadores específicos</p>
                   </button>
                 </div>
                 <div className="modal-actions">
