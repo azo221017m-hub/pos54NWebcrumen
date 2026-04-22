@@ -276,7 +276,8 @@ export const DashboardPage = () => {
   const [showConfigNegocioSubmenu, setShowConfigNegocioSubmenu] = useState(false);
   const [showDashboardSubmenu, setShowDashboardSubmenu] = useState(false);
   const [showMiOperacionSubmenu, setShowMiOperacionSubmenu] = useState(false);
-  const [dashboardView, setDashboardView] = useState<'indicadores' | 'comandas' | 'comandas-pagadas'>('indicadores');
+  const [dashboardView, setDashboardView] = useState<'indicadores' | 'comandas' | 'comandas-pagadas' | 'visor-ventas'>('indicadores');
+  const [salesReportTab, setSalesReportTab] = useState<'resumen' | 'tipo-venta' | 'forma-pago' | 'top-productos'>('resumen');
   const [autoSwitchedToComandas, setAutoSwitchedToComandas] = useState(false);
   const [isScreenLocked, setIsScreenLocked] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -318,8 +319,8 @@ export const DashboardPage = () => {
     icono: '🟢',
     insumosAfectados: 0
   });
-  const [_topProductosMayor, setTopProductosMayor] = useState<TopProductoTurno[]>([]);
-  const [_topProductosMenor, setTopProductosMenor] = useState<TopProductoTurno[]>([]);
+  const [topProductosMayor, setTopProductosMayor] = useState<TopProductoTurno[]>([]);
+  const [topProductosMenor, setTopProductosMenor] = useState<TopProductoTurno[]>([]);
   const [topInsumosStockMayor, setTopInsumosStockMayor] = useState<Insumo[]>([]);
   const [topInsumosStockMenor, setTopInsumosStockMenor] = useState<Insumo[]>([]);
 
@@ -749,6 +750,16 @@ export const DashboardPage = () => {
   }
 
   const privilegio = Number(localStorage.getItem('privilegio') || '0');
+  const { ventasPorTipo, ventasPorFormaPago, totalVentasPorTipo, totalVentasPorFormaPago } = useMemo(() => {
+    const tipo = resumenVentas.ventasPorTipoDeVenta || [];
+    const formaPago = resumenVentas.ventasPorFormaDePago || [];
+    return {
+      ventasPorTipo: tipo,
+      ventasPorFormaPago: formaPago,
+      totalVentasPorTipo: tipo.reduce((acc, value) => acc + (Number(value.total) || 0), 0),
+      totalVentasPorFormaPago: formaPago.reduce((acc, value) => acc + (Number(value.total) || 0), 0)
+    };
+  }, [resumenVentas.ventasPorFormaDePago, resumenVentas.ventasPorTipoDeVenta]);
 
   // Real pedidos online: only WEB orders with SOLICITADO status
   // Only consider detalles where estadodetalle = 'SOLICITADO'
@@ -941,6 +952,23 @@ export const DashboardPage = () => {
                 Mi Día
               </button>
               )}
+              <button
+                className="submenu-item"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDashboardView('visor-ventas');
+                  setSalesReportTab('resumen');
+                  setShowDashboardSubmenu(false);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 3v18h18"/>
+                  <path d="M7 13l4-4 3 3 4-5"/>
+                </svg>
+                Mi Visor de Ventas
+              </button>
               <button 
                 className="submenu-item"
                 onClick={(e) => {
@@ -1380,6 +1408,173 @@ export const DashboardPage = () => {
       }}>
         {dashboardView === 'comandas-pagadas' ? (
           <TableroComandasPagadas onVolver={() => setDashboardView('indicadores')} />
+        ) : dashboardView === 'visor-ventas' ? (
+          <div className="content-left">
+            <section className="dashboard-sales-viewer">
+              <header className="sales-viewer-header">
+                <div>
+                  <h2>Mi Visor de Ventas</h2>
+                  <p>Tablero gerencial con reportes clave de ventas del día.</p>
+                </div>
+                <button
+                  type="button"
+                  className="sales-viewer-back"
+                  onClick={() => setDashboardView('indicadores')}
+                >
+                  Volver a Mi Día
+                </button>
+              </header>
+
+              <div className="sales-viewer-tabs" role="tablist" aria-label="Reportes de ventas">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={salesReportTab === 'resumen'}
+                  className={`sales-viewer-tab ${salesReportTab === 'resumen' ? 'active' : ''}`}
+                  onClick={() => setSalesReportTab('resumen')}
+                >
+                  Resumen
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={salesReportTab === 'tipo-venta'}
+                  className={`sales-viewer-tab ${salesReportTab === 'tipo-venta' ? 'active' : ''}`}
+                  onClick={() => setSalesReportTab('tipo-venta')}
+                >
+                  Tipo de Venta
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={salesReportTab === 'forma-pago'}
+                  className={`sales-viewer-tab ${salesReportTab === 'forma-pago' ? 'active' : ''}`}
+                  onClick={() => setSalesReportTab('forma-pago')}
+                >
+                  Forma de Pago
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={salesReportTab === 'top-productos'}
+                  className={`sales-viewer-tab ${salesReportTab === 'top-productos' ? 'active' : ''}`}
+                  onClick={() => setSalesReportTab('top-productos')}
+                >
+                  Top Productos
+                </button>
+              </div>
+
+              <div className="sales-viewer-panel">
+                {salesReportTab === 'resumen' && (
+                  <div className="sales-viewer-summary-grid">
+                    <article className="sales-kpi-card">
+                      <span>Ventas Cobradas</span>
+                      <strong>${(resumenVentas.totalCobrado ?? 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                    </article>
+                    <article className="sales-kpi-card">
+                      <span>Ventas Ordenadas</span>
+                      <strong>${(resumenVentas.totalOrdenado ?? 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                    </article>
+                    <article className="sales-kpi-card">
+                      <span>Descuentos</span>
+                      <strong>${(resumenVentas.totalDescuentos ?? 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                    </article>
+                    <article className="sales-kpi-card">
+                      <span>Total de Ventas</span>
+                      <strong>${((resumenVentas.totalCobrado ?? 0) + (resumenVentas.totalOrdenado ?? 0)).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                    </article>
+                  </div>
+                )}
+
+                {salesReportTab === 'tipo-venta' && (
+                  <>
+                    {ventasPorTipo.length === 0 ? (
+                      <p className="sales-empty">Sin datos de ventas por tipo.</p>
+                    ) : (
+                      <div className="sales-progress-list">
+                        {ventasPorTipo.map((item) => {
+                          const amount = Number(item.total) || 0;
+                          const pct = totalVentasPorTipo > 0 ? (amount / totalVentasPorTipo) * 100 : 0;
+                          return (
+                            <div key={item.tipodeventa} className="sales-progress-item">
+                              <div className="sales-progress-head">
+                                <span>{item.tipodeventa}</span>
+                                <strong>${amount.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                              </div>
+                              <div className="sales-progress-track">
+                                <div className="sales-progress-fill" style={{ width: `${pct}%` }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {salesReportTab === 'forma-pago' && (
+                  <>
+                    {ventasPorFormaPago.length === 0 ? (
+                      <p className="sales-empty">Sin datos de ventas por forma de pago.</p>
+                    ) : (
+                      <div className="sales-progress-list">
+                        {ventasPorFormaPago.map((item) => {
+                          const amount = Number(item.total) || 0;
+                          const pct = totalVentasPorFormaPago > 0 ? (amount / totalVentasPorFormaPago) * 100 : 0;
+                          return (
+                            <div key={item.formadepago} className="sales-progress-item">
+                              <div className="sales-progress-head">
+                                <span>{item.formadepago}</span>
+                                <strong>${amount.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                              </div>
+                              <div className="sales-progress-track">
+                                <div className="sales-progress-fill sales-progress-fill-alt" style={{ width: `${pct}%` }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {salesReportTab === 'top-productos' && (
+                  <div className="sales-top-columns">
+                    <article className="sales-top-card">
+                      <h3>Top 10 Mayor Venta</h3>
+                      {(topProductosMayor || []).length === 0 ? (
+                        <p className="sales-empty">Sin datos disponibles.</p>
+                      ) : (
+                        <ol>
+                          {(topProductosMayor || []).map((item, index) => (
+                            <li key={`${item.nombreproducto}-${item.importetotal}-${index}`}>
+                              <span>{item.nombreproducto}</span>
+                              <strong>${(Number(item.importetotal) || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                            </li>
+                          ))}
+                        </ol>
+                      )}
+                    </article>
+                    <article className="sales-top-card">
+                      <h3>Top 10 Menor Venta</h3>
+                      {(topProductosMenor || []).length === 0 ? (
+                        <p className="sales-empty">Sin datos disponibles.</p>
+                      ) : (
+                        <ol>
+                          {(topProductosMenor || []).map((item, index) => (
+                            <li key={`${item.nombreproducto}-${item.importetotal}-${index}`}>
+                              <span>{item.nombreproducto}</span>
+                              <strong>${(Number(item.importetotal) || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                            </li>
+                          ))}
+                        </ol>
+                      )}
+                    </article>
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
         ) : dashboardView === 'indicadores' ? (
           <div className="content-left">
             <div className="welcome-section">
