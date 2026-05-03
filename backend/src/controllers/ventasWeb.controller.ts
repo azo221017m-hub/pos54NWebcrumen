@@ -1206,10 +1206,12 @@ export const addDetallesToVenta = async (req: AuthRequest, res: Response): Promi
       }
 
       if (existingDetalle) {
-        // UPDATE existing ESPERAR item: add cantidad, recalculate subtotal/total, change estado to ORDENADO
+        // UPDATE existing ESPERAR item: set cantidad to the requested total, change estado to ORDENADO.
+        // The frontend sends the desired total quantity (not a delta), so we replace instead of adding
+        // to avoid doubling the quantity when converting ESPERAR→ORDENADO.
         // Use existing price to maintain price consistency (prices shouldn't change mid-order)
         const precioUnitarioExistente = Number(existingDetalle.preciounitario);
-        const nuevaCantidad = Number(existingDetalle.cantidad) + Number(detalle.cantidad);
+        const nuevaCantidad = Number(detalle.cantidad);
         const nuevoSubtotal = nuevaCantidad * precioUnitarioExistente;
         const detalleDescuento = 0;
         const detalleImpuesto = 0;

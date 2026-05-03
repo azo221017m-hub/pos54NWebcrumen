@@ -132,6 +132,8 @@ const PageVentas: React.FC = () => {
   const [showMenuDia, setShowMenuDia] = useState(false);
   const [isCheckingTurno, setIsCheckingTurno] = useState(true);
   const [isProcessingVenta, setIsProcessingVenta] = useState(false);
+  // Synchronous guard to prevent double-click race condition before React re-renders the disabled button
+  const isProcessingVentaRef = useRef(false);
 
   // Current venta state (when loading from dashboard or after creating with ORDENADO status)
   const [currentVentaId, setCurrentVentaId] = useState<number | null>(null);
@@ -867,7 +869,7 @@ const PageVentas: React.FC = () => {
         showSuccessToast(`Venta registrada - Folio: ${extractShortFolio(resultado.folioventa || '')}`);
         
         // Mark newly inserted items as ORDENADO
-        setComanda(comanda.map(item => 
+        setComanda(prev => prev.map(item => 
           item.estadodetalle !== ESTADO_ORDENADO 
             ? { ...item, estadodetalle: estadodetalle }
             : item
@@ -1121,6 +1123,9 @@ const PageVentas: React.FC = () => {
   };
 
   const handleProducir = async () => {
+    // Synchronous guard to prevent duplicate submissions from double-click before React re-renders
+    if (isProcessingVentaRef.current) return;
+    isProcessingVentaRef.current = true;
     // Capture items to print BEFORE they get marked as ORDENADO
     const itemsParaImprimir = comanda.filter(item => item.estadodetalle !== ESTADO_ORDENADO);
     try {
@@ -1225,6 +1230,7 @@ const PageVentas: React.FC = () => {
         handlePostVenta();
       }
     } finally {
+      isProcessingVentaRef.current = false;
       setIsProcessingVenta(false);
     }
   };
