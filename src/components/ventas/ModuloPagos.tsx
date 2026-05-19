@@ -54,6 +54,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   const [descuentos, setDescuentos] = useState<Descuento[]>([]);
   const [descuentoSeleccionado, setDescuentoSeleccionado] = useState<Descuento | null>(null);
   const [cargandoDescuentos, setCargandoDescuentos] = useState(false);
+  const [detalleDescuento100, setDetalleDescuento100] = useState<string>('');
   
   // Estado para procesar pago
   const [procesandoPago, setProcesandoPago] = useState(false);
@@ -229,6 +230,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   }, [tipodeventa, detallesVenta]);
 
   const handleSeleccionarDescuento = (id_descuento: string) => {
+    setDetalleDescuento100('');
     if (id_descuento === '') {
       setDescuentoSeleccionado(null);
     } else {
@@ -358,27 +360,34 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
       alert('Solo se puede cobrar en $0.00 cuando el descuento es exactamente del 100%');
       return;
     }
+
+    // Validación: si es descuento del 100%, el campo DetalleDescuento100 es obligatorio
+    if (esDescuentoCienPorciento && !detalleDescuento100.trim()) {
+      alert('Por favor ingrese el Detalle Descuento 100%');
+      setProcesandoPago(false);
+      return;
+    }
     
     setProcesandoPago(true);
 
     try {
       // Validación para efectivo
       if (metodoPagoSeleccionado === 'efectivo') {
-        if (!montoEfectivo.trim()) {
+        if (!montoEfectivo.trim() && !esDescuentoCienPorciento) {
           alert('Por favor ingrese el monto recibido');
           setProcesandoPago(false);
           return;
         }
         
-        const montoRecibido = parseFloat(montoEfectivo);
+        const montoRecibido = esDescuentoCienPorciento ? 0 : parseFloat(montoEfectivo);
         
-        if (isNaN(montoRecibido) || montoRecibido < 0) {
+        if (!esDescuentoCienPorciento && (isNaN(montoRecibido) || montoRecibido < 0)) {
           alert('Por favor ingrese un monto válido');
           setProcesandoPago(false);
           return;
         }
         
-        if (montoRecibido < totalAPagar) {
+        if (!esDescuentoCienPorciento && montoRecibido < totalAPagar) {
           alert('El monto recibido no puede ser menor al total de la cuenta');
           setProcesandoPago(false);
           return;
@@ -390,6 +399,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
           formadepago: 'EFECTIVO',
           importedepago: totalAPagar,
           montorecibido: montoRecibido,
+          referencia: esDescuentoCienPorciento ? detalleDescuento100 : undefined,
           descuento,
           detalledescuento: descuentoSeleccionado?.nombre || null
         });
@@ -404,7 +414,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
         
         // Build receipt data
         const montoEfectivoNum = parseFloat(montoEfectivo);
-        const datosRecibo = buildDatosRecibo('EFECTIVO', totalAPagar, null, cambio, undefined, !isNaN(montoEfectivoNum) ? montoEfectivoNum : undefined);
+        const datosRecibo = buildDatosRecibo('EFECTIVO', totalAPagar, esDescuentoCienPorciento ? detalleDescuento100 : null, cambio, undefined, !isNaN(montoEfectivoNum) ? montoEfectivoNum : undefined);
 
         // Show success state — user chooses when to print/send and when to close
         setDatosReciboGuardados(datosRecibo);
@@ -418,11 +428,13 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
         }
         
         // Process simple payment - TRANSFERENCIA
+        // Si hay descuento 100%, almacenar DetalleDescuento100 en referencia
+        const referenciaFinal = esDescuentoCienPorciento ? detalleDescuento100 : numeroReferencia;
         const resultado = await procesarPagoSimple({
           idventa: ventaId,
           formadepago: 'TRANSFERENCIA',
           importedepago: totalAPagar,
-          referencia: numeroReferencia,
+          referencia: referenciaFinal,
           descuento,
           detalledescuento: descuentoSeleccionado?.nombre || null
         });
@@ -434,7 +446,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
         }
 
         // Build receipt data
-        const datosRecibo = buildDatosRecibo('TRANSFERENCIA', totalAPagar, numeroReferencia);
+        const datosRecibo = buildDatosRecibo('TRANSFERENCIA', totalAPagar, referenciaFinal);
 
         // Show success state — user chooses when to print/send and when to close
         setDatosReciboGuardados(datosRecibo);
@@ -531,6 +543,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   const cobrarDisabled = procesandoPago
     || !ventaId
     || esCobroEnCerosNoPermitido
+    || (esDescuentoCienPorciento && !detalleDescuento100.trim())
     || (metodoPagoSeleccionado === 'mixto' && sumaPagosMixtos < montoACobrar);
 
   return (
@@ -648,7 +661,14 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
                 <option value="">
                   {cargandoDescuentos ? 'Cargando...' : 'Seleccionar descuento'}
                 </option>
-                {descuentos.map((descuento) => (
+                {descuentos
+                  .filter(d => {
+                    // Siempre mostrar descuentos del 100%
+                    if (esTipoPorcentaje(d.tipodescuento) && Number(d.valor) === 100) return true;
+                    // No mostrar descuentos cuyo monto calculado supere el total de la cuenta
+                    return calcularDescuento(d) <= totalCuenta;
+                  })
+                  .map((descuento) => (
                   <option key={descuento.id_descuento} value={descuento.id_descuento.toString()}>
                     {descuento.nombre} - {formatearValorDescuento(descuento)}
                   </option>
@@ -666,6 +686,23 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
                     <span className="pagos-monto-grande">${nuevoTotal.toFixed(2)}</span>
                   </div>
                 </>
+              )}
+
+              {/* Campo obligatorio para descuento del 100% */}
+              {esDescuentoCienPorciento && (
+                <div style={{ marginTop: '10px' }}>
+                  <label className="pagos-label-descuento" style={{ color: '#dc2626' }}>
+                    Detalle Descuento 100% <span>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    className="pagos-input-referencia"
+                    placeholder="Motivo del descuento del 100%"
+                    value={detalleDescuento100}
+                    onChange={(e) => setDetalleDescuento100(e.target.value)}
+                    required
+                  />
+                </div>
               )}
             </div>
 

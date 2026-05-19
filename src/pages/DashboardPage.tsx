@@ -954,6 +954,7 @@ export const DashboardPage = () => {
                 Mi Día
               </button>
               )}
+              {privilegio >= 5 && (
               <button
                 className="submenu-item"
                 onClick={(e) => {
@@ -972,6 +973,7 @@ export const DashboardPage = () => {
                 </svg>
                 Mi Visor de Ventas
               </button>
+              )}
               <button 
                 className="submenu-item"
                 onClick={(e) => {
