@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { obtenerComandasPagadasTurnoActual } from '../../services/ventasWebService';
 import type { VentaWebWithDetails } from '../../types/ventasWeb.types';
 import { getShortFolio } from '../../utils/formatters';
@@ -151,6 +151,16 @@ const TableroComandasPagadas = ({ onVolver }: Props) => {
   const [error, setError] = useState<string>('');
   const [comandaDetalle, setComandaDetalle] = useState<VentaWebWithDetails | null>(null);
   const [showReporteModal, setShowReporteModal] = useState(false);
+  const whatsappTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (whatsappTimeoutRef.current !== null) {
+        clearTimeout(whatsappTimeoutRef.current);
+        setSkipBeforeUnload(false);
+      }
+    };
+  }, []);
 
   const cargarComandas = useCallback(async () => {
     try {
@@ -221,8 +231,12 @@ const TableroComandasPagadas = ({ onVolver }: Props) => {
     const encoded = encodeURIComponent(texto);
     setSkipBeforeUnload(true);
     window.location.href = `whatsapp://send?text=${encoded}`;
-    setTimeout(() => {
+    if (whatsappTimeoutRef.current !== null) {
+      clearTimeout(whatsappTimeoutRef.current);
+    }
+    whatsappTimeoutRef.current = setTimeout(() => {
       setSkipBeforeUnload(false);
+      whatsappTimeoutRef.current = null;
     }, WHATSAPP_NAVIGATION_DELAY_MS);
     setShowReporteModal(false);
   };

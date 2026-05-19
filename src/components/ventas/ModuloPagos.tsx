@@ -230,13 +230,12 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
   }, [tipodeventa, detallesVenta]);
 
   const handleSeleccionarDescuento = (id_descuento: string) => {
+    setDetalleDescuento100('');
     if (id_descuento === '') {
       setDescuentoSeleccionado(null);
-      setDetalleDescuento100('');
     } else {
       const descuento = descuentos.find(d => d.id_descuento.toString() === id_descuento);
       setDescuentoSeleccionado(descuento || null);
-      setDetalleDescuento100('');
     }
   };
 
