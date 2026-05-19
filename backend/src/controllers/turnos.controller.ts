@@ -603,6 +603,63 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
       [claveturno, idnegocio]
     );
 
+    // Ventas agrupadas por forma de pago
+    const [ventasPorFormaDePagoRows] = await connection.query<RowDataPacket[]>(
+      `SELECT formadepago, COALESCE(SUM(totaldeventa), 0) AS total
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? AND idnegocio = ?
+         AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
+         AND descripcionmov = 'VENTA'
+       GROUP BY formadepago
+       ORDER BY total DESC`,
+      [claveturno, idnegocio]
+    );
+
+    // Ventas agrupadas por tipo de venta
+    const [ventasPorTipoDeVentaRows] = await connection.query<RowDataPacket[]>(
+      `SELECT tipodeventa, COALESCE(SUM(totaldeventa), 0) AS total
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? AND idnegocio = ?
+         AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
+         AND descripcionmov = 'VENTA'
+       GROUP BY tipodeventa
+       ORDER BY total DESC`,
+      [claveturno, idnegocio]
+    );
+
+    // Total ventas donde formadepago = 'EFECTIVO'
+    const [totalVentasEfectivoRows] = await connection.query<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(totaldeventa), 0) AS total
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? AND idnegocio = ?
+         AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
+         AND descripcionmov = 'VENTA' AND formadepago = 'EFECTIVO'`,
+      [claveturno, idnegocio]
+    );
+
+    // Total gastos del turno (referencia = 'GASTO')
+    const [totalGastosRows] = await connection.query<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(ABS(totaldeventa)), 0) AS total
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? AND idnegocio = ?
+         AND referencia = 'GASTO'`,
+      [claveturno, idnegocio]
+    );
+
+    // Total venta donde referencia = 'FONDO de CAJA'
+    const [totalFondoCajaRows] = await connection.query<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(ABS(totaldeventa)), 0) AS total
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? AND idnegocio = ?
+         AND referencia = ?`,
+      [claveturno, idnegocio, REFERENCIA_FONDO_CAJA]
+    );
+
+    const totalVentasEfectivo = Number(totalVentasEfectivoRows[0]?.total) || 0;
+    const totalGastos = Number(totalGastosRows[0]?.total) || 0;
+    const totalEfectivo = totalVentasEfectivo - totalGastos;
+    const totalFondoCaja = Number(totalFondoCajaRows[0]?.total) || 0;
+
     await connection.commit();
 
     console.log('Turno cerrado exitosamente');
@@ -622,7 +679,17 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
           cantidadtotal: Number(producto.cantidadtotal) || 0,
           totalproducto: Number(producto.totalproducto) || 0
         };
-      })
+      }),
+      ventasPorFormaDePago: ventasPorFormaDePagoRows.map(r => ({
+        formadepago: String(r.formadepago || ''),
+        total: Number(r.total) || 0
+      })),
+      ventasPorTipoDeVenta: ventasPorTipoDeVentaRows.map(r => ({
+        tipodeventa: String(r.tipodeventa || ''),
+        total: Number(r.total) || 0
+      })),
+      totalEfectivo,
+      totalFondoCaja
     });
   } catch (error) {
     if (connection) {
