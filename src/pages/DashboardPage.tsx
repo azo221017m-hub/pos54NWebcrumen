@@ -1369,7 +1369,7 @@ export const DashboardPage = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  registrarLog('Mi Operación', 'Finaliza Día', 'ACCIÓN');
+                  registrarLog('Mi Operación', 'Finaliza Día', 'FINALIZAR_DIA');
                   handleFinalizaDiaClick();
                 }}
               >
@@ -1384,7 +1384,7 @@ export const DashboardPage = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  registrarLog('Mi Operación', 'Activar pedidos WEB', 'ACCIÓN');
+                  registrarLog('Mi Operación', 'Activar pedidos WEB', 'TOGGLE_PEDIDOS_WEB');
                   handleToggleAbiertoAhoraWeb();
                   setMobileMenuOpen(false);
                   setShowMiOperacionSubmenu(false);
