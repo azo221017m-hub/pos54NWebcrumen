@@ -151,4 +151,5 @@ export interface PagoMixtoRequest {
   detallesPagos: DetallePagoCreate[];
   descuento?: number;
   detalledescuento?: string | null;
+  referencia?: string | null; // For 100% discount detail
 }

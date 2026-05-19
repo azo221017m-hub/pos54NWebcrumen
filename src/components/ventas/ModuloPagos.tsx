@@ -504,7 +504,8 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
           idventa: ventaId,
           detallesPagos,
           descuento,
-          detalledescuento: descuentoSeleccionado?.nombre || null
+          detalledescuento: descuentoSeleccionado?.nombre || null,
+          referencia: esDescuentoCienPorciento ? detalleDescuento100 : undefined
         });
 
         if (!resultado.success) {
