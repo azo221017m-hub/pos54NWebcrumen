@@ -1,5 +1,6 @@
 import apiClient from './api';
 import type { Mesa, MesaCreate, MesaUpdate } from '../types/mesa.types';
+import { registrarLog } from './logService';
 
 const API_BASE = '/mesas';
 
@@ -35,6 +36,7 @@ export const crearMesa = async (mesa: MesaCreate): Promise<Mesa> => {
     console.log('Servicio: Creando nueva mesa:', mesa.nombremesa);
     const response = await apiClient.post<Mesa>(API_BASE, mesa);
     console.log('Servicio: Mesa creada con ID:', response.data.idmesa);
+    registrarLog('Configuración Negocio', 'Mesas', 'CREATE', { tabla_afectada: 'tblposcrumenwebmesas', idregistro: response.data.idmesa });
     return response.data;
   } catch (error) {
     console.error('Error en servicio crearMesa:', error);
@@ -48,6 +50,7 @@ export const actualizarMesa = async (idmesa: number, mesa: MesaUpdate): Promise<
     console.log('Servicio: Actualizando mesa ID:', idmesa);
     const response = await apiClient.put<Mesa>(`${API_BASE}/${idmesa}`, mesa);
     console.log('Servicio: Mesa actualizada');
+    registrarLog('Configuración Negocio', 'Mesas', 'UPDATE', { tabla_afectada: 'tblposcrumenwebmesas', idregistro: idmesa });
     return response.data;
   } catch (error) {
     console.error('Error en servicio actualizarMesa:', error);
@@ -61,6 +64,7 @@ export const eliminarMesa = async (idmesa: number): Promise<number> => {
     console.log('Servicio: Eliminando mesa ID:', idmesa);
     await apiClient.delete(`${API_BASE}/${idmesa}`);
     console.log('Servicio: Mesa eliminada');
+    registrarLog('Configuración Negocio', 'Mesas', 'DELETE', { tabla_afectada: 'tblposcrumenwebmesas', idregistro: idmesa });
     return idmesa;
   } catch (error) {
     console.error('Error en servicio eliminarMesa:', error);

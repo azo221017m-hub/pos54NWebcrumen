@@ -1,5 +1,6 @@
 import apiClient from './api';
 import type { ProductoWeb, ProductoWebCreate, ProductoWebUpdate } from '../types/productoWeb.types';
+import { registrarLog } from './logService';
 
 const API_BASE = '/productos-web';
 
@@ -50,6 +51,7 @@ export const crearProductoWeb = async (producto: ProductoWebCreate): Promise<Pro
     const response = await apiClient.post<{ success: boolean; data: ProductoWeb; mensaje: string }>(API_BASE, producto);
     console.log('🔵 productosWebService: Producto web creado exitosamente');
     if (response.data.success && response.data.data) {
+      registrarLog('Configuración Negocio', 'Productos', 'CREATE', { tabla_afectada: 'tblposcrumenwebproductos', idregistro: response.data.data.idProducto });
       return response.data.data;
     }
     throw new Error(response.data.mensaje || 'Error al crear producto');
@@ -67,6 +69,7 @@ export const actualizarProductoWeb = async (id: number, producto: ProductoWebUpd
     const response = await apiClient.put<{ success: boolean; data: ProductoWeb; mensaje: string }>(`${API_BASE}/${id}`, producto);
     console.log('🔵 productosWebService: Producto web actualizado exitosamente');
     if (response.data.success && response.data.data) {
+      registrarLog('Configuración Negocio', 'Productos', 'UPDATE', { tabla_afectada: 'tblposcrumenwebproductos', idregistro: id });
       return response.data.data;
     }
     throw new Error(response.data.mensaje || 'Error al actualizar producto');
@@ -83,6 +86,7 @@ export const eliminarProductoWeb = async (id: number): Promise<number> => {
     console.log('🔵 productosWebService: Eliminando producto web ID:', id);
     await apiClient.delete(`${API_BASE}/${id}`);
     console.log('🔵 productosWebService: Producto web eliminado exitosamente');
+    registrarLog('Configuración Negocio', 'Productos', 'DELETE', { tabla_afectada: 'tblposcrumenwebproductos', idregistro: id });
     return id;
   } catch (error) {
     console.error('🔴 productosWebService: Error al eliminar producto web:', error);

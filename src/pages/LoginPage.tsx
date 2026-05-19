@@ -4,6 +4,7 @@ import { getLogoutMessage } from '../services/sessionService';
 import { authService } from '../services/authService';
 import { rolesService } from '../services/rolesService';
 import { verificarTurnoAbierto } from '../services/turnosService';
+import { registrarLog } from '../services/logService';
 import { config } from '../config/api.config';
 import './LoginPage.css';
 
@@ -114,6 +115,9 @@ export const LoginPage = () => {
           setError('Error al obtener perfil de acceso. Por favor, intenta de nuevo.');
           return;
         }
+
+        // Registrar log de acceso exitoso
+        registrarLog('Login', 'Autenticación', 'LOGIN');
 
         // Redirigir según el privilegio
         if (privilegio === '2') {
