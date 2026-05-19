@@ -377,3 +377,97 @@
     max-height: 95vh;
   }
 }
+
+/* Reporte button */
+.tcp-btn-reporte {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.9rem;
+  background: #059669;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+  transition: background 0.15s;
+}
+
+.tcp-btn-reporte:hover {
+  background: #047857;
+}
+
+.tcp-btn-reporte svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Reporte modal */
+.tcp-reporte-modal {
+  max-width: 360px;
+}
+
+.tcp-reporte-desc {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.tcp-reporte-botones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.tcp-btn-reporte-imprimir,
+.tcp-btn-reporte-whatsapp,
+.tcp-btn-reporte-listo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.tcp-btn-reporte-imprimir {
+  background: #3b82f6;
+  color: white;
+}
+
+.tcp-btn-reporte-imprimir:hover {
+  background: #2563eb;
+}
+
+.tcp-btn-reporte-whatsapp {
+  background: #25d366;
+  color: white;
+}
+
+.tcp-btn-reporte-whatsapp:hover {
+  background: #1ebe5a;
+}
+
+.tcp-btn-reporte-listo {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.tcp-btn-reporte-listo:hover {
+  background: #e5e7eb;
+}
+
+.tcp-btn-reporte-imprimir svg,
+.tcp-btn-reporte-whatsapp svg,
+.tcp-btn-reporte-listo svg {
+  width: 18px;
+  height: 18px;
+}

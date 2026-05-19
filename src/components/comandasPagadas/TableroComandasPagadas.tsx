@@ -2,17 +2,155 @@ import { useState, useEffect, useCallback } from 'react';
 import { obtenerComandasPagadasTurnoActual } from '../../services/ventasWebService';
 import type { VentaWebWithDetails } from '../../types/ventasWeb.types';
 import { getShortFolio } from '../../utils/formatters';
+import { setSkipBeforeUnload } from '../../services/sessionService';
 import './TableroComandasPagadas.css';
 
 interface Props {
   onVolver: () => void;
 }
 
+const PRINT_POPUP_WINDOW_FEATURES = 'width=340,height=700';
+const PRINT_WINDOW_READY_DELAY_MS = 500;
+const WHATSAPP_NAVIGATION_DELAY_MS = 1500;
+
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+
+const formatMonedaReporte = (valor: number | string): string =>
+  `$${Number(valor || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+const formatHoraReporte = (fecha: Date | string): string => {
+  const d = new Date(fecha);
+  return d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false });
+};
+
+const getLabelFormaPagoReporte = (forma: string): string => {
+  const labels: Record<string, string> = {
+    EFECTIVO: 'Efectivo',
+    TARJETA: 'Tarjeta',
+    TRANSFERENCIA: 'Transferencia',
+    MIXTO: 'Mixto',
+    sinFP: 'Sin FP',
+  };
+  return labels[forma] || forma;
+};
+
+const generarTextoReporteComandasPagadas = (comandas: VentaWebWithDetails[]): string => {
+  const fecha = new Date().toLocaleDateString('es-MX') + ' ' + new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+
+  // Agrupar por forma de pago
+  const grupos = new Map<string, VentaWebWithDetails[]>();
+  for (const c of comandas) {
+    const fp = c.formadepago || 'sinFP';
+    if (!grupos.has(fp)) grupos.set(fp, []);
+    grupos.get(fp)!.push(c);
+  }
+
+  const lineas: string[] = [
+    'COMANDAS PAGADAS DEL TURNO',
+    `Fecha: ${fecha}`,
+    `Total comandas: ${comandas.length}`,
+    '',
+  ];
+
+  const grandTotal = comandas.reduce((s, c) => s + Number(c.totaldeventa || 0), 0);
+
+  for (const [fp, items] of grupos) {
+    const grupoTotal = items.reduce((s, c) => s + Number(c.totaldeventa || 0), 0);
+    lineas.push(`── ${getLabelFormaPagoReporte(fp).toUpperCase()} ──`);
+    lineas.push(`${'Hora'.padEnd(6)} ${'Comanda'.padEnd(8)} ${'Cliente'.padEnd(16)} ${'Total'.padStart(10)}`);
+    lineas.push('-'.repeat(44));
+    for (const c of items) {
+      const hora = formatHoraReporte(c.fechadeventa).padEnd(6);
+      const folio = `#${getShortFolio(c.tipodeventa, c.idventa)}`.padEnd(8);
+      const cliente = (c.cliente || '—').substring(0, 16).padEnd(16);
+      const total = formatMonedaReporte(c.totaldeventa).padStart(10);
+      lineas.push(`${hora} ${folio} ${cliente} ${total}`);
+      if (fp === 'TRANSFERENCIA' && c.referencia) {
+        lineas.push(`  Ref: ${c.referencia}`);
+      }
+    }
+    lineas.push('-'.repeat(44));
+    lineas.push(`Total ${getLabelFormaPagoReporte(fp)}: ${formatMonedaReporte(grupoTotal)}`);
+    lineas.push('');
+  }
+
+  lineas.push('='.repeat(44));
+  lineas.push(`GRAN TOTAL: ${formatMonedaReporte(grandTotal)}`);
+
+  return lineas.join('\n');
+};
+
+const generarHtmlReporteComandasPagadas = (comandas: VentaWebWithDetails[]): string => {
+  const fecha = new Date().toLocaleDateString('es-MX') + ' ' + new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+
+  const grupos = new Map<string, VentaWebWithDetails[]>();
+  for (const c of comandas) {
+    const fp = c.formadepago || 'sinFP';
+    if (!grupos.has(fp)) grupos.set(fp, []);
+    grupos.get(fp)!.push(c);
+  }
+
+  const grandTotal = comandas.reduce((s, c) => s + Number(c.totaldeventa || 0), 0);
+
+  let cuerpo = '';
+  for (const [fp, items] of grupos) {
+    const grupoTotal = items.reduce((s, c) => s + Number(c.totaldeventa || 0), 0);
+    cuerpo += `<div class="grupo-header">${escapeHtml(getLabelFormaPagoReporte(fp).toUpperCase())}</div>`;
+    cuerpo += '<table><thead><tr><th>Hora</th><th>Comanda</th><th>Cliente</th><th>Total</th></tr></thead><tbody>';
+    for (const c of items) {
+      const hora = escapeHtml(formatHoraReporte(c.fechadeventa));
+      const folio = escapeHtml(`#${getShortFolio(c.tipodeventa, c.idventa)}`);
+      const cliente = escapeHtml(c.cliente || '—');
+      const total = escapeHtml(formatMonedaReporte(c.totaldeventa));
+      cuerpo += `<tr><td>${hora}</td><td>${folio}</td><td>${cliente}</td><td>${total}</td></tr>`;
+      if (fp === 'TRANSFERENCIA' && c.referencia) {
+        cuerpo += `<tr class="ref-row"><td colspan="4">Ref: ${escapeHtml(c.referencia)}</td></tr>`;
+      }
+    }
+    cuerpo += '</tbody></table>';
+    cuerpo += `<div class="grupo-total">Total ${escapeHtml(getLabelFormaPagoReporte(fp))}: <strong>${escapeHtml(formatMonedaReporte(grupoTotal))}</strong></div>`;
+  }
+
+  return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Comandas Pagadas del Turno</title>
+  <style>
+    body { font-family: 'Courier New', Courier, monospace; font-size: 11px; width: 58mm; margin: 0; padding: 6px; }
+    h1 { font-size: 12px; text-align: center; margin: 0 0 4px; }
+    .fecha { font-size: 10px; text-align: center; color: #666; margin-bottom: 8px; }
+    .grupo-header { font-weight: bold; font-size: 11px; background: #f0f0f0; padding: 2px 4px; margin-top: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 2px; }
+    th { font-size: 9px; text-transform: uppercase; border-bottom: 1px solid #ccc; padding: 1px 2px; text-align: left; }
+    td { font-size: 10px; padding: 1px 2px; vertical-align: top; }
+    .ref-row td { font-size: 9px; color: #666; padding-left: 8px; }
+    .grupo-total { font-size: 10px; text-align: right; border-top: 1px solid #ccc; padding-top: 2px; margin-bottom: 4px; }
+    .gran-total { font-size: 12px; font-weight: bold; text-align: right; border-top: 2px solid #000; padding-top: 4px; margin-top: 8px; }
+    @media print { html, body { width: 58mm; } @page { size: 58mm auto; margin: 0; } }
+  </style>
+</head>
+<body>
+  <h1>COMANDAS PAGADAS DEL TURNO</h1>
+  <div class="fecha">${escapeHtml(fecha)}</div>
+  ${cuerpo}
+  <div class="gran-total">GRAN TOTAL: ${escapeHtml(formatMonedaReporte(grandTotal))}</div>
+</body>
+</html>`;
+};
+
 const TableroComandasPagadas = ({ onVolver }: Props) => {
   const [comandas, setComandas] = useState<VentaWebWithDetails[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string>('');
   const [comandaDetalle, setComandaDetalle] = useState<VentaWebWithDetails | null>(null);
+  const [showReporteModal, setShowReporteModal] = useState(false);
 
   const cargarComandas = useCallback(async () => {
     try {
@@ -66,6 +204,29 @@ const TableroComandasPagadas = ({ onVolver }: Props) => {
     return labels[tipo] || tipo;
   };
 
+  const handleImprimirReporte = () => {
+    const html = generarHtmlReporteComandasPagadas(comandas);
+    const popup = window.open('', '_blank', PRINT_POPUP_WINDOW_FEATURES);
+    if (!popup) return;
+    popup.document.write(html);
+    popup.document.close();
+    setTimeout(() => {
+      popup.print();
+    }, PRINT_WINDOW_READY_DELAY_MS);
+    setShowReporteModal(false);
+  };
+
+  const handleWhatsAppReporte = () => {
+    const texto = generarTextoReporteComandasPagadas(comandas);
+    const encoded = encodeURIComponent(texto);
+    setSkipBeforeUnload(true);
+    window.location.href = `whatsapp://send?text=${encoded}`;
+    setTimeout(() => {
+      setSkipBeforeUnload(false);
+    }, WHATSAPP_NAVIGATION_DELAY_MS);
+    setShowReporteModal(false);
+  };
+
   return (
     <div className="tablero-comandas-pagadas">
       {/* Encabezado */}
@@ -85,6 +246,21 @@ const TableroComandasPagadas = ({ onVolver }: Props) => {
           Comandas Pagadas del Turno
         </h2>
 
+        {/* Botón Reporte */}
+        {!cargando && !error && comandas.length > 0 && (
+          <button
+            className="tcp-btn-reporte"
+            onClick={() => setShowReporteModal(true)}
+            title="Ver opciones de reporte"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="6 9 6 2 18 2 18 9"/>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+              <rect x="6" y="14" width="12" height="8"/>
+            </svg>
+            Reporte
+          </button>
+        )}
       </div>
 
       {/* Contenido */}
@@ -166,6 +342,42 @@ const TableroComandasPagadas = ({ onVolver }: Props) => {
         </div>
       )}
 
+      {/* Modal Reporte */}
+      {showReporteModal && (
+        <div className="tcp-modal-overlay" onClick={() => setShowReporteModal(false)}>
+          <div className="tcp-modal-card tcp-reporte-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="tcp-modal-header">
+              <h3>Reporte Comandas Pagadas</h3>
+            </div>
+            <p className="tcp-reporte-desc">
+              Selecciona cómo deseas obtener el reporte de comandas pagadas del turno, agrupadas por forma de pago.
+            </p>
+            <div className="tcp-reporte-botones">
+              <button className="tcp-btn-reporte-imprimir" onClick={handleImprimirReporte}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="6 9 6 2 18 2 18 9"/>
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                  <rect x="6" y="14" width="12" height="8"/>
+                </svg>
+                Imprimir
+              </button>
+              <button className="tcp-btn-reporte-whatsapp" onClick={handleWhatsAppReporte}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                Enviar por WhatsApp
+              </button>
+              <button className="tcp-btn-reporte-listo" onClick={() => setShowReporteModal(false)}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Listo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal detalle */}
       {comandaDetalle && (
         <div className="tcp-modal-overlay">
@@ -211,6 +423,12 @@ const TableroComandasPagadas = ({ onVolver }: Props) => {
                   </span>
                 </span>
               </div>
+              {comandaDetalle.formadepago === 'TRANSFERENCIA' && comandaDetalle.referencia && (
+                <div className="tcp-modal-info-row">
+                  <span className="tcp-modal-label">Referencia:</span>
+                  <span>{comandaDetalle.referencia}</span>
+                </div>
+              )}
             </div>
 
             <div className="tcp-modal-productos">
