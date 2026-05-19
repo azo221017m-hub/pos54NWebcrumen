@@ -327,14 +327,16 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
         }));
         setLlevarClienteEncontrado(true);
       } else {
+        const clienteValue = referencia || 'mostrador';
         setLlevarClienteInfo(null);
         setLlevarClienteEncontrado(false);
-        setLlevarFormData(prev => ({ ...prev, cliente: referencia || 'mostrador', idcliente: null, telefonocontacto: '', referencia: referencia || 'mostrador' }));
+        setLlevarFormData(prev => ({ ...prev, cliente: clienteValue, idcliente: null, telefonocontacto: '', referencia: clienteValue }));
       }
     } catch {
+      const clienteValue = referencia || 'mostrador';
       setLlevarClienteInfo(null);
       setLlevarClienteEncontrado(false);
-      setLlevarFormData(prev => ({ ...prev, cliente: referencia || 'mostrador', idcliente: null, telefonocontacto: '', referencia: referencia || 'mostrador' }));
+      setLlevarFormData(prev => ({ ...prev, cliente: clienteValue, idcliente: null, telefonocontacto: '', referencia: clienteValue }));
     } finally {
       setLlevarSearching(false);
     }
