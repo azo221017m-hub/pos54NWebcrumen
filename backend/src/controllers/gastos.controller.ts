@@ -4,6 +4,7 @@ import type { RowDataPacket, ResultSetHeader } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
 import type { Gasto, GastoCreate, GastoUpdate } from '../types/gastos.types';
 import { websocketService } from '../services/websocket.service';
+import { obtenerClaveTurnoAbiertoByNegocio } from './turnos.controller';
 
 // Helper function to generate folio in format AAAAMMDDHHMMSS
 function generarFolioGasto(): string {
@@ -132,7 +133,7 @@ export async function obtenerGastoPorId(req: AuthRequest, res: Response): Promis
 // POST /api/gastos - Crear un nuevo gasto
 export async function crearGasto(req: AuthRequest, res: Response): Promise<void> {
   try {
-    const { importegasto, tipodegasto, claveturno: claveTurnoBody } = req.body as GastoCreate;
+    const { importegasto, tipodegasto } = req.body as GastoCreate;
     const idnegocio = req.user?.idNegocio;
     const usuarioalias = req.user?.alias;
 
@@ -157,6 +158,16 @@ export async function crearGasto(req: AuthRequest, res: Response): Promise<void>
       res.status(400).json({
         success: false,
         message: 'El tipo de gasto es requerido'
+      });
+      return;
+    }
+
+    // Obtener la claveturno del turno abierto del negocio
+    const claveturno = await obtenerClaveTurnoAbiertoByNegocio(idnegocio);
+    if (!claveturno) {
+      res.status(400).json({
+        success: false,
+        message: 'No hay un turno abierto para este negocio. Abra un turno antes de registrar un gasto.'
       });
       return;
     }
@@ -227,7 +238,7 @@ export async function crearGasto(req: AuthRequest, res: Response): Promise<void>
         ?
       )`,
       // Orden de parámetros: folioventa, subtotal, totaldeventa, claveturno, idnegocio, usuarioauditoria, descripcionmov
-      [folioventa, importegasto, importegasto, claveTurnoBody || folioventa, idnegocio, usuarioalias, tipodegasto]
+      [folioventa, importegasto, importegasto, claveturno, idnegocio, usuarioalias, tipodegasto]
     );
 
     // Obtener el gasto creado

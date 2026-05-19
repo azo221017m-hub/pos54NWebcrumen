@@ -105,7 +105,7 @@ async function processRecipeInventoryMovements(
           `INSERT INTO tblposcrumenwebdetallemovimientos (
              idinsumo, nombreinsumo, tipoinsumo, tipomovimiento, motivomovimiento,
              cantidad, referenciastock, unidadmedida, precio, costo,
-             idreferencia, fechamovimiento, observaciones, usuarioauditoria, 
+             claveturno, fechamovimiento, observaciones, usuarioauditoria, 
              idnegocio, estatusmovimiento, fecharegistro, fechaauditoria
            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, NOW(), NOW())`,
           [
@@ -119,7 +119,7 @@ async function processRecipeInventoryMovements(
             insumo.unidadmedida,
             insumo.precio_venta ?? 0, // DECIMAL: default to 0 if not provided
             insumo.costo_promedio_ponderado ?? 0, // DECIMAL: default to 0 if not provided
-            detalle.idventa, // idreferencia = sale ID
+            detalle.idventa.toString(), // claveturno = sale ID as VARCHAR
             null, // observaciones
             usuarioalias, // user alias instead of user ID
             idnegocio,
@@ -156,7 +156,7 @@ async function processRecipeInventoryMovements(
             `INSERT INTO tblposcrumenwebdetallemovimientos (
                idinsumo, nombreinsumo, tipoinsumo, tipomovimiento, motivomovimiento,
                cantidad, referenciastock, unidadmedida, precio, costo,
-               idreferencia, fechamovimiento, observaciones, usuarioauditoria, 
+               claveturno, fechamovimiento, observaciones, usuarioauditoria, 
                idnegocio, estatusmovimiento, fecharegistro, fechaauditoria
              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, NOW(), NOW())`,
             [
@@ -170,7 +170,7 @@ async function processRecipeInventoryMovements(
               ingrediente.unidadmedida,
               ingrediente.precio_venta ?? 0, // DECIMAL: default to 0 if not provided
               ingrediente.costo_promedio_ponderado ?? 0, // DECIMAL: default to 0 if not provided
-              detalle.idventa, // idreferencia = sale ID
+              detalle.idventa.toString(), // claveturno = sale ID as VARCHAR
               null, // observaciones
               usuarioalias, // user alias instead of user ID
               idnegocio,
@@ -213,10 +213,10 @@ async function updateInventoryStockFromMovements(
     // Get all pending movements for this sale
     const [movementRows] = await connection.execute<RowDataPacket[]>(
       `SELECT * FROM tblposcrumenwebdetallemovimientos 
-       WHERE idreferencia = ? 
+       WHERE claveturno = ? 
          AND idnegocio = ? 
          AND estatusmovimiento = 'PENDIENTE'`,
-      [idventa, idnegocio]
+      [idventa.toString(), idnegocio]
     );
 
     if (movementRows.length === 0) {
@@ -1707,7 +1707,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
       if (hasTurnoAbierto) {
         comprasQuery = `SELECT COALESCE(SUM(dm.cantidad * dm.costo), 0) as totalCompras
            FROM tblposcrumenwebmovimientos m
-           INNER JOIN tblposcrumenwebdetallemovimientos dm ON dm.idreferencia = m.idreferencia
+           INNER JOIN tblposcrumenwebdetallemovimientos dm ON dm.claveturno = CAST(m.idmovimiento AS CHAR)
            WHERE m.idnegocio = ?
              AND m.motivomovimiento = 'COMPRA'
              AND m.estatusmovimiento = 'PROCESADO'
@@ -1716,7 +1716,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
       } else {
         comprasQuery = `SELECT COALESCE(SUM(dm.cantidad * dm.costo), 0) as totalCompras
            FROM tblposcrumenwebmovimientos m
-           INNER JOIN tblposcrumenwebdetallemovimientos dm ON dm.idreferencia = m.idreferencia
+           INNER JOIN tblposcrumenwebdetallemovimientos dm ON dm.claveturno = CAST(m.idmovimiento AS CHAR)
            WHERE m.idnegocio = ?
              AND m.motivomovimiento = 'COMPRA'
              AND m.estatusmovimiento = 'PROCESADO'
