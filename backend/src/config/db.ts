@@ -45,6 +45,24 @@ if (sslEnabled) {
 // Pool de conexiones
 export const pool = createPool(dbConfig);
 
+// Configurar zona horaria de sesión para cada nueva conexión del pool.
+// El parámetro `timezone` de mysql2 sólo afecta la serialización/deserialización de
+// objetos Date de JavaScript; NO cambia el valor que devuelve NOW() en MySQL.
+// Con este listener forzamos que la sesión MySQL también use el offset correcto,
+// garantizando que NOW() devuelva la hora en la zona horaria configurada (GMT-6 por defecto).
+const TZ_OFFSET_PATTERN = /^[+-]\d{2}:\d{2}$/;
+const safeTimezoneOffset = TZ_OFFSET_PATTERN.test(MEXICO_TIMEZONE_OFFSET)
+  ? MEXICO_TIMEZONE_OFFSET
+  : '-06:00'; // Fallback seguro a GMT-6 si el offset calculado tiene formato inesperado
+
+(pool as any).pool.on('connection', (connection: { query: (sql: string, cb: (err: Error | null) => void) => void }) => {
+  connection.query(`SET time_zone = '${safeTimezoneOffset}'`, (err: Error | null) => {
+    if (err) {
+      console.error(`⚠️  Error al configurar time_zone en conexión MySQL: ${err.message}`);
+    }
+  });
+});
+
 // Verificar conexión con reintentos
 export const testConnection = async (maxRetries = 3, retryDelay = 2000) => {
   let lastError: Error | unknown = null;
