@@ -15,6 +15,7 @@ import type { Negocio } from '../types/negocio.types';
 import TableroComandasPagadas from '../components/comandasPagadas/TableroComandasPagadas';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { extractShortFolio } from '../utils/formatters';
+import { registrarLog } from '../services/logService';
 import './DashboardPage.css';
 
 interface Usuario {
@@ -941,6 +942,7 @@ export const DashboardPage = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  registrarLog('Mi Tablero', 'Mi Día', 'NAVEGACIÓN');
                   setDashboardView('indicadores');
                   setShowDashboardSubmenu(false);
                   setMobileMenuOpen(false);
@@ -957,6 +959,7 @@ export const DashboardPage = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  registrarLog('Mi Tablero', 'Mi Visor de Ventas', 'NAVEGACIÓN');
                   setDashboardView('visor-ventas');
                   setSalesReportTab('resumen');
                   setShowDashboardSubmenu(false);
@@ -974,6 +977,7 @@ export const DashboardPage = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  registrarLog('Mi Tablero', 'Proteger Pantalla', 'NAVEGACIÓN');
                   setIsScreenLocked(true);
                   setShowDashboardSubmenu(false);
                   setShowMiOperacionSubmenu(false);
@@ -1027,7 +1031,7 @@ export const DashboardPage = () => {
           {/* Submenú Configuración Sistema */}
           {showConfigSubmenu && (
             <div className="submenu">
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-negocios'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Configuración Sistema', 'Negocio', 'NAVEGACIÓN'); navigate('/config-negocios'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="3" width="7" height="7" />
                   <rect x="14" y="3" width="7" height="7" />
@@ -1036,7 +1040,7 @@ export const DashboardPage = () => {
                 </svg>
                 Negocio
               </button>
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-roles'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Configuración Sistema', 'Rol de Usuarios', 'NAVEGACIÓN'); navigate('/config-roles'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                   <circle cx="9" cy="7" r="4"/>
@@ -1049,6 +1053,7 @@ export const DashboardPage = () => {
                 e.preventDefault(); 
                 e.stopPropagation(); 
                 console.log(`📋 [USUARIOS] Mostrando usuarios con idNegocio: ${usuario?.idNegocio} | Usuario: ${usuario?.nombre} (${usuario?.alias}) | Timestamp: ${new Date().toISOString()}`);
+                registrarLog('Configuración Sistema', 'Usuarios', 'NAVEGACIÓN');
                 navigate('/config-usuarios'); 
                 setMobileMenuOpen(false); 
               }}>
@@ -1060,13 +1065,13 @@ export const DashboardPage = () => {
                 </svg>
                 Usuarios
               </button>
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-anuncios'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Configuración Sistema', 'Anuncios', 'NAVEGACIÓN'); navigate('/config-anuncios'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M3 11l19-9-9 19-2-8-8-2z"/>
                 </svg>
                 Anuncios
               </button>
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-clientes'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Configuración Sistema', 'Clientes', 'NAVEGACIÓN'); navigate('/config-clientes'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                   <circle cx="9" cy="7" r="4"/>
@@ -1121,6 +1126,7 @@ export const DashboardPage = () => {
                 e.preventDefault(); 
                 e.stopPropagation(); 
                 console.log(`📋 [USUARIOS] Mostrando usuarios con idNegocio: ${usuario?.idNegocio} | Usuario: ${usuario?.nombre} (${usuario?.alias}) | Timestamp: ${new Date().toISOString()}`);
+                registrarLog('Configuración Negocio', 'Usuarios', 'NAVEGACIÓN');
                 navigate('/config-usuarios'); 
                 setMobileMenuOpen(false); 
               }}>
@@ -1134,7 +1140,7 @@ export const DashboardPage = () => {
               </button>
               )}
 
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-cuentas-contables'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Configuración Negocio', 'Grupo de Movimientos', 'NAVEGACIÓN'); navigate('/config-cuentas-contables'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                   <polyline points="14 2 14 8 20 8"/>
@@ -1143,7 +1149,7 @@ export const DashboardPage = () => {
                 </svg>
                 Grupo de Movimientos
               </button>
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-proveedores'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Configuración Negocio', 'Proveedores', 'NAVEGACIÓN'); navigate('/config-proveedores'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 18H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.19M15 6h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2"/>
                   <path d="M14 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
@@ -1153,7 +1159,7 @@ export const DashboardPage = () => {
                 </svg>
                 Proveedores
               </button>
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-insumos'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Configuración Negocio', 'Insumos', 'NAVEGACIÓN'); navigate('/config-insumos'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="3" width="18" height="18" rx="3" />
                   <path d="M8 12h8" />
@@ -1161,7 +1167,7 @@ export const DashboardPage = () => {
                 </svg>
                 Insumos
               </button>
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-subrecetas'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Configuración Negocio', 'Subrecetas', 'NAVEGACIÓN'); navigate('/config-subrecetas'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
                   <line x1="3" y1="6" x2="21" y2="6"/>
@@ -1169,7 +1175,7 @@ export const DashboardPage = () => {
                 </svg>
                 Subrecetas
               </button>
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-recetas'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Configuración Negocio', 'Recetas', 'NAVEGACIÓN'); navigate('/config-recetas'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
                   <path d="M7 2v20"/>
@@ -1177,13 +1183,13 @@ export const DashboardPage = () => {
                 </svg>
                 Recetas
               </button>
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-moderadores'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Configuración Negocio', 'Moderadores', 'NAVEGACIÓN'); navigate('/config-moderadores'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                 </svg>
                 Moderadores
               </button>
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-cat-moderadores'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Configuración Negocio', 'Categoría Moderadores', 'NAVEGACIÓN'); navigate('/config-cat-moderadores'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                   <circle cx="9" cy="7" r="4"/>
@@ -1192,7 +1198,7 @@ export const DashboardPage = () => {
                 </svg>
                 Categoría Moderadores
               </button>
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-categorias'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Configuración Negocio', 'Categorías', 'NAVEGACIÓN'); navigate('/config-categorias'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 2H2v10h10V2z"/>
                   <path d="M22 2h-10v10h10V2z"/>
@@ -1201,14 +1207,14 @@ export const DashboardPage = () => {
                 </svg>
                 Categorías
               </button>
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-productos'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Configuración Negocio', 'Productos', 'NAVEGACIÓN'); navigate('/config-productos'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="2" y="7" width="20" height="15" rx="2"/>
                   <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
                 </svg>
                 Productos
               </button>
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-mesas'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Configuración Negocio', 'Mesas', 'NAVEGACIÓN'); navigate('/config-mesas'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="8" width="18" height="12" rx="2"/>
                   <circle cx="8" cy="16" r="2"/>
@@ -1219,7 +1225,7 @@ export const DashboardPage = () => {
                 Mesas
               </button>
               {privilegio !== 4 && (
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-descuentos'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Configuración Negocio', 'Descuentos', 'NAVEGACIÓN'); navigate('/config-descuentos'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10"/>
                   <path d="M9 9l6 6"/>
@@ -1228,7 +1234,7 @@ export const DashboardPage = () => {
                 Descuentos
               </button>
               )}
-              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/config-turnos'); setMobileMenuOpen(false); }}>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Configuración Negocio', 'Turnos', 'NAVEGACIÓN'); navigate('/config-turnos'); setMobileMenuOpen(false); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10"/>
                   <polyline points="12 6 12 12 16 14"/>
@@ -1285,6 +1291,7 @@ export const DashboardPage = () => {
                 onClick={(e) => { 
                   e.preventDefault(); 
                   e.stopPropagation(); 
+                  registrarLog('Mi Operación', 'Inicia Venta', 'NAVEGACIÓN');
                   navigate('/ventas'); 
                   setMobileMenuOpen(false); 
                   setShowMiOperacionSubmenu(false);
@@ -1302,6 +1309,7 @@ export const DashboardPage = () => {
                 onClick={(e) => { 
                   e.preventDefault(); 
                   e.stopPropagation();
+                  registrarLog('Mi Operación', 'Gastos', 'NAVEGACIÓN');
                   navigate('/gastos');
                   setMobileMenuOpen(false);
                   setShowMiOperacionSubmenu(false);
@@ -1322,6 +1330,7 @@ export const DashboardPage = () => {
                 onClick={(e) => { 
                   e.preventDefault(); 
                   e.stopPropagation(); 
+                  registrarLog('Mi Operación', 'Movimientos', 'NAVEGACIÓN');
                   navigate('/movimientos-inventario'); 
                   setMobileMenuOpen(false); 
                   setShowMiOperacionSubmenu(false);
@@ -1340,6 +1349,7 @@ export const DashboardPage = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  registrarLog('Mi Operación', 'Comandas Pagadas', 'NAVEGACIÓN');
                   setDashboardView('comandas-pagadas');
                   setMobileMenuOpen(false);
                   setShowMiOperacionSubmenu(false);
@@ -1359,6 +1369,7 @@ export const DashboardPage = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  registrarLog('Mi Operación', 'Finaliza Día', 'ACCIÓN');
                   handleFinalizaDiaClick();
                 }}
               >
@@ -1373,6 +1384,7 @@ export const DashboardPage = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  registrarLog('Mi Operación', 'Activar pedidos WEB', 'ACCIÓN');
                   handleToggleAbiertoAhoraWeb();
                   setMobileMenuOpen(false);
                   setShowMiOperacionSubmenu(false);

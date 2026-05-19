@@ -1,5 +1,6 @@
 import api from './api';
 import type { Usuario, UsuarioFormData, UsuarioResponse } from '../types/usuario.types';
+import { registrarLog } from './logService';
 
 // Obtener todos los usuarios
 export const obtenerUsuarios = async (): Promise<Usuario[]> => {
@@ -58,7 +59,9 @@ export const crearUsuario = async (usuario: UsuarioFormData): Promise<Usuario> =
     
     if (response.data.success && response.data.data && !Array.isArray(response.data.data)) {
       // Retornar el usuario completo creado
-      return response.data.data as Usuario;
+      const result = response.data.data as Usuario;
+      registrarLog('Configuración Negocio', 'Usuarios', 'CREATE', { tabla_afectada: 'tblposcrumenwebusuarios', idregistro: result.idUsuario });
+      return result;
     }
     throw new Error('Error al crear usuario: respuesta inválida');
   } catch (error) {
@@ -75,6 +78,7 @@ export const actualizarUsuario = async (id: number, usuario: UsuarioFormData): P
     console.log('✅ Usuario actualizado:', response.data);
     
     if (response.data.success && response.data.data && !Array.isArray(response.data.data)) {
+      registrarLog('Configuración Negocio', 'Usuarios', 'UPDATE', { tabla_afectada: 'tblposcrumenwebusuarios', idregistro: id });
       return response.data.data as Usuario;
     }
     throw new Error('Error al actualizar usuario: respuesta inválida');
@@ -91,6 +95,7 @@ export const eliminarUsuario = async (id: number): Promise<number> => {
     const response = await api.delete<UsuarioResponse>(`/usuarios/${id}`);
     console.log('✅ Usuario eliminado:', response.data);
     if (response.data.success) {
+      registrarLog('Configuración Negocio', 'Usuarios', 'DELETE', { tabla_afectada: 'tblposcrumenwebusuarios', idregistro: id });
       return id;
     }
     throw new Error('Error al eliminar usuario');
@@ -106,6 +111,9 @@ export const cambiarEstatusUsuario = async (id: number, estatus: number): Promis
     console.log(`🔄 Cambiando estatus del usuario ${id} a ${estatus}...`);
     const response = await api.patch<UsuarioResponse>(`/usuarios/${id}/estatus`, { estatus });
     console.log('✅ Estatus cambiado:', response.data);
+    if (response.data.success) {
+      registrarLog('Configuración Negocio', 'Usuarios', 'UPDATE', { tabla_afectada: 'tblposcrumenwebusuarios', idregistro: id });
+    }
     return response.data.success;
   } catch (error) {
     console.error('❌ Error al cambiar estatus:', error);

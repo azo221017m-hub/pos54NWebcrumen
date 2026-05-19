@@ -1,5 +1,6 @@
 import apiClient from './api';
 import type { Cliente, ClienteCreate, ClienteUpdate } from '../types/cliente.types';
+import { registrarLog } from './logService';
 
 const API_BASE = '/clientes';
 
@@ -38,12 +39,14 @@ export const obtenerCliente = async (idCliente: number): Promise<Cliente | null>
 // Crear un nuevo cliente
 export const crearCliente = async (cliente: ClienteCreate): Promise<Cliente> => {
   const response = await apiClient.post<Cliente>(API_BASE, cliente);
+  registrarLog('Configuración Sistema', 'Clientes', 'CREATE', { tabla_afectada: 'tblposcrumenwebclientes', idregistro: response.data.idCliente });
   return response.data;
 };
 
 // Actualizar un cliente
 export const actualizarCliente = async (idCliente: number, cliente: ClienteUpdate): Promise<Cliente> => {
   const response = await apiClient.put<Cliente>(`${API_BASE}/${idCliente}`, cliente);
+  registrarLog('Configuración Sistema', 'Clientes', 'UPDATE', { tabla_afectada: 'tblposcrumenwebclientes', idregistro: idCliente });
   return response.data;
 };
 
@@ -80,5 +83,6 @@ export const buscarClientesPorReferencia = async (referencia: string): Promise<C
 // Eliminar un cliente
 export const eliminarCliente = async (idCliente: number): Promise<number> => {
   await apiClient.delete(`${API_BASE}/${idCliente}`);
+  registrarLog('Configuración Sistema', 'Clientes', 'DELETE', { tabla_afectada: 'tblposcrumenwebclientes', idregistro: idCliente });
   return idCliente;
 };

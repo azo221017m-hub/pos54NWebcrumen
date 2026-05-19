@@ -1,5 +1,6 @@
 import apiClient from './api';
 import type { CatModerador, CatModeradorCreate, CatModeradorUpdate } from '../types/catModerador.types';
+import { registrarLog } from './logService';
 
 // Obtener todas las categorías moderador por negocio
 export const obtenerCatModeradores = async (): Promise<CatModerador[]> => {
@@ -27,6 +28,7 @@ export const obtenerCatModeradorPorId = async (id: number): Promise<CatModerador
 export const crearCatModerador = async (catModerador: CatModeradorCreate): Promise<CatModerador> => {
   try {
     const response = await apiClient.post<CatModerador>(`/cat-moderadores`, catModerador);
+    registrarLog('Configuración Negocio', 'Categoría Moderadores', 'CREATE', { tabla_afectada: 'tblposcrumenwebcatmoderadores', idregistro: response.data.idmodref });
     return response.data;
   } catch (error) {
     console.error('Error al crear categoría moderador:', error);
@@ -38,6 +40,7 @@ export const crearCatModerador = async (catModerador: CatModeradorCreate): Promi
 export const actualizarCatModerador = async (catModerador: CatModeradorUpdate): Promise<CatModerador> => {
   try {
     const response = await apiClient.put<CatModerador>(`/cat-moderadores/${catModerador.idmodref}`, catModerador);
+    registrarLog('Configuración Negocio', 'Categoría Moderadores', 'UPDATE', { tabla_afectada: 'tblposcrumenwebcatmoderadores', idregistro: catModerador.idmodref });
     return response.data;
   } catch (error) {
     console.error('Error al actualizar categoría moderador:', error);
@@ -49,6 +52,7 @@ export const actualizarCatModerador = async (catModerador: CatModeradorUpdate): 
 export const eliminarCatModerador = async (id: number): Promise<number> => {
   try {
     await apiClient.delete(`/cat-moderadores/${id}`);
+    registrarLog('Configuración Negocio', 'Categoría Moderadores', 'DELETE', { tabla_afectada: 'tblposcrumenwebcatmoderadores', idregistro: id });
     return id;
   } catch (error) {
     console.error('Error al eliminar categoría moderador:', error);

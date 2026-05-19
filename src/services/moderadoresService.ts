@@ -1,5 +1,6 @@
 import apiClient from './api';
 import type { Moderador, ModeradorCreate, ModeradorUpdate } from '../types/moderador.types';
+import { registrarLog } from './logService';
 
 const API_BASE = '/moderadores';
 
@@ -37,6 +38,7 @@ export const obtenerModerador = async (id: number): Promise<Moderador | null> =>
 export const crearModerador = async (moderador: ModeradorCreate): Promise<Moderador> => {
   try {
     const response = await apiClient.post<Moderador>(API_BASE, moderador);
+    registrarLog('Configuración Negocio', 'Moderadores', 'CREATE', { tabla_afectada: 'tblposcrumenwebmoderadores', idregistro: response.data.idmoderador });
     return response.data;
   } catch (error: any) {
     console.error('❌ moderadoresService - Error al crear moderador:', {
@@ -52,6 +54,7 @@ export const crearModerador = async (moderador: ModeradorCreate): Promise<Modera
 export const actualizarModerador = async (id: number, moderador: ModeradorUpdate): Promise<Moderador> => {
   try {
     const response = await apiClient.put<Moderador>(`${API_BASE}/${id}`, moderador);
+    registrarLog('Configuración Negocio', 'Moderadores', 'UPDATE', { tabla_afectada: 'tblposcrumenwebmoderadores', idregistro: id });
     return response.data;
   } catch (error: any) {
     console.error('❌ moderadoresService - Error al actualizar moderador:', {
@@ -66,5 +69,6 @@ export const actualizarModerador = async (id: number, moderador: ModeradorUpdate
 // Eliminar moderador
 export const eliminarModerador = async (id: number): Promise<number> => {
   await apiClient.delete(`${API_BASE}/${id}`);
+  registrarLog('Configuración Negocio', 'Moderadores', 'DELETE', { tabla_afectada: 'tblposcrumenwebmoderadores', idregistro: id });
   return id;
 };
