@@ -3,6 +3,8 @@ import { pool } from '../config/db';
 import { ResultSetHeader } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
 
+const EQUIPO_MAX_LENGTH = 150;
+
 // Registrar un evento en tblposcrumenweblogs
 export const registrarLog = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -18,6 +20,11 @@ export const registrarLog = async (req: AuthRequest, res: Response): Promise<voi
       equipo,
     } = req.body;
 
+    if (!accion || !modulo) {
+      res.status(400).json({ success: false, message: 'Los campos accion y modulo son requeridos' });
+      return;
+    }
+
     // Obtener IP real del cliente (considera proxy reverso en producción)
     const ip =
       (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() ||
@@ -32,13 +39,13 @@ export const registrarLog = async (req: AuthRequest, res: Response): Promise<voi
         idnegocio ?? null,
         idusuario ?? null,
         usuario ?? null,
-        accion ?? null,
-        modulo ?? null,
+        accion,
+        modulo,
         tabla_afectada ?? null,
         idregistro !== undefined && idregistro !== null ? String(idregistro) : null,
         descripcion ?? null,
         ip,
-        equipo ? String(equipo).substring(0, 150) : null,
+        equipo ? String(equipo).substring(0, EQUIPO_MAX_LENGTH) : null,
       ]
     );
 
