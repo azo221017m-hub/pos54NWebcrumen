@@ -10,7 +10,7 @@ export interface Movimiento {
   idmovimiento: number;
   tipomovimiento: TipoMovimiento;
   motivomovimiento: MotivoMovimiento;
-  idreferencia: number | null;
+  claveturno: string | null;
   fechamovimiento: Date | string;
   observaciones: string | null;
   usuarioauditoria: string;
@@ -69,7 +69,7 @@ export interface DetalleMovimiento {
   unidadmedida: string;
   precio: number | null;
   costo: number | null;
-  idreferencia: number;
+  claveturno: string | null;
   fechamovimiento: Date | string;
   observaciones: string | null;
   proveedor: string | null;
@@ -91,7 +91,7 @@ export interface DetalleMovimientoCreate {
   unidadmedida: string;
   precio?: number | null;
   costo?: number | null;
-  idreferencia: number;
+  claveturno: string;
   observaciones?: string | null;
   proveedor?: string | null;
   usuarioauditoria: string;

@@ -31,12 +31,12 @@ SELECT
     dm.unidadmedida,
     dm.precio,
     dm.costo,
-    dm.idreferencia as idventa,
+    dm.claveturno as referencia_movimiento,
     dm.estatusmovimiento,
     dm.fechamovimiento,
     dm.fecharegistro
 FROM tblposcrumenwebdetallemovimientos dm
-WHERE dm.idreferencia = {test_idventa}
+WHERE dm.claveturno = {test_idventa}
 ORDER BY dm.iddetallemovimiento;
 
 -- 5. Verify that sale details were marked as processed
@@ -115,7 +115,7 @@ SELECT
     dm.cantidad,
     dm.nombreinsumo
 FROM tblposcrumenwebdetallemovimientos dm
-WHERE dm.idreferencia = {test_idventa}
+WHERE dm.claveturno = {test_idventa}
 
 ORDER BY tipo, id;
 
@@ -145,7 +145,7 @@ SELECT
     dm.estatusmovimiento,
     COUNT(*) as total_movements,
     SUM(dm.cantidad) as total_quantity,
-    COUNT(DISTINCT dm.idreferencia) as unique_sales
+    COUNT(DISTINCT dm.claveturno) as unique_references
 FROM tblposcrumenwebdetallemovimientos dm
 WHERE dm.idnegocio = {test_idnegocio}
 GROUP BY dm.motivomovimiento, dm.estatusmovimiento
@@ -154,13 +154,13 @@ ORDER BY dm.motivomovimiento, dm.estatusmovimiento;
 -- 10. Verify no duplicate movements were created
 -- This query finds any potential duplicates (should return 0 rows)
 SELECT 
-    dm.idreferencia as idventa,
+    dm.claveturno as referencia,
     dm.idinsumo,
     dm.nombreinsumo,
     COUNT(*) as duplicate_count
 FROM tblposcrumenwebdetallemovimientos dm
 WHERE dm.motivomovimiento = 'VENTA'
   AND dm.idnegocio = {test_idnegocio}
-GROUP BY dm.idreferencia, dm.idinsumo, dm.nombreinsumo
+GROUP BY dm.claveturno, dm.idinsumo, dm.nombreinsumo
 HAVING COUNT(*) > 1
 ORDER BY duplicate_count DESC;

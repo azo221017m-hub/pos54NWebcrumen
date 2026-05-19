@@ -26,7 +26,7 @@ export interface DetalleMovimiento {
   unidadmedida: string;
   precio?: number;
   costo?: number;
-  idreferencia?: number;
+  claveturno?: string;
   fechamovimiento?: string;
   observaciones?: string;
   proveedor?: string;
@@ -42,7 +42,7 @@ export interface Movimiento {
   idmovimiento: number;
   tipomovimiento: TipoMovimiento;
   motivomovimiento: MotivoMovimiento;
-  idreferencia?: number;
+  claveturno?: string;
   fechamovimiento: string;
   observaciones?: string;
   usuarioauditoria: string;

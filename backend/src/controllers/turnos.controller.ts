@@ -62,6 +62,26 @@ export const obtenerClaveTurnoAbierto = async (usuarioturno: string, idnegocio: 
   return turnosAbiertos.length > 0 ? turnosAbiertos[0].claveturno : null;
 };
 
+/**
+ * Helper function to get claveturno from the open turno of a negocio.
+ * Returns the most recently opened active turno for the business.
+ * Used for auto-populating claveturno in GASTOS and COMPRAS operations.
+ *
+ * @param idnegocio - The business ID
+ * @returns The claveturno of the open shift, or null if none exists
+ */
+export const obtenerClaveTurnoAbiertoByNegocio = async (idnegocio: number): Promise<string | null> => {
+  const [turnosAbiertos] = await pool.query<RowDataPacket[]>(
+    `SELECT claveturno FROM tblposcrumenwebturnos 
+     WHERE idnegocio = ? AND estatusturno = 'abierto'
+     ORDER BY fechainicioturno DESC
+     LIMIT 1`,
+    [idnegocio]
+  );
+  
+  return turnosAbiertos.length > 0 ? turnosAbiertos[0].claveturno : null;
+};
+
 // Obtener todos los turnos de un negocio
 export const obtenerTurnos = async (req: AuthRequest, res: Response): Promise<void> => {
   try {

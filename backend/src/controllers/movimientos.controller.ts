@@ -11,6 +11,7 @@ import {
 } from '../types/movimientos.types';
 import { formatMySQLDateTime } from '../utils/dateTime';
 import { websocketService } from '../services/websocket.service';
+import { obtenerClaveTurnoAbiertoByNegocio } from './turnos.controller';
 
 // GET /api/movimientos - Obtener todos los movimientos
 export const obtenerMovimientos = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -35,11 +36,10 @@ export const obtenerMovimientos = async (req: AuthRequest, res: Response): Promi
     // Cargar detalles para cada movimiento
     const movimientosConDetalles: MovimientoConDetalles[] = await Promise.all(
       movimientos.map(async (mov: Movimiento & RowDataPacket) => {
-        // Use idreferencia from movimiento if it exists, otherwise fall back to idmovimiento for old records
-        const refQuery = mov.idreferencia || mov.idmovimiento;
+        // Load detalles using idmovimiento as the reference key (stored in claveturno of detallemovimientos)
         const [detalles] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
-          'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ? ORDER BY iddetallemovimiento',
-          [refQuery]
+          'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE claveturno = ? ORDER BY iddetallemovimiento',
+          [mov.idmovimiento.toString()]
         );
         return { ...mov, detalles };
       })
@@ -88,12 +88,10 @@ export const obtenerMovimientoPorId = async (req: AuthRequest, res: Response): P
 
     const movimiento = movimientos[0];
 
-    // Obtener detalles
-    // Use idreferencia from movimiento if it exists, otherwise fall back to idmovimiento for old records
-    const refQuery = movimiento.idreferencia || movimiento.idmovimiento;
+    // Load detalles using idmovimiento as the reference key (stored in claveturno of detallemovimientos)
     const [detalles] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
-      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ? ORDER BY iddetallemovimiento',
-      [refQuery]
+      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE claveturno = ? ORDER BY iddetallemovimiento',
+      [movimiento.idmovimiento.toString()]
     );
 
     const movimientoConDetalles: MovimientoConDetalles = {
@@ -139,24 +137,32 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
       return;
     }
 
-    // Get the current idnegocio to use as the claveturno placeholder
-    // Note: No longer requiring an open turno for inventory movements
-    // We'll store the folio format in the main movimientos table's idreferencia field
-    const idreferenciaPlaceholder = idNegocio;
+    // For COMPRA movements: obtain and validate the open turno's claveturno
+    let claveTurnoMovimiento: string | null = null;
+    if (movimientoData.motivomovimiento === 'COMPRA') {
+      claveTurnoMovimiento = await obtenerClaveTurnoAbiertoByNegocio(idNegocio!);
+      if (!claveTurnoMovimiento) {
+        res.status(400).json({
+          success: false,
+          message: 'No hay un turno abierto para este negocio. Abra un turno antes de registrar una compra.'
+        });
+        return;
+      }
+    }
 
     // Convert fechamovimiento from ISO format to MySQL datetime format
     const fechaMovimientoMySQL = formatMySQLDateTime(new Date(movimientoData.fechamovimiento));
 
-    // Insertar movimiento principal
+    // Insertar movimiento principal (claveturno will be updated after we know idmovimiento)
     const [resultMovimiento] = await pool.execute<ResultSetHeader>(
       `INSERT INTO tblposcrumenwebmovimientos (
-        tipomovimiento, motivomovimiento, idreferencia, fechamovimiento, observaciones,
+        tipomovimiento, motivomovimiento, claveturno, fechamovimiento, observaciones,
         usuarioauditoria, idnegocio, estatusmovimiento, fecharegistro, fechaauditoria
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
       [
         movimientoData.tipomovimiento,
         movimientoData.motivomovimiento,
-        idreferenciaPlaceholder,  // Placeholder, will update later with folio
+        claveTurnoMovimiento,  // turno key for COMPRA, null for others (updated below)
         fechaMovimientoMySQL,
         movimientoData.observaciones || null,
         usuarioAuditoria,
@@ -167,34 +173,20 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
 
     const idMovimiento = resultMovimiento.insertId;
 
-    // Generate new folio format for idreferencia: YYYYMMDDHHMMSSidmovimiento
-    // Example: 202609022314053101 (year=2026, month=09, day=02, hour=23, minute=14, second=05, idmovimiento=3101)
-    // 
-    // IMPORTANT: JavaScript MAX_SAFE_INTEGER limitation
-    // The YYYYMMDDHHMMSS format uses 14 digits, leaving only 2 digits for safe integer operations
-    // in JavaScript (MAX_SAFE_INTEGER = 9,007,199,254,740,991 = 16 digits).
-    // - Safe for idMovimiento < 100 (e.g., 202602100516311 to 20260210051631|99)
-    // - Unsafe for idMovimiento >= 100 (will cause precision loss in JavaScript)
-    // 
-    // The database (MySQL BIGINT) can store these values correctly, but JavaScript
-    // operations may lose precision when reading/comparing values.
-    // 
-    // Future improvement: Consider using string-based storage or BigInt if IDs exceed 99.
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hour = String(now.getHours()).padStart(2, '0');
-    const minute = String(now.getMinutes()).padStart(2, '0');
-    const second = String(now.getSeconds()).padStart(2, '0');
-    const folioReferenciaStr = `${year}${month}${day}${hour}${minute}${second}${idMovimiento}`;
-    const folioReferencia = Number(folioReferenciaStr);
+    // For non-COMPRA movements: use idmovimiento.toString() as the claveturno in movimientos
+    // so it can still serve as a unique reference if needed.
+    // For COMPRA: the turno key is already set; no update needed.
+    if (!claveTurnoMovimiento) {
+      claveTurnoMovimiento = idMovimiento.toString();
+      await pool.execute(
+        'UPDATE tblposcrumenwebmovimientos SET claveturno = ? WHERE idmovimiento = ?',
+        [claveTurnoMovimiento, idMovimiento]
+      );
+    }
 
-    // Update the movimiento's idreferencia with the folio format
-    await pool.execute(
-      'UPDATE tblposcrumenwebmovimientos SET idreferencia = ? WHERE idmovimiento = ?',
-      [folioReferencia, idMovimiento]
-    );
+    // claveturnoDetalle is stored in detallemovimientos.claveturno as idmovimiento (VARCHAR)
+    // This maintains the 1:N FK relationship between movimientos and detallemovimientos.
+    const claveturnoDetalle = idMovimiento.toString();
 
     // Obtener stock actual de cada insumo
     for (const detalle of movimientoData.detalles) {
@@ -212,7 +204,7 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
       await pool.execute<ResultSetHeader>(
         `INSERT INTO tblposcrumenwebdetallemovimientos (
           idinsumo, nombreinsumo, tipoinsumo, tipomovimiento, motivomovimiento,
-          cantidad, referenciastock, unidadmedida, precio, costo, idreferencia,
+          cantidad, referenciastock, unidadmedida, precio, costo, claveturno,
           fechamovimiento, observaciones, proveedor, usuarioauditoria, idnegocio,
           estatusmovimiento, fecharegistro, fechaauditoria
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
@@ -227,7 +219,7 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
           detalle.unidadmedida,
           detalle.precio ?? 0,  // DECIMAL: default to 0 if not provided
           detalle.costo ?? 0,   // DECIMAL: default to 0 if not provided
-          folioReferencia,      // Use new folio format instead of idMovimiento
+          claveturnoDetalle,    // idmovimiento as VARCHAR — unique FK to parent movimiento
           fechaMovimientoMySQL,
           detalle.observaciones ?? null,  // TEXT: default to null if not provided
           detalle.proveedor ?? null,      // VARCHAR: default to null if not provided
@@ -245,8 +237,8 @@ export const crearMovimiento = async (req: AuthRequest, res: Response): Promise<
     );
 
     const [detalles] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
-      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
-      [folioReferencia]
+      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE claveturno = ?',
+      [claveturnoDetalle]
     );
 
     const movimientoConDetalles: MovimientoConDetalles = {
@@ -330,11 +322,10 @@ export const actualizarMovimiento = async (req: AuthRequest, res: Response): Pro
       [id]
     );
 
-    // Use idreferencia from movimiento if it exists, otherwise fall back to id (idmovimiento) for old records
-    const refQuery = movimientoActualizado[0].idreferencia || id;
+    // Load detalles using idmovimiento as reference key
     const [detalles] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
-      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
-      [refQuery]
+      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE claveturno = ?',
+      [id]  // id is idmovimiento (string param from req.params)
     );
 
     const movimientoConDetalles: MovimientoConDetalles = {
@@ -394,9 +385,6 @@ export const eliminarMovimiento = async (req: AuthRequest, res: Response): Promi
       return;
     }
 
-    // Use idreferencia from movimiento if it exists, otherwise fall back to id (idmovimiento) for old records
-    const refQuery = movimiento.idreferencia || id;
-
     // Soft delete: Update estatusmovimiento to 'ELIMINADO' in both tables
     await pool.execute<ResultSetHeader>(
       'UPDATE tblposcrumenwebmovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE idmovimiento = ?',
@@ -404,8 +392,8 @@ export const eliminarMovimiento = async (req: AuthRequest, res: Response): Promi
     );
 
     await pool.execute<ResultSetHeader>(
-      'UPDATE tblposcrumenwebdetallemovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE idreferencia = ?',
-      ['ELIMINADO', refQuery]
+      'UPDATE tblposcrumenwebdetallemovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE claveturno = ?',
+      ['ELIMINADO', id]  // id is idmovimiento as string
     );
 
     res.status(200).json({
@@ -458,13 +446,10 @@ export const procesarMovimiento = async (req: AuthRequest, res: Response): Promi
       return;
     }
 
-    // Use idreferencia from movimiento if it exists, otherwise fall back to id (idmovimiento) for old records
-    const refQuery = movimiento.idreferencia || id;
-
-    // Obtener detalles del movimiento
+    // Obtener detalles del movimiento using idmovimiento as reference key
     const [detalles] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
-      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
-      [refQuery]
+      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE claveturno = ?',
+      [id]  // id is idmovimiento as string
     );
 
     // Actualizar inventario según tipo de movimiento
@@ -491,8 +476,8 @@ export const procesarMovimiento = async (req: AuthRequest, res: Response): Promi
     );
 
     await pool.execute<ResultSetHeader>(
-      'UPDATE tblposcrumenwebdetallemovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE idreferencia = ?',
-      ['PROCESADO', refQuery]
+      'UPDATE tblposcrumenwebdetallemovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE claveturno = ?',
+      ['PROCESADO', id]  // id is idmovimiento as string
     );
 
     // Obtener movimiento actualizado
@@ -501,10 +486,9 @@ export const procesarMovimiento = async (req: AuthRequest, res: Response): Promi
       [id]
     );
 
-    const refQueryUpdated = movimientoActualizado[0].idreferencia || id;
     const [detallesActualizados] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
-      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
-      [refQueryUpdated]
+      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE claveturno = ?',
+      [id]
     );
 
     const movimientoConDetalles: MovimientoConDetalles = {
@@ -636,13 +620,10 @@ export const aplicarMovimiento = async (req: AuthRequest, res: Response): Promis
       return;
     }
 
-    // Use idreferencia from movimiento if it exists, otherwise fall back to id (idmovimiento) for old records
-    const refQuery = movimiento.idreferencia || id;
-
-    // Obtener detalles del movimiento
+    // Obtener detalles del movimiento using idmovimiento as reference key
     const [detalles] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
-      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
-      [refQuery]
+      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE claveturno = ?',
+      [id]  // id is idmovimiento as string
     );
 
     // Procesar cada detalle según el motivo de movimiento
@@ -739,8 +720,8 @@ export const aplicarMovimiento = async (req: AuthRequest, res: Response): Promis
     );
 
     await pool.execute<ResultSetHeader>(
-      'UPDATE tblposcrumenwebdetallemovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE idreferencia = ?',
-      ['PROCESADO', refQuery]
+      'UPDATE tblposcrumenwebdetallemovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE claveturno = ?',
+      ['PROCESADO', id]  // id is idmovimiento as string
     );
 
     // Obtener movimiento actualizado
@@ -749,10 +730,9 @@ export const aplicarMovimiento = async (req: AuthRequest, res: Response): Promis
       [id]
     );
 
-    const refQueryUpdated = movimientoActualizado[0].idreferencia || id;
     const [detallesActualizados] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
-      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE idreferencia = ?',
-      [refQueryUpdated]
+      'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE claveturno = ?',
+      [id]
     );
 
     const movimientoConDetalles: MovimientoConDetalles = {

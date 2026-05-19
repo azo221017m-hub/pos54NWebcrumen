@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS tblposcrumenwebdetallemovimientos (
   unidadmedida VARCHAR(20) NOT NULL COMMENT 'Unit of measure',
   precio DECIMAL(12,2) NULL COMMENT 'Sale price',
   costo DECIMAL(12,2) NULL COMMENT 'Average weighted cost',
-  idreferencia BIGINT(20) UNSIGNED NOT NULL COMMENT 'Reference ID (e.g., sale ID)',
+  claveturno VARCHAR(50) NULL COMMENT 'Reference key: idmovimiento (as VARCHAR) for CRUD movements, idventa (as VARCHAR) for VENTA movements',
   fechamovimiento DATETIME NOT NULL COMMENT 'Date/time of movement',
   observaciones TEXT NULL COMMENT 'Additional observations',
   usuarioauditoria BIGINT(20) UNSIGNED NOT NULL COMMENT 'User who created the movement',
@@ -24,6 +24,6 @@ CREATE TABLE IF NOT EXISTS tblposcrumenwebdetallemovimientos (
   PRIMARY KEY (iddetallemovimiento),
   INDEX idx_idinsumo (idinsumo),
   INDEX idx_idnegocio (idnegocio),
-  INDEX idx_idreferencia (idreferencia),
+  INDEX idx_claveturno (claveturno),
   INDEX idx_fechamovimiento (fechamovimiento)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Detailed inventory movements tracking table';
