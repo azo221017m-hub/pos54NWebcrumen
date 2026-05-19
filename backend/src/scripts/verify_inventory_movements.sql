@@ -19,7 +19,7 @@ SELECT COUNT(*) as total_movements
 FROM tblposcrumenwebdetallemovimientos;
 
 -- 4. After creating a test sale with recipe products, verify movements were created
--- Replace {test_idventa} with actual sale ID from your test
+-- Replace {test_claveturno} with the actual claveturno from your test (idventa as string for VENTA movements)
 SELECT 
     dm.iddetallemovimiento,
     dm.nombreinsumo,
@@ -36,7 +36,7 @@ SELECT
     dm.fechamovimiento,
     dm.fecharegistro
 FROM tblposcrumenwebdetallemovimientos dm
-WHERE dm.claveturno = {test_idventa}
+WHERE dm.claveturno = {test_claveturno}
 ORDER BY dm.iddetallemovimiento;
 
 -- 5. Verify that sale details were marked as processed
@@ -115,7 +115,7 @@ SELECT
     dm.cantidad,
     dm.nombreinsumo
 FROM tblposcrumenwebdetallemovimientos dm
-WHERE dm.claveturno = {test_idventa}
+WHERE dm.claveturno = {test_claveturno}
 
 ORDER BY tipo, id;
 

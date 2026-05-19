@@ -325,7 +325,7 @@ export const actualizarMovimiento = async (req: AuthRequest, res: Response): Pro
     // Load detalles using idmovimiento as reference key
     const [detalles] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
       'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE claveturno = ?',
-      [id]  // id is idmovimiento (string param from req.params)
+      [id.toString()]  // claveturno stores idmovimiento as VARCHAR
     );
 
     const movimientoConDetalles: MovimientoConDetalles = {
@@ -393,7 +393,7 @@ export const eliminarMovimiento = async (req: AuthRequest, res: Response): Promi
 
     await pool.execute<ResultSetHeader>(
       'UPDATE tblposcrumenwebdetallemovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE claveturno = ?',
-      ['ELIMINADO', id]  // id is idmovimiento as string
+      ['ELIMINADO', id.toString()]  // claveturno stores idmovimiento as VARCHAR
     );
 
     res.status(200).json({
@@ -449,7 +449,7 @@ export const procesarMovimiento = async (req: AuthRequest, res: Response): Promi
     // Obtener detalles del movimiento using idmovimiento as reference key
     const [detalles] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
       'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE claveturno = ?',
-      [id]  // id is idmovimiento as string
+      [id.toString()]  // claveturno stores idmovimiento as VARCHAR
     );
 
     // Actualizar inventario según tipo de movimiento
@@ -477,7 +477,7 @@ export const procesarMovimiento = async (req: AuthRequest, res: Response): Promi
 
     await pool.execute<ResultSetHeader>(
       'UPDATE tblposcrumenwebdetallemovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE claveturno = ?',
-      ['PROCESADO', id]  // id is idmovimiento as string
+      ['PROCESADO', id.toString()]  // claveturno stores idmovimiento as VARCHAR
     );
 
     // Obtener movimiento actualizado
@@ -623,7 +623,7 @@ export const aplicarMovimiento = async (req: AuthRequest, res: Response): Promis
     // Obtener detalles del movimiento using idmovimiento as reference key
     const [detalles] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
       'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE claveturno = ?',
-      [id]  // id is idmovimiento as string
+      [id.toString()]  // claveturno stores idmovimiento as VARCHAR
     );
 
     // Procesar cada detalle según el motivo de movimiento
@@ -721,7 +721,7 @@ export const aplicarMovimiento = async (req: AuthRequest, res: Response): Promis
 
     await pool.execute<ResultSetHeader>(
       'UPDATE tblposcrumenwebdetallemovimientos SET estatusmovimiento = ?, fechaauditoria = NOW() WHERE claveturno = ?',
-      ['PROCESADO', id]  // id is idmovimiento as string
+      ['PROCESADO', id.toString()]  // claveturno stores idmovimiento as VARCHAR
     );
 
     // Obtener movimiento actualizado
