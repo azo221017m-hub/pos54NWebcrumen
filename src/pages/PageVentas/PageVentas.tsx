@@ -1953,15 +1953,11 @@ const PageVentas: React.FC = () => {
               
               return (
                 <div key={producto.idProducto} className="producto-card">
-                  <div className="producto-imagen">
-                    {producto.imagenProducto ? (
+                  {producto.imagenProducto && (
+                    <div className="producto-imagen">
                       <img src={`data:image/jpeg;base64,${producto.imagenProducto}`} alt={producto.nombre} />
-                    ) : (
-                      <div className="imagen-placeholder">
-                        <div className="icono-producto">🍽️</div>
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                   <div className="producto-info">
                     <h3 className="producto-nombre">{producto.nombre}</h3>
                     {categoriaNombre && (
