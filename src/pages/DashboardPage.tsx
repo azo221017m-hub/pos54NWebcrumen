@@ -1852,6 +1852,14 @@ export const DashboardPage = () => {
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: '0.65rem', color: '#9ca3af', marginBottom: '0.3rem', fontWeight: '500' }}>
+                    Compras (Mes):
+                  </p>
+                  <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#3b82f6', margin: 0 }}>
+                    ${(resumenVentas.totalCompras ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: '0.65rem', color: '#9ca3af', marginBottom: '0.3rem', fontWeight: '500' }}>
                     Descuentos:
                   </p>
                   <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#8b5cf6', margin: 0 }}>
@@ -1959,46 +1967,6 @@ export const DashboardPage = () => {
                     marginTop: '0.1rem'
                   }}>
                     {nivelInventario.mensaje}
-                  </div>
-                </div>
-              </div>
-
-              {/* Label COMPRAS del mes */}
-              <div style={{
-                marginTop: '0.75rem',
-                padding: '0.5rem',
-                backgroundColor: '#eff6ff',
-                border: '1px solid #3b82f6',
-                borderRadius: '6px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.35rem'
-              }}>
-                <span style={{ fontSize: '1rem' }}>🛒</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{
-                    fontSize: '0.65rem',
-                    fontWeight: '700',
-                    color: '#3b82f6',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.3px'
-                  }}>
-                    Compras
-                  </div>
-                  <div style={{
-                    fontSize: '1.1rem',
-                    fontWeight: '700',
-                    color: '#1d4ed8',
-                    marginTop: '0.1rem'
-                  }}>
-                    ${(resumenVentas.totalCompras ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
-                  <div style={{
-                    fontSize: '0.5rem',
-                    color: '#6b7280',
-                    marginTop: '0.1rem'
-                  }}>
-                    Mes en curso
                   </div>
                 </div>
               </div>
