@@ -281,10 +281,20 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
           setDomicilioClienteEncontrado(true);
         } else {
           setDomicilioClienteInfo(null);
+          setDomicilioFormData(prev => ({
+            ...prev,
+            cliente: value,
+            idcliente: null,
+          }));
           setDomicilioClienteEncontrado(false);
         }
       } catch {
         setDomicilioClienteInfo(null);
+        setDomicilioFormData(prev => ({
+          ...prev,
+          cliente: value,
+          idcliente: null,
+        }));
         setDomicilioClienteEncontrado(false);
       } finally {
         setDomicilioSearching(false);
@@ -319,12 +329,12 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
       } else {
         setLlevarClienteInfo(null);
         setLlevarClienteEncontrado(false);
-        setLlevarFormData(prev => ({ ...prev, cliente: 'mostrador', idcliente: null, telefonocontacto: '', referencia }));
+        setLlevarFormData(prev => ({ ...prev, cliente: referencia || 'mostrador', idcliente: null, telefonocontacto: '', referencia: referencia || 'mostrador' }));
       }
     } catch {
       setLlevarClienteInfo(null);
       setLlevarClienteEncontrado(false);
-      setLlevarFormData(prev => ({ ...prev, cliente: 'mostrador', idcliente: null, telefonocontacto: '', referencia }));
+      setLlevarFormData(prev => ({ ...prev, cliente: referencia || 'mostrador', idcliente: null, telefonocontacto: '', referencia: referencia || 'mostrador' }));
     } finally {
       setLlevarSearching(false);
     }
@@ -410,7 +420,8 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
         }
         const usuario = JSON.parse(usuarioData);
         await cambiarEstatusMesa(mesaFormData.idmesa, 'OCUPADA', usuario.alias || usuario.nombre);
-        onSave(mesaFormData);
+        const referenciaFinal = (mesaFormData.referencia || '').trim() || 'mostrador';
+        onSave({ ...mesaFormData, referencia: referenciaFinal });
       } catch (error) {
         console.error('Error al actualizar estatus de mesa:', error);
         alert('Error al configurar la mesa. Por favor intente nuevamente.');
@@ -421,21 +432,26 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
         return;
       }
       const clienteNombre = llevarFormData.cliente.trim() || 'mostrador';
-      onSave({ ...llevarFormData, cliente: clienteNombre });
+      const referenciaFinal = (llevarFormData.referencia || '').trim() || 'mostrador';
+      onSave({ ...llevarFormData, cliente: clienteNombre, referencia: referenciaFinal });
     } else if (tipoServicio === 'Domicilio') {
-      if (!domicilioReferencia.trim()) {
-        alert('Por favor ingrese la referencia del cliente');
-        return;
-      }
-      if (domicilioClienteEncontrado !== true) {
-        alert('No se encontró cliente con esa referencia. Regístrelo primero en el módulo de Clientes.');
-        return;
-      }
       if (!domicilioFormData.fechaprogramadaventa) {
         alert('Por favor seleccione la fecha y hora de entrega');
         return;
       }
-      const clienteNombre = domicilioFormData.cliente.trim() || 'mostrador';
+      if (!domicilioFormData.direcciondeentrega.trim()) {
+        alert('Por favor ingrese la dirección de entrega');
+        return;
+      }
+      if (!domicilioFormData.telefonodeentrega.trim()) {
+        alert('Por favor ingrese el teléfono de entrega');
+        return;
+      }
+      if (!domicilioFormData.contactodeentrega.trim()) {
+        alert('Por favor ingrese el contacto de entrega');
+        return;
+      }
+      const clienteNombre = domicilioFormData.cliente.trim() || domicilioReferencia.trim() || 'mostrador';
       onSave({ ...domicilioFormData, cliente: clienteNombre });
     }
   };
@@ -593,8 +609,8 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                   }
                 </div>
                 {llevarClienteEncontrado === false && llevarReferencia.trim() !== '' && (
-                  <span className="campo-error-msg">
-                    ⚠ No se encontró cliente con esa referencia. Regístrelo primero en el módulo de Clientes.
+                  <span className="campo-info-msg">
+                    ℹ️ Cliente no registrado. Se usará el valor escrito como referencia.
                   </span>
                 )}
               </div>
@@ -665,8 +681,8 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                   {domicilioSearching && <Search size={16} className="search-spinner-icon" />}
                 </div>
                 {domicilioClienteEncontrado === false && domicilioReferencia.trim() !== '' && (
-                  <span className="campo-error-msg">
-                    ⚠ No se encontró cliente con esa referencia. Regístrelo primero en el módulo de Clientes.
+                  <span className="campo-info-msg">
+                    ℹ️ Cliente no registrado. Complete los datos manualmente.
                   </span>
                 )}
                 {domicilioClienteEncontrado === true && domicilioClienteInfo && (
@@ -678,26 +694,28 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
               </div>
 
               <div className="form-group">
-                <label htmlFor="cliente-domicilio">Nombre del Cliente</label>
+                <label htmlFor="cliente-domicilio">Nombre del Cliente {domicilioClienteEncontrado !== true ? '*' : ''}</label>
                 <input
                   type="text"
                   id="cliente-domicilio"
-                  className="form-control form-control-readonly"
+                  className={`form-control${domicilioClienteEncontrado === true ? ' form-control-readonly' : ''}`}
                   value={domicilioFormData.cliente}
-                  readOnly
-                  placeholder="Se completa al buscar por referencia"
+                  readOnly={domicilioClienteEncontrado === true}
+                  onChange={(e) => domicilioClienteEncontrado !== true && setDomicilioFormData(prev => ({ ...prev, cliente: e.target.value }))}
+                  placeholder={domicilioClienteEncontrado === true ? 'Se completa al buscar por referencia' : 'Ingrese el nombre del cliente'}
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="telefono-domicilio">Teléfono del Cliente</label>
+                <label htmlFor="telefono-domicilio">Teléfono de Entrega *</label>
                 <input
                   type="text"
                   id="telefono-domicilio"
-                  className="form-control form-control-readonly"
+                  className={`form-control${domicilioClienteEncontrado === true ? ' form-control-readonly' : ''}`}
                   value={domicilioFormData.telefonodeentrega}
-                  readOnly
-                  placeholder="Se completa al buscar por referencia"
+                  readOnly={domicilioClienteEncontrado === true}
+                  onChange={(e) => domicilioClienteEncontrado !== true && setDomicilioFormData(prev => ({ ...prev, telefonodeentrega: e.target.value }))}
+                  placeholder={domicilioClienteEncontrado === true ? 'Se completa al buscar por referencia' : 'Ingrese el teléfono'}
                 />
               </div>
 
@@ -713,21 +731,22 @@ const ModalTipoServicio: React.FC<ModalTipoServicioProps> = ({
                 />
               </div>
 
-              {/* 3. Dirección de entrega – READ-ONLY */}
+              {/* 3. Dirección de entrega */}
               <div className="form-group">
-                <label htmlFor="direccion-domicilio">Dirección de Entrega</label>
+                <label htmlFor="direccion-domicilio">Dirección de Entrega *</label>
                 <input
                   type="text"
                   id="direccion-domicilio"
-                  className="form-control form-control-readonly"
+                  className={`form-control${domicilioClienteEncontrado === true ? ' form-control-readonly' : ''}`}
                   value={domicilioFormData.direcciondeentrega}
-                  readOnly
-                  placeholder="Se completa al encontrar cliente por referencia"
+                  readOnly={domicilioClienteEncontrado === true}
+                  onChange={(e) => domicilioClienteEncontrado !== true && setDomicilioFormData(prev => ({ ...prev, direcciondeentrega: e.target.value }))}
+                  placeholder={domicilioClienteEncontrado === true ? 'Se completa al encontrar cliente por referencia' : 'Ingrese la dirección de entrega'}
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="contacto-domicilio">Referencia del Cliente</label>
+                <label htmlFor="contacto-domicilio">Contacto de Entrega *</label>
                 <input
                   type="text"
                   id="contacto-domicilio"

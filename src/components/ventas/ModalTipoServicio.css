@@ -350,6 +350,13 @@ select.form-control {
   color: #e74c3c;
 }
 
+.campo-info-msg {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  color: #2980b9;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .modal-content-servicio {
