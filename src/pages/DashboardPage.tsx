@@ -1834,25 +1834,15 @@ export const DashboardPage = () => {
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: '0.65rem', color: '#9ca3af', marginBottom: '0.3rem', fontWeight: '500' }}>
-                    Gastos (Mes):
+                    Gastos:
                   </p>
                   <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#ef4444', margin: 0 }}>
                     ${(resumenVentas.totalGastos ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
-                  {(resumenVentas.gastosPorDescripcion || []).length > 0 && (
-                    <div style={{ marginTop: '0.3rem' }}>
-                      {(resumenVentas.gastosPorDescripcion || []).map((g, idx) => (
-                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.5rem', color: '#6b7280', lineHeight: '1.4' }}>
-                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }} title={g.descripcionmov}>{g.descripcionmov}</span>
-                          <span style={{ fontWeight: '600', color: '#ef4444' }}>${(g.total ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: '0.65rem', color: '#9ca3af', marginBottom: '0.3rem', fontWeight: '500' }}>
-                    Compras (Mes):
+                    Compras:
                   </p>
                   <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#3b82f6', margin: 0 }}>
                     ${(resumenVentas.totalCompras ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
