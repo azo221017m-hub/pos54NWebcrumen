@@ -9,10 +9,24 @@ export interface ProductoVendidoCierre {
   totalproducto: number;
 }
 
+export interface VentasPorFormaDePagoCierre {
+  formadepago: string;
+  total: number;
+}
+
+export interface VentasPorTipoDeVentaCierre {
+  tipodeventa: string;
+  total: number;
+}
+
 export interface CerrarTurnoResponse {
   message: string;
   idturno: number;
   productosVendidos?: ProductoVendidoCierre[];
+  ventasPorFormaDePago?: VentasPorFormaDePagoCierre[];
+  ventasPorTipoDeVenta?: VentasPorTipoDeVentaCierre[];
+  totalEfectivo?: number;
+  totalFondoCaja?: number;
 }
 
 export interface DetalleDenominacionesCierre {

@@ -4,7 +4,7 @@ import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerTopP
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import { clearSession, setSkipBeforeUnload } from '../services/sessionService';
 import { obtenerDetallesPagos } from '../services/pagosService';
-import { verificarTurnoAbierto, cerrarTurnoActual, type ProductoVendidoCierre } from '../services/turnosService';
+import { verificarTurnoAbierto, cerrarTurnoActual, type ProductoVendidoCierre, type VentasPorFormaDePagoCierre, type VentasPorTipoDeVentaCierre } from '../services/turnosService';
 import type { Turno } from '../types/turno.types';
 import CierreTurno from '../components/turnos/CierreTurno/CierreTurno';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../components/FeedbackToast';
@@ -65,6 +65,10 @@ interface ResumenCierreTurno {
   detalleDenominaciones: DatosCierreTurno['detalleDenominaciones'];
   fechaCierreISO: string;
   productosVendidos: ProductoVendidoCierre[];
+  ventasPorFormaDePago: VentasPorFormaDePagoCierre[];
+  ventasPorTipoDeVenta: VentasPorTipoDeVentaCierre[];
+  totalEfectivo: number;
+  totalFondoCaja: number;
 }
 
 // Mantiene el mismo retardo usado en recibos para permitir que whatsapp:// abra la app nativa
@@ -129,6 +133,14 @@ const generarTextoDetalleCorte = (detalle: ResumenCierreTurno): string => {
     denominaciones.push('- Sin denominaciones capturadas');
   }
 
+  const ventasPorFormaDePago = (detalle.ventasPorFormaDePago ?? []).length > 0
+    ? (detalle.ventasPorFormaDePago ?? []).map(v => `- ${v.formadepago}: ${formatCurrency(v.total)}`)
+    : ['- Sin datos'];
+
+  const ventasPorTipoDeVenta = (detalle.ventasPorTipoDeVenta ?? []).length > 0
+    ? (detalle.ventasPorTipoDeVenta ?? []).map(v => `- ${v.tipodeventa}: ${formatCurrency(v.total)}`)
+    : ['- Sin datos'];
+
   const formatCantidad = (cantidad: number): string => {
     const qty = Number(cantidad) || 0;
     return qty % 1 === 0 ? String(Math.floor(qty)) : qty.toFixed(2);
@@ -143,6 +155,15 @@ const generarTextoDetalleCorte = (detalle: ResumenCierreTurno): string => {
     ...encabezado,
     ...denominaciones,
     '',
+    'Ventas por Forma de Pago:',
+    ...ventasPorFormaDePago,
+    '',
+    'Ventas por Tipo de Venta:',
+    ...ventasPorTipoDeVenta,
+    '',
+    `Total Efectivo (Ventas Ef. - Gastos): ${formatCurrency(detalle.totalEfectivo ?? 0)}`,
+    `Fondo de Caja retirado: ${formatCurrency(detalle.totalFondoCaja ?? 0)}`,
+    '',
     'Productos vendidos (Nombre | Cantidad | Total):',
     ...productosVendidos
   ].join('\n');
@@ -154,7 +175,7 @@ const generarHtmlDetalleCorte = (textoDetalle: string): string => `<!DOCTYPE htm
   <meta charset="UTF-8" />
   <title>Corte Fin de Turno</title>
   <style>
-    body { font-family: 'Courier New', Courier, monospace; font-size: 12px; width: 58mm; margin: 0; padding: 8px; }
+    body { font-family: 'Courier New', Courier, monospace; font-size: 10px; width: 58mm; margin: 0; padding: 8px; }
     pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
     @media print {
       html, body { width: 58mm; }
@@ -324,6 +345,7 @@ export const DashboardPage = () => {
   const [topProductosMenor, setTopProductosMenor] = useState<TopProductoTurno[]>([]);
   const [topInsumosStockMayor, setTopInsumosStockMayor] = useState<Insumo[]>([]);
   const [topInsumosStockMenor, setTopInsumosStockMenor] = useState<Insumo[]>([]);
+  const [showInventarioPrintModal, setShowInventarioPrintModal] = useState(false);
 
   // Track already-notified order IDs to avoid duplicate sound alerts
   const notifiedOrdersRef = useRef<Set<number>>(new Set());
@@ -523,7 +545,11 @@ export const DashboardPage = () => {
         estatusCierre: datosFormulario.estatusCierre,
         detalleDenominaciones: datosFormulario.detalleDenominaciones,
         fechaCierreISO: new Date().toISOString(),
-        productosVendidos: cierreTurnoResponse.productosVendidos ?? []
+        productosVendidos: cierreTurnoResponse.productosVendidos ?? [],
+        ventasPorFormaDePago: cierreTurnoResponse.ventasPorFormaDePago ?? [],
+        ventasPorTipoDeVenta: cierreTurnoResponse.ventasPorTipoDeVenta ?? [],
+        totalEfectivo: cierreTurnoResponse.totalEfectivo ?? 0,
+        totalFondoCaja: cierreTurnoResponse.totalFondoCaja ?? 0
       };
       console.log('Turno cerrado exitosamente');
       setShowCierreTurnoModal(false);
@@ -575,6 +601,72 @@ export const DashboardPage = () => {
       managedSkipBeforeUnloadRef.current = false;
       whatsappTimeoutRef.current = null;
     }, WHATSAPP_NAVIGATION_DELAY_MS);
+  };
+
+  const generarTextoInventario = async (): Promise<string> => {
+    if (!usuario?.idNegocio) return '';
+    const insumos = await obtenerInsumos(usuario.idNegocio);
+    const activos = insumos
+      .filter(i => Number(i.activo) === 1)
+      .sort((a, b) => {
+        const cA = String(a.id_cuentacontable ?? '');
+        const cB = String(b.id_cuentacontable ?? '');
+        if (cA !== cB) return cA.localeCompare(cB);
+        return a.nombre.localeCompare(b.nombre);
+      });
+    const encabezado = ['INVENTARIO', `Fecha: ${new Date().toLocaleString('es-MX')}`, ''];
+    const filas = activos.map(i =>
+      `${i.nombre} | ${i.unidad_medida} | ${Number(i.stock_actual ?? 0).toFixed(2)}`
+    );
+    return [...encabezado, 'Nombre | Unidad | Stock Actual:', ...filas].join('\n');
+  };
+
+  const handleImprimirInventario = async () => {
+    const texto = await generarTextoInventario();
+    const ventana = window.open('', '_blank', PRINT_POPUP_WINDOW_FEATURES);
+    if (!ventana) {
+      showErrorToast('No se pudo abrir la ventana de impresión. Verifica los pop-ups.');
+      return;
+    }
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Inventario</title>
+  <style>
+    body { font-family: 'Courier New', Courier, monospace; font-size: 10px; width: 58mm; margin: 0; padding: 8px; }
+    pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
+    @media print {
+      html, body { width: 58mm; }
+      @page { size: 58mm auto; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+  <pre>${texto.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+</body>
+</html>`;
+    ventana.document.write(html);
+    ventana.document.close();
+    ventana.focus();
+    setTimeout(() => { ventana.print(); }, PRINT_WINDOW_READY_DELAY_MS);
+    setShowInventarioPrintModal(false);
+  };
+
+  const handleEnviarInventarioWhatsApp = async () => {
+    const texto = await generarTextoInventario();
+    setSkipBeforeUnload(true);
+    managedSkipBeforeUnloadRef.current = true;
+    window.location.href = `whatsapp://send?text=${encodeURIComponent(texto)}`;
+    if (whatsappTimeoutRef.current) {
+      clearTimeout(whatsappTimeoutRef.current);
+    }
+    whatsappTimeoutRef.current = setTimeout(() => {
+      setSkipBeforeUnload(false);
+      managedSkipBeforeUnloadRef.current = false;
+      whatsappTimeoutRef.current = null;
+    }, WHATSAPP_NAVIGATION_DELAY_MS);
+    setShowInventarioPrintModal(false);
   };
 
   const handleVerDetalle = (venta: VentaWebWithDetails) => {
@@ -1406,6 +1498,25 @@ export const DashboardPage = () => {
                 )}
                 Activar pedidos WEB
               </button>
+              <button
+                className="submenu-item"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  registrarLog('Mi Operación', 'Imprimir Inventario', 'IMPRIMIR_INVENTARIO');
+                  setShowInventarioPrintModal(true);
+                  setMobileMenuOpen(false);
+                  setShowMiOperacionSubmenu(false);
+                }}
+                title="Imprimir o enviar inventario de insumos"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="6 9 6 2 18 2 18 9"/>
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                  <rect x="6" y="14" width="12" height="8"/>
+                </svg>
+                Imprimir Inventario
+              </button>
             </div>
           )}
         </div>
@@ -1673,10 +1784,10 @@ export const DashboardPage = () => {
                     'LLEVAR': '#f97316',
                     'ONLINE': '#8b5cf6'
                   };
-                  const datosTipoVenta = resumenVentas.ventasPorTipoDeVenta || [];
+                  const datosTipoVenta = resumenVentas.hasTurnoAbierto ? (resumenVentas.ventasPorTipoDeVenta || []) : [];
                   if (datosTipoVenta.length === 0) {
                     return (
-                      <p style={{ fontSize: '0.65rem', color: '#9ca3af', textAlign: 'center' }}>Sin ventas registradas</p>
+                      <p style={{ fontSize: '0.65rem', color: '#9ca3af', textAlign: 'center' }}>{resumenVentas.hasTurnoAbierto ? 'Sin ventas registradas' : 'Sin turno abierto'}</p>
                     );
                   }
                   const totalTipoVenta = datosTipoVenta.reduce((sum, item) => sum + item.total, 0) || 1;
@@ -1742,7 +1853,7 @@ export const DashboardPage = () => {
                     LLEVAR: '#f97316',
                     ONLINE: '#8b5cf6'
                   };
-                  const datosAgrupados = resumenVentas.ventasPorFormaDePagoPorTipo || [];
+                  const datosAgrupados = resumenVentas.hasTurnoAbierto ? (resumenVentas.ventasPorFormaDePagoPorTipo || []) : [];
                   if (datosAgrupados.length === 0) {
                     return (
                       <p style={{ fontSize: '0.65rem', color: '#9ca3af', textAlign: 'center' }}>
@@ -1823,7 +1934,7 @@ export const DashboardPage = () => {
                     Cobrado:
                   </p>
                   <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#3b82f6', margin: 0 }}>
-                    ${(resumenVentas.totalCobrado ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ${(resumenVentas.hasTurnoAbierto ? (resumenVentas.totalCobrado ?? 0) : 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div style={{ flex: 1 }}>
@@ -1831,7 +1942,7 @@ export const DashboardPage = () => {
                     Ordenado:
                   </p>
                   <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#f97316', margin: 0 }}>
-                    ${(resumenVentas.totalOrdenado ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ${(resumenVentas.hasTurnoAbierto ? (resumenVentas.totalOrdenado ?? 0) : 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div style={{ flex: 1 }}>
@@ -1839,7 +1950,7 @@ export const DashboardPage = () => {
                     Gastos:
                   </p>
                   <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#ef4444', margin: 0 }}>
-                    ${(resumenVentas.totalGastos ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ${(resumenVentas.hasTurnoAbierto ? (resumenVentas.totalGastos ?? 0) : 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div style={{ flex: 1 }}>
@@ -1847,7 +1958,7 @@ export const DashboardPage = () => {
                     Compras:
                   </p>
                   <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#3b82f6', margin: 0 }}>
-                    ${(resumenVentas.totalCompras ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ${(resumenVentas.hasTurnoAbierto ? (resumenVentas.totalCompras ?? 0) : 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div style={{ flex: 1 }}>
@@ -1855,13 +1966,13 @@ export const DashboardPage = () => {
                     Descuentos:
                   </p>
                   <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#8b5cf6', margin: 0 }}>
-                    ${(resumenVentas.totalDescuentos ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ${(resumenVentas.hasTurnoAbierto ? (resumenVentas.totalDescuentos ?? 0) : 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>
 
               {/* Barra de progreso: Meta de Venta vs Cobrado */}
-              {resumenVentas.metaTurno > 0 && (
+              {resumenVentas.hasTurnoAbierto && resumenVentas.metaTurno > 0 && (
                 <>
                   <div style={{ borderTop: '1px solid #e5e7eb', margin: '1rem 0' }}></div>
                   <div>
@@ -2290,6 +2401,38 @@ export const DashboardPage = () => {
               type="button"
               className="dashboard-post-cierre-btn dashboard-post-cierre-btn-close"
               onClick={() => setShowDetalleCorteModal(false)}
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showInventarioPrintModal && (
+        <div className="dashboard-post-cierre-overlay">
+          <div className="dashboard-post-cierre-modal">
+            <h3>Inventario de Insumos</h3>
+            <p>Selecciona cómo deseas exportar el inventario de insumos activos.</p>
+            <div className="dashboard-post-cierre-actions">
+              <button
+                type="button"
+                className="dashboard-post-cierre-btn dashboard-post-cierre-btn-print"
+                onClick={handleImprimirInventario}
+              >
+                🖨 Imprimir
+              </button>
+              <button
+                type="button"
+                className="dashboard-post-cierre-btn dashboard-post-cierre-btn-whatsapp"
+                onClick={handleEnviarInventarioWhatsApp}
+              >
+                📲 Enviar WhatsApp
+              </button>
+            </div>
+            <button
+              type="button"
+              className="dashboard-post-cierre-btn dashboard-post-cierre-btn-close"
+              onClick={() => setShowInventarioPrintModal(false)}
             >
               Cerrar
             </button>
