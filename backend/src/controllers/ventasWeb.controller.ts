@@ -1615,7 +1615,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
 
     // Obtener el turno abierto actual del negocio
     const [turnoRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT claveturno, metaturno FROM tblposcrumenwebturnos 
+      `SELECT claveturno, metaturno, fechainicioturno FROM tblposcrumenwebturnos 
        WHERE idnegocio = ? AND estatusturno = 'abierto'
        LIMIT 1`,
       [idnegocio]
@@ -1624,6 +1624,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const hasTurnoAbierto = turnoRows.length > 0;
     const claveturno = hasTurnoAbierto ? turnoRows[0].claveturno : null;
     const metaturno = hasTurnoAbierto ? (Number(turnoRows[0].metaturno) || 0) : 0;
+    const fechainicioturno = hasTurnoAbierto ? turnoRows[0].fechainicioturno : null;
 
     // Get date components for today and current month
     const { year: yG, month: mG, day: dC } = getMexicoTimeComponents();
@@ -1659,15 +1660,24 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const totalOrdenado = Number(salesRows[0]?.totalOrdenado) || 0;
     const totalVentasCobradas = Number(salesRows[0]?.totalVentasCobradas) || 0;
 
-    // ── Gastos del mes actual ──
+    // ── Gastos del turno actual (o del día si no hay turno abierto) ──
     // tipodeventa='MOVIMIENTO', referencia='GASTO', agrupado por descripcionmov
-    // Filtrado por idnegocio del usuario autenticado. Métrica mensual independiente del turno.
-    const inicioMesGastos = `${yG}-${mG}-01 00:00:00`;
-    const lastDayGastos = new Date(Number(yG), Number(mG), 0).getDate();
-    const finMesGastos = `${yG}-${mG}-${String(lastDayGastos).padStart(2, '0')} 23:59:59`;
-
-    const [gastosRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT descripcionmov,
+    // Filtrado por idnegocio del usuario autenticado.
+    let gastosQuery: string;
+    let gastosParams: (string | number)[];
+    if (hasTurnoAbierto) {
+      gastosQuery = `SELECT descripcionmov,
+              COALESCE(SUM(totaldeventa), 0) as totalGasto
+       FROM tblposcrumenwebventas
+       WHERE idnegocio = ?
+         AND claveturno = ?
+         AND tipodeventa = 'MOVIMIENTO'
+         AND referencia = 'GASTO'
+         AND estatusdepago = 'PAGADO'
+       GROUP BY descripcionmov`;
+      gastosParams = [idnegocio, claveturno!];
+    } else {
+      gastosQuery = `SELECT descripcionmov,
               COALESCE(SUM(totaldeventa), 0) as totalGasto
        FROM tblposcrumenwebventas
        WHERE idnegocio = ?
@@ -1675,34 +1685,45 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
          AND referencia = 'GASTO'
          AND estatusdepago = 'PAGADO'
          AND fechadeventa BETWEEN ? AND ?
-       GROUP BY descripcionmov`,
-      [idnegocio, inicioMesGastos, finMesGastos]
-    );
+       GROUP BY descripcionmov`;
+      gastosParams = [idnegocio, inicioHoy, finHoy];
+    }
+
+    const [gastosRows] = await pool.execute<RowDataPacket[]>(gastosQuery, gastosParams);
     const gastosPorDescripcion = gastosRows.map(row => ({
       descripcionmov: row.descripcionmov || 'SIN_DESCRIPCION',
       total: Number(row.totalGasto) || 0
     }));
     const totalGastos = gastosPorDescripcion.reduce((sum, g) => sum + g.total, 0);
 
-    // ── Compras del mes actual ──
+    // ── Compras del turno actual (o del día si no hay turno abierto) ──
     // JOIN tblposcrumenwebmovimientos + tblposcrumenwebdetallemovimientos
-    // Filtrado por idnegocio del usuario autenticado. Métrica mensual independiente del turno.
-    const inicioMesCompras = `${yG}-${mG}-01 00:00:00`;
-    const lastDayCompras = new Date(Number(yG), Number(mG), 0).getDate();
-    const finMesCompras = `${yG}-${mG}-${String(lastDayCompras).padStart(2, '0')} 23:59:59`;
+    // Filtrado por idnegocio del usuario autenticado.
 
     let totalCompras = 0;
     try {
-      const [comprasRows] = await pool.execute<RowDataPacket[]>(
-        `SELECT COALESCE(SUM(dm.cantidad * dm.costo), 0) as totalCompras
-         FROM tblposcrumenwebmovimientos m
-         INNER JOIN tblposcrumenwebdetallemovimientos dm ON dm.idreferencia = m.idreferencia
-         WHERE m.idnegocio = ?
-           AND m.motivomovimiento = 'COMPRA'
-           AND m.estatusmovimiento = 'PROCESADO'
-           AND m.fechamovimiento BETWEEN ? AND ?`,
-        [idnegocio, inicioMesCompras, finMesCompras]
-      );
+      let comprasQuery: string;
+      let comprasParams: (string | number)[];
+      if (hasTurnoAbierto) {
+        comprasQuery = `SELECT COALESCE(SUM(dm.cantidad * dm.costo), 0) as totalCompras
+           FROM tblposcrumenwebmovimientos m
+           INNER JOIN tblposcrumenwebdetallemovimientos dm ON dm.idreferencia = m.idreferencia
+           WHERE m.idnegocio = ?
+             AND m.motivomovimiento = 'COMPRA'
+             AND m.estatusmovimiento = 'PROCESADO'
+             AND m.fechamovimiento >= ?`;
+        comprasParams = [idnegocio, fechainicioturno!];
+      } else {
+        comprasQuery = `SELECT COALESCE(SUM(dm.cantidad * dm.costo), 0) as totalCompras
+           FROM tblposcrumenwebmovimientos m
+           INNER JOIN tblposcrumenwebdetallemovimientos dm ON dm.idreferencia = m.idreferencia
+           WHERE m.idnegocio = ?
+             AND m.motivomovimiento = 'COMPRA'
+             AND m.estatusmovimiento = 'PROCESADO'
+             AND m.fechamovimiento BETWEEN ? AND ?`;
+        comprasParams = [idnegocio, inicioHoy, finHoy];
+      }
+      const [comprasRows] = await pool.execute<RowDataPacket[]>(comprasQuery, comprasParams);
       totalCompras = Number(comprasRows[0]?.totalCompras) || 0;
     } catch (comprasError) {
       console.warn('⚠️ No se pudo obtener totalCompras:', comprasError);
