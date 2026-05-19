@@ -1660,8 +1660,8 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const totalVentasCobradas = Number(salesRows[0]?.totalVentasCobradas) || 0;
 
     // ── Gastos del mes actual ──
-    // referencia='GASTO', estatusdepago='PAGADO', agrupado por descripcionmov
-    // Always calculated regardless of turno status (monthly metric)
+    // tipodeventa='MOVIMIENTO', referencia='GASTO', agrupado por descripcionmov
+    // Filtrado por idnegocio del usuario autenticado. Métrica mensual independiente del turno.
     const inicioMesGastos = `${yG}-${mG}-01 00:00:00`;
     const lastDayGastos = new Date(Number(yG), Number(mG), 0).getDate();
     const finMesGastos = `${yG}-${mG}-${String(lastDayGastos).padStart(2, '0')} 23:59:59`;
@@ -1671,6 +1671,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
               COALESCE(SUM(totaldeventa), 0) as totalGasto
        FROM tblposcrumenwebventas
        WHERE idnegocio = ?
+         AND tipodeventa = 'MOVIMIENTO'
          AND referencia = 'GASTO'
          AND estatusdepago = 'PAGADO'
          AND fechadeventa BETWEEN ? AND ?
@@ -1684,26 +1685,27 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
     const totalGastos = gastosPorDescripcion.reduce((sum, g) => sum + g.total, 0);
 
     // ── Compras del mes actual ──
-    // SUM(cantidad*costo) from detallemovimientos
-    // WHERE motivomovimiento='COMPRA', estatusmovimiento='PROCESADO', mes en curso
-    // Always calculated regardless of turno status (monthly metric)
+    // JOIN tblposcrumenwebmovimientos + tblposcrumenwebdetallemovimientos
+    // Filtrado por idnegocio del usuario autenticado. Métrica mensual independiente del turno.
     const inicioMesCompras = `${yG}-${mG}-01 00:00:00`;
-    const finDiaActualCompras = `${yG}-${mG}-${dC} 23:59:59`;
+    const lastDayCompras = new Date(Number(yG), Number(mG), 0).getDate();
+    const finMesCompras = `${yG}-${mG}-${String(lastDayCompras).padStart(2, '0')} 23:59:59`;
 
     let totalCompras = 0;
     try {
       const [comprasRows] = await pool.execute<RowDataPacket[]>(
-        `SELECT COALESCE(SUM(cantidad * costo), 0) as totalCompras
-         FROM tblposcrumenwebdetallemovimientos
-         WHERE idnegocio = ?
-           AND motivomovimiento = 'COMPRA'
-           AND estatusmovimiento = 'PROCESADO'
-           AND fechamovimiento BETWEEN ? AND ?`,
-        [idnegocio, inicioMesCompras, finDiaActualCompras]
+        `SELECT COALESCE(SUM(dm.cantidad * dm.costo), 0) as totalCompras
+         FROM tblposcrumenwebmovimientos m
+         INNER JOIN tblposcrumenwebdetallemovimientos dm ON dm.idreferencia = m.idreferencia
+         WHERE m.idnegocio = ?
+           AND m.motivomovimiento = 'COMPRA'
+           AND m.estatusmovimiento = 'PROCESADO'
+           AND m.fechamovimiento BETWEEN ? AND ?`,
+        [idnegocio, inicioMesCompras, finMesCompras]
       );
       totalCompras = Number(comprasRows[0]?.totalCompras) || 0;
     } catch (comprasError) {
-      console.warn('⚠️ No se pudo obtener totalCompras (tabla puede no existir):', comprasError);
+      console.warn('⚠️ No se pudo obtener totalCompras:', comprasError);
       totalCompras = 0;
     }
 
