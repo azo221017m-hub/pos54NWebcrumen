@@ -488,7 +488,9 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
                   <option value="AJUSTE_MANUAL">AJUSTE MANUAL</option>
                 )}
                 <option value="MERMA">MERMA</option>
-                <option value="INV_INICIAL">INV. INICIAL</option>
+                {privilegio >= 5 && (
+                  <option value="INV_INICIAL">INV. INICIAL</option>
+                )}
                 <option value="CONSUMO">CONSUMO</option>
               </select>
               {/* Hide +Insumo button when motivomovimiento is INV_INICIAL */}
