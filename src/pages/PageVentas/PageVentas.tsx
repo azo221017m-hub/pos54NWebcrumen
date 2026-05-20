@@ -13,6 +13,7 @@ import { clearSession, setSkipBeforeUnload } from '../../services/sessionService
 import { clienteWebService } from '../../services/clienteWebService';
 import { showSuccessToast, showErrorToast } from '../../components/FeedbackToast';
 import { extractShortFolio, toDatetimeLocalMexico } from '../../utils/formatters';
+import { registrarLog } from '../../services/logService';
 import ModalTipoServicio from '../../components/ventas/ModalTipoServicio';
 import ModalSeleccionVentaPageVentas from '../../components/ventas/ModalSeleccionVentaPageVentas';
 import ModalIniciaTurno from '../../components/turnos/ModalIniciaTurno';
@@ -717,7 +718,7 @@ const PageVentas: React.FC = () => {
     }, 0);
   };
 
-  const crearVenta = async (estadodeventa: EstadoDeVenta = 'SOLICITADO', estadodetalle: EstadoDetalle = 'ORDENADO', estatusdepago: EstatusDePago = 'PENDIENTE'): Promise<boolean> => {
+  const crearVenta = async (estadodeventa: EstadoDeVenta = 'SOLICITADO', estadodetalle: EstadoDetalle = 'ORDENADO', estatusdepago: EstatusDePago = 'PENDIENTE', accionLog?: string): Promise<boolean> => {
     // Lógica común para crear ventas
     if (comanda.length === 0) {
       showErrorToast('No hay productos en la comanda');
@@ -868,6 +869,14 @@ const PageVentas: React.FC = () => {
       if (resultado.success) {
         showSuccessToast(`Venta registrada - Folio: ${extractShortFolio(resultado.folioventa || '')}`);
         
+        // Registrar log CRUD - fire-and-forget, no afecta el flujo principal
+        if (accionLog) {
+          const descripcionCrud = hasOrdenadoItems && currentVentaId ? 'UPDATE' : 'CREATE';
+          registrarLog('Mi Operación', accionLog, descripcionCrud, {
+            tabla_afectada: 'tblposcrumenwebventas',
+            idregistro: resultado.idventa ?? null,
+          });
+        }
         // Mark newly inserted items as ORDENADO
         setComanda(prev => prev.map(item => 
           item.estadodetalle !== ESTADO_ORDENADO 
@@ -1140,6 +1149,11 @@ const PageVentas: React.FC = () => {
 
           if (resultado.success) {
             showSuccessToast(`Venta WEB producida - Folio: ${currentFolioVenta}`);
+            // Registrar log - fire-and-forget, no afecta el flujo principal
+            registrarLog('Mi Operación', 'Producir', 'UPDATE', {
+              tabla_afectada: 'tblposcrumenwebventas',
+              idregistro: currentVentaId,
+            });
             setCurrentEstadoDeVenta('ORDENADO');
             setComanda(prevComanda => prevComanda.map(item => ({ ...item, estadodetalle: ESTADO_ORDENADO })));
             if (imprimirChecked && itemsParaImprimir.length > 0) {
@@ -1199,6 +1213,11 @@ const PageVentas: React.FC = () => {
 
           if (resultado.success) {
             showSuccessToast(`Venta actualizada - Folio: ${currentFolioVenta}`);
+            // Registrar log - fire-and-forget, no afecta el flujo principal
+            registrarLog('Mi Operación', 'Producir', 'UPDATE', {
+              tabla_afectada: 'tblposcrumenwebventas',
+              idregistro: currentVentaId,
+            });
             // Update local state
             setCurrentEstadoDeVenta('ORDENADO');
             
@@ -1222,7 +1241,7 @@ const PageVentas: React.FC = () => {
       }
 
       // Normal flow: create or add to existing venta
-      const success = await crearVenta(ESTADO_ORDENADO, ESTADO_ORDENADO, 'PENDIENTE');
+      const success = await crearVenta(ESTADO_ORDENADO, ESTADO_ORDENADO, 'PENDIENTE', 'Producir');
       if (success) {
         if (imprimirChecked && itemsParaImprimir.length > 0) {
           imprimirComandaCocina(itemsParaImprimir);
@@ -1236,7 +1255,7 @@ const PageVentas: React.FC = () => {
   };
 
   const handleEsperar = async () => {
-    await crearVenta('ESPERAR', 'ESPERAR', 'ESPERAR');
+    await crearVenta('ESPERAR', 'ESPERAR', 'ESPERAR', 'Esperar');
     // Navigate to dashboard after creating ESPERAR venta
     handlePostVenta();
   };
@@ -1297,7 +1316,7 @@ const PageVentas: React.FC = () => {
   };
 
   const handleSolicitarPedido = async () => {
-    const success = await crearVenta('SOLICITADO', 'SOLICITADO', 'PENDIENTE');
+    const success = await crearVenta('SOLICITADO', 'SOLICITADO', 'PENDIENTE', 'Solicitar Pedido');
     if (success) {
       handlePostVenta();
     }
