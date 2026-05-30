@@ -776,13 +776,6 @@ export const DashboardPage = () => {
       return;
     }
 
-    // Privilege 2 users don't have dashboard access
-    const priv = Number(localStorage.getItem('privilegio') || '0');
-    if (priv === 2) {
-      navigate('/ventas');
-      return;
-    }
-
     // Load sales with ORDENADO and ESPERAR status
     cargarVentasSolicitadas();
     // Load sales summary for current shift
@@ -1028,7 +1021,7 @@ export const DashboardPage = () => {
 
           {showDashboardSubmenu && (
             <div className="submenu">
-              {privilegio !== 3 && (
+              {privilegio !== 3 && privilegio !== 2 && (
               <button
                 className="submenu-item"
                 onClick={(e) => {
@@ -1180,7 +1173,7 @@ export const DashboardPage = () => {
         )}
 
         {/* Menú Configuración Negocio */}
-        {privilegio !== 3 && (
+        {privilegio !== 3 && privilegio !== 2 && (
         <div className="nav-item-container">
           <button 
             className={`nav-item ${showConfigNegocioSubmenu ? 'active' : ''}`}
@@ -1408,8 +1401,8 @@ export const DashboardPage = () => {
                   setMobileMenuOpen(false);
                   setShowMiOperacionSubmenu(false);
                 }}
-                disabled={privilegio === 3 && !turnoAbierto}
-                title={privilegio === 3 && !turnoAbierto ? "Requiere turno abierto para registrar gastos" : "Registro de Gastos"}
+                disabled={(privilegio === 3 || privilegio === 2) && !turnoAbierto}
+                title={(privilegio === 3 || privilegio === 2) && !turnoAbierto ? "Requiere turno abierto para registrar gastos" : "Registro de Gastos"}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
@@ -1418,7 +1411,7 @@ export const DashboardPage = () => {
                 </svg>
                 Gastos
               </button>
-              {privilegio !== 3 && (
+              {privilegio !== 3 && privilegio !== 2 && (
               <button 
                 className="submenu-item" 
                 onClick={(e) => { 
@@ -2032,7 +2025,7 @@ export const DashboardPage = () => {
               )}
             </div>
 
-            {privilegio !== 3 && (
+            {privilegio !== 3 && privilegio !== 2 && (
             <div className="dashboard-card">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                 <div className="card-icon green">
@@ -2229,7 +2222,7 @@ export const DashboardPage = () => {
                           </span>
                           <div className="venta-card-actions">
 
-                            {venta.estadodeventa !== 'ESPERAR' && (
+                            {venta.estadodeventa !== 'ESPERAR' && privilegio !== 2 && (
                               <button 
                                 className="btn-pagar"
                                 onClick={(e) => {
