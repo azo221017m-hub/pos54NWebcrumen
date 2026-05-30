@@ -1019,7 +1019,7 @@ const PageVentas: React.FC = () => {
     .fecha-entrega { font-size: ${fsMd}px; font-weight: 700; margin: 3px 0; }
     .divider { border: none; border-top: 1px solid #000; margin: 5px 0; }
     .item { margin: 6px 0; }
-    .item-nombre { font-size: ${fs}px; font-weight: 700; text-transform: uppercase; }
+    .item-nombre { font-size: ${fs}px; font-weight: 700; }
     .item-linea { font-size: ${fsMd}px; font-weight: 700; padding-left: 4px; margin-top: 2px; }
     .mod, .obs { font-size: ${fsSm}px; padding-left: 8px; margin-top: 1px; }
     .label { font-weight: 700; }
