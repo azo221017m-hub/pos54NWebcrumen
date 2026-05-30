@@ -149,7 +149,7 @@ export const PageDashboardMobile = () => {
     if (!usuario?.idNegocio) return;
     try {
       const n = await negociosService.obtenerNegocioPorId(usuario.idNegocio);
-      setNegocio(n);
+      setNegocio(n.negocio);
     } catch {
       /* ignore */
     }
@@ -182,7 +182,7 @@ export const PageDashboardMobile = () => {
     }
   }, [cargarVentas, cargarResumen]);
 
-  useWebSocket(handleWebSocketMessage);
+  useWebSocket({ onMessage: handleWebSocketMessage });
 
   // ─── Pull-to-refresh (tap the header area) ───────────────────────────────
   const handleRefresh = useCallback(async () => {
@@ -239,10 +239,10 @@ export const PageDashboardMobile = () => {
       {/* ── Header ──────────────────────────────────── */}
       <header className="pdm-header">
         <div className="pdm-header-brand">
-          {negocio?.logo_url ? (
+          {negocio?.logotipo ? (
             <img
-              src={negocio.logo_url}
-              alt={negocio.nombre_negocio}
+              src={negocio.logotipo}
+              alt={negocio.nombreNegocio}
               className="pdm-header-logo"
             />
           ) : (
@@ -250,7 +250,7 @@ export const PageDashboardMobile = () => {
           )}
           <div className="pdm-header-text">
             <div className="pdm-header-negocio">
-              {negocio?.nombre_negocio ?? 'Mi Negocio'}
+              {negocio?.nombreNegocio ?? 'Mi Negocio'}
             </div>
             <div className="pdm-header-bienvenida">
               Hola, {usuario?.alias ?? usuario?.nombre ?? 'Usuario'}
@@ -314,7 +314,7 @@ export const PageDashboardMobile = () => {
                   {turno ? '✅ Turno abierto' : '⏸ Sin turno activo'}
                 </div>
                 {turno && (
-                  <div className="pdm-turno-clave">{turno.clave_turno}</div>
+                  <div className="pdm-turno-clave">{turno.claveturno}</div>
                 )}
               </div>
               {turno && privilegio >= 3 && (
@@ -390,7 +390,7 @@ export const PageDashboardMobile = () => {
               <div className="pdm-order-list">
                 {ventas.map(venta => {
                   const folio = venta.folioventa ?? `#${venta.idventa}`;
-                  const nombre = venta.nombrecomensal ?? venta.tipoventa ?? '—';
+                  const nombre = venta.cliente ?? venta.tipodeventa ?? '—';
                   const productos = (venta.detalles ?? [])
                     .map(d => `${d.nombreproducto}${d.cantidad > 1 ? ` x${d.cantidad}` : ''}`)
                     .join(', ') || '—';

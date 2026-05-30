@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { obtenerProductosWeb } from '../../services/productosWebService';
 import { negociosService } from '../../services/negociosService';
 import { obtenerCategorias } from '../../services/categoriasService';
-import { crearVentaWeb, agregarDetallesAVenta, actualizarVentaWeb } from '../../services/ventasWebService';
-import { obtenerModeradores } from '../../services/moderadoresService';
-import { obtenerModeradoresRef } from '../../services/moderadoresRefService';
+import { crearVentaWeb, agregarDetallesAVenta } from '../../services/ventasWebService';
 import { verificarTurnoAbierto } from '../../services/turnosService';
 import { clearSession } from '../../services/sessionService';
 import { showSuccessToast, showErrorToast } from '../../components/FeedbackToast';
@@ -16,12 +14,10 @@ import ModalIniciaTurno from '../../components/turnos/ModalIniciaTurno';
 import ModuloPagos from '../../components/ventas/ModuloPagos';
 import useIsMobile from '../../hooks/useIsMobile';
 import type { ProductoWeb } from '../../types/productoWeb.types';
-import type { Negocio, ParametrosNegocio } from '../../types/negocio.types';
+import type { Negocio } from '../../types/negocio.types';
 import type { Categoria } from '../../types/categoria.types';
 import type { TipoServicio } from '../../types/mesa.types';
 import type { VentaWebCreate, EstadoDeVenta, TipoDeVenta, EstadoDetalle, EstatusDePago, OrigenVenta } from '../../types/ventasWeb.types';
-import type { Moderador } from '../../types/moderador.types';
-import type { CatModerador } from '../../types/catModerador.types';
 import './PageVentasMobile.css';
 
 // ── Types ──────────────────────────────────────────────────
@@ -51,7 +47,6 @@ const SERVICE_ICONS: Record<TipoServicio, string> = {
 
 const PageVentasMobile: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const isMobile = useIsMobile();
 
   // Redirect desktop users away from this mobile page
@@ -68,17 +63,13 @@ const PageVentasMobile: React.FC = () => {
 
   // ── Data state ─────────────────────────────────────────
   const [negocio, setNegocio] = useState<Negocio | null>(null);
-  const [parametros, setParametros] = useState<ParametrosNegocio | null>(null);
   const [productos, setProductos] = useState<ProductoWeb[]>([]);
   const [productosVisibles, setProductosVisibles] = useState<ProductoWeb[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [moderadores, setModeradores] = useState<Moderador[]>([]);
-  const [catModeradores, setCatModeradores] = useState<CatModerador[]>([]);
 
   // ── UI state ──────────────────────────────────────────
   const [currentStep, setCurrentStep] = useState<Step>(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasTurnoAbierto, setHasTurnoAbierto] = useState<boolean | null>(null);
   const [showIniciaTurnoModal, setShowIniciaTurnoModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const isProcessingRef = useRef(false);
@@ -99,7 +90,6 @@ const PageVentasMobile: React.FC = () => {
   const [comanda, setComanda] = useState<ItemComanda[]>([]);
   const [currentVentaId, setCurrentVentaId] = useState<number | null>(null);
   const [currentFolioVenta, setCurrentFolioVenta] = useState<string | null>(null);
-  const [currentEstadoDeVenta, setCurrentEstadoDeVenta] = useState<EstadoDeVenta | null>(null);
 
   // ── Nota sheet ────────────────────────────────────────
   const [showNotaSheet, setShowNotaSheet] = useState(false);
@@ -114,10 +104,7 @@ const PageVentasMobile: React.FC = () => {
         // Check turno
         const turno = await verificarTurnoAbierto();
         if (!turno) {
-          setHasTurnoAbierto(false);
           setShowIniciaTurnoModal(true);
-        } else {
-          setHasTurnoAbierto(true);
         }
 
         // Load products, categories
@@ -131,33 +118,13 @@ const PageVentasMobile: React.FC = () => {
         const catsActivas = cats.filter(c => c.estatus === ESTATUS_ACTIVO);
         setCategorias(catsActivas);
 
-        // Load negocio + moderadores
+        // Load negocio
         if (usuario?.idNegocio) {
-          const [negData, mods, catMods] = await Promise.all([
-            negociosService.obtenerNegocioPorId(usuario.idNegocio),
-            obtenerModeradores(usuario.idNegocio),
-            obtenerModeradoresRef(usuario.idNegocio),
-          ]);
+          const negData = await negociosService.obtenerNegocioPorId(usuario.idNegocio);
           if (negData?.negocio) setNegocio(negData.negocio);
           if (negData?.parametros) {
-            setParametros(negData.parametros);
             setImprimirChecked(negData.parametros.impresionComanda === 1);
           }
-          setModeradores(mods.filter(m => m.estatus === ESTATUS_ACTIVO));
-          setCatModeradores(
-            catMods
-              .filter(cm => cm.estatus === ESTATUS_ACTIVO)
-              .map(cm => ({
-                idmodref: cm.idmoderadorref,
-                nombremodref: cm.nombremodref,
-                fechaRegistroauditoria: cm.fechaRegistroauditoria,
-                usuarioauditoria: cm.usuarioauditoria,
-                fehamodificacionauditoria: cm.fehamodificacionauditoria,
-                idnegocio: cm.idnegocio,
-                estatus: cm.estatus,
-                moderadores: cm.moderadores || '',
-              }))
-          );
         }
       } catch (err) {
         console.error('PageVentasMobile init error:', err);
@@ -224,10 +191,6 @@ const PageVentasMobile: React.FC = () => {
     });
   };
 
-  const eliminarItem = (index: number) => {
-    setComanda(prev => prev.filter((_, i) => i !== index));
-  };
-
   const handlePostVenta = useCallback(() => {
     if (privilegio === 2) {
       // Stay on mobile ventas, reset
@@ -235,7 +198,6 @@ const PageVentasMobile: React.FC = () => {
       setIsServiceConfigured(false);
       setCurrentVentaId(null);
       setCurrentFolioVenta(null);
-      setCurrentEstadoDeVenta(null);
       setCurrentStep(0);
     } else {
       navigate('/dashboard-mobile', { replace: true });
@@ -377,7 +339,6 @@ const PageVentasMobile: React.FC = () => {
         if (resultado.success && resultado.idventa && resultado.folioventa) {
           setCurrentVentaId(resultado.idventa);
           setCurrentFolioVenta(resultado.folioventa);
-          setCurrentEstadoDeVenta(estadodeventa);
         }
       }
 
@@ -443,7 +404,6 @@ const PageVentasMobile: React.FC = () => {
     setIsServiceConfigured(false);
     setCurrentVentaId(null);
     setCurrentFolioVenta(null);
-    setCurrentEstadoDeVenta(null);
     if (privilegio === 2) {
       setCurrentStep(0);
       return;
@@ -456,9 +416,8 @@ const PageVentasMobile: React.FC = () => {
     window.location.href = '/login';
   };
 
-  const handleTurnoIniciado = () => {
+  const handleTurnoIniciado = (_turnoId: number, _claveturno: string) => {
     setShowIniciaTurnoModal(false);
-    setHasTurnoAbierto(true);
   };
 
   // ── Render ─────────────────────────────────────────────
@@ -740,9 +699,13 @@ const PageVentasMobile: React.FC = () => {
                       ) : (
                         <div className="pvm-product-qty-row">
                           <button className="pvm-qty-btn" onClick={() => {
-                            const idx = comanda.findLastIndex(
-                              item => item.producto.idProducto === prod.idProducto && item.estadodetalle !== ESTADO_ORDENADO
-                            );
+                            let idx = -1;
+                            for (let i = comanda.length - 1; i >= 0; i--) {
+                              const ci = comanda[i]!;
+                              if (ci.producto.idProducto === prod.idProducto && ci.estadodetalle !== ESTADO_ORDENADO) {
+                                idx = i; break;
+                              }
+                            }
                             if (idx >= 0) cambiarCantidad(idx, -1);
                           }}>−</button>
                           <span className="pvm-qty-display">{qty}</span>
@@ -845,12 +808,11 @@ const PageVentasMobile: React.FC = () => {
         {currentStep === 3 && currentVentaId && (
           <div className="pvm-section">
             <ModuloPagos
-              idVenta={currentVentaId}
-              folioVenta={currentFolioVenta || ''}
-              totalVenta={totalComanda}
-              formaDePagoActual={null}
+              ventaId={currentVentaId}
+              folioventa={currentFolioVenta || ''}
+              totalCuenta={totalComanda}
               onClose={handlePostVenta}
-              onPagoCompletado={handlePostVenta}
+              onPaymentSuccess={handlePostVenta}
             />
           </div>
         )}
@@ -968,7 +930,8 @@ const PageVentasMobile: React.FC = () => {
       {/* ── Modals ────────────────────────────── */}
       {showIniciaTurnoModal && (
         <ModalIniciaTurno
-          onClose={() => navigate('/dashboard-mobile')}
+          isOpen={showIniciaTurnoModal}
+          onCancelar={() => navigate('/dashboard-mobile')}
           onTurnoIniciado={handleTurnoIniciado}
         />
       )}

@@ -11,6 +11,7 @@ import { verificarTurnoAbierto } from '../../services/turnosService';
 import { cambiarEstatusMesa } from '../../services/mesasService';
 import { clearSession, setSkipBeforeUnload } from '../../services/sessionService';
 import { clienteWebService } from '../../services/clienteWebService';
+import { negociosService } from '../../services/negociosService';
 import { showSuccessToast, showErrorToast } from '../../components/FeedbackToast';
 import { extractShortFolio, toDatetimeLocalMexico } from '../../utils/formatters';
 import { registrarLog } from '../../services/logService';
