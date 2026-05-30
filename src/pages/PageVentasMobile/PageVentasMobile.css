@@ -1,0 +1,761 @@
+/* =============================================
+   PAGE VENTAS MOBILE — Step-based sales flow
+   Mobile-first UI, optimised for touch & vertical navigation
+   ============================================= */
+
+/* ── Base layout ─────────────────────────────── */
+.pvm-page {
+  width: 100%;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  overflow: hidden;
+  position: fixed;
+  inset: 0;
+}
+
+/* ── Header ──────────────────────────────────── */
+.pvm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1e293b;
+  color: #f8fafc;
+  padding: 12px 16px;
+  padding-top: max(12px, env(safe-area-inset-top));
+  flex-shrink: 0;
+  gap: 12px;
+  min-height: 56px;
+}
+
+.pvm-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.pvm-back-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.pvm-back-btn:active { background: rgba(255,255,255,0.1); }
+
+.pvm-header-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pvm-header-subtitle {
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pvm-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pvm-badge {
+  background: #3b82f6;
+  color: #fff;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  min-width: 24px;
+  text-align: center;
+}
+
+.pvm-badge-orange {
+  background: #f97316;
+}
+
+.pvm-icon-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.pvm-icon-btn:active { background: rgba(255,255,255,0.1); }
+
+/* ── Step indicator ──────────────────────────── */
+.pvm-steps {
+  display: flex;
+  background: #1e293b;
+  padding: 0 16px 12px;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.pvm-step {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: #334155;
+  transition: background 0.2s;
+}
+
+.pvm-step.active { background: #3b82f6; }
+.pvm-step.done   { background: #22c55e; }
+
+/* ── Main content area ───────────────────────── */
+.pvm-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0;
+  position: relative;
+}
+
+/* ── Section container ───────────────────────── */
+.pvm-section {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+}
+
+/* ── Section heading ─────────────────────────── */
+.pvm-section-heading {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px;
+}
+
+.pvm-section-subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 8px;
+}
+
+/* ── Service type cards ──────────────────────── */
+.pvm-service-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.pvm-service-card {
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px 10px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.pvm-service-card:active {
+  transform: scale(0.97);
+}
+
+.pvm-service-card.selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.pvm-service-card-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.pvm-service-card-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: center;
+}
+
+/* ── Form fields ─────────────────────────────── */
+.pvm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pvm-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.pvm-input {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 16px;
+  color: #1e293b;
+  background: #fff;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.pvm-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+/* ── Category scroll ─────────────────────────── */
+.pvm-categories {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  flex-shrink: 0;
+  margin: 0 -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.pvm-categories::-webkit-scrollbar { display: none; }
+
+.pvm-cat-chip {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 7px 14px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pvm-cat-chip.active {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+/* ── Search bar ──────────────────────────────── */
+.pvm-search-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.pvm-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.pvm-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 14px 11px 38px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 15px;
+  background: #fff;
+  color: #1e293b;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.pvm-search:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+/* ── Product grid ────────────────────────────── */
+.pvm-product-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  flex: 1;
+}
+
+.pvm-product-card {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.pvm-product-card:active {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+  transform: scale(0.98);
+}
+
+.pvm-product-img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #f1f5f9;
+}
+
+.pvm-product-img-placeholder {
+  width: 100%;
+  aspect-ratio: 4/3;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #e2e8f0, #f1f5f9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.pvm-product-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1.3;
+}
+
+.pvm-product-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: #3b82f6;
+}
+
+.pvm-product-qty-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #22c55e;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.pvm-product-add-btn {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+
+.pvm-product-add-btn:active { background: #1d4ed8; }
+
+.pvm-product-qty-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1.5px solid #3b82f6;
+}
+
+.pvm-qty-btn {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: none;
+  width: 36px;
+  height: 32px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pvm-qty-btn:active { background: #dbeafe; }
+
+.pvm-qty-display {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  background: #fff;
+  height: 32px;
+  line-height: 32px;
+}
+
+/* ── Empty state ─────────────────────────────── */
+.pvm-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #94a3b8;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.pvm-empty-icon {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+.pvm-empty-text {
+  font-size: 15px;
+  color: #64748b;
+}
+
+/* ── Comanda list ────────────────────────────── */
+.pvm-comanda-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pvm-comanda-item {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pvm-comanda-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pvm-comanda-item-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pvm-comanda-item-price {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.pvm-comanda-item-ordered {
+  font-size: 11px;
+  color: #22c55e;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.pvm-comanda-item-controls {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1.5px solid #e2e8f0;
+}
+
+.pvm-comanda-item-total {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  min-width: 60px;
+  text-align: right;
+}
+
+/* ── Comanda summary ─────────────────────────── */
+.pvm-comanda-summary {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pvm-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #475569;
+}
+
+.pvm-summary-row.total {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* ── Service info card ───────────────────────── */
+.pvm-service-info {
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pvm-service-info-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.pvm-service-info-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.pvm-service-info-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+.pvm-service-info-detail {
+  font-size: 12px;
+  color: #3b82f6;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pvm-service-info-edit {
+  background: none;
+  border: 1.5px solid #93c5fd;
+  border-radius: 8px;
+  color: #1d4ed8;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ── Bottom action bar ───────────────────────── */
+.pvm-action-bar {
+  background: #fff;
+  border-top: 1px solid #e2e8f0;
+  padding: 12px 16px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.pvm-btn {
+  flex: 1;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pvm-btn:active { opacity: 0.85; transform: scale(0.98); }
+.pvm-btn:disabled { opacity: 0.45; cursor: default; }
+
+.pvm-btn-primary {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.pvm-btn-primary:active:not(:disabled) { background: #1d4ed8; }
+
+.pvm-btn-secondary {
+  background: #f1f5f9;
+  color: #374151;
+}
+
+.pvm-btn-success {
+  background: #22c55e;
+  color: #fff;
+}
+
+.pvm-btn-success:active:not(:disabled) { background: #16a34a; }
+
+.pvm-btn-warning {
+  background: #f59e0b;
+  color: #fff;
+}
+
+.pvm-btn-warning:active:not(:disabled) { background: #d97706; }
+
+.pvm-btn-danger {
+  background: #ef4444;
+  color: #fff;
+}
+
+.pvm-btn-sm {
+  flex: none;
+  padding: 14px 18px;
+}
+
+/* ── Modals overlay ──────────────────────────── */
+.pvm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.pvm-sheet {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-height: 90dvh;
+  overflow-y: auto;
+  padding: 20px 20px max(20px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pvm-sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  margin: 0 auto 8px;
+}
+
+.pvm-sheet-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1e293b;
+  text-align: center;
+}
+
+/* ── Loading spinner ─────────────────────────── */
+.pvm-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100dvh;
+  gap: 16px;
+  color: #64748b;
+  font-size: 15px;
+}
+
+.pvm-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: pvm-spin 0.7s linear infinite;
+}
+
+@keyframes pvm-spin { to { transform: rotate(360deg); } }
+
+/* ── User menu ───────────────────────────────── */
+.pvm-user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  min-width: 180px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.pvm-user-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #374151;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pvm-user-dropdown-item:active { background: #f1f5f9; }
+
+.pvm-user-dropdown-item.danger { color: #ef4444; }
+
+.pvm-user-info-bar {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.pvm-user-info-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.pvm-user-info-alias {
+  font-size: 12px;
+  color: #64748b;
+}
