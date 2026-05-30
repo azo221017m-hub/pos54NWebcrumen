@@ -911,7 +911,7 @@ const PageVentas: React.FC = () => {
     }, SELECTION_MODAL_DISPLAY_DELAY_MS);
   };
 
-  const imprimirComandaCocina = (items: ItemComanda[]) => {
+  const imprimirComandaCocina = (items: ItemComanda[], titulo: string = 'COMANDA COCINA') => {
     const ahora = new Date();
     const fechaHoraLabel = ahora.toLocaleString('es-MX', {
       day: '2-digit', month: '2-digit', year: 'numeric',
@@ -951,8 +951,12 @@ const PageVentas: React.FC = () => {
       clienteLabel = domicilioData.cliente || 'mostrador';
     }
 
+    // Build FechaEntrega line for LLEVAR orders
+    const fechaEntregaHtml = (tipoServicio === 'Llevar' && llevarData?.fechaprogramadaventa)
+      ? `<div class="fecha-entrega"><span class="label">FECHA ENTREGA:</span> ${escapeHtml(llevarData.fechaprogramadaventa)}</div>`
+      : '';
+
     const nombreNegocio = negocio?.nombreNegocio || 'POS Crumen';
-    const totalProductos = items.reduce((sum, item) => sum + (Number(item.cantidad) || 0), 0);
     const totalComanda = items.reduce((sum, item) => {
       const cantidad = Number(item.cantidad) || 0;
       const precioUnitario = Number(item.producto.precio) || 0;
@@ -972,7 +976,6 @@ const PageVentas: React.FC = () => {
     const itemsHtml = items.map(item => {
       const precioUnitario = Number(item.producto.precio) || 0;
       const subtotal = precioUnitario * (Number(item.cantidad) || 0);
-      const cantidadLabel = escapeHtml(String(item.cantidad));
       const mods = item.moderadoresNames && item.moderadoresNames.length > 0
         ? escapeHtml(item.moderadoresNames.filter(Boolean).join(', '))
         : '';
@@ -981,14 +984,7 @@ const PageVentas: React.FC = () => {
       const obsHtml = obs ? `<div class="obs"><span class="label">Nota:</span> ${obs}</div>` : '';
       return `<div class="item">
         <div class="item-nombre">${escapeHtml(item.producto.nombre)}</div>
-        <div class="item-detalle">
-          <span>Cant: ${cantidadLabel}</span>
-          <span>Precio: $${precioUnitario.toFixed(2)}</span>
-        </div>
-        <div class="item-subtotal">
-          <span>Subtotal:</span>
-          <span>$${subtotal.toFixed(2)}</span>
-        </div>
+        <div class="item-linea">${escapeHtml(String(item.cantidad))} x $${precioUnitario.toFixed(2)} = $${subtotal.toFixed(2)}</div>
         ${modHtml}
         ${obsHtml}
       </div>`;
@@ -998,13 +994,13 @@ const PageVentas: React.FC = () => {
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
-  <title>COMANDA DE COCINA</title>
+  <title>${escapeHtml(titulo)}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: system-ui, 'Segoe UI', Arial, Helvetica, sans-serif;
       font-size: ${fs}px;
-      line-height: 1.25;
+      line-height: 1.4;
       width: ${w};
       max-width: ${w};
       padding: 4mm 3mm;
@@ -1017,31 +1013,25 @@ const PageVentas: React.FC = () => {
     }
     .negocio { font-size: ${fsLg}px; font-weight: 700; text-align: center; margin-bottom: 2px; letter-spacing: 0.2px; }
     .rfc, .direccion { font-size: ${fsSm}px; text-align: center; margin-bottom: 2px; }
+    .titulo-comanda { font-size: ${fsLg}px; font-weight: 900; text-align: center; margin: 4px 0 2px; letter-spacing: 1px; }
     .folio { font-size: ${fsMd}px; text-align: center; font-weight: 700; margin-top: 4px; }
     .fecha { font-size: ${fsSm}px; text-align: center; margin-bottom: 4px; font-weight: 500; }
+    .fecha-entrega { font-size: ${fsMd}px; font-weight: 700; margin: 3px 0; }
     .divider { border: none; border-top: 1px solid #000; margin: 5px 0; }
-    .item { margin: 5px 0; }
-    .item-nombre { font-size: ${fs}px; font-weight: 700; }
-    .item-detalle, .item-subtotal {
-      display: flex;
-      justify-content: space-between;
-      font-size: ${fsMd}px;
-      padding-left: 4px;
-      margin-top: 1px;
-    }
-    .item-subtotal { font-weight: 700; }
+    .item { margin: 6px 0; }
+    .item-nombre { font-size: ${fs}px; font-weight: 700; text-transform: uppercase; }
+    .item-linea { font-size: ${fsMd}px; font-weight: 700; padding-left: 4px; margin-top: 2px; }
     .mod, .obs { font-size: ${fsSm}px; padding-left: 8px; margin-top: 1px; }
     .label { font-weight: 700; }
-    .resumen { margin-top: 6px; border-top: 1px solid #000; padding-top: 4px; }
-    .resumen-linea {
+    .total-section { margin-top: 6px; border-top: 1px solid #000; padding-top: 4px; }
+    .total-linea {
       display: flex;
       justify-content: space-between;
-      font-size: ${fsMd}px;
-      font-weight: 600;
-      margin: 1px 0;
+      font-size: ${fs}px;
+      font-weight: 900;
+      margin: 2px 0;
+      letter-spacing: 0.5px;
     }
-    .resumen-linea.total { font-size: ${fs}px; font-weight: 800; }
-    .footer-label { font-size: ${fs}px; font-weight: 700; text-align: center; margin-top: 6px; padding-top: 4px; letter-spacing: 0.6px; }
     @media print {
       html, body { width: ${w}; }
       @page { size: ${w} auto; margin: 0; }
@@ -1052,16 +1042,17 @@ const PageVentas: React.FC = () => {
   <div class="negocio">${escapeHtml(nombreNegocio)}</div>
   ${rfcHtml}
   ${direccionHtml}
+  <hr class="divider"/>
+  <div class="titulo-comanda">${escapeHtml(titulo)}</div>
+  <hr class="divider"/>
   ${folioHtml}
   <div class="fecha">${escapeHtml(fechaHoraLabel)}</div>
+  ${fechaEntregaHtml}
   <hr class="divider"/>
   ${itemsHtml}
-  <div class="resumen">
-    <div class="resumen-linea"><span>Total productos:</span><span>${escapeHtml(String(totalProductos))}</span></div>
-    <div class="resumen-linea total"><span>Total comanda:</span><span>$${escapeHtml(totalComanda.toFixed(2))}</span></div>
+  <div class="total-section">
+    <div class="total-linea"><span>TOTAL:</span><span>$${escapeHtml(totalComanda.toFixed(2))}</span></div>
   </div>
-  <hr class="divider"/>
-  <div class="footer-label">COMANDA DE COCINA</div>
   <script>
     window.addEventListener('load', function() { window.print(); });
     window.addEventListener('afterprint', function() { window.close(); });
@@ -1129,7 +1120,7 @@ const PageVentas: React.FC = () => {
   };
 
   const handleImprimirComandaModal = () => {
-    imprimirComandaCocina(pendingComandaItems);
+    imprimirComandaCocina(pendingComandaItems, 'COMANDA CLIENTE');
   };
 
   const handleEnviarComandaWhatsApp = () => {
@@ -1165,7 +1156,7 @@ const PageVentas: React.FC = () => {
             setCurrentEstadoDeVenta('ORDENADO');
             setComanda(prevComanda => prevComanda.map(item => ({ ...item, estadodetalle: ESTADO_ORDENADO })));
             if (imprimirChecked && itemsParaImprimir.length > 0) {
-              imprimirComandaCocina(itemsParaImprimir);
+              imprimirComandaCocina(itemsParaImprimir, 'COMANDA COCINA');
             }
             handlePostVenta();
             return;
@@ -1233,7 +1224,7 @@ const PageVentas: React.FC = () => {
             setComanda(prevComanda => prevComanda.map(item => ({ ...item, estadodetalle: ESTADO_ORDENADO })));
             
             if (imprimirChecked && itemsParaImprimir.length > 0) {
-              imprimirComandaCocina(itemsParaImprimir);
+              imprimirComandaCocina(itemsParaImprimir, 'COMANDA COCINA');
             }
             handlePostVenta();
             return;
@@ -1252,7 +1243,7 @@ const PageVentas: React.FC = () => {
       const success = await crearVenta(ESTADO_ORDENADO, ESTADO_ORDENADO, 'PENDIENTE', 'Producir');
       if (success) {
         if (imprimirChecked && itemsParaImprimir.length > 0) {
-          imprimirComandaCocina(itemsParaImprimir);
+          imprimirComandaCocina(itemsParaImprimir, 'COMANDA COCINA');
         }
         handlePostVenta();
       }
