@@ -20,6 +20,10 @@ interface DetalleVentaSimple {
 
 interface ModuloPagosProps {
   onClose: () => void;
+  /** Called instead of onClose when the user dismisses the module after a successful payment.
+   *  Use this callback to navigate with history replacement so the payment screen
+   *  is removed from the browser history stack. */
+  onPaymentSuccess?: () => void;
   totalCuenta: number;
   ventaId: number | null;
   folioventa?: string;
@@ -38,7 +42,7 @@ const naturalSort = (a: string, b: string): number => {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
 };
 
-const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId, folioventa, formadepago, tipodeventa, detallesVenta }) => {
+const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, onPaymentSuccess, totalCuenta, ventaId, folioventa, formadepago, tipodeventa, detallesVenta }) => {
   const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState<'efectivo' | 'transferencia' | 'mixto'>('efectivo');
   const [montoEfectivo, setMontoEfectivo] = useState<string>('');
   const [numeroReferencia, setNumeroReferencia] = useState<string>('');
@@ -560,7 +564,7 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, totalCuenta, ventaId
             <div className="pago-completado-botones">
               <button
                 className="btn-pago-completado btn-listo"
-                onClick={onClose}
+                onClick={() => onPaymentSuccess ? onPaymentSuccess() : onClose()}
               >
                 ✔ Listo
               </button>

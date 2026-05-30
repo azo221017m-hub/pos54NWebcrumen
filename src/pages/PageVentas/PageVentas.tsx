@@ -184,6 +184,31 @@ const PageVentas: React.FC = () => {
     }
   }, [privilegio, navigate]);
 
+  // Helper: same as handlePostVenta but uses history replacement after a successful payment,
+  // so the payment screen is removed from the browser history stack and the user
+  // cannot return to it via the Back button.
+  const handlePostVentaSuccess = React.useCallback(() => {
+    if (privilegio === 2) {
+      // Privilege 2 stays on PageVentas - reset state so selection modal shows
+      setComanda([]);
+      setMesaData(null);
+      setLlevarData(null);
+      setDomicilioData(null);
+      setIsServiceConfigured(false);
+      setIsLoadedFromDashboard(false);
+      setCurrentVentaId(null);
+      setCurrentFolioVenta(null);
+      setCurrentFormaDePago(null);
+      setCurrentEstadoDeVenta(null);
+    } else if (localStorage.getItem('clienteMode') === 'true') {
+      // Replace history so the payment page is not reachable via Back button
+      navigate('/clientes', { replace: true });
+    } else {
+      // Replace history so the payment page is not reachable via Back button
+      navigate('/dashboard', { replace: true });
+    }
+  }, [privilegio, navigate]);
+
   // Close user menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -2383,6 +2408,12 @@ const PageVentas: React.FC = () => {
           onClose={() => {
             setShowModuloPagos(false);
             handlePostVenta();
+          }}
+          onPaymentSuccess={() => {
+            setShowModuloPagos(false);
+            // Use history replacement so the payment screen is removed from the
+            // browser history stack, preventing the user from returning to it via Back.
+            handlePostVentaSuccess();
           }}
           totalCuenta={calcularTotal()}
           ventaId={currentVentaId}
