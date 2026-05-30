@@ -1021,7 +1021,7 @@ export const DashboardPage = () => {
 
           {showDashboardSubmenu && (
             <div className="submenu">
-              {privilegio !== 3 && privilegio !== 2 && (
+              {privilegio !== 3 && (
               <button
                 className="submenu-item"
                 onClick={(e) => {
@@ -1081,8 +1081,8 @@ export const DashboardPage = () => {
           )}
         </div>
 
-        {/* Menú Configuración Sistema - Solo visible si idNegocio === 99999 */}
-        {usuario?.idNegocio === 99999 && (
+        {/* Menú Configuración Sistema - Solo visible si idNegocio === 99999 y privilegio !== 2 */}
+        {usuario?.idNegocio === 99999 && privilegio !== 2 && (
         <div className="nav-item-container">
           <button 
             className={`nav-item ${showConfigSubmenu ? 'active' : ''}`}
@@ -1391,6 +1391,7 @@ export const DashboardPage = () => {
                 </svg>
                 Inicia Venta
               </button>
+              {privilegio !== 2 && (
               <button 
                 className="submenu-item" 
                 onClick={(e) => { 
@@ -1401,8 +1402,8 @@ export const DashboardPage = () => {
                   setMobileMenuOpen(false);
                   setShowMiOperacionSubmenu(false);
                 }}
-                disabled={(privilegio === 3 || privilegio === 2) && !turnoAbierto}
-                title={(privilegio === 3 || privilegio === 2) && !turnoAbierto ? "Requiere turno abierto para registrar gastos" : "Registro de Gastos"}
+                disabled={privilegio === 3 && !turnoAbierto}
+                title={privilegio === 3 && !turnoAbierto ? "Requiere turno abierto para registrar gastos" : "Registro de Gastos"}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
@@ -1411,6 +1412,7 @@ export const DashboardPage = () => {
                 </svg>
                 Gastos
               </button>
+              )}
               {privilegio !== 3 && privilegio !== 2 && (
               <button 
                 className="submenu-item" 
@@ -1431,6 +1433,7 @@ export const DashboardPage = () => {
                 Movimientos
               </button>
               )}
+              {privilegio !== 2 && (
               <button
                 className="submenu-item"
                 onClick={(e) => {
@@ -1449,6 +1452,8 @@ export const DashboardPage = () => {
                 </svg>
                 Comandas Pagadas
               </button>
+              )}
+              {privilegio !== 2 && (
               <button 
                 className="submenu-item" 
                 disabled={!turnoAbierto}
@@ -1466,6 +1471,8 @@ export const DashboardPage = () => {
                 </svg>
                 Finaliza Día
               </button>
+              )}
+              {privilegio !== 2 && (
               <button
                 className="submenu-item"
                 onClick={(e) => {
@@ -1491,6 +1498,8 @@ export const DashboardPage = () => {
                 )}
                 Activar pedidos WEB
               </button>
+              )}
+              {privilegio !== 2 && (
               <button
                 className="submenu-item"
                 onClick={(e) => {
@@ -1510,6 +1519,7 @@ export const DashboardPage = () => {
                 </svg>
                 Imprimir Inventario
               </button>
+              )}
             </div>
           )}
         </div>
