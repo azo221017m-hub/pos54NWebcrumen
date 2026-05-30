@@ -12,7 +12,7 @@ import type { Insumo } from '../../types/insumo.types';
 import { registrarLog } from '../../services/logService';
 import { showSuccessToast, showErrorToast } from '../../components/FeedbackToast';
 import { useWebSocket } from '../../hooks/useWebSocket';
-import { useIsMobile } from '../../hooks/useIsMobile';
+import useIsMobile from '../../hooks/useIsMobile';
 import CierreTurno from '../../components/turnos/CierreTurno/CierreTurno';
 import './PageDashboardMobile.css';
 

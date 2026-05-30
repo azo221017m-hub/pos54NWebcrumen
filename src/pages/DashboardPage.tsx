@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useIsMobile } from '../hooks/useIsMobile';
+import useIsMobile from '../hooks/useIsMobile';
 import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerTopProductosTurno, type ResumenVentas, type TopProductoTurno } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import { clearSession, setSkipBeforeUnload } from '../services/sessionService';
