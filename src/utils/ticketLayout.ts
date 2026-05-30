@@ -14,6 +14,8 @@ interface PaperConfig {
   cssWidth: string;
   /** Base font size in px */
   fontSize: number;
+  /** Medium font size in px (item details, rows) */
+  fontSizeMd: number;
   /** Small font size in px (labels, notes) */
   fontSizeSm: number;
   /** Title / negocio name font size in px */
@@ -23,9 +25,9 @@ interface PaperConfig {
 }
 
 const PAPER_CONFIGS: Record<PaperWidth, PaperConfig> = {
-  '48mm': { cssWidth: '48mm', fontSize: 10, fontSizeSm: 9,  fontSizeLg: 12, popupWidth: 260 },
-  '58mm': { cssWidth: '58mm', fontSize: 12, fontSizeSm: 10, fontSizeLg: 14, popupWidth: 300 },
-  '80mm': { cssWidth: '80mm', fontSize: 13, fontSizeSm: 11, fontSizeLg: 16, popupWidth: 380 },
+  '48mm': { cssWidth: '48mm', fontSize: 10, fontSizeMd: 9,  fontSizeSm: 9,  fontSizeLg: 12, popupWidth: 260 },
+  '58mm': { cssWidth: '58mm', fontSize: 12, fontSizeMd: 11, fontSizeSm: 10, fontSizeLg: 14, popupWidth: 300 },
+  '80mm': { cssWidth: '80mm', fontSize: 13, fontSizeMd: 12, fontSizeSm: 11, fontSizeLg: 16, popupWidth: 380 },
 };
 
 /**

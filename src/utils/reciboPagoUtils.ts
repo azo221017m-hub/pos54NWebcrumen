@@ -87,6 +87,7 @@ export function generarHtmlRecibo(datos: DatosRecibo, anchoPapel?: string): stri
   const cfg = getPaperConfig(anchoPapel);
   const w = cfg.cssWidth;
   const fs = cfg.fontSize;
+  const fsMd = cfg.fontSizeMd;
   const fsSm = cfg.fontSizeSm;
   const fsLg = cfg.fontSizeLg;
 
@@ -200,7 +201,7 @@ export function generarHtmlRecibo(datos: DatosRecibo, anchoPapel?: string): stri
       white-space: pre-wrap;
     }
     .folio {
-      font-size: ${fs - 1}px;
+      font-size: ${fsMd}px;
       text-align: center;
       font-weight: bold;
       margin-top: 4px;
@@ -225,7 +226,7 @@ export function generarHtmlRecibo(datos: DatosRecibo, anchoPapel?: string): stri
     .item-detalle {
       display: flex;
       justify-content: space-between;
-      font-size: ${fs - 1}px;
+      font-size: ${fsMd}px;
       padding-left: 4px;
     }
     .mod {
@@ -240,7 +241,7 @@ export function generarHtmlRecibo(datos: DatosRecibo, anchoPapel?: string): stri
     .total-row {
       display: flex;
       justify-content: space-between;
-      font-size: ${fs - 1}px;
+      font-size: ${fsMd}px;
       padding: 1px 0;
     }
     .total-final {
@@ -256,7 +257,7 @@ export function generarHtmlRecibo(datos: DatosRecibo, anchoPapel?: string): stri
     .pago-row {
       display: flex;
       justify-content: space-between;
-      font-size: ${fs - 1}px;
+      font-size: ${fsMd}px;
       padding: 1px 0;
     }
     .pie {

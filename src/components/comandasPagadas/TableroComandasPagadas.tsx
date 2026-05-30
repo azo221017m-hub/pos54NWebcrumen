@@ -101,6 +101,7 @@ const generarHtmlReporteComandasPagadas = (comandas: VentaWebWithDetails[]): str
   const cfg = getPaperConfig();
   const w = cfg.cssWidth;
   const fs = cfg.fontSize;
+  const fsMd = cfg.fontSizeMd;
   const fsSm = cfg.fontSizeSm;
 
   let cuerpo = '';
@@ -131,11 +132,11 @@ const generarHtmlReporteComandasPagadas = (comandas: VentaWebWithDetails[]): str
     body { font-family: 'Courier New', Courier, monospace; font-size: ${fsSm}px; width: ${w}; margin: 0; padding: 6px; }
     h1 { font-size: ${fs}px; text-align: center; margin: 0 0 4px; }
     .fecha { font-size: ${fsSm}px; text-align: center; color: #666; margin-bottom: 8px; }
-    .grupo-header { font-weight: bold; font-size: ${fs - 1}px; background: #f0f0f0; padding: 2px 4px; margin-top: 8px; }
+    .grupo-header { font-weight: bold; font-size: ${fsMd}px; background: #f0f0f0; padding: 2px 4px; margin-top: 8px; }
     table { width: 100%; border-collapse: collapse; margin-top: 2px; }
-    th { font-size: ${fsSm - 1}px; text-transform: uppercase; border-bottom: 1px solid #ccc; padding: 1px 2px; text-align: left; }
+    th { font-size: ${fsSm}px; text-transform: uppercase; border-bottom: 1px solid #ccc; padding: 1px 2px; text-align: left; }
     td { font-size: ${fsSm}px; padding: 1px 2px; vertical-align: top; }
-    .ref-row td { font-size: ${fsSm - 1}px; color: #666; padding-left: 8px; }
+    .ref-row td { font-size: ${fsSm}px; color: #666; padding-left: 8px; }
     .grupo-total { font-size: ${fsSm}px; text-align: right; border-top: 1px solid #ccc; padding-top: 2px; margin-bottom: 4px; }
     .gran-total { font-size: ${fs}px; font-weight: bold; text-align: right; border-top: 2px solid #000; padding-top: 4px; margin-top: 8px; }
     @media print { html, body { width: ${w}; } @page { size: ${w} auto; margin: 0; } }

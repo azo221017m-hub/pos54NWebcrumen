@@ -930,6 +930,7 @@ const PageVentas: React.FC = () => {
     const cfg = getPaperConfig();
     const w = cfg.cssWidth;
     const fs = cfg.fontSize;
+    const fsMd = cfg.fontSizeMd;
     const fsSm = cfg.fontSizeSm;
     const fsLg = cfg.fontSizeLg;
 
@@ -1016,7 +1017,7 @@ const PageVentas: React.FC = () => {
     }
     .negocio { font-size: ${fsLg}px; font-weight: 700; text-align: center; margin-bottom: 2px; letter-spacing: 0.2px; }
     .rfc, .direccion { font-size: ${fsSm}px; text-align: center; margin-bottom: 2px; }
-    .folio { font-size: ${fs - 1}px; text-align: center; font-weight: 700; margin-top: 4px; }
+    .folio { font-size: ${fsMd}px; text-align: center; font-weight: 700; margin-top: 4px; }
     .fecha { font-size: ${fsSm}px; text-align: center; margin-bottom: 4px; font-weight: 500; }
     .divider { border: none; border-top: 1px solid #000; margin: 5px 0; }
     .item { margin: 5px 0; }
@@ -1024,7 +1025,7 @@ const PageVentas: React.FC = () => {
     .item-detalle, .item-subtotal {
       display: flex;
       justify-content: space-between;
-      font-size: ${fs - 1}px;
+      font-size: ${fsMd}px;
       padding-left: 4px;
       margin-top: 1px;
     }
@@ -1035,7 +1036,7 @@ const PageVentas: React.FC = () => {
     .resumen-linea {
       display: flex;
       justify-content: space-between;
-      font-size: ${fs - 1}px;
+      font-size: ${fsMd}px;
       font-weight: 600;
       margin: 1px 0;
     }
