@@ -3,13 +3,13 @@ import { obtenerComandasPagadasTurnoActual } from '../../services/ventasWebServi
 import type { VentaWebWithDetails } from '../../types/ventasWeb.types';
 import { getShortFolio } from '../../utils/formatters';
 import { setSkipBeforeUnload } from '../../services/sessionService';
+import { getPaperConfig } from '../../utils/ticketLayout';
 import './TableroComandasPagadas.css';
 
 interface Props {
   onVolver: () => void;
 }
 
-const PRINT_POPUP_WINDOW_FEATURES = 'width=340,height=700';
 const PRINT_WINDOW_READY_DELAY_MS = 500;
 const WHATSAPP_NAVIGATION_DELAY_MS = 1500;
 
@@ -98,6 +98,12 @@ const generarHtmlReporteComandasPagadas = (comandas: VentaWebWithDetails[]): str
 
   const grandTotal = comandas.reduce((s, c) => s + Number(c.totaldeventa || 0), 0);
 
+  const cfg = getPaperConfig();
+  const w = cfg.cssWidth;
+  const fs = cfg.fontSize;
+  const fsMd = cfg.fontSizeMd;
+  const fsSm = cfg.fontSizeSm;
+
   let cuerpo = '';
   for (const [fp, items] of grupos) {
     const grupoTotal = items.reduce((s, c) => s + Number(c.totaldeventa || 0), 0);
@@ -123,17 +129,17 @@ const generarHtmlReporteComandasPagadas = (comandas: VentaWebWithDetails[]): str
   <meta charset="UTF-8"/>
   <title>Comandas Pagadas del Turno</title>
   <style>
-    body { font-family: 'Courier New', Courier, monospace; font-size: 11px; width: 58mm; margin: 0; padding: 6px; }
-    h1 { font-size: 12px; text-align: center; margin: 0 0 4px; }
-    .fecha { font-size: 10px; text-align: center; color: #666; margin-bottom: 8px; }
-    .grupo-header { font-weight: bold; font-size: 11px; background: #f0f0f0; padding: 2px 4px; margin-top: 8px; }
+    body { font-family: 'Courier New', Courier, monospace; font-size: ${fsSm}px; width: ${w}; margin: 0; padding: 6px; }
+    h1 { font-size: ${fs}px; text-align: center; margin: 0 0 4px; }
+    .fecha { font-size: ${fsSm}px; text-align: center; color: #666; margin-bottom: 8px; }
+    .grupo-header { font-weight: bold; font-size: ${fsMd}px; background: #f0f0f0; padding: 2px 4px; margin-top: 8px; }
     table { width: 100%; border-collapse: collapse; margin-top: 2px; }
-    th { font-size: 9px; text-transform: uppercase; border-bottom: 1px solid #ccc; padding: 1px 2px; text-align: left; }
-    td { font-size: 10px; padding: 1px 2px; vertical-align: top; }
-    .ref-row td { font-size: 9px; color: #666; padding-left: 8px; }
-    .grupo-total { font-size: 10px; text-align: right; border-top: 1px solid #ccc; padding-top: 2px; margin-bottom: 4px; }
-    .gran-total { font-size: 12px; font-weight: bold; text-align: right; border-top: 2px solid #000; padding-top: 4px; margin-top: 8px; }
-    @media print { html, body { width: 58mm; } @page { size: 58mm auto; margin: 0; } }
+    th { font-size: ${fsSm}px; text-transform: uppercase; border-bottom: 1px solid #ccc; padding: 1px 2px; text-align: left; }
+    td { font-size: ${fsSm}px; padding: 1px 2px; vertical-align: top; }
+    .ref-row td { font-size: ${fsSm}px; color: #666; padding-left: 8px; }
+    .grupo-total { font-size: ${fsSm}px; text-align: right; border-top: 1px solid #ccc; padding-top: 2px; margin-bottom: 4px; }
+    .gran-total { font-size: ${fs}px; font-weight: bold; text-align: right; border-top: 2px solid #000; padding-top: 4px; margin-top: 8px; }
+    @media print { html, body { width: ${w}; } @page { size: ${w} auto; margin: 0; } }
   </style>
 </head>
 <body>
@@ -216,7 +222,8 @@ const TableroComandasPagadas = ({ onVolver }: Props) => {
 
   const handleImprimirReporte = () => {
     const html = generarHtmlReporteComandasPagadas(comandas);
-    const popup = window.open('', '_blank', PRINT_POPUP_WINDOW_FEATURES);
+    const { popupWidth } = getPaperConfig();
+    const popup = window.open('', '_blank', `width=${popupWidth},height=700`);
     if (!popup) return;
     popup.document.write(html);
     popup.document.close();

@@ -3,6 +3,8 @@ import type { Negocio, ParametrosNegocio, NegocioCompleto } from '../../../types
 import { negociosService } from '../../../services/negociosService';
 import './FormularioNegocio.css';
 import { Store, Building2, Phone, FileText, Printer, MessageSquare, Check, X, Upload, Image as ImageIcon, Tag } from 'lucide-react';
+import { PAPER_WIDTHS, getPaperWidth, setPaperWidth } from '../../../utils/ticketLayout';
+import type { PaperWidth } from '../../../utils/ticketLayout';
 
 interface FormularioNegocioProps {
   negocioEditar?: NegocioCompleto | null;
@@ -15,6 +17,8 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Paper width is stored per device in localStorage (per-equipment setting)
+  const [anchoPapel, setAnchoPapel] = useState<PaperWidth>(getPaperWidth);
   const [formData, setFormData] = useState<NegocioCompleto>({
     negocio: {
       numeronegocio: '', // Se generará automáticamente
@@ -132,6 +136,11 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
         [field]: value,
       },
     }));
+  };
+
+  const handleAnchoPapelChange = (width: PaperWidth) => {
+    setAnchoPapel(width);
+    setPaperWidth(width);
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -418,6 +427,22 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
                 rows={3}
                 placeholder="Texto que aparecerá al final del recibo (Ej: ¡Gracias por su compra!)"
               />
+            </div>
+
+            <div className="form-group full-width">
+              <label htmlFor="anchoPapel">Ancho de papel de impresora (este equipo)</label>
+              <select
+                id="anchoPapel"
+                value={anchoPapel}
+                onChange={(e) => handleAnchoPapelChange(e.target.value as PaperWidth)}
+              >
+                {PAPER_WIDTHS.map((w) => (
+                  <option key={w} value={w}>{w}</option>
+                ))}
+              </select>
+              <small className="form-hint">
+                Configuración local del dispositivo. Elige el ancho de papel de tu impresora térmica.
+              </small>
             </div>
 
             <div className="form-group-checkbox">

@@ -14,6 +14,7 @@ import { clienteWebService } from '../../services/clienteWebService';
 import { showSuccessToast, showErrorToast } from '../../components/FeedbackToast';
 import { extractShortFolio, toDatetimeLocalMexico } from '../../utils/formatters';
 import { registrarLog } from '../../services/logService';
+import { getPaperConfig } from '../../utils/ticketLayout';
 import ModalTipoServicio from '../../components/ventas/ModalTipoServicio';
 import ModalSeleccionVentaPageVentas from '../../components/ventas/ModalSeleccionVentaPageVentas';
 import ModalIniciaTurno from '../../components/turnos/ModalIniciaTurno';
@@ -926,6 +927,13 @@ const PageVentas: React.FC = () => {
         .replace(/'/g, '&#39;');
     };
 
+    const cfg = getPaperConfig();
+    const w = cfg.cssWidth;
+    const fs = cfg.fontSize;
+    const fsMd = cfg.fontSizeMd;
+    const fsSm = cfg.fontSizeSm;
+    const fsLg = cfg.fontSizeLg;
+
     // Determine TIPODEVENTA and CLIENTE for the header
     const tipoDeVentaMap: Record<TipoServicio, string> = {
       'Mesa': 'MESA',
@@ -995,10 +1003,10 @@ const PageVentas: React.FC = () => {
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: system-ui, 'Segoe UI', Arial, Helvetica, sans-serif;
-      font-size: 13px;
+      font-size: ${fs}px;
       line-height: 1.25;
-      width: 58mm;
-      max-width: 58mm;
+      width: ${w};
+      max-width: ${w};
       padding: 4mm 3mm;
       color: #000;
       background: #fff;
@@ -1007,36 +1015,36 @@ const PageVentas: React.FC = () => {
       print-color-adjust: exact;
       -webkit-print-color-adjust: exact;
     }
-    .negocio { font-size: 14px; font-weight: 700; text-align: center; margin-bottom: 2px; letter-spacing: 0.2px; }
-    .rfc, .direccion { font-size: 10px; text-align: center; margin-bottom: 2px; }
-    .folio { font-size: 11px; text-align: center; font-weight: 700; margin-top: 4px; }
-    .fecha { font-size: 10px; text-align: center; margin-bottom: 4px; font-weight: 500; }
+    .negocio { font-size: ${fsLg}px; font-weight: 700; text-align: center; margin-bottom: 2px; letter-spacing: 0.2px; }
+    .rfc, .direccion { font-size: ${fsSm}px; text-align: center; margin-bottom: 2px; }
+    .folio { font-size: ${fsMd}px; text-align: center; font-weight: 700; margin-top: 4px; }
+    .fecha { font-size: ${fsSm}px; text-align: center; margin-bottom: 4px; font-weight: 500; }
     .divider { border: none; border-top: 1px solid #000; margin: 5px 0; }
     .item { margin: 5px 0; }
-    .item-nombre { font-size: 12px; font-weight: 700; }
+    .item-nombre { font-size: ${fs}px; font-weight: 700; }
     .item-detalle, .item-subtotal {
       display: flex;
       justify-content: space-between;
-      font-size: 11px;
+      font-size: ${fsMd}px;
       padding-left: 4px;
       margin-top: 1px;
     }
     .item-subtotal { font-weight: 700; }
-    .mod, .obs { font-size: 10px; padding-left: 8px; margin-top: 1px; }
+    .mod, .obs { font-size: ${fsSm}px; padding-left: 8px; margin-top: 1px; }
     .label { font-weight: 700; }
     .resumen { margin-top: 6px; border-top: 1px solid #000; padding-top: 4px; }
     .resumen-linea {
       display: flex;
       justify-content: space-between;
-      font-size: 11px;
+      font-size: ${fsMd}px;
       font-weight: 600;
       margin: 1px 0;
     }
-    .resumen-linea.total { font-size: 12px; font-weight: 800; }
-    .footer-label { font-size: 12px; font-weight: 700; text-align: center; margin-top: 6px; padding-top: 4px; letter-spacing: 0.6px; }
+    .resumen-linea.total { font-size: ${fs}px; font-weight: 800; }
+    .footer-label { font-size: ${fs}px; font-weight: 700; text-align: center; margin-top: 6px; padding-top: 4px; letter-spacing: 0.6px; }
     @media print {
-      html, body { width: 58mm; }
-      @page { size: 58mm auto; margin: 0; }
+      html, body { width: ${w}; }
+      @page { size: ${w} auto; margin: 0; }
     }
   </style>
 </head>
@@ -1063,7 +1071,7 @@ const PageVentas: React.FC = () => {
 
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    const ventana = window.open(url, '_blank', 'width=340,height=500');
+    const ventana = window.open(url, '_blank', `width=${cfg.popupWidth},height=500`);
     if (ventana) {
       ventana.addEventListener('unload', () => {
         URL.revokeObjectURL(url);

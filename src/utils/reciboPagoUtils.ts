@@ -1,6 +1,7 @@
-// Utilidades para generar el recibo de pago en formato 58mm
+// Utilidades para generar el recibo de pago con soporte para múltiples anchos de papel
 import { extractShortFolio } from './formatters';
 import { setSkipBeforeUnload } from '../services/sessionService';
+import { getPaperConfig } from './ticketLayout';
 
 // Retardo para restaurar la protección de beforeunload tras abrir WhatsApp.
 // El protocolo whatsapp:// abre la app nativa sin descargar la página;
@@ -55,9 +56,12 @@ export interface DatosRecibo {
 }
 
 /**
- * Genera el HTML del recibo de pago con estilos para papel de 58mm
+ * Genera el HTML del recibo de pago adaptado al ancho de papel configurado.
+ * @param datos  Datos del recibo
+ * @param anchoPapel  Ancho de papel ('48mm' | '58mm' | '80mm'). Si no se indica
+ *                    se usa el configurado en localStorage (por defecto 58mm).
  */
-export function generarHtmlRecibo(datos: DatosRecibo): string {
+export function generarHtmlRecibo(datos: DatosRecibo, anchoPapel?: string): string {
   const {
     nombredenegocio,
     rfc,
@@ -79,6 +83,13 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
     telefonopedidos,
     pie,
   } = datos;
+
+  const cfg = getPaperConfig(anchoPapel);
+  const w = cfg.cssWidth;
+  const fs = cfg.fontSize;
+  const fsMd = cfg.fontSizeMd;
+  const fsSm = cfg.fontSizeSm;
+  const fsLg = cfg.fontSizeLg;
 
   const fmt = (n: number) => `$${Number(n).toFixed(2)}`;
 
@@ -164,39 +175,39 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Courier New', Courier, monospace;
-      font-size: 12px;
-      width: 58mm;
-      max-width: 58mm;
+      font-size: ${fs}px;
+      width: ${w};
+      max-width: ${w};
       padding: 4mm 3mm;
       color: #000;
       background: #fff;
     }
     .center { text-align: center; }
     .negocio {
-      font-size: 14px;
+      font-size: ${fsLg}px;
       font-weight: bold;
       text-align: center;
       margin-bottom: 2px;
     }
     .rfc, .direccion {
-      font-size: 10px;
+      font-size: ${fsSm}px;
       text-align: center;
       margin-bottom: 2px;
     }
     .encabezado {
-      font-size: 10px;
+      font-size: ${fsSm}px;
       text-align: center;
       margin: 4px 0;
       white-space: pre-wrap;
     }
     .folio {
-      font-size: 11px;
+      font-size: ${fsMd}px;
       text-align: center;
       font-weight: bold;
       margin-top: 4px;
     }
     .fecha {
-      font-size: 10px;
+      font-size: ${fsSm}px;
       text-align: center;
       margin-bottom: 4px;
     }
@@ -209,17 +220,17 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
       margin: 3px 0;
     }
     .item-nombre {
-      font-size: 12px;
+      font-size: ${fs}px;
       font-weight: bold;
     }
     .item-detalle {
       display: flex;
       justify-content: space-between;
-      font-size: 11px;
+      font-size: ${fsMd}px;
       padding-left: 4px;
     }
     .mod {
-      font-size: 10px;
+      font-size: ${fsSm}px;
       padding-left: 8px;
       color: #555;
       font-style: italic;
@@ -230,13 +241,13 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
     .total-row {
       display: flex;
       justify-content: space-between;
-      font-size: 11px;
+      font-size: ${fsMd}px;
       padding: 1px 0;
     }
     .total-final {
       display: flex;
       justify-content: space-between;
-      font-size: 14px;
+      font-size: ${fsLg}px;
       font-weight: bold;
       padding: 2px 0;
     }
@@ -246,24 +257,24 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
     .pago-row {
       display: flex;
       justify-content: space-between;
-      font-size: 11px;
+      font-size: ${fsMd}px;
       padding: 1px 0;
     }
     .pie {
-      font-size: 10px;
+      font-size: ${fsSm}px;
       text-align: center;
       margin-top: 6px;
       white-space: pre-wrap;
     }
     .telefono-pedidos {
-      font-size: 10px;
+      font-size: ${fsSm}px;
       text-align: center;
       margin-top: 4px;
     }
     @media print {
-      html, body { width: 58mm; }
+      html, body { width: ${w}; }
       @page {
-        size: 58mm auto;
+        size: ${w} auto;
         margin: 0;
       }
     }
@@ -296,11 +307,15 @@ export function generarHtmlRecibo(datos: DatosRecibo): string {
 }
 
 /**
- * Abre una ventana de impresión con el recibo
+ * Abre una ventana de impresión con el recibo.
+ * @param datos  Datos del recibo
+ * @param anchoPapel  Ancho de papel ('48mm' | '58mm' | '80mm'). Si no se indica
+ *                    se usa el configurado en localStorage.
  */
-export function imprimirRecibo(datos: DatosRecibo): void {
-  const html = generarHtmlRecibo(datos);
-  const ventana = window.open('', '_blank', 'width=300,height=600');
+export function imprimirRecibo(datos: DatosRecibo, anchoPapel?: string): void {
+  const html = generarHtmlRecibo(datos, anchoPapel);
+  const cfg = getPaperConfig(anchoPapel);
+  const ventana = window.open('', '_blank', `width=${cfg.popupWidth},height=600`);
   if (!ventana) {
     alert('No se pudo abrir la ventana de impresión. Verifica que los pop-ups estén permitidos.');
     return;
