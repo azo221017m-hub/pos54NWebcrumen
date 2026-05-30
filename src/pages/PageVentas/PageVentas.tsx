@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Search, Plus, Minus, ChevronLeft, ChevronRight, StickyNote, Utensils } from 'lucide-react';
+import useIsMobile from '../../hooks/useIsMobile';
 import { obtenerProductosWeb } from '../../services/productosWebService';
-import { negociosService } from '../../services/negociosService';
 import { obtenerCategorias } from '../../services/categoriasService';
 import { crearVentaWeb, agregarDetallesAVenta, actualizarVentaWeb, sincronizarDetallesVentaWebSolicitado } from '../../services/ventasWebService';
 import { obtenerModeradores } from '../../services/moderadoresService';
@@ -74,6 +74,7 @@ const getTipoDeVentaFromTipoServicio = (tipoServicio: TipoServicio): TipoDeVenta
 const PageVentas: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const isMobile = useIsMobile();
   const categoriasScrollRef = useRef<HTMLDivElement>(null);
   
   // Get sale data from navigation state
@@ -86,6 +87,13 @@ const PageVentas: React.FC = () => {
 
   // Detect client portal mode (logged in as a web customer)
   const isClienteMode = clienteWebService.isClienteMode();
+
+  // Redirect mobile users to the mobile-optimized sales page
+  useEffect(() => {
+    if (isMobile && !isClienteMode) {
+      navigate('/ventas-mobile', { replace: true, state: location.state });
+    }
+  }, [isMobile, isClienteMode, navigate, location.state]);
   
   // Utility function to safely format prices
   const formatPrice = (price: number | string | undefined | null): string => {

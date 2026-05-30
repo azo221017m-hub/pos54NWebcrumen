@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import useIsMobile from '../hooks/useIsMobile';
 import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerTopProductosTurno, type ResumenVentas, type TopProductoTurno } from '../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import { clearSession, setSkipBeforeUnload } from '../services/sessionService';
@@ -292,6 +293,7 @@ const formatQuantity = (cantidad: number): number => {
 export const DashboardPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const isMobile = useIsMobile();
   const [usuario] = useState<Usuario | null>(getUsuarioFromStorage());
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showConfigSubmenu, setShowConfigSubmenu] = useState(false);
@@ -351,6 +353,13 @@ export const DashboardPage = () => {
   const notifiedOrdersRef = useRef<Set<number>>(new Set());
   const whatsappTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const managedSkipBeforeUnloadRef = useRef(false);
+
+  // Redirect mobile users to the mobile-optimized dashboard
+  useEffect(() => {
+    if (isMobile) {
+      navigate('/dashboard-mobile', { replace: true });
+    }
+  }, [isMobile, navigate]);
 
   const handleLogout = useCallback(() => {
     // Limpiar completamente la sesión

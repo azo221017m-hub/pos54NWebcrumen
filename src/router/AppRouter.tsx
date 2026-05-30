@@ -21,6 +21,8 @@ import ConfigProveedores from '../pages/ConfigProveedores/ConfigProveedores';
 import ConfigTurnos from '../pages/ConfigTurnos/ConfigTurnos';
 import ConfigAnuncios from '../pages/ConfigAnuncios/ConfigAnuncios';
 import PageVentas from '../pages/PageVentas/PageVentas';
+import PageVentasMobile from '../pages/PageVentasMobile/PageVentasMobile';
+import PageDashboardMobile from '../pages/PageDashboardMobile/PageDashboardMobile';
 import PageClientes from '../pages/PageClientes/PageClientes';
 import PageClientesMobile from '../pages/PageClientesMobile/PageClientesMobile';
 import MovimientosInventario from '../pages/MovimientosInventario/MovimientosInventario';
@@ -125,6 +127,14 @@ const router = createBrowserRouter([
   {
     path: '/ventas',
     element: <ProtectedRoute><PageVentas /></ProtectedRoute>,
+  },
+  {
+    path: '/ventas-mobile',
+    element: <ProtectedRoute><PageVentasMobile /></ProtectedRoute>,
+  },
+  {
+    path: '/dashboard-mobile',
+    element: <ProtectedRoute><PageDashboardMobile /></ProtectedRoute>,
   },
   {
     path: '/movimientos-inventario',
