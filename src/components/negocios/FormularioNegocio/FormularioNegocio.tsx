@@ -440,7 +440,7 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
                   <option key={w} value={w}>{w}</option>
                 ))}
               </select>
-              <small style={{ color: '#6b7280', fontSize: '11px', marginTop: '2px', display: 'block' }}>
+              <small className="form-hint">
                 Configuración local del dispositivo. Elige el ancho de papel de tu impresora térmica.
               </small>
             </div>
