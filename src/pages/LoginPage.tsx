@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { getLogoutMessage } from '../services/sessionService';
 import { authService } from '../services/authService';
 import { rolesService } from '../services/rolesService';
-import { verificarTurnoAbierto } from '../services/turnosService';
 import { registrarLog } from '../services/logService';
 import { config } from '../config/api.config';
 import './LoginPage.css';
@@ -78,12 +77,7 @@ export const LoginPage = () => {
         navigate('/clientes');
         return;
       }
-      const privilegio = localStorage.getItem('privilegio');
-      if (privilegio === '2') {
-        navigate('/ventas');
-      } else {
-        navigate('/dashboard');
-      }
+      navigate('/dashboard');
       return;
     }
   }, [navigate]);
@@ -119,25 +113,8 @@ export const LoginPage = () => {
         // Registrar log de acceso exitoso
         registrarLog('Login', 'Autenticación', 'LOGIN');
 
-        // Redirigir según el privilegio
-        if (privilegio === '2') {
-          // Privilegio 2: verificar turno abierto
-          try {
-            const turno = await verificarTurnoAbierto();
-            if (turno) {
-              navigate('/ventas');
-            } else {
-              authService.clearAuthData();
-              setError('Solicité Abrir Turno');
-            }
-          } catch (turnoError) {
-            console.error('Error al verificar turno:', turnoError);
-            authService.clearAuthData();
-            setError('Error al verificar turno. Solicite soporte.');
-          }
-        } else {
-          navigate('/dashboard');
-        }
+        // Redirigir al Dashboard (DashboardPage redirige automáticamente a /dashboard-mobile en móviles)
+        navigate('/dashboard');
       } else {
         setError(response.message || 'Error al iniciar sesión');
 
