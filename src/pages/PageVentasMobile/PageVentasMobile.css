@@ -759,3 +759,108 @@
   font-size: 12px;
   color: #64748b;
 }
+
+/* ── Mesa selector grid ──────────────────────────── */
+.pvm-mesa-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.pvm-mesa-btn {
+  padding: 10px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pvm-mesa-btn:active { opacity: 0.8; }
+
+.pvm-mesa-btn.selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+/* ── Comanda item moderadores ────────────────────── */
+.pvm-comanda-item-moderadores {
+  font-size: 11px;
+  color: #7c3aed;
+  margin-top: 2px;
+  font-style: italic;
+}
+
+/* ── Moderador bottom sheet ──────────────────────── */
+.pvm-mod-sheet {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.pvm-mod-subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 14px;
+}
+
+.pvm-mod-tipo-grid {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.pvm-mod-tipo-btn {
+  flex: 1;
+  padding: 12px 8px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.pvm-mod-tipo-btn.selected {
+  border-color: #7c3aed;
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.pvm-mod-list-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 10px;
+}
+
+.pvm-mod-checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.pvm-mod-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #334155;
+  cursor: pointer;
+}
+
+.pvm-mod-checkbox-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #7c3aed;
+}

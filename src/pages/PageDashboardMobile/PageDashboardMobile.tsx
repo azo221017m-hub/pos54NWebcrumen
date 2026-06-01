@@ -82,6 +82,7 @@ export const PageDashboardMobile = () => {
   const [showCierre, setShowCierre]     = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [refreshing, setRefreshing]     = useState(false);
+  const [ventaDetalle, setVentaDetalle] = useState<VentaWebWithDetails | null>(null);
 
   // ─── Redirect desktop back to /dashboard ────────────────────────────────
   useEffect(() => {
@@ -416,19 +417,11 @@ export const PageDashboardMobile = () => {
                               Ordenar
                             </button>
                           )}
-                          {venta.estadodeventa === 'ORDENADO' && (
-                            <button
-                              className="pdm-order-btn success"
-                              onClick={() => cambiarEstado(venta.idventa, 'SOLICITADO')}
-                            >
-                              Solicitar
-                            </button>
-                          )}
                           <button
                             className="pdm-order-btn secondary"
-                            onClick={() => navigate('/ventas-mobile', { state: { idVenta: venta.idventa, folioVenta: venta.folioventa } })}
+                            onClick={() => setVentaDetalle(venta)}
                           >
-                            Ir
+                            VER
                           </button>
                         </div>
                       </div>
@@ -541,6 +534,70 @@ export const PageDashboardMobile = () => {
           <span className="pdm-nav-item-label">Menú</span>
         </button>
       </nav>
+
+      {/* ── VER: detalle de venta ───────────────────────── */}
+      {ventaDetalle && (
+        <div className="pdm-modal-overlay" onClick={() => setVentaDetalle(null)}>
+          <div className="pdm-detalle-sheet" onClick={e => e.stopPropagation()}>
+            <div className="pdm-detalle-handle" />
+            <div className="pdm-detalle-header">
+              <div className="pdm-detalle-folio">{ventaDetalle.folioventa ?? `#${ventaDetalle.idventa}`}</div>
+              <span className={`pdm-order-badge ${badgeClass(ventaDetalle.estadodeventa)}`}>
+                {badgeLabel(ventaDetalle.estadodeventa)}
+              </span>
+            </div>
+            <div className="pdm-detalle-meta">
+              <span>🍽️ {ventaDetalle.cliente}</span>
+              <span>📅 {new Date(ventaDetalle.fechadeventa).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })}</span>
+            </div>
+
+            <div className="pdm-detalle-productos">
+              {(ventaDetalle.detalles ?? []).map((d, i) => {
+                const subtotal = Number(d.preciounitario) * Number(d.cantidad);
+                const mod = d.moderadores;
+                let modLabel = '';
+                if (mod && mod !== 'LIMPIO') {
+                  if (mod.startsWith('SIN:')) {
+                    modLabel = `SIN: ${mod.replace('SIN:', '')}`;
+                  } else {
+                    modLabel = `SOLO CON: ${mod}`;
+                  }
+                } else if (mod === 'LIMPIO') {
+                  modLabel = 'LIMPIO';
+                }
+                return (
+                  <div key={i} className="pdm-detalle-prod-row">
+                    <div className="pdm-detalle-prod-info">
+                      <span className="pdm-detalle-prod-nombre">{d.nombreproducto}</span>
+                      {modLabel && <span className="pdm-detalle-prod-mod">{modLabel}</span>}
+                    </div>
+                    <div className="pdm-detalle-prod-nums">
+                      <span className="pdm-detalle-prod-qty">{d.cantidad}×</span>
+                      <span className="pdm-detalle-prod-precio">{formatCurrency(Number(d.preciounitario))}</span>
+                      <span className="pdm-detalle-prod-sub">{formatCurrency(subtotal)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="pdm-detalle-totales">
+              <div className="pdm-detalle-total-row">
+                <span>Subtotal</span>
+                <span>{formatCurrency(Number(ventaDetalle.subtotal))}</span>
+              </div>
+              <div className="pdm-detalle-total-row total">
+                <span>Total</span>
+                <span>{formatCurrency(Number(ventaDetalle.totaldeventa))}</span>
+              </div>
+            </div>
+
+            <button className="pdm-detalle-close" onClick={() => setVentaDetalle(null)}>
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Cierre de turno modal ────────────────────── */}
       {showCierre && turno && (
