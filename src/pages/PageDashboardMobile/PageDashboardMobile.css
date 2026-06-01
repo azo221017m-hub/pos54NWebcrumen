@@ -557,3 +557,132 @@
   display: flex;
   align-items: flex-end;
 }
+
+/* ── VER detalle de venta ─────────────────────── */
+.pdm-detalle-sheet {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  padding: 12px 16px 32px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pdm-detalle-handle {
+  width: 40px;
+  height: 4px;
+  background: #cbd5e1;
+  border-radius: 2px;
+  margin: 0 auto 8px;
+  flex-shrink: 0;
+}
+
+.pdm-detalle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pdm-detalle-folio {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.pdm-detalle-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  color: #64748b;
+  flex-wrap: wrap;
+}
+
+.pdm-detalle-productos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 10px;
+}
+
+.pdm-detalle-prod-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.pdm-detalle-prod-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.pdm-detalle-prod-nombre {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.pdm-detalle-prod-mod {
+  font-size: 11px;
+  color: #7c3aed;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.pdm-detalle-prod-nums {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.pdm-detalle-prod-qty { color: #64748b; }
+.pdm-detalle-prod-precio { color: #475569; }
+.pdm-detalle-prod-sub {
+  font-weight: 700;
+  color: #1e293b;
+  min-width: 60px;
+  text-align: right;
+}
+
+.pdm-detalle-totales {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pdm-detalle-total-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #475569;
+}
+
+.pdm-detalle-total-row.total {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.pdm-detalle-close {
+  margin-top: 4px;
+  width: 100%;
+  padding: 14px;
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pdm-detalle-close:active { background: #e2e8f0; }

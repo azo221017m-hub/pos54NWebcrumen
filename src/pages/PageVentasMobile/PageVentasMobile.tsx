@@ -6,8 +6,12 @@ import { obtenerCategorias } from '../../services/categoriasService';
 import { crearVentaWeb, agregarDetallesAVenta } from '../../services/ventasWebService';
 import { verificarTurnoAbierto } from '../../services/turnosService';
 import { clearSession } from '../../services/sessionService';
-import { showSuccessToast, showErrorToast } from '../../components/FeedbackToast';
+import { showSuccessToast, showErrorToast, showInfoToast } from '../../components/FeedbackToast';
 import { extractShortFolio } from '../../utils/formatters';
+import { obtenerMesas } from '../../services/mesasService';
+import { obtenerCatModeradores } from '../../services/catModeradoresService';
+import { obtenerModeradores } from '../../services/moderadoresService';
+import { buscarClientesPorReferencia } from '../../services/clientesService';
 import { registrarLog } from '../../services/logService';
 import { getPaperConfig } from '../../utils/ticketLayout';
 import ModalIniciaTurno from '../../components/turnos/ModalIniciaTurno';
@@ -17,16 +21,22 @@ import type { ProductoWeb } from '../../types/productoWeb.types';
 import type { Negocio } from '../../types/negocio.types';
 import type { Categoria } from '../../types/categoria.types';
 import type { TipoServicio } from '../../types/mesa.types';
+import type { Mesa } from '../../types/mesa.types';
+import type { CatModerador } from '../../types/catModerador.types';
+import type { Moderador } from '../../types/moderador.types';
 import type { VentaWebCreate, EstadoDeVenta, TipoDeVenta, EstadoDetalle, EstatusDePago, OrigenVenta } from '../../types/ventasWeb.types';
 import './PageVentasMobile.css';
 
 // ── Types ──────────────────────────────────────────────────
+type TipoModerador = 'SOLO CON' | 'SIN' | 'LIMPIO';
+
 interface ItemComanda {
   producto: ProductoWeb;
   cantidad: number;
   notas?: string;
   moderadores?: string;
   moderadoresNames?: string[];
+  tipoModerador?: TipoModerador;
   estadodetalle?: EstadoDetalle;
   comensal?: string;
   iddetalleventa?: number;
@@ -96,6 +106,20 @@ const PageVentasMobile: React.FC = () => {
   const [editingNotaIdx, setEditingNotaIdx] = useState<number | null>(null);
   const [tempNota, setTempNota] = useState('');
 
+  // ── Mesa state ────────────────────────────────────────
+  const [mesas, setMesas] = useState<Mesa[]>([]);
+  const [mesaSeleccionada, setMesaSeleccionada] = useState<Mesa | null>(null);
+  const [referenciaCliente, setReferenciaCliente] = useState('');
+
+  // ── Moderador state ───────────────────────────────────
+  const [catModeradores, setCatModeradores] = useState<CatModerador[]>([]);
+  const [moderadoresList, setModeradores] = useState<Moderador[]>([]);
+  const [showModSheet, setShowModSheet] = useState(false);
+  const [modProducto, setModProducto] = useState<ProductoWeb | null>(null);
+  const [modTipo, setModTipo] = useState<TipoModerador>('LIMPIO');
+  const [modIdsSelected, setModIdsSelected] = useState<number[]>([]);
+  const [modStep, setModStep] = useState<'tipo' | 'lista'>('tipo');
+
   // ── Load data on mount ────────────────────────────────
   useEffect(() => {
     const init = async () => {
@@ -117,6 +141,17 @@ const PageVentasMobile: React.FC = () => {
         setProductosVisibles(activos);
         const catsActivas = cats.filter(c => c.estatus === ESTATUS_ACTIVO);
         setCategorias(catsActivas);
+
+        // Load mesas, catModeradores, moderadores in parallel
+        const idNegocio = usuario?.idNegocio;
+        const [mesasData, catMods, mods] = await Promise.all([
+          obtenerMesas().catch(() => [] as Mesa[]),
+          obtenerCatModeradores().catch(() => [] as CatModerador[]),
+          idNegocio ? obtenerModeradores(idNegocio).catch(() => [] as Moderador[]) : Promise.resolve([] as Moderador[]),
+        ]);
+        setMesas(mesasData);
+        setCatModeradores(catMods);
+        setModeradores(mods);
 
         // Load negocio
         if (usuario?.idNegocio) {
@@ -156,30 +191,143 @@ const PageVentasMobile: React.FC = () => {
     comanda.reduce((t, item) => t + (Number(item.producto.precio) || 0) * item.cantidad, 0);
 
   const getServiceLabel = (): string => {
-    if (tipoServicio === 'Mesa') return mesaNombre ? `Mesa: ${mesaNombre}` : 'Mesa';
+    if (tipoServicio === 'Mesa') {
+      if (mesaSeleccionada) return `Mesa ${mesaSeleccionada.numeromesa}`;
+      return mesaNombre ? `Mesa: ${mesaNombre}` : 'Mesa';
+    }
     if (tipoServicio === 'Llevar') return clienteNombre || 'Mostrador';
     if (tipoServicio === 'Domicilio') return clienteNombre || 'Domicilio';
     return tipoServicio;
   };
 
-  const agregarAComanda = (producto: ProductoWeb) => {
+  const agregarAComanda = (producto: ProductoWeb, moderadores?: string, moderadoresNames?: string[]) => {
     setComanda(prev => {
+      // When no moderadores specified (e.g. increment +), find first matching non-ordered item
+      if (moderadores === undefined) {
+        const existente = prev.find(
+          item => item.producto.idProducto === producto.idProducto && item.estadodetalle !== ESTADO_ORDENADO
+        );
+        if (existente) {
+          return prev.map(item =>
+            item === existente ? { ...item, cantidad: item.cantidad + 1 } : item
+          );
+        }
+        return [...prev, { producto, cantidad: 1 }];
+      }
+      // When moderadores specified, match on both product and moderadores string
       const existente = prev.find(
-        item => item.producto.idProducto === producto.idProducto && item.estadodetalle !== ESTADO_ORDENADO
+        item =>
+          item.producto.idProducto === producto.idProducto &&
+          item.estadodetalle !== ESTADO_ORDENADO &&
+          (item.moderadores || '') === (moderadores || '')
       );
       if (existente) {
         return prev.map(item =>
           item === existente ? { ...item, cantidad: item.cantidad + 1 } : item
         );
       }
-      return [...prev, { producto, cantidad: 1 }];
+      return [...prev, { producto, cantidad: 1, moderadores, moderadoresNames }];
     });
+  };
+
+  // ── Moderador helpers ────────────────────────────────
+  const getAvailableModeradores = (idCategoria: number): Moderador[] => {
+    const cat = categorias.find(c => c.idCategoria === idCategoria);
+    if (!cat) return [];
+    const v = cat.idmoderadordef;
+    if (v === null || v === undefined || v === '' || v === '0' || v === 0) return [];
+    let catModIds: number[] = [];
+    if (typeof v === 'string') {
+      catModIds = v.split(',').map(id => Number(id.trim())).filter(id => id > 0);
+    } else if (typeof v === 'number' && v > 0) {
+      catModIds = [v];
+    }
+    const matchedCatMods = catModeradores.filter(cm => catModIds.includes(cm.idmodref));
+    const allModIds: number[] = [];
+    for (const cm of matchedCatMods) {
+      const str = cm.moderadores?.trim();
+      if (str) {
+        str.split(',').map(id => Number(id.trim())).filter(id => id > 0).forEach(id => allModIds.push(id));
+      }
+    }
+    const uniqueIds = Array.from(new Set(allModIds));
+    return moderadoresList.filter(m => uniqueIds.includes(m.idmoderador));
   };
 
   const getCantidadEnComanda = (idProducto: number) =>
     comanda
       .filter(item => item.producto.idProducto === idProducto)
       .reduce((s, item) => s + item.cantidad, 0);
+
+  // ── Reference lookup ─────────────────────────────────
+  const handleReferenciaBlur = async () => {
+    if (!referenciaCliente.trim()) return;
+    try {
+      const clientes = await buscarClientesPorReferencia(referenciaCliente.trim());
+      if (clientes.length > 0) {
+        const c = clientes[0]!;
+        const parts = [`Nombre: ${c.nombre}`];
+        if (c.telefono) parts.push(`Tel: ${c.telefono}`);
+        if (c.direccion) parts.push(`Dir: ${c.direccion}`);
+        showInfoToast(`Cliente encontrado · ${parts.join(' · ')}`);
+      } else {
+        showInfoToast('Cliente no registrado');
+      }
+    } catch {
+      // ignore - do not block the sale
+    }
+  };
+
+  // ── Moderador product add ─────────────────────────────
+  const handleAddProducto = (prod: ProductoWeb) => {
+    const availableMods = getAvailableModeradores(prod.idCategoria);
+    if (availableMods.length > 0) {
+      setModProducto(prod);
+      setModTipo('LIMPIO');
+      setModIdsSelected([]);
+      setModStep('tipo');
+      setShowModSheet(true);
+    } else {
+      agregarAComanda(prod);
+    }
+  };
+
+  const handleConfirmModerador = () => {
+    if (!modProducto) return;
+    const availableMods = getAvailableModeradores(modProducto.idCategoria);
+    let moderadoresStr: string | undefined;
+    let moderadoresNames: string[] | undefined;
+    if (modTipo === 'LIMPIO') {
+      moderadoresStr = 'LIMPIO';
+      moderadoresNames = ['LIMPIO'];
+    } else if (modTipo === 'SIN') {
+      if (modIdsSelected.length === 0) {
+        moderadoresStr = 'LIMPIO';
+        moderadoresNames = ['LIMPIO'];
+      } else {
+        moderadoresStr = `SIN:${modIdsSelected.join(',')}`;
+        moderadoresNames = modIdsSelected
+          .map(id => availableMods.find(m => m.idmoderador === id)?.nombremoderador)
+          .filter((n): n is string => !!n)
+          .map(name => `SIN ${name}`);
+      }
+    } else {
+      if (modIdsSelected.length === 0) {
+        moderadoresStr = undefined;
+        moderadoresNames = undefined;
+      } else {
+        moderadoresStr = modIdsSelected.join(',');
+        moderadoresNames = modIdsSelected
+          .map(id => availableMods.find(m => m.idmoderador === id)?.nombremoderador)
+          .filter((n): n is string => !!n);
+      }
+    }
+    agregarAComanda(modProducto, moderadoresStr, moderadoresNames);
+    setShowModSheet(false);
+    setModProducto(null);
+    setModIdsSelected([]);
+    setModStep('tipo');
+  };
 
   const cambiarCantidad = (index: number, delta: number) => {
     setComanda(prev => {
@@ -286,8 +434,9 @@ const PageVentasMobile: React.FC = () => {
       let fechaprogramadaentrega: string | null = null;
 
       if (tipoServicio === 'Mesa') {
-        cliente = `Mesa: ${mesaNombre}`;
-        telefonodeentrega = telefonoEntrega || null;
+        const mesaLabel = mesaSeleccionada ? `Mesa ${mesaSeleccionada.numeromesa}` : mesaNombre;
+        cliente = `Mesa: ${mesaLabel}`;
+        telefonodeentrega = null;
       } else if (tipoServicio === 'Llevar') {
         cliente = telefonoEntrega || clienteNombre;
         telefonodeentrega = telefonoEntrega || null;
@@ -551,21 +700,38 @@ const PageVentasMobile: React.FC = () => {
             {tipoServicio === 'Mesa' && (
               <div className="pvm-field">
                 <label className="pvm-label">Mesa / Número</label>
+                {mesas.length > 0 ? (
+                  <div className="pvm-mesa-grid">
+                    {mesas.map(mesa => (
+                      <button
+                        key={mesa.idmesa}
+                        type="button"
+                        className={`pvm-mesa-btn${mesaSeleccionada?.idmesa === mesa.idmesa ? ' selected' : ''}`}
+                        onClick={() => { setMesaSeleccionada(mesa); setMesaNombre(String(mesa.numeromesa)); }}
+                      >
+                        Mesa {mesa.numeromesa}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <input
+                    className="pvm-input"
+                    type="text"
+                    placeholder="Ej: 1, Mesa VIP, Barra..."
+                    value={mesaNombre}
+                    onChange={e => setMesaNombre(e.target.value)}
+                    autoComplete="off"
+                  />
+                )}
+                <label className="pvm-label" style={{ marginTop: 8 }}>Referencia del Cliente (opcional)</label>
                 <input
                   className="pvm-input"
                   type="text"
-                  placeholder="Ej: 1, Mesa VIP, Barra..."
-                  value={mesaNombre}
-                  onChange={e => setMesaNombre(e.target.value)}
+                  placeholder="Referencia del cliente"
+                  value={referenciaCliente}
+                  onChange={e => setReferenciaCliente(e.target.value)}
+                  onBlur={handleReferenciaBlur}
                   autoComplete="off"
-                />
-                <label className="pvm-label" style={{ marginTop: 8 }}>Teléfono de contacto (opcional)</label>
-                <input
-                  className="pvm-input"
-                  type="tel"
-                  placeholder="10 dígitos"
-                  value={telefonoEntrega}
-                  onChange={e => setTelefonoEntrega(e.target.value)}
                 />
               </div>
             )}
@@ -693,7 +859,7 @@ const PageVentasMobile: React.FC = () => {
                       <div className="pvm-product-name">{prod.nombre}</div>
                       <div className="pvm-product-price">${Number(prod.precio).toFixed(2)}</div>
                       {qty === 0 ? (
-                        <button className="pvm-product-add-btn" onClick={() => agregarAComanda(prod)}>
+                        <button className="pvm-product-add-btn" onClick={() => handleAddProducto(prod)}>
                           + Agregar
                         </button>
                       ) : (
@@ -750,6 +916,11 @@ const PageVentasMobile: React.FC = () => {
                             ${Number(item.producto.precio).toFixed(2)} c/u
                             {item.notas && <span style={{ color: '#94a3b8' }}> · {item.notas}</span>}
                           </div>
+                          {item.moderadoresNames && item.moderadoresNames.length > 0 && (
+                            <div className="pvm-comanda-item-moderadores">
+                              {item.moderadoresNames.join(' · ')}
+                            </div>
+                          )}
                           {isOrdenado && <div className="pvm-comanda-item-ordered">✓ Ordenado</div>}
                         </div>
                         {!isOrdenado ? (
@@ -881,6 +1052,82 @@ const PageVentasMobile: React.FC = () => {
               </button>
             </>
           )}
+        </div>
+      )}
+
+      {/* ── Moderador bottom sheet ───────────────── */}
+      {showModSheet && modProducto && (
+        <div className="pvm-overlay" onClick={() => setShowModSheet(false)}>
+          <div className="pvm-sheet pvm-mod-sheet" onClick={e => e.stopPropagation()}>
+            <div className="pvm-sheet-handle" />
+            <div className="pvm-sheet-title">{modProducto.nombre}</div>
+            <div className="pvm-mod-subtitle">Selecciona el tipo de modificación</div>
+
+            {modStep === 'tipo' && (
+              <>
+                <div className="pvm-mod-tipo-grid">
+                  {(['SOLO CON', 'SIN', 'LIMPIO'] as TipoModerador[]).map(tipo => (
+                    <button
+                      key={tipo}
+                      type="button"
+                      className={`pvm-mod-tipo-btn${modTipo === tipo ? ' selected' : ''}`}
+                      onClick={() => setModTipo(tipo)}
+                    >
+                      {tipo}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+                  <button className="pvm-btn pvm-btn-secondary" onClick={() => setShowModSheet(false)}>
+                    Cancelar
+                  </button>
+                  {modTipo !== 'LIMPIO' ? (
+                    <button className="pvm-btn pvm-btn-primary" onClick={() => setModStep('lista')}>
+                      Elegir →
+                    </button>
+                  ) : (
+                    <button className="pvm-btn pvm-btn-primary" onClick={handleConfirmModerador}>
+                      Confirmar
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+
+            {modStep === 'lista' && (
+              <>
+                <div className="pvm-mod-list-label">
+                  {modTipo === 'SIN' ? 'Excluir:' : 'Incluir solo:'}
+                </div>
+                <div className="pvm-mod-checkbox-list">
+                  {getAvailableModeradores(modProducto.idCategoria).map(m => (
+                    <label key={m.idmoderador} className="pvm-mod-checkbox-item">
+                      <input
+                        type="checkbox"
+                        checked={modIdsSelected.includes(m.idmoderador)}
+                        onChange={() =>
+                          setModIdsSelected(prev =>
+                            prev.includes(m.idmoderador)
+                              ? prev.filter(id => id !== m.idmoderador)
+                              : [...prev, m.idmoderador]
+                          )
+                        }
+                      />
+                      <span>{m.nombremoderador}</span>
+                    </label>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+                  <button className="pvm-btn pvm-btn-secondary" onClick={() => setModStep('tipo')}>
+                    ← Atrás
+                  </button>
+                  <button className="pvm-btn pvm-btn-primary" onClick={handleConfirmModerador}>
+                    Confirmar
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
 
