@@ -265,7 +265,7 @@ const PageVentasMobile: React.FC = () => {
     try {
       const clientes = await buscarClientesPorReferencia(referenciaCliente.trim());
       if (clientes.length > 0) {
-        const c = clientes[0]!;
+        const c = clientes[0];
         const parts = [`Nombre: ${c.nombre}`];
         if (c.telefono) parts.push(`Tel: ${c.telefono}`);
         if (c.direccion) parts.push(`Dir: ${c.direccion}`);
@@ -307,9 +307,10 @@ const PageVentasMobile: React.FC = () => {
       } else {
         moderadoresStr = `SIN:${modIdsSelected.join(',')}`;
         moderadoresNames = modIdsSelected
-          .map(id => availableMods.find(m => m.idmoderador === id)?.nombremoderador)
-          .filter((n): n is string => !!n)
-          .map(name => `SIN ${name}`);
+          .flatMap(id => {
+            const name = availableMods.find(m => m.idmoderador === id)?.nombremoderador;
+            return name ? [`SIN ${name}`] : [];
+          });
       }
     } else {
       if (modIdsSelected.length === 0) {
@@ -318,8 +319,10 @@ const PageVentasMobile: React.FC = () => {
       } else {
         moderadoresStr = modIdsSelected.join(',');
         moderadoresNames = modIdsSelected
-          .map(id => availableMods.find(m => m.idmoderador === id)?.nombremoderador)
-          .filter((n): n is string => !!n);
+          .flatMap(id => {
+            const name = availableMods.find(m => m.idmoderador === id)?.nombremoderador;
+            return name ? [name] : [];
+          });
       }
     }
     agregarAComanda(modProducto, moderadoresStr, moderadoresNames);
