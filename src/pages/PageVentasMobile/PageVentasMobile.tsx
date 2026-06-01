@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { obtenerProductosWeb } from '../../services/productosWebService';
 import { negociosService } from '../../services/negociosService';
 import { obtenerCategorias } from '../../services/categoriasService';
@@ -26,6 +26,21 @@ import type { CatModerador } from '../../types/catModerador.types';
 import type { Moderador } from '../../types/moderador.types';
 import type { VentaWebCreate, EstadoDeVenta, TipoDeVenta, EstadoDetalle, EstatusDePago, OrigenVenta } from '../../types/ventasWeb.types';
 import './PageVentasMobile.css';
+
+// ── Helpers ──────────────────────────────────────────────
+const parseModeradorDisplay = (moderadores: string | null | undefined): string => {
+  if (!moderadores || moderadores === 'CON TODO') return 'CON TODO';
+  if (moderadores === 'LIMPIO') return 'LIMPIO';
+  if (moderadores.startsWith('SOLO CON:')) {
+    const names = moderadores.replace('SOLO CON:', '').split(',').join(', ');
+    return `SOLO CON: ${names}`;
+  }
+  if (moderadores.startsWith('SIN:')) {
+    const names = moderadores.replace('SIN:', '').split(',').join(', ');
+    return `SIN: ${names}`;
+  }
+  return moderadores;
+};
 
 // ── Types ──────────────────────────────────────────────────
 type TipoModerador = 'SOLO CON' | 'SIN' | 'LIMPIO';
@@ -57,6 +72,7 @@ const SERVICE_ICONS: Record<TipoServicio, string> = {
 
 const PageVentasMobile: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useIsMobile();
 
   // Redirect desktop users away from this mobile page
@@ -186,6 +202,75 @@ const PageVentasMobile: React.FC = () => {
     setProductosVisibles(filtrados);
   }, [searchTerm, productos, categoriaSeleccionada]);
 
+  // ── Handle "agregar a comanda existente" mode ──────────
+  useEffect(() => {
+    type AgregarState = {
+      idventa: number;
+      folioventa: string;
+      tipodeventa: string;
+      cliente: string;
+      detalles: Array<{
+        idproducto: number;
+        nombreproducto: string;
+        cantidad: number;
+        preciounitario: number;
+        costounitario: number;
+        moderadores: string | null;
+        observaciones: string | null;
+      }>;
+    };
+    const state = location.state as AgregarState | null;
+    if (!state?.idventa) return;
+
+    setCurrentVentaId(state.idventa);
+    setCurrentFolioVenta(state.folioventa);
+
+    const tipoMap: Record<string, TipoServicio> = { MESA: 'Mesa', LLEVAR: 'Llevar', DOMICILIO: 'Domicilio' };
+    const tipo: TipoServicio = tipoMap[state.tipodeventa] || 'Mesa';
+    setTipoServicio(tipo);
+
+    if (tipo === 'Mesa') {
+      setMesaNombre(state.cliente.replace(/^Mesa:\s*/i, ''));
+    } else {
+      setClienteNombre(state.cliente);
+    }
+
+    setIsServiceConfigured(true);
+
+    const itemsOrdenados: ItemComanda[] = (state.detalles ?? []).map(d => {
+      const productoStub: ProductoWeb = {
+        idProducto: d.idproducto,
+        idCategoria: 0,
+        idreferencia: null,
+        nombre: d.nombreproducto,
+        descripcion: '',
+        precio: Number(d.preciounitario),
+        estatus: 1,
+        imagenProducto: null,
+        tipoproducto: 'Directo',
+        costoproducto: Number(d.costounitario ?? 0),
+        fechaRegistroauditoria: '',
+        usuarioauditoria: '',
+        fehamodificacionauditoria: '',
+        idnegocio: 0,
+        menudia: 0,
+      };
+      const modDisplay = parseModeradorDisplay(d.moderadores);
+      return {
+        producto: productoStub,
+        cantidad: Number(d.cantidad),
+        notas: d.observaciones ?? undefined,
+        moderadores: d.moderadores ?? undefined,
+        moderadoresNames: [modDisplay],
+        estadodetalle: ESTADO_ORDENADO,
+      };
+    });
+
+    setComanda(itemsOrdenados);
+    setCurrentStep(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ── Helpers ───────────────────────────────────────────
   const calcularTotal = () =>
     comanda.reduce((t, item) => t + (Number(item.producto.precio) || 0) * item.cantidad, 0);
@@ -288,15 +373,15 @@ const PageVentasMobile: React.FC = () => {
       setModStep('tipo');
       setShowModSheet(true);
     } else {
-      agregarAComanda(prod);
+      agregarAComanda(prod, 'CON TODO', ['CON TODO']);
     }
   };
 
   const handleConfirmModerador = () => {
     if (!modProducto) return;
     const availableMods = getAvailableModeradores(modProducto.idCategoria);
-    let moderadoresStr: string | undefined;
-    let moderadoresNames: string[] | undefined;
+    let moderadoresStr: string;
+    let moderadoresNames: string[];
     if (modTipo === 'LIMPIO') {
       moderadoresStr = 'LIMPIO';
       moderadoresNames = ['LIMPIO'];
@@ -305,24 +390,25 @@ const PageVentasMobile: React.FC = () => {
         moderadoresStr = 'LIMPIO';
         moderadoresNames = ['LIMPIO'];
       } else {
-        moderadoresStr = `SIN:${modIdsSelected.join(',')}`;
-        moderadoresNames = modIdsSelected
-          .flatMap(id => {
-            const name = availableMods.find(m => m.idmoderador === id)?.nombremoderador;
-            return name ? [`SIN ${name}`] : [];
-          });
+        const sinNames = modIdsSelected.flatMap(id => {
+          const name = availableMods.find(m => m.idmoderador === id)?.nombremoderador;
+          return name ? [name] : [];
+        });
+        moderadoresStr = `SIN:${sinNames.join(',')}`;
+        moderadoresNames = [`SIN: ${sinNames.join(', ')}`];
       }
     } else {
+      // SOLO CON
       if (modIdsSelected.length === 0) {
-        moderadoresStr = undefined;
-        moderadoresNames = undefined;
+        moderadoresStr = 'CON TODO';
+        moderadoresNames = ['CON TODO'];
       } else {
-        moderadoresStr = modIdsSelected.join(',');
-        moderadoresNames = modIdsSelected
-          .flatMap(id => {
-            const name = availableMods.find(m => m.idmoderador === id)?.nombremoderador;
-            return name ? [name] : [];
-          });
+        const soloConNames = modIdsSelected.flatMap(id => {
+          const name = availableMods.find(m => m.idmoderador === id)?.nombremoderador;
+          return name ? [name] : [];
+        });
+        moderadoresStr = `SOLO CON:${soloConNames.join(',')}`;
+        moderadoresNames = [`SOLO CON: ${soloConNames.join(', ')}`];
       }
     }
     agregarAComanda(modProducto, moderadoresStr, moderadoresNames);
@@ -463,7 +549,7 @@ const PageVentasMobile: React.FC = () => {
         preciounitario: Number(item.producto.precio),
         costounitario: Number(item.producto.costoproducto),
         observaciones: item.notas || null,
-        moderadores: item.moderadores || null,
+        moderadores: item.moderadores || 'CON TODO',
         comensal: item.comensal || null,
       }));
 
@@ -551,15 +637,11 @@ const PageVentasMobile: React.FC = () => {
     if (ok) setCurrentStep(3);
   };
 
-  const handleCancelar = async () => {
+  const handleCancelar = () => {
     setComanda([]);
     setIsServiceConfigured(false);
     setCurrentVentaId(null);
     setCurrentFolioVenta(null);
-    if (privilegio === 2) {
-      setCurrentStep(0);
-      return;
-    }
     navigate('/dashboard-mobile', { replace: true });
   };
 

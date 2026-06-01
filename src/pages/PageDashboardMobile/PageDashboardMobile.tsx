@@ -331,11 +331,13 @@ export const PageDashboardMobile = () => {
             {/* KPI cards */}
             <p className="pdm-section-title">Mi turno</p>
             <div className="pdm-kpi-row">
-              <div className="pdm-kpi-card">
-                <span className="pdm-kpi-icon">💰</span>
-                <span className="pdm-kpi-label">Cobrado</span>
-                <span className="pdm-kpi-value green">{formatCurrency(totalCobrado)}</span>
-              </div>
+              {privilegio !== 2 && (
+                <div className="pdm-kpi-card">
+                  <span className="pdm-kpi-icon">💰</span>
+                  <span className="pdm-kpi-label">Cobrado</span>
+                  <span className="pdm-kpi-value green">{formatCurrency(totalCobrado)}</span>
+                </div>
+              )}
               <div className="pdm-kpi-card">
                 <span className="pdm-kpi-icon">🧾</span>
                 <span className="pdm-kpi-label">Pedidos activos</span>
@@ -362,14 +364,18 @@ export const PageDashboardMobile = () => {
                 <span className="pdm-qa-icon">➕</span>
                 <span className="pdm-qa-label">Nueva venta</span>
               </button>
-              <button className="pdm-qa-btn" onClick={() => { registrarLog('PageDashboardMobile', 'Gastos', 'NAVEGACIÓN'); navigate('/gastos'); }}>
-                <span className="pdm-qa-icon">💸</span>
-                <span className="pdm-qa-label">Gastos</span>
-              </button>
-              <button className="pdm-qa-btn" onClick={() => { registrarLog('PageDashboardMobile', 'Inventario', 'NAVEGACIÓN'); navigate('/movimientos-inventario'); }}>
-                <span className="pdm-qa-icon">📦</span>
-                <span className="pdm-qa-label">Inventario</span>
-              </button>
+              {privilegio !== 2 && (
+                <button className="pdm-qa-btn" onClick={() => { registrarLog('PageDashboardMobile', 'Gastos', 'NAVEGACIÓN'); navigate('/gastos'); }}>
+                  <span className="pdm-qa-icon">💸</span>
+                  <span className="pdm-qa-label">Gastos</span>
+                </button>
+              )}
+              {privilegio !== 2 && (
+                <button className="pdm-qa-btn" onClick={() => { registrarLog('PageDashboardMobile', 'Inventario', 'NAVEGACIÓN'); navigate('/movimientos-inventario'); }}>
+                  <span className="pdm-qa-icon">📦</span>
+                  <span className="pdm-qa-label">Inventario</span>
+                </button>
+              )}
               <button className="pdm-qa-btn" onClick={() => setActiveTab('ventas')}>
                 <span className="pdm-qa-icon">📋</span>
                 <span className="pdm-qa-label">Pedidos</span>
@@ -418,6 +424,20 @@ export const PageDashboardMobile = () => {
                             </button>
                           )}
                           <button
+                            className="pdm-order-btn primary"
+                            onClick={() => navigate('/ventas-mobile', {
+                              state: {
+                                idventa: venta.idventa,
+                                folioventa: venta.folioventa,
+                                tipodeventa: venta.tipodeventa,
+                                cliente: venta.cliente,
+                                detalles: venta.detalles,
+                              }
+                            })}
+                          >
+                            Agregar
+                          </button>
+                          <button
                             className="pdm-order-btn secondary"
                             onClick={() => setVentaDetalle(venta)}
                           >
@@ -443,16 +463,20 @@ export const PageDashboardMobile = () => {
                 Nueva venta
                 <span className="pdm-menu-item-chevron">›</span>
               </button>
-              <button className="pdm-menu-item" onClick={() => navigate('/gastos')}>
-                <span className="pdm-menu-item-icon">💸</span>
-                Gastos
-                <span className="pdm-menu-item-chevron">›</span>
-              </button>
-              <button className="pdm-menu-item" onClick={() => navigate('/movimientos-inventario')}>
-                <span className="pdm-menu-item-icon">📦</span>
-                Inventario
-                <span className="pdm-menu-item-chevron">›</span>
-              </button>
+              {privilegio !== 2 && (
+                <button className="pdm-menu-item" onClick={() => navigate('/gastos')}>
+                  <span className="pdm-menu-item-icon">💸</span>
+                  Gastos
+                  <span className="pdm-menu-item-chevron">›</span>
+                </button>
+              )}
+              {privilegio !== 2 && (
+                <button className="pdm-menu-item" onClick={() => navigate('/movimientos-inventario')}>
+                  <span className="pdm-menu-item-icon">📦</span>
+                  Inventario
+                  <span className="pdm-menu-item-chevron">›</span>
+                </button>
+              )}
               {privilegio >= 3 && (
                 <button className="pdm-menu-item" onClick={() => navigate('/config-mesas')}>
                   <span className="pdm-menu-item-icon">🪑</span>
@@ -556,14 +580,18 @@ export const PageDashboardMobile = () => {
                 const subtotal = Number(d.preciounitario) * Number(d.cantidad);
                 const mod = d.moderadores;
                 let modLabel = '';
-                if (mod && mod !== 'LIMPIO') {
-                  if (mod.startsWith('SIN:')) {
-                    modLabel = `SIN: ${mod.replace('SIN:', '')}`;
-                  } else {
-                    modLabel = `SOLO CON: ${mod}`;
-                  }
+                if (!mod || mod === 'CON TODO') {
+                  modLabel = 'CON TODO';
                 } else if (mod === 'LIMPIO') {
                   modLabel = 'LIMPIO';
+                } else if (mod.startsWith('SIN:')) {
+                  const names = mod.replace('SIN:', '').split(',').join(', ');
+                  modLabel = `SIN: ${names}`;
+                } else if (mod.startsWith('SOLO CON:')) {
+                  const names = mod.replace('SOLO CON:', '').split(',').join(', ');
+                  modLabel = `SOLO CON: ${names}`;
+                } else {
+                  modLabel = mod;
                 }
                 return (
                   <div key={i} className="pdm-detalle-prod-row">
