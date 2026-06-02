@@ -42,6 +42,17 @@ const parseModeradorDisplay = (moderadores: string | null | undefined): string =
   return moderadores;
 };
 
+const parseModeradoresLineas = (modStr: string | undefined): string[] => {
+  if (!modStr || modStr === 'LIMPIO' || modStr === 'CON TODO') return [];
+  if (modStr.startsWith('SIN:')) {
+    return modStr.slice('SIN:'.length).split(',').map(n => `SIN ${n.trim()}`).filter(Boolean);
+  }
+  if (modStr.startsWith('SOLO CON:')) {
+    return modStr.slice('SOLO CON:'.length).split(',').map(n => n.trim()).filter(Boolean);
+  }
+  return [modStr];
+};
+
 // ── Types ──────────────────────────────────────────────────
 type TipoModerador = 'SOLO CON' | 'SIN' | 'LIMPIO';
 
@@ -482,19 +493,6 @@ const PageVentasMobile: React.FC = () => {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
-
-    // Parse individual moderador names from the raw moderadores string
-    // PageVentasMobile stores names directly (not IDs)
-    const parseModeradoresLineas = (modStr: string | undefined): string[] => {
-      if (!modStr || modStr === 'LIMPIO' || modStr === 'CON TODO') return [];
-      if (modStr.startsWith('SIN:')) {
-        return modStr.slice('SIN:'.length).split(',').map(n => `SIN ${n.trim()}`).filter(Boolean);
-      }
-      if (modStr.startsWith('SOLO CON:')) {
-        return modStr.slice('SOLO CON:'.length).split(',').map(n => n.trim()).filter(Boolean);
-      }
-      return [modStr];
-    };
 
     const w = cfg.cssWidth;
     const fs = cfg.fontSize;
