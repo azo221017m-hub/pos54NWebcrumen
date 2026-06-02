@@ -473,19 +473,46 @@ const PageVentasMobile: React.FC = () => {
     setCurrentStep(1);
   };
 
-  // ── Print comanda ─────────────────────────────────────
-  const imprimirComandaCocina = (items: ItemComanda[]) => {
-    const cfg = getPaperConfig();
+  // ── Shared comanda data extractor ────────────────────
+  // Used by both imprimirComandaCocina and generarTextoComandaWhatsApp
+  // to guarantee identical ticket content across channels.
+  const computarDatosComanda = (items: ItemComanda[]) => {
     const ahora = new Date().toLocaleString('es-MX', {
       day: '2-digit', month: '2-digit', year: 'numeric',
       hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
     const nombreNegocio = negocio?.nombreNegocio || 'POS Crumen';
+    const rfcNegocio = negocio?.rfcnegocio ?? null;
+    const direccionFiscal = negocio?.direccionfiscalnegocio ?? null;
     const tipoLabel = tipoServicio.toUpperCase();
     const clienteLabel =
       tipoServicio === 'Mesa' ? mesaNombre :
       tipoServicio === 'Llevar' ? clienteNombre :
       clienteNombre;
+    const folioLine = currentFolioVenta
+      ? `Comanda | ${tipoLabel}${clienteLabel ? ` | ${clienteLabel}` : ''}`
+      : `${tipoLabel}${clienteLabel ? ` | ${clienteLabel}` : ''}`;
+    const telefonoStr = tipoServicio !== 'Mesa' ? (telefonoEntrega || '') : '';
+    const direccionStr = tipoServicio === 'Domicilio' ? (direccionEntrega || '') : '';
+
+    const itemsData = items.map(item => {
+      const precioUnitario = Number(item.producto.precio) || 0;
+      const cantidad = Number(item.cantidad) || 0;
+      const subtotal = precioUnitario * cantidad;
+      const mods = parseModeradoresLineas(item.moderadores);
+      return { nombre: item.producto.nombre, cantidad, precioUnitario, subtotal, mods, notas: item.notas };
+    });
+
+    const totalProductos = itemsData.reduce((sum, d) => sum + d.cantidad, 0);
+    const subtotalComanda = itemsData.reduce((sum, d) => sum + d.subtotal, 0);
+
+    return { ahora, nombreNegocio, rfcNegocio, direccionFiscal, tipoLabel, clienteLabel, folioLine, telefonoStr, direccionStr, itemsData, totalProductos, subtotalComanda };
+  };
+
+  // ── Print comanda ─────────────────────────────────────
+  const imprimirComandaCocina = (items: ItemComanda[]) => {
+    const cfg = getPaperConfig();
+    const { ahora, nombreNegocio, rfcNegocio, direccionFiscal, tipoLabel, clienteLabel, folioLine, telefonoStr, direccionStr, itemsData, totalProductos, subtotalComanda } = computarDatosComanda(items);
 
     const escH = (v?: string | null) => (v || '')
       .replace(/&/g, '&amp;')
@@ -500,49 +527,24 @@ const PageVentasMobile: React.FC = () => {
     const fsSm = cfg.fontSizeSm;
     const fsLg = cfg.fontSizeLg;
 
-    const rfcHtml = negocio?.rfcnegocio
-      ? `<div class="rfc">${escH(negocio.rfcnegocio)}</div>`
-      : '';
-    const direccionNegocioHtml = negocio?.direccionfiscalnegocio
-      ? `<div class="direccion">${escH(negocio.direccionfiscalnegocio)}</div>`
-      : '';
-    const folioHtml = currentFolioVenta
-      ? `<div class="folio">Comanda | ${escH(tipoLabel)}${clienteLabel ? ` | ${escH(clienteLabel)}` : ''}</div>`
-      : `<div class="folio">${escH(tipoLabel)}${clienteLabel ? ` | ${escH(clienteLabel)}` : ''}</div>`;
+    const rfcHtml = rfcNegocio ? `<div class="rfc">${escH(rfcNegocio)}</div>` : '';
+    const direccionNegocioHtml = direccionFiscal ? `<div class="direccion">${escH(direccionFiscal)}</div>` : '';
+    const folioHtml = `<div class="folio">${escH(folioLine)}</div>`;
 
     const SEP_ITEM = '========================================';
 
-    const itemsHtml = items.map(item => {
-      const precioUnitario = Number(item.producto.precio) || 0;
-      const cantidad = Number(item.cantidad) || 0;
-      const subtotal = precioUnitario * cantidad;
-
-      const modLineas = parseModeradoresLineas(item.moderadores)
-        .map(m => `<div class="mod-linea">+ ${escH(m)}</div>`)
-        .join('');
-
-      const obsHtml = item.notas
-        ? `<div class="nota-linea">NOTA: ${escH(item.notas)}</div>`
-        : '';
-
+    const itemsHtml = itemsData.map(d => {
+      const modLineas = d.mods.map(m => `<div class="mod-linea">+ ${escH(m)}</div>`).join('');
+      const obsHtml = d.notas ? `<div class="nota-linea">NOTA: ${escH(d.notas)}</div>` : '';
       return `<div class="item">
-        <div class="item-nombre">${escH(item.producto.nombre)}</div>
-        <div class="item-linea">${escH(String(cantidad))} x $${precioUnitario.toFixed(2)} = $${subtotal.toFixed(2)}</div>
+        <div class="item-nombre">${escH(d.nombre)}</div>
+        <div class="item-linea">${escH(String(d.cantidad))} x $${d.precioUnitario.toFixed(2)} = $${d.subtotal.toFixed(2)}</div>
         ${modLineas}
         ${obsHtml}
         <div class="sep-item">${SEP_ITEM}</div>
       </div>`;
     }).join('');
 
-    // Totals
-    const totalProductos = items.reduce((sum, item) => sum + (Number(item.cantidad) || 0), 0);
-    const subtotalComanda = items.reduce((sum, item) => {
-      return sum + (Number(item.producto.precio) || 0) * (Number(item.cantidad) || 0);
-    }, 0);
-
-    // Delivery section
-    const telefonoStr = tipoServicio !== 'Mesa' ? (telefonoEntrega || '') : '';
-    const direccionStr = tipoServicio === 'Domicilio' ? (direccionEntrega || '') : '';
     const telefonoHtml = telefonoStr ? `<div class="entrega-campo">${escH(telefonoStr)}</div>` : '';
     const direccionHtml = direccionStr ? `<div class="entrega-campo">${escH(direccionStr)}</div>` : '';
 
@@ -633,49 +635,26 @@ const PageVentasMobile: React.FC = () => {
   };
 
   const generarTextoComandaWhatsApp = (items: ItemComanda[]): string => {
-    const ahora = new Date().toLocaleString('es-MX', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit', second: '2-digit'
-    });
-    const nombreNegocio = negocio?.nombreNegocio || 'POS Crumen';
-    const tipoLabel = tipoServicio.toUpperCase();
-    const clienteLabel =
-      tipoServicio === 'Mesa' ? mesaNombre :
-      tipoServicio === 'Llevar' ? clienteNombre :
-      clienteNombre;
-
-    const telefonoStr = tipoServicio !== 'Mesa' ? (telefonoEntrega || '') : '';
-    const direccionStr = tipoServicio === 'Domicilio' ? (direccionEntrega || '') : '';
+    const { ahora, nombreNegocio, rfcNegocio, direccionFiscal, tipoLabel, clienteLabel, folioLine, telefonoStr, direccionStr, itemsData, totalProductos, subtotalComanda } = computarDatosComanda(items);
 
     const SEP_ITEM = '========================================';
     const SEP_LINE = '────────────────────────────────────────';
 
     let texto = `${nombreNegocio}\n`;
-    if (negocio?.rfcnegocio) texto += `${negocio.rfcnegocio}\n`;
-    if (negocio?.direccionfiscalnegocio) texto += `${negocio.direccionfiscalnegocio}\n`;
+    if (rfcNegocio) texto += `${rfcNegocio}\n`;
+    if (direccionFiscal) texto += `${direccionFiscal}\n`;
     texto += `${SEP_LINE}\n`;
     texto += `COMANDA COCINA\n`;
     texto += `${SEP_LINE}\n`;
-    const folioLine = currentFolioVenta
-      ? `Comanda | ${tipoLabel}${clienteLabel ? ` | ${clienteLabel}` : ''}`
-      : `${tipoLabel}${clienteLabel ? ` | ${clienteLabel}` : ''}`;
     texto += `${folioLine}\n`;
     texto += `${ahora}\n`;
     texto += `${SEP_LINE}\n`;
 
-    let totalProductos = 0;
-    let subtotalComanda = 0;
-    items.forEach(item => {
-      const precioUnitario = Number(item.producto.precio) || 0;
-      const cantidad = Number(item.cantidad) || 0;
-      const subtotal = precioUnitario * cantidad;
-      totalProductos += cantidad;
-      subtotalComanda += subtotal;
-      texto += `${item.producto.nombre}\n`;
-      texto += `  ${cantidad} x $${precioUnitario.toFixed(2)} = $${subtotal.toFixed(2)}\n`;
-      const mods = parseModeradoresLineas(item.moderadores);
-      mods.forEach(m => { texto += `  + ${m}\n`; });
-      if (item.notas) texto += `  NOTA: ${item.notas}\n`;
+    itemsData.forEach(d => {
+      texto += `${d.nombre}\n`;
+      texto += `  ${d.cantidad} x $${d.precioUnitario.toFixed(2)} = $${d.subtotal.toFixed(2)}\n`;
+      d.mods.forEach(m => { texto += `  + ${m}\n`; });
+      if (d.notas) texto += `  NOTA: ${d.notas}\n`;
       texto += `${SEP_ITEM}\n`;
     });
 
