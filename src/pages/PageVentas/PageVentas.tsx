@@ -966,9 +966,9 @@ const PageVentas: React.FC = () => {
     const extractHora = (fecha: string | null | undefined): string => {
       if (!fecha) return '';
       const tIdx = fecha.indexOf('T');
-      if (tIdx !== -1) return fecha.substring(tIdx + 1, tIdx + 6);
+      if (tIdx !== -1 && fecha.length >= tIdx + 6) return fecha.substring(tIdx + 1, tIdx + 6);
       const spIdx = fecha.indexOf(' ');
-      if (spIdx !== -1) return fecha.substring(spIdx + 1, spIdx + 6);
+      if (spIdx !== -1 && fecha.length >= spIdx + 6) return fecha.substring(spIdx + 1, spIdx + 6);
       return '';
     };
 

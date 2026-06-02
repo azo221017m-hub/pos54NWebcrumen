@@ -486,10 +486,10 @@ const PageVentasMobile: React.FC = () => {
     const parseModeradoresLineas = (modStr: string | undefined): string[] => {
       if (!modStr || modStr === 'LIMPIO' || modStr === 'CON TODO') return [];
       if (modStr.startsWith('SIN:')) {
-        return modStr.replace('SIN:', '').split(',').map(n => `SIN ${n.trim()}`).filter(Boolean);
+        return modStr.slice('SIN:'.length).split(',').map(n => `SIN ${n.trim()}`).filter(Boolean);
       }
       if (modStr.startsWith('SOLO CON:')) {
-        return modStr.replace('SOLO CON:', '').split(',').map(n => n.trim()).filter(Boolean);
+        return modStr.slice('SOLO CON:'.length).split(',').map(n => n.trim()).filter(Boolean);
       }
       return [modStr];
     };
