@@ -18,7 +18,7 @@ import ModalIniciaTurno from '../../components/turnos/ModalIniciaTurno';
 import ModuloPagos from '../../components/ventas/ModuloPagos';
 import useIsMobile from '../../hooks/useIsMobile';
 import type { ProductoWeb } from '../../types/productoWeb.types';
-import type { Negocio } from '../../types/negocio.types';
+import type { Negocio, ParametrosNegocio } from '../../types/negocio.types';
 import type { Categoria } from '../../types/categoria.types';
 import type { TipoServicio } from '../../types/mesa.types';
 import type { Mesa } from '../../types/mesa.types';
@@ -103,6 +103,7 @@ const PageVentasMobile: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<number | null>(null);
   const [imprimirChecked, setImprimirChecked] = useState(true);
+  const [parametros, setParametros] = useState<ParametrosNegocio | null>(null);
 
   // ── Servicio state ────────────────────────────────────
   const [tipoServicio, setTipoServicio] = useState<TipoServicio>('Mesa');
@@ -175,6 +176,7 @@ const PageVentasMobile: React.FC = () => {
           if (negData?.negocio) setNegocio(negData.negocio);
           if (negData?.parametros) {
             setImprimirChecked(negData.parametros.impresionComanda === 1);
+            setParametros(negData.parametros);
           }
         }
       } catch (err) {
@@ -630,6 +632,74 @@ const PageVentasMobile: React.FC = () => {
     const win = window.open(url, '_blank', `width=${cfg.popupWidth},height=500`);
     if (win) win.addEventListener('unload', () => URL.revokeObjectURL(url));
     else URL.revokeObjectURL(url);
+  };
+
+  const generarTextoComandaWhatsApp = (items: ItemComanda[]): string => {
+    const ahora = new Date().toLocaleString('es-MX', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    const nombreNegocio = negocio?.nombreNegocio || 'POS Crumen';
+    const tipoLabel = tipoServicio.toUpperCase();
+    const clienteLabel =
+      tipoServicio === 'Mesa' ? mesaNombre :
+      tipoServicio === 'Llevar' ? clienteNombre :
+      clienteNombre;
+
+    const telefonoStr = tipoServicio !== 'Mesa' ? (telefonoEntrega || '') : '';
+    const direccionStr = tipoServicio === 'Domicilio' ? (direccionEntrega || '') : '';
+
+    const SEP_ITEM = '========================================';
+    const SEP_LINE = '────────────────────────────────────────';
+
+    let texto = `${nombreNegocio}\n`;
+    if (negocio?.rfcnegocio) texto += `${negocio.rfcnegocio}\n`;
+    if (negocio?.direccionfiscalnegocio) texto += `${negocio.direccionfiscalnegocio}\n`;
+    texto += `${SEP_LINE}\n`;
+    texto += `COMANDA COCINA\n`;
+    texto += `${SEP_LINE}\n`;
+    const folioLine = currentFolioVenta
+      ? `Comanda | ${tipoLabel}${clienteLabel ? ` | ${clienteLabel}` : ''}`
+      : `${tipoLabel}${clienteLabel ? ` | ${clienteLabel}` : ''}`;
+    texto += `${folioLine}\n`;
+    texto += `${ahora}\n`;
+    texto += `${SEP_LINE}\n`;
+
+    let totalProductos = 0;
+    let subtotalComanda = 0;
+    items.forEach(item => {
+      const precioUnitario = Number(item.producto.precio) || 0;
+      const cantidad = Number(item.cantidad) || 0;
+      const subtotal = precioUnitario * cantidad;
+      totalProductos += cantidad;
+      subtotalComanda += subtotal;
+      texto += `${item.producto.nombre}\n`;
+      texto += `  ${cantidad} x $${precioUnitario.toFixed(2)} = $${subtotal.toFixed(2)}\n`;
+      const mods = parseModeradoresLineas(item.moderadores);
+      mods.forEach(m => { texto += `  + ${m}\n`; });
+      if (item.notas) texto += `  NOTA: ${item.notas}\n`;
+      texto += `${SEP_ITEM}\n`;
+    });
+
+    texto += `TOTAL PROD: ${totalProductos}\n`;
+    texto += `SUBTOTAL: $${subtotalComanda.toFixed(2)}\n`;
+    texto += `${SEP_LINE}\n`;
+    texto += `${clienteLabel || tipoLabel}\n`;
+    if (direccionStr) texto += `${direccionStr}\n`;
+    if (telefonoStr) texto += `${telefonoStr}\n`;
+    texto += `OBS:\nSin observaciones\n`;
+    texto += `INFO PAGO:\nPENDIENTE | $${subtotalComanda.toFixed(2)}\n`;
+    return texto;
+  };
+
+  const handleEnviarComandaWhatsApp = () => {
+    const itemsParaEnviar = comanda.filter(item => item.estadodetalle !== ESTADO_ORDENADO);
+    if (itemsParaEnviar.length === 0) {
+      showErrorToast('No hay productos nuevos para enviar');
+      return;
+    }
+    const texto = generarTextoComandaWhatsApp(itemsParaEnviar);
+    window.location.href = `whatsapp://send?text=${encodeURIComponent(texto)}`;
   };
 
   // ── Create venta ──────────────────────────────────────
@@ -1265,6 +1335,16 @@ const PageVentasMobile: React.FC = () => {
               >
                 {isProcessing ? '...' : 'Producir'}
               </button>
+              {parametros?.envioMensaje === 1 && (
+                <button
+                  className="pvm-btn pvm-btn-secondary pvm-btn-sm"
+                  disabled={comanda.length === 0}
+                  onClick={handleEnviarComandaWhatsApp}
+                  title="Enviar por WhatsApp"
+                >
+                  📲
+                </button>
+              )}
               <button
                 className="pvm-btn pvm-btn-primary pvm-btn-sm"
                 disabled={comanda.length === 0 || isProcessing}
