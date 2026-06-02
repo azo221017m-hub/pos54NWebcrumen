@@ -962,21 +962,31 @@ const PageVentas: React.FC = () => {
       clienteLabel = domicilioData.cliente || 'mostrador';
     }
 
-    // Build FechaEntrega line for LLEVAR orders
-    const fechaEntregaHtml = (tipoServicio === 'Llevar' && llevarData?.fechaprogramadaventa)
-      ? `<div class="fecha-entrega"><span class="label">FECHA ENTREGA:</span> ${escapeHtml(llevarData.fechaprogramadaventa)}</div>`
+    // Extract HH:mm from programmed delivery datetime (format: 'YYYY-MM-DDTHH:mm')
+    const extractHora = (fecha: string | null | undefined): string => {
+      if (!fecha) return '';
+      const tIdx = fecha.indexOf('T');
+      if (tIdx !== -1) return fecha.substring(tIdx + 1, tIdx + 6);
+      const spIdx = fecha.indexOf(' ');
+      if (spIdx !== -1) return fecha.substring(spIdx + 1, spIdx + 6);
+      return '';
+    };
+
+    const fechaProgr = tipoServicio === 'Llevar'
+      ? llevarData?.fechaprogramadaventa
+      : tipoServicio === 'Domicilio'
+        ? domicilioData?.fechaprogramadaventa
+        : null;
+    const horaEntrega = extractHora(fechaProgr);
+    const horaEntregaHtml = horaEntrega
+      ? `<div class="hora-entrega">${escapeHtml(horaEntrega)}</div>`
       : '';
 
     const nombreNegocio = negocio?.nombreNegocio || 'POS Crumen';
-    const totalComanda = items.reduce((sum, item) => {
-      const cantidad = Number(item.cantidad) || 0;
-      const precioUnitario = Number(item.producto.precio) || 0;
-      return sum + (cantidad * precioUnitario);
-    }, 0);
     const rfcHtml = negocio?.rfcnegocio
       ? `<div class="rfc">${escapeHtml(negocio.rfcnegocio)}</div>`
       : '';
-    const direccionHtml = negocio?.direccionfiscalnegocio
+    const direccionNegocioHtml = negocio?.direccionfiscalnegocio
       ? `<div class="direccion">${escapeHtml(negocio.direccionfiscalnegocio)}</div>`
       : '';
 
@@ -984,22 +994,67 @@ const PageVentas: React.FC = () => {
       ? `<div class="folio">Comanda | ${escapeHtml(tipoDeVentaLabel)}${clienteLabel ? ` | ${escapeHtml(clienteLabel)}` : ''}</div>`
       : `<div class="folio">${escapeHtml(tipoDeVentaLabel)}${clienteLabel ? ` | ${escapeHtml(clienteLabel)}` : ''}</div>`;
 
+    // Build items with individual moderador lines and per-item separator
+    const MODS_SKIP = new Set(['LIMPIO', MODERADORES_PLACEHOLDER, 'CON TODO']);
+    const SEP_ITEM = '========================================';
+
     const itemsHtml = items.map(item => {
       const precioUnitario = Number(item.producto.precio) || 0;
-      const subtotal = precioUnitario * (Number(item.cantidad) || 0);
-      const mods = item.moderadoresNames && item.moderadoresNames.length > 0
-        ? escapeHtml(item.moderadoresNames.filter(Boolean).join(', '))
+      const cantidad = Number(item.cantidad) || 0;
+      const subtotal = precioUnitario * cantidad;
+
+      const modLineas = (item.moderadoresNames || [])
+        .filter(n => n && !MODS_SKIP.has(n))
+        .map(m => `<div class="mod-linea">+ ${escapeHtml(m)}</div>`)
+        .join('');
+
+      const obsHtml = item.notas
+        ? `<div class="nota-linea">NOTA: ${escapeHtml(item.notas)}</div>`
         : '';
-      const obs = item.notas ? escapeHtml(item.notas) : '';
-      const modHtml = mods ? `<div class="mod"><span class="label">Moderadores:</span> ${mods}</div>` : '';
-      const obsHtml = obs ? `<div class="obs"><span class="label">Nota:</span> ${obs}</div>` : '';
+
       return `<div class="item">
         <div class="item-nombre">${escapeHtml(item.producto.nombre)}</div>
-        <div class="item-linea">${escapeHtml(String(item.cantidad))} x $${precioUnitario.toFixed(2)} = $${subtotal.toFixed(2)}</div>
-        ${modHtml}
+        <div class="item-linea">${escapeHtml(String(cantidad))} x $${precioUnitario.toFixed(2)} = $${subtotal.toFixed(2)}</div>
+        ${modLineas}
         ${obsHtml}
+        <div class="sep-item">${SEP_ITEM}</div>
       </div>`;
     }).join('');
+
+    // Totals
+    const totalProductos = items.reduce((sum, item) => sum + (Number(item.cantidad) || 0), 0);
+    const subtotalComanda = items.reduce((sum, item) => {
+      return sum + (Number(item.producto.precio) || 0) * (Number(item.cantidad) || 0);
+    }, 0);
+
+    // Delivery section data
+    const telefonoEntregaStr = tipoServicio === 'Domicilio'
+      ? (domicilioData?.telefonodeentrega || '')
+      : tipoServicio === 'Llevar'
+        ? (llevarData?.telefonocontacto || '')
+        : (mesaData?.telefonocontacto || '');
+    const direccionEntregaStr = tipoServicio === 'Domicilio'
+      ? (domicilioData?.direcciondeentrega || '')
+      : '';
+    const obsEntregaStr = tipoServicio === 'Domicilio'
+      ? (domicilioData?.observaciones || 'Sin observaciones')
+      : 'Sin observaciones';
+
+    const referenciaHoraLine = clienteLabel
+      ? (horaEntrega ? `${escapeHtml(clienteLabel)} | ${escapeHtml(horaEntrega)}` : escapeHtml(clienteLabel))
+      : escapeHtml(tipoDeVentaLabel);
+
+    const direccionEntregaHtml = direccionEntregaStr
+      ? `<div class="entrega-campo">${escapeHtml(direccionEntregaStr)}</div>`
+      : '';
+    const telefonoEntregaHtml = telefonoEntregaStr
+      ? `<div class="entrega-campo">${escapeHtml(telefonoEntregaStr)}</div>`
+      : '';
+
+    // Payment info
+    const formaPagoLabel = currentFormaDePago && currentFormaDePago !== 'sinFP'
+      ? currentFormaDePago.toUpperCase()
+      : 'PENDIENTE';
 
     const html = `<!DOCTYPE html>
 <html lang="es">
@@ -1026,23 +1081,25 @@ const PageVentas: React.FC = () => {
     .rfc, .direccion { font-size: ${fsSm}px; text-align: center; margin-bottom: 2px; }
     .titulo-comanda { font-size: ${fsLg}px; font-weight: 900; text-align: center; margin: 4px 0 2px; letter-spacing: 1px; }
     .folio { font-size: ${fsMd}px; text-align: center; font-weight: 700; margin-top: 4px; }
-    .fecha { font-size: ${fsSm}px; text-align: center; margin-bottom: 4px; font-weight: 500; }
-    .fecha-entrega { font-size: ${fsMd}px; font-weight: 700; margin: 3px 0; }
+    .fecha { font-size: ${fsSm}px; text-align: center; margin-bottom: 2px; font-weight: 500; }
+    .hora-entrega { font-size: ${fsMd}px; font-weight: 700; text-align: center; margin: 2px 0 4px; }
     .divider { border: none; border-top: 1px solid #000; margin: 5px 0; }
-    .item { margin: 6px 0; }
-    .item-nombre { font-size: ${fs}px; font-weight: 700; }
+    .item { margin: 4px 0; }
+    .item-nombre { font-size: ${fs}px; font-weight: 700; margin-top: 4px; }
     .item-linea { font-size: ${fsMd}px; font-weight: 700; padding-left: 4px; margin-top: 2px; }
-    .mod, .obs { font-size: ${fsSm}px; padding-left: 8px; margin-top: 1px; }
-    .label { font-weight: 700; }
-    .total-section { margin-top: 6px; border-top: 1px solid #000; padding-top: 4px; }
-    .total-linea {
-      display: flex;
-      justify-content: space-between;
-      font-size: ${fs}px;
-      font-weight: 900;
-      margin: 2px 0;
-      letter-spacing: 0.5px;
-    }
+    .mod-linea { font-size: ${fsSm}px; padding-left: 4px; margin-top: 1px; }
+    .nota-linea { font-size: ${fsSm}px; padding-left: 4px; margin-top: 2px; font-style: italic; }
+    .sep-item { font-size: ${fsSm}px; margin: 4px 0 2px; letter-spacing: 0.3px; }
+    .totales { margin-top: 4px; }
+    .total-prod, .subtotal-venta { font-size: ${fs}px; font-weight: 700; margin: 2px 0; }
+    .sep-entrega { border: none; border-top: 1px dashed #000; margin: 6px 0; }
+    .entrega-titulo { font-size: ${fsMd}px; font-weight: 700; margin-bottom: 3px; }
+    .entrega-campo { font-size: ${fsSm}px; margin: 2px 0; }
+    .entrega-obs-titulo { font-size: ${fsSm}px; font-weight: 700; margin-top: 4px; }
+    .entrega-obs { font-size: ${fsSm}px; margin-bottom: 3px; }
+    .pago-seccion { margin-top: 5px; }
+    .pago-titulo { font-size: ${fsMd}px; font-weight: 700; margin-bottom: 2px; }
+    .pago-linea { font-size: ${fs}px; font-weight: 900; }
     @media print {
       html, body { width: ${w}; }
       @page { size: ${w} auto; margin: 0; }
@@ -1052,17 +1109,28 @@ const PageVentas: React.FC = () => {
 <body>
   <div class="negocio">${escapeHtml(nombreNegocio)}</div>
   ${rfcHtml}
-  ${direccionHtml}
+  ${direccionNegocioHtml}
   <hr class="divider"/>
   <div class="titulo-comanda">${escapeHtml(titulo)}</div>
   <hr class="divider"/>
   ${folioHtml}
   <div class="fecha">${escapeHtml(fechaHoraLabel)}</div>
-  ${fechaEntregaHtml}
+  ${horaEntregaHtml}
   <hr class="divider"/>
   ${itemsHtml}
-  <div class="total-section">
-    <div class="total-linea"><span>TOTAL:</span><span>$${escapeHtml(totalComanda.toFixed(2))}</span></div>
+  <div class="totales">
+    <div class="total-prod">TOTAL PROD: ${totalProductos}</div>
+    <div class="subtotal-venta">SUBTOTAL: $${subtotalComanda.toFixed(2)}</div>
+  </div>
+  <hr class="sep-entrega"/>
+  <div class="entrega-titulo">${referenciaHoraLine}</div>
+  ${direccionEntregaHtml}
+  ${telefonoEntregaHtml}
+  <div class="entrega-obs-titulo">OBS:</div>
+  <div class="entrega-obs">${escapeHtml(obsEntregaStr)}</div>
+  <div class="pago-seccion">
+    <div class="pago-titulo">INFO PAGO:</div>
+    <div class="pago-linea">${formaPagoLabel} | $${subtotalComanda.toFixed(2)}</div>
   </div>
   <script>
     window.addEventListener('load', function() { window.print(); });

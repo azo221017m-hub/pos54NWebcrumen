@@ -463,7 +463,10 @@ const PageVentasMobile: React.FC = () => {
   // ── Print comanda ─────────────────────────────────────
   const imprimirComandaCocina = (items: ItemComanda[]) => {
     const cfg = getPaperConfig();
-    const ahora = new Date().toLocaleString('es-MX');
+    const ahora = new Date().toLocaleString('es-MX', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
     const nombreNegocio = negocio?.nombreNegocio || 'POS Crumen';
     const tipoLabel = tipoServicio.toUpperCase();
     const clienteLabel =
@@ -471,21 +474,156 @@ const PageVentasMobile: React.FC = () => {
       tipoServicio === 'Llevar' ? clienteNombre :
       clienteNombre;
 
-    const escH = (v?: string | null) => (v || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const escH = (v?: string | null) => (v || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+    // Parse individual moderador names from the raw moderadores string
+    // PageVentasMobile stores names directly (not IDs)
+    const parseModeradoresLineas = (modStr: string | undefined): string[] => {
+      if (!modStr || modStr === 'LIMPIO' || modStr === 'CON TODO') return [];
+      if (modStr.startsWith('SIN:')) {
+        return modStr.replace('SIN:', '').split(',').map(n => `SIN ${n.trim()}`).filter(Boolean);
+      }
+      if (modStr.startsWith('SOLO CON:')) {
+        return modStr.replace('SOLO CON:', '').split(',').map(n => n.trim()).filter(Boolean);
+      }
+      return [modStr];
+    };
+
+    const w = cfg.cssWidth;
+    const fs = cfg.fontSize;
+    const fsMd = cfg.fontSizeMd;
+    const fsSm = cfg.fontSizeSm;
+    const fsLg = cfg.fontSizeLg;
+
+    const rfcHtml = negocio?.rfcnegocio
+      ? `<div class="rfc">${escH(negocio.rfcnegocio)}</div>`
+      : '';
+    const direccionNegocioHtml = negocio?.direccionfiscalnegocio
+      ? `<div class="direccion">${escH(negocio.direccionfiscalnegocio)}</div>`
+      : '';
+    const folioHtml = currentFolioVenta
+      ? `<div class="folio">Comanda | ${escH(tipoLabel)}${clienteLabel ? ` | ${escH(clienteLabel)}` : ''}</div>`
+      : `<div class="folio">${escH(tipoLabel)}${clienteLabel ? ` | ${escH(clienteLabel)}` : ''}</div>`;
+
+    const SEP_ITEM = '========================================';
+
     const itemsHtml = items.map(item => {
-      const sub = (Number(item.producto.precio) || 0) * item.cantidad;
+      const precioUnitario = Number(item.producto.precio) || 0;
+      const cantidad = Number(item.cantidad) || 0;
+      const subtotal = precioUnitario * cantidad;
+
+      const modLineas = parseModeradoresLineas(item.moderadores)
+        .map(m => `<div class="mod-linea">+ ${escH(m)}</div>`)
+        .join('');
+
+      const obsHtml = item.notas
+        ? `<div class="nota-linea">NOTA: ${escH(item.notas)}</div>`
+        : '';
+
       return `<div class="item">
-        <b>${escH(item.producto.nombre)}</b><br/>
-        ${item.cantidad} x $${Number(item.producto.precio).toFixed(2)} = $${sub.toFixed(2)}
-        ${item.notas ? `<br/><small>Nota: ${escH(item.notas)}</small>` : ''}
+        <div class="item-nombre">${escH(item.producto.nombre)}</div>
+        <div class="item-linea">${escH(String(cantidad))} x $${precioUnitario.toFixed(2)} = $${subtotal.toFixed(2)}</div>
+        ${modLineas}
+        ${obsHtml}
+        <div class="sep-item">${SEP_ITEM}</div>
       </div>`;
     }).join('');
 
-    const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>Comanda</title>
-    <style>body{font-family:'Courier New',monospace;font-size:${cfg.fontSize}px;width:${cfg.cssWidth};margin:0;padding:8px}
-    .item{margin:6px 0;border-bottom:1px solid #ccc;padding-bottom:4px}
-    @media print{html,body{width:${cfg.cssWidth}}@page{size:${cfg.cssWidth} auto;margin:0}}</style></head>
-    <body><b>${escH(nombreNegocio)}</b><br/>COMANDA COCINA<br/>${tipoLabel} | ${escH(clienteLabel)}<br/>${escH(ahora)}<hr/>${itemsHtml}</body></html>`;
+    // Totals
+    const totalProductos = items.reduce((sum, item) => sum + (Number(item.cantidad) || 0), 0);
+    const subtotalComanda = items.reduce((sum, item) => {
+      return sum + (Number(item.producto.precio) || 0) * (Number(item.cantidad) || 0);
+    }, 0);
+
+    // Delivery section
+    const telefonoStr = tipoServicio !== 'Mesa' ? (telefonoEntrega || '') : '';
+    const direccionStr = tipoServicio === 'Domicilio' ? (direccionEntrega || '') : '';
+    const telefonoHtml = telefonoStr ? `<div class="entrega-campo">${escH(telefonoStr)}</div>` : '';
+    const direccionHtml = direccionStr ? `<div class="entrega-campo">${escH(direccionStr)}</div>` : '';
+
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Comanda</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, 'Segoe UI', Arial, Helvetica, sans-serif;
+      font-size: ${fs}px;
+      line-height: 1.4;
+      width: ${w};
+      max-width: ${w};
+      padding: 4mm 3mm;
+      color: #000;
+      background: #fff;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+    .negocio { font-size: ${fsLg}px; font-weight: 700; text-align: center; margin-bottom: 2px; }
+    .rfc, .direccion { font-size: ${fsSm}px; text-align: center; margin-bottom: 2px; }
+    .titulo-comanda { font-size: ${fsLg}px; font-weight: 900; text-align: center; margin: 4px 0 2px; letter-spacing: 1px; }
+    .folio { font-size: ${fsMd}px; text-align: center; font-weight: 700; margin-top: 4px; }
+    .fecha { font-size: ${fsSm}px; text-align: center; margin-bottom: 4px; font-weight: 500; }
+    .divider { border: none; border-top: 1px solid #000; margin: 5px 0; }
+    .item { margin: 4px 0; }
+    .item-nombre { font-size: ${fs}px; font-weight: 700; margin-top: 4px; }
+    .item-linea { font-size: ${fsMd}px; font-weight: 700; padding-left: 4px; margin-top: 2px; }
+    .mod-linea { font-size: ${fsSm}px; padding-left: 4px; margin-top: 1px; }
+    .nota-linea { font-size: ${fsSm}px; padding-left: 4px; margin-top: 2px; font-style: italic; }
+    .sep-item { font-size: ${fsSm}px; margin: 4px 0 2px; letter-spacing: 0.3px; }
+    .totales { margin-top: 4px; }
+    .total-prod, .subtotal-venta { font-size: ${fs}px; font-weight: 700; margin: 2px 0; }
+    .sep-entrega { border: none; border-top: 1px dashed #000; margin: 6px 0; }
+    .entrega-titulo { font-size: ${fsMd}px; font-weight: 700; margin-bottom: 3px; }
+    .entrega-campo { font-size: ${fsSm}px; margin: 2px 0; }
+    .entrega-obs-titulo { font-size: ${fsSm}px; font-weight: 700; margin-top: 4px; }
+    .entrega-obs { font-size: ${fsSm}px; margin-bottom: 3px; }
+    .pago-seccion { margin-top: 5px; }
+    .pago-titulo { font-size: ${fsMd}px; font-weight: 700; margin-bottom: 2px; }
+    .pago-linea { font-size: ${fs}px; font-weight: 900; }
+    @media print {
+      html, body { width: ${w}; }
+      @page { size: ${w} auto; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="negocio">${escH(nombreNegocio)}</div>
+  ${rfcHtml}
+  ${direccionNegocioHtml}
+  <hr class="divider"/>
+  <div class="titulo-comanda">COMANDA COCINA</div>
+  <hr class="divider"/>
+  ${folioHtml}
+  <div class="fecha">${escH(ahora)}</div>
+  <hr class="divider"/>
+  ${itemsHtml}
+  <div class="totales">
+    <div class="total-prod">TOTAL PROD: ${totalProductos}</div>
+    <div class="subtotal-venta">SUBTOTAL: $${subtotalComanda.toFixed(2)}</div>
+  </div>
+  <hr class="sep-entrega"/>
+  <div class="entrega-titulo">${escH(clienteLabel || tipoLabel)}</div>
+  ${direccionHtml}
+  ${telefonoHtml}
+  <div class="entrega-obs-titulo">OBS:</div>
+  <div class="entrega-obs">Sin observaciones</div>
+  <div class="pago-seccion">
+    <div class="pago-titulo">INFO PAGO:</div>
+    <div class="pago-linea">PENDIENTE | $${subtotalComanda.toFixed(2)}</div>
+  </div>
+  <script>
+    window.addEventListener('load', function() { window.print(); });
+    window.addEventListener('afterprint', function() { window.close(); });
+  </script>
+</body>
+</html>`;
 
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
