@@ -670,12 +670,11 @@ const PageVentasMobile: React.FC = () => {
   };
 
   const handleEnviarComandaWhatsApp = () => {
-    const itemsParaEnviar = comanda.filter(item => item.estadodetalle !== ESTADO_ORDENADO);
-    if (itemsParaEnviar.length === 0) {
-      showErrorToast('No hay productos nuevos para enviar');
+    if (comanda.length === 0) {
+      showErrorToast('No hay productos en la comanda');
       return;
     }
-    const texto = generarTextoComandaWhatsApp(itemsParaEnviar);
+    const texto = generarTextoComandaWhatsApp(comanda);
     window.location.href = `whatsapp://send?text=${encodeURIComponent(texto)}`;
   };
 
@@ -1228,21 +1227,15 @@ const PageVentasMobile: React.FC = () => {
                   </div>
                 </div>
 
-                {parametros?.envioMensaje === 1 && (() => {
-                  const hasUnorderedItems = comanda.some(item => item.estadodetalle !== ESTADO_ORDENADO);
-                  return (
-                    <div className="pvm-pedidos-activos-section">
-                      <div className="pvm-pedidos-activos-label">Pedidos activos</div>
-                      <button
-                        className="pvm-btn pvm-btn-secondary pvm-btn-full"
-                        disabled={!hasUnorderedItems}
-                        onClick={handleEnviarComandaWhatsApp}
-                      >
-                        📲 Enviar
-                      </button>
-                    </div>
-                  );
-                })()}
+                <div className="pvm-pedidos-activos-section">
+                  <div className="pvm-pedidos-activos-label">Pedidos activos</div>
+                  <button
+                    className="pvm-btn pvm-btn-secondary pvm-btn-full"
+                    onClick={handleEnviarComandaWhatsApp}
+                  >
+                    📲 Enviar
+                  </button>
+                </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 0' }}>
                   <input
