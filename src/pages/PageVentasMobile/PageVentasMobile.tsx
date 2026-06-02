@@ -1249,6 +1249,22 @@ const PageVentasMobile: React.FC = () => {
                   </div>
                 </div>
 
+                {parametros?.envioMensaje === 1 && (
+                  <div style={{ padding: '8px 0 4px' }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+                      Pedidos activos
+                    </div>
+                    <button
+                      className="pvm-btn pvm-btn-secondary"
+                      style={{ width: '100%' }}
+                      disabled={comanda.filter(item => item.estadodetalle !== ESTADO_ORDENADO).length === 0}
+                      onClick={handleEnviarComandaWhatsApp}
+                    >
+                      📲 Enviar
+                    </button>
+                  </div>
+                )}
+
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 0' }}>
                   <input
                     type="checkbox"
@@ -1333,16 +1349,6 @@ const PageVentasMobile: React.FC = () => {
               >
                 {isProcessing ? '...' : 'Producir'}
               </button>
-              {parametros?.envioMensaje === 1 && (
-                <button
-                  className="pvm-btn pvm-btn-secondary pvm-btn-sm"
-                  disabled={comanda.length === 0}
-                  onClick={handleEnviarComandaWhatsApp}
-                  title="Enviar por WhatsApp"
-                >
-                  📲
-                </button>
-              )}
               <button
                 className="pvm-btn pvm-btn-primary pvm-btn-sm"
                 disabled={comanda.length === 0 || isProcessing}
