@@ -18,7 +18,7 @@ import ModalIniciaTurno from '../../components/turnos/ModalIniciaTurno';
 import ModuloPagos from '../../components/ventas/ModuloPagos';
 import useIsMobile from '../../hooks/useIsMobile';
 import type { ProductoWeb } from '../../types/productoWeb.types';
-import type { Negocio, ParametrosNegocio } from '../../types/negocio.types';
+import type { Negocio } from '../../types/negocio.types';
 import type { Categoria } from '../../types/categoria.types';
 import type { TipoServicio } from '../../types/mesa.types';
 import type { Mesa } from '../../types/mesa.types';
@@ -114,7 +114,6 @@ const PageVentasMobile: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<number | null>(null);
   const [imprimirChecked, setImprimirChecked] = useState(true);
-  const [parametros, setParametros] = useState<ParametrosNegocio | null>(null);
 
   // ── Servicio state ────────────────────────────────────
   const [tipoServicio, setTipoServicio] = useState<TipoServicio>('Mesa');
@@ -187,7 +186,6 @@ const PageVentasMobile: React.FC = () => {
           if (negData?.negocio) setNegocio(negData.negocio);
           if (negData?.parametros) {
             setImprimirChecked(negData.parametros.impresionComanda === 1);
-            setParametros(negData.parametros);
           }
         }
       } catch (err) {
