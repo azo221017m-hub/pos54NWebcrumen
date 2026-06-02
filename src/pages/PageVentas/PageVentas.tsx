@@ -1167,25 +1167,81 @@ const PageVentas: React.FC = () => {
     else if (tipoServicio === 'Llevar' && llevarData) clienteLabel = llevarData.cliente || 'mostrador';
     else if (tipoServicio === 'Domicilio' && domicilioData) clienteLabel = domicilioData.cliente || 'mostrador';
 
-    const linea = '────────────────';
+    const extractHora = (fecha: string | null | undefined): string => {
+      if (!fecha) return '';
+      const tIdx = fecha.indexOf('T');
+      if (tIdx !== -1 && fecha.length >= tIdx + 6) return fecha.substring(tIdx + 1, tIdx + 6);
+      const spIdx = fecha.indexOf(' ');
+      if (spIdx !== -1 && fecha.length >= spIdx + 6) return fecha.substring(spIdx + 1, spIdx + 6);
+      return '';
+    };
+    const fechaProgr = tipoServicio === 'Llevar'
+      ? llevarData?.fechaprogramadaventa
+      : tipoServicio === 'Domicilio'
+        ? domicilioData?.fechaprogramadaventa
+        : null;
+    const horaEntrega = extractHora(fechaProgr);
+
+    const telefonoEntregaStr = tipoServicio === 'Domicilio'
+      ? (domicilioData?.telefonodeentrega || '')
+      : tipoServicio === 'Llevar'
+        ? (llevarData?.telefonocontacto || '')
+        : (mesaData?.telefonocontacto || '');
+    const direccionEntregaStr = tipoServicio === 'Domicilio'
+      ? (domicilioData?.direcciondeentrega || '')
+      : '';
+    const obsEntregaStr = tipoServicio === 'Domicilio'
+      ? (domicilioData?.observaciones || 'Sin observaciones')
+      : 'Sin observaciones';
+    const referenciaHoraLine = clienteLabel
+      ? (horaEntrega ? `${clienteLabel} | ${horaEntrega}` : clienteLabel)
+      : tipoDeVentaLabel;
+    const formaPagoLabel = currentFormaDePago && currentFormaDePago !== 'sinFP'
+      ? currentFormaDePago.toUpperCase()
+      : 'PENDIENTE';
+
+    const MODS_SKIP = new Set(['LIMPIO', MODERADORES_PLACEHOLDER, 'CON TODO']);
+    const SEP_ITEM = '========================================';
+    const SEP_LINE = '────────────────────────────────────────';
+
     let texto = `${nombreNegocio}\n`;
-    texto += `COMANDA DE COCINA\n`;
+    if (negocio?.rfcnegocio) texto += `${negocio.rfcnegocio}\n`;
+    if (negocio?.direccionfiscalnegocio) texto += `${negocio.direccionfiscalnegocio}\n`;
+    texto += `${SEP_LINE}\n`;
+    texto += `COMANDA COCINA\n`;
+    texto += `${SEP_LINE}\n`;
     const folioLine = currentFolioVenta
       ? `Comanda | ${tipoDeVentaLabel}${clienteLabel ? ` | ${clienteLabel}` : ''}`
       : `${tipoDeVentaLabel}${clienteLabel ? ` | ${clienteLabel}` : ''}`;
     texto += `${folioLine}\n`;
     texto += `${fechaHoraLabel}\n`;
-    texto += `\n${linea}\n\n`;
+    if (horaEntrega) texto += `${horaEntrega}\n`;
+    texto += `${SEP_LINE}\n`;
+
+    let totalProductos = 0;
+    let subtotalComanda = 0;
     items.forEach(item => {
+      const precioUnitario = Number(item.producto.precio) || 0;
+      const cantidad = Number(item.cantidad) || 0;
+      const subtotal = precioUnitario * cantidad;
+      totalProductos += cantidad;
+      subtotalComanda += subtotal;
       texto += `${item.producto.nombre}\n`;
-      texto += `  Cant: ${item.cantidad}\n`;
-      if (item.moderadoresNames && item.moderadoresNames.length > 0) {
-        texto += `  _${item.moderadoresNames.join(', ')}_\n`;
-      }
-      if (item.notas) texto += `  Nota: ${item.notas}\n`;
-      texto += `\n`;
+      texto += `  ${cantidad} x $${precioUnitario.toFixed(2)} = $${subtotal.toFixed(2)}\n`;
+      const mods = (item.moderadoresNames || []).filter(n => n && !MODS_SKIP.has(n));
+      mods.forEach(m => { texto += `  + ${m}\n`; });
+      if (item.notas) texto += `  NOTA: ${item.notas}\n`;
+      texto += `${SEP_ITEM}\n`;
     });
-    texto += `${linea}\n`;
+
+    texto += `TOTAL PROD: ${totalProductos}\n`;
+    texto += `SUBTOTAL: $${subtotalComanda.toFixed(2)}\n`;
+    texto += `${SEP_LINE}\n`;
+    texto += `${referenciaHoraLine}\n`;
+    if (direccionEntregaStr) texto += `${direccionEntregaStr}\n`;
+    if (telefonoEntregaStr) texto += `${telefonoEntregaStr}\n`;
+    texto += `OBS:\n${obsEntregaStr}\n`;
+    texto += `INFO PAGO:\n${formaPagoLabel} | $${subtotalComanda.toFixed(2)}\n`;
     return texto;
   };
 
