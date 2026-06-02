@@ -864,3 +864,20 @@
   height: 18px;
   accent-color: #7c3aed;
 }
+
+.pvm-pedidos-activos-section {
+  padding: 8px 0 4px;
+}
+
+.pvm-pedidos-activos-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.pvm-btn-full {
+  width: 100%;
+}

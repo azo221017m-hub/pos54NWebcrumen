@@ -1249,21 +1249,21 @@ const PageVentasMobile: React.FC = () => {
                   </div>
                 </div>
 
-                {parametros?.envioMensaje === 1 && (
-                  <div style={{ padding: '8px 0 4px' }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
-                      Pedidos activos
+                {parametros?.envioMensaje === 1 && (() => {
+                  const hasUnorderedItems = comanda.some(item => item.estadodetalle !== ESTADO_ORDENADO);
+                  return (
+                    <div className="pvm-pedidos-activos-section">
+                      <div className="pvm-pedidos-activos-label">Pedidos activos</div>
+                      <button
+                        className="pvm-btn pvm-btn-secondary pvm-btn-full"
+                        disabled={!hasUnorderedItems}
+                        onClick={handleEnviarComandaWhatsApp}
+                      >
+                        📲 Enviar
+                      </button>
                     </div>
-                    <button
-                      className="pvm-btn pvm-btn-secondary"
-                      style={{ width: '100%' }}
-                      disabled={comanda.filter(item => item.estadodetalle !== ESTADO_ORDENADO).length === 0}
-                      onClick={handleEnviarComandaWhatsApp}
-                    >
-                      📲 Enviar
-                    </button>
-                  </div>
-                )}
+                  );
+                })()}
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 0' }}>
                   <input
