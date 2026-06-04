@@ -1068,7 +1068,8 @@ const PageVentas: React.FC = () => {
       ? `<div class="entrega-campo">${escapeHtml(telefonoEntregaStr)}</div>`
       : '';
     const obsEntregaHtml = obsEntregaStr
-      ? `<div class="entrega-obs-titulo">OBS:</div><div class="entrega-obs">${escapeHtml(obsEntregaStr)}</div>`
+      ? `<div class="entrega-obs-titulo">OBS:</div>
+  <div class="entrega-obs">${escapeHtml(obsEntregaStr)}</div>`
       : '';
 
     // Payment info

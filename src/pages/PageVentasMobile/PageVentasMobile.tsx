@@ -532,7 +532,8 @@ const PageVentasMobile: React.FC = () => {
     const SEP_ITEM = '========================================';
 
     const itemsHtml = itemsData.map(d => {
-      // Use moderadoresNames for display (already formatted: 'CON TODO', 'LIMPIO', 'SOLO CON: ...', 'SIN: ...')
+      // In PageVentasMobile, moderadoresNames is always a single-element array containing
+      // the pre-formatted display string (e.g. 'CON TODO', 'LIMPIO', 'SOLO CON: Queso, Tocino', 'SIN: Cebolla').
       const modDisplay = (d.moderadoresNames && d.moderadoresNames.length > 0)
         ? d.moderadoresNames[0]
         : 'CON TODO';
