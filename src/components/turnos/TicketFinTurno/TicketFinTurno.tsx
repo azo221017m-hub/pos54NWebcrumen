@@ -50,7 +50,10 @@ const TicketFinTurno: React.FC<TicketFinTurnoProps> = ({
       }
     };
     cargar();
-  // efectivoContado is intentionally excluded so a re-fetch only happens on claveturno change
+  // efectivoContado is intentionally excluded from deps: it is a one-time value
+  // captured from the already-filled form when this modal opens. If claveturno
+  // changes the data will be re-fetched and the new efectivoContado (if any)
+  // should be passed by the parent again via re-mounting.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claveturno]);
 

@@ -455,7 +455,7 @@ export const DashboardPage = () => {
 
   // Step 1: User clicks "Cerrar TURNO" in CierreTurno form.
   // Store the form data and open the ticket pre-cierre modal instead of closing the turn.
-  const handleCierreTurnoSubmit = (datosFormulario: DatosCierreTurno) => {
+  const handleCierreTurnoPreview = (datosFormulario: DatosCierreTurno) => {
     console.log('Datos de cierre de turno (pendiente confirmación):', datosFormulario);
     setPendingCierreDatos(datosFormulario);
     setShowCierreTurnoModal(false);
@@ -2332,7 +2332,7 @@ export const DashboardPage = () => {
         <CierreTurno 
           turno={turnoAbierto}
           onCancel={handleCierreTurnoCancel}
-          onSubmit={handleCierreTurnoSubmit}
+          onSubmit={handleCierreTurnoPreview}
         />
       )}
 
