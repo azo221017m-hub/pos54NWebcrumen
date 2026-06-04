@@ -7,6 +7,8 @@ import { websocketService } from '../services/websocket.service';
 
 // Constantes
 const REFERENCIA_FONDO_CAJA = 'FONDO de CAJA';
+// MySQL error number for "Table doesn't exist" (ER_NO_SUCH_TABLE)
+const MYSQL_ER_NO_SUCH_TABLE = 1146;
 
 // Interface para Turno
 interface Turno extends RowDataPacket {
@@ -860,6 +862,7 @@ export const obtenerTurnoAbierto = async (req: AuthRequest, res: Response): Prom
 
 // GET /api/turnos/corte/:claveturno - Obtener todos los datos para el Ticket de Fin de Turno
 export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Promise<void> => {
+  let currentStep = 'init';
   try {
     const idnegocio = req.user?.idNegocio;
     const usuarioGenerador = req.user?.alias || '';
@@ -876,6 +879,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     }
 
     // 1. Turno + Negocio
+    currentStep = 'turnoRows';
     const [turnoRows] = await pool.query<RowDataPacket[]>(
       `SELECT 
         t.idturno, t.numeroturno, t.claveturno, t.usuarioturno,
@@ -896,6 +900,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     const turno = turnoRows[0];
 
     // 2. Fondo inicial (MOVIMIENTO FONDO de CAJA positivo - primer registro)
+    currentStep = 'fondoInicialRows';
     const [fondoInicialRows] = await pool.query<RowDataPacket[]>(
       `SELECT COALESCE(SUM(totaldeventa), 0) AS fondoInicial
        FROM tblposcrumenwebventas
@@ -907,6 +912,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     const fondoInicial = Number(fondoInicialRows[0]?.fondoInicial) || 0;
 
     // 3. Retiro de fondo (MOVIMIENTO FONDO de CAJA negativo)
+    currentStep = 'retiroFondoRows';
     const [retiroFondoRows] = await pool.query<RowDataPacket[]>(
       `SELECT COALESCE(SUM(ABS(totaldeventa)), 0) AS retiroFondo
        FROM tblposcrumenwebventas
@@ -918,6 +924,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     const retiroFondo = Number(retiroFondoRows[0]?.retiroFondo) || 0;
 
     // 3b. Ingresos a caja durante el turno (MOVIMIENTO referencia = 'INGRESO CAJA')
+    currentStep = 'ingresosCajaRows';
     const [ingresosCajaRows] = await pool.query<RowDataPacket[]>(
       `SELECT COALESCE(SUM(totaldeventa), 0) AS ingresosCaja
        FROM tblposcrumenwebventas
@@ -929,6 +936,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     const ingresosCaja = Number(ingresosCajaRows[0]?.ingresosCaja) || 0;
 
     // 3c. Retiros de caja durante el turno (MOVIMIENTO referencia = 'RETIRO CAJA')
+    currentStep = 'retirosCajaRows';
     const [retirosCajaRows] = await pool.query<RowDataPacket[]>(
       `SELECT COALESCE(SUM(ABS(totaldeventa)), 0) AS retirosCaja
        FROM tblposcrumenwebventas
@@ -939,9 +947,10 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     const retirosCaja = Number(retirosCajaRows[0]?.retirosCaja) || 0;
 
     // 4. Ventas brutas, descuentos, ventas netas (solo ventas reales)
+    currentStep = 'ventasResumenRows';
     const [ventasResumenRows] = await pool.query<RowDataPacket[]>(
       `SELECT
-         COALESCE(SUM(subtotal + descuentos), 0) AS ventasBrutas,
+         COALESCE(SUM(subtotal), 0) AS ventasBrutas,
          COALESCE(SUM(descuentos), 0) AS totalDescuentos,
          COALESCE(SUM(totaldeventa), 0) AS ventasNetas,
          COUNT(*) AS totalTickets
@@ -957,6 +966,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     const totalTickets = Number(ventasResumenRows[0]?.totalTickets) || 0;
 
     // 5. Gastos del turno (referencia = 'GASTO'), solo si existen
+    currentStep = 'gastosRows';
     const [gastosRows] = await pool.query<RowDataPacket[]>(
       `SELECT descripcionmov AS concepto, COALESCE(SUM(totaldeventa), 0) AS importe
        FROM tblposcrumenwebventas
@@ -966,6 +976,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
        ORDER BY descripcionmov ASC`,
       [claveturno, idnegocio]
     );
+    currentStep = 'totalGastosRows';
     const [totalGastosRows] = await pool.query<RowDataPacket[]>(
       `SELECT COALESCE(SUM(totaldeventa), 0) AS totalGastos
        FROM tblposcrumenwebventas
@@ -976,6 +987,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     const totalGastos = Number(totalGastosRows[0]?.totalGastos) || 0;
 
     // 6. Ventas por forma de pago (simple + detallepagos para MIXTO)
+    currentStep = 'ventasFormaPagoRows';
     const [ventasFormaPagoRows] = await pool.query<RowDataPacket[]>(
       `SELECT formadepago, COALESCE(SUM(totaldeventa), 0) AS total
        FROM tblposcrumenwebventas
@@ -988,16 +1000,29 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     );
 
     // Para pagos MIXTO, obtener detalles de tblposcrumenwebdetallepagos
-    const [mixtoDetalleRows] = await pool.query<RowDataPacket[]>(
-      `SELECT dp.formadepagodetalle AS formadepago, COALESCE(SUM(dp.totaldepago), 0) AS total
+    // Se maneja con try/catch por si la tabla no existe en esta instalación
+    currentStep = 'mixtoDetalleRows';
+    let mixtoDetalleRows: RowDataPacket[] = [];
+    try {
+      const [rows] = await pool.query<RowDataPacket[]>(
+        `SELECT dp.formadepagodetalle AS formadepago, COALESCE(SUM(dp.totaldepago), 0) AS total
        FROM tblposcrumenwebdetallepagos dp
        INNER JOIN tblposcrumenwebventas v ON dp.idfolioventa = v.folioventa
        WHERE v.claveturno = ? AND v.idnegocio = ?
          AND v.estadodeventa = 'COBRADO' AND v.estatusdepago = 'PAGADO'
          AND v.formadepago = 'MIXTO'
        GROUP BY dp.formadepagodetalle`,
-      [claveturno, idnegocio]
-    );
+        [claveturno, idnegocio]
+      );
+      mixtoDetalleRows = rows;
+    } catch (mixtoErr: any) {
+      // MySQL error 1146 (ER_NO_SUCH_TABLE): table may not exist if the payment migration was never applied
+      if (mixtoErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
+        console.warn('[obtenerCorteFinTurno] tblposcrumenwebdetallepagos no existe, omitiendo pagos MIXTO');
+      } else {
+        throw mixtoErr;
+      }
+    }
 
     // Combinar detalles de pagos simples + mixtos
     const pagoMap: Record<string, number> = {};
@@ -1017,6 +1042,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     const ventasEfectivo = pagoMap['EFECTIVO'] || 0;
 
     // 7. Ventas por tipo de venta
+    currentStep = 'ventasTipoRows';
     const [ventasTipoRows] = await pool.query<RowDataPacket[]>(
       `SELECT tipodeventa, COALESCE(SUM(totaldeventa), 0) AS total
        FROM tblposcrumenwebventas
@@ -1029,6 +1055,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     );
 
     // 8. Descuentos aplicados agrupados por detalledescuento
+    currentStep = 'descuentosRows';
     const [descuentosRows] = await pool.query<RowDataPacket[]>(
       `SELECT 
          COALESCE(NULLIF(TRIM(detalledescuento), ''), 'Sin nombre') AS nombre,
@@ -1044,6 +1071,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     );
 
     // 9. Productos vendidos
+    currentStep = 'productosRows';
     const [productosRows] = await pool.query<RowDataPacket[]>(
       `SELECT 
          d.nombreproducto,
@@ -1059,6 +1087,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       [claveturno, idnegocio]
     );
 
+    currentStep = 'totalesProductosRows';
     const [totalesProductosRows] = await pool.query<RowDataPacket[]>(
       `SELECT 
          COALESCE(SUM(d.cantidad), 0) AS totalUnidades,
@@ -1070,6 +1099,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
          AND v.descripcionmov = 'VENTA'`,
       [claveturno, idnegocio]
     );
+    currentStep = 'buildResponse';
     const totalUnidades = Number(totalesProductosRows[0]?.totalUnidades) || 0;
     const totalVentaProductos = Number(totalesProductosRows[0]?.totalVentaProductos) || 0;
 
@@ -1163,7 +1193,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       }
     });
   } catch (error) {
-    console.error('Error al obtener corte de fin de turno:', error);
+    console.error(`Error al obtener corte de fin de turno [step: ${currentStep}]:`, error);
     res.status(500).json({
       success: false,
       message: 'Error al obtener corte de fin de turno',
