@@ -532,12 +532,9 @@ const PageVentasMobile: React.FC = () => {
     const SEP_ITEM = '========================================';
 
     const itemsHtml = itemsData.map(d => {
-      // In PageVentasMobile, moderadoresNames is always a single-element array containing
-      // the pre-formatted display string (e.g. 'CON TODO', 'LIMPIO', 'SOLO CON: Queso, Tocino', 'SIN: Cebolla').
-      const modDisplay = (d.moderadoresNames && d.moderadoresNames.length > 0)
-        ? d.moderadoresNames[0]
-        : 'CON TODO';
-      const modHtml = `<div class="mod-linea">${escH(modDisplay)}</div>`;
+      const modHtml = d.mods.length > 0
+        ? d.mods.map(m => `<div class="mod-linea">+ ${escH(m)}</div>`).join('')
+        : '';
       const obsHtml = d.notas ? `<div class="nota-linea">OBS: ${escH(d.notas)}</div>` : '';
       return `<div class="item">
         <div class="item-nombre">${escH(d.nombre)}</div>
