@@ -222,8 +222,15 @@ export const obtenerCorteFinTurno = async (claveturno: string): Promise<CorteFin
     );
     console.log('Servicio: Corte de fin de turno obtenido');
     return response.data.data;
-  } catch (error) {
-    console.error('Error en servicio obtenerCorteFinTurno:', error);
+  } catch (error: any) {
+    const status = error?.response?.status;
+    const backendMessage = error?.response?.data?.message || error?.response?.data?.error;
+    const message = backendMessage || error?.message || 'Error desconocido';
+    console.error('Error en servicio obtenerCorteFinTurno:', {
+      status,
+      message,
+      url: `/turnos/corte/${claveturno}`,
+    });
     throw error;
   }
 };

@@ -914,20 +914,25 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       turnoRows = rows;
     } catch (turnoErr: any) {
       if (turnoErr?.errno === MYSQL_ER_BAD_FIELD_ERROR) {
-        // metaturno column may not exist yet (migration pending)
-        console.warn('[obtenerCorteFinTurno] metaturno column missing, retrying without it');
-        const [rows] = await pool.query<RowDataPacket[]>(
-          `SELECT 
-            t.idturno, t.numeroturno, t.claveturno, t.usuarioturno,
-            t.fechainicioturno, t.fechafinturno, t.estatusturno, NULL AS metaturno,
-            n.nombreNegocio, n.rfcnegocio
-           FROM tblposcrumenwebturnos t
-           LEFT JOIN tblposcrumenwebnegocio n ON t.idnegocio = n.idNegocio
-           WHERE t.claveturno = ? AND t.idnegocio = ?
-           LIMIT 1`,
-          [claveturno, idnegocio]
-        );
-        turnoRows = rows;
+        // A column may not exist yet (metaturno, rfcnegocio, nombreNegocio, etc.)
+        // Retry without the negocio JOIN to avoid cascading BAD_FIELD errors
+        console.warn('[obtenerCorteFinTurno] column missing in turno/negocio query, retrying without JOIN');
+        try {
+          const [rows] = await pool.query<RowDataPacket[]>(
+            `SELECT 
+              t.idturno, t.numeroturno, t.claveturno, t.usuarioturno,
+              t.fechainicioturno, t.fechafinturno, t.estatusturno, NULL AS metaturno,
+              '' AS nombreNegocio, '' AS rfcnegocio
+             FROM tblposcrumenwebturnos t
+             WHERE t.claveturno = ? AND t.idnegocio = ?
+             LIMIT 1`,
+            [claveturno, idnegocio]
+          );
+          turnoRows = rows;
+        } catch (retryErr: any) {
+          console.error('[obtenerCorteFinTurno] retry turnoRows also failed:', retryErr?.message);
+          throw retryErr;
+        }
       } else {
         throw turnoErr;
       }
@@ -1018,9 +1023,9 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       );
       totalGastos = Number(totalGastosRows[0]?.totalGastos) || 0;
     } catch (referenciaErr: any) {
-      if (referenciaErr?.errno === MYSQL_ER_BAD_FIELD_ERROR) {
-        // referencia column may not exist yet (migration pending)
-        console.warn('[obtenerCorteFinTurno] referencia column missing, omitiendo movimientos de caja y gastos');
+      if (referenciaErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || referenciaErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
+        // referencia or descripcionmov column may not exist yet (migration pending)
+        console.warn('[obtenerCorteFinTurno] referencia/descripcionmov column or table missing, omitiendo movimientos de caja y gastos');
       } else {
         throw referenciaErr;
       }
@@ -1164,7 +1169,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       );
       descuentosRows = rows;
     } catch (descErr: any) {
-      if (descErr?.errno === MYSQL_ER_BAD_FIELD_ERROR) {
+      if (descErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || descErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
         // detalledescuento column may not exist yet (migration pending)
         console.warn('[obtenerCorteFinTurno] detalledescuento column missing, omitiendo detalle de descuentos');
       } else {

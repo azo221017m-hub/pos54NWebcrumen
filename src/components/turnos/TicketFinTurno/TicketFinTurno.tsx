@@ -42,9 +42,16 @@ const TicketFinTurno: React.FC<TicketFinTurnoProps> = ({
           corte.efectivoContado = efectivoContado;
         }
         setData(corte);
-      } catch (err) {
-        console.error('Error al cargar corte de fin de turno:', err);
-        setError('Error al cargar el corte de fin de turno');
+      } catch (err: any) {
+        const status = err?.response?.status;
+        const backendMessage = err?.response?.data?.message || err?.response?.data?.error;
+        const displayMessage = backendMessage || err?.message || 'Error al cargar el corte de fin de turno';
+        console.error('Error al cargar corte de fin de turno:', {
+          status,
+          message: displayMessage,
+          claveturno,
+        });
+        setError(displayMessage);
       } finally {
         setCargando(false);
       }
