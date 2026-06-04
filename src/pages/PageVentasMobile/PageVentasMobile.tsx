@@ -498,7 +498,7 @@ const PageVentasMobile: React.FC = () => {
       const cantidad = Number(item.cantidad) || 0;
       const subtotal = precioUnitario * cantidad;
       const mods = parseModeradoresLineas(item.moderadores);
-      return { nombre: item.producto.nombre, cantidad, precioUnitario, subtotal, mods, notas: item.notas, moderadoresNames: item.moderadoresNames };
+      return { nombre: item.producto.nombre, idCategoria: item.producto.idCategoria, cantidad, precioUnitario, subtotal, mods, notas: item.notas, moderadoresNames: item.moderadoresNames };
     });
 
     const totalProductos = itemsData.reduce((sum, d) => sum + d.cantidad, 0);
@@ -532,10 +532,24 @@ const PageVentasMobile: React.FC = () => {
     const SEP_ITEM = '========================================';
 
     const itemsHtml = itemsData.map(d => {
-      const modHtml = d.mods.length > 0
-        ? d.mods.map(m => `<div class="mod-linea">+ ${escH(m)}</div>`).join('')
-        : '';
-      const obsHtml = d.notas ? `<div class="nota-linea">OBS: ${escH(d.notas)}</div>` : '';
+      const modHtml = (() => {
+        const names = d.moderadoresNames;
+        if (!names || names.length === 0) return '';
+        const first = names[0];
+        if (first === 'CON TODO') return `<div class="mod-linea">CON TODO</div>`;
+        if (first === 'LIMPIO') return `<div class="mod-linea">LIMPIO</div>`;
+        if (first.startsWith('SIN: ')) return `<div class="mod-linea">${escH(first)}</div>`;
+        if (first.startsWith('SOLO CON: ')) {
+          const availableMods = getAvailableModeradores(d.idCategoria);
+          const soloNames = first.slice('SOLO CON: '.length).split(', ');
+          if (availableMods.length > 0 && soloNames.length >= availableMods.length) {
+            return `<div class="mod-linea">CON TODO</div>`;
+          }
+          return `<div class="mod-linea">${escH(first)}</div>`;
+        }
+        return '';
+      })();
+      const obsHtml = d.notas && d.notas.trim() ? `<div class="nota-linea">OBS: ${escH(d.notas)}</div>` : '';
       return `<div class="item">
         <div class="item-nombre">${escH(d.nombre)}</div>
         <div class="item-linea">${escH(String(d.cantidad))} x $${d.precioUnitario.toFixed(2)} = $${d.subtotal.toFixed(2)}</div>
