@@ -10,6 +10,7 @@ import type { Turno, CorteFinTurnoData } from '../types/turno.types';
 import { generarTextoTicket } from '../utils/ticketFinTurno';
 import { getPaperConfig } from '../utils/ticketLayout';
 import CierreTurno from '../components/turnos/CierreTurno/CierreTurno';
+import TicketFinTurno from '../components/turnos/TicketFinTurno/TicketFinTurno';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../components/FeedbackToast';
 import { obtenerInsumos } from '../services/insumosService';
 import type { Insumo } from '../types/insumo.types';
@@ -234,6 +235,10 @@ export const DashboardPage = () => {
   const [showCierreTurnoModal, setShowCierreTurnoModal] = useState(false);
   const [showDetalleCorteModal, setShowDetalleCorteModal] = useState(false);
   const [corteFinTurnoData, setCorteFinTurnoData] = useState<CorteFinTurnoData | null>(null);
+  // Pre-cierre ticket modal state
+  const [showTicketPreCierreModal, setShowTicketPreCierreModal] = useState(false);
+  const [pendingCierreDatos, setPendingCierreDatos] = useState<DatosCierreTurno | null>(null);
+  const [isConfirmingCierre, setIsConfirmingCierre] = useState(false);
   const [negocio, setNegocio] = useState<Negocio | null>(null);
   const [abiertoAhoraWeb, setAbiertoAhoraWeb] = useState<boolean>(false);
   const [ventasEnCamino, setVentasEnCamino] = useState<Set<number>>(new Set());
@@ -448,20 +453,39 @@ export const DashboardPage = () => {
     setShowCierreTurnoModal(false);
   };
 
-  const handleCierreTurnoSubmit = async (datosFormulario: DatosCierreTurno) => {
+  // Step 1: User clicks "Cerrar TURNO" in CierreTurno form.
+  // Store the form data and open the ticket pre-cierre modal instead of closing the turn.
+  const handleCierreTurnoSubmit = (datosFormulario: DatosCierreTurno) => {
+    console.log('Datos de cierre de turno (pendiente confirmación):', datosFormulario);
+    setPendingCierreDatos(datosFormulario);
+    setShowCierreTurnoModal(false);
+    setShowTicketPreCierreModal(true);
+  };
+
+  // Step 2a: User cancels from the ticket modal → go back to CierreTurno modal.
+  const handleCancelarDesdeTicket = () => {
+    setShowTicketPreCierreModal(false);
+    setPendingCierreDatos(null);
+    setShowCierreTurnoModal(true);
+  };
+
+  // Step 2b: User confirms the closure from the ticket modal.
+  const handleConfirmarCierreDesdeTicket = async () => {
+    if (!pendingCierreDatos) return;
+    setIsConfirmingCierre(true);
     try {
-      console.log('Datos de cierre de turno:', datosFormulario);
+      console.log('Datos de cierre de turno:', pendingCierreDatos);
       // 1. Close the turno
-      await cerrarTurnoActual(datosFormulario);
+      await cerrarTurnoActual(pendingCierreDatos);
       console.log('Turno cerrado exitosamente');
 
-      // 2. Fetch new-format ticket data and auto-print
+      // 2. Fetch new-format ticket data for the post-cierre modal
       let corteData: CorteFinTurnoData | null = null;
       try {
-        corteData = await obtenerCorteFinTurno(datosFormulario.idTurno);
+        corteData = await obtenerCorteFinTurno(pendingCierreDatos.idTurno);
         // Attach the arqueo captured in the form so the ticket shows conciliation
         if (corteData) {
-          corteData.efectivoContado = datosFormulario.totalArqueo > 0 ? datosFormulario.totalArqueo : null;
+          corteData.efectivoContado = pendingCierreDatos.totalArqueo > 0 ? pendingCierreDatos.totalArqueo : null;
         }
         setCorteFinTurnoData(corteData);
       } catch (err) {
@@ -484,8 +508,9 @@ export const DashboardPage = () => {
         }
       }
 
-      // 4. Show the post-cierre modal and refresh state
-      setShowCierreTurnoModal(false);
+      // 4. Close ticket modal, show post-cierre modal and refresh state
+      setShowTicketPreCierreModal(false);
+      setPendingCierreDatos(null);
       setShowDetalleCorteModal(true);
       await verificarTurno();
       await cargarResumenVentas();
@@ -493,6 +518,8 @@ export const DashboardPage = () => {
     } catch (error) {
       console.error('Error al cerrar turno:', error);
       showErrorToast('Error al cerrar el turno. Por favor intente nuevamente.');
+    } finally {
+      setIsConfirmingCierre(false);
     }
   };
 
@@ -2306,6 +2333,18 @@ export const DashboardPage = () => {
           turno={turnoAbierto}
           onCancel={handleCierreTurnoCancel}
           onSubmit={handleCierreTurnoSubmit}
+        />
+      )}
+
+      {/* Modal Ticket Pre-Cierre: Imprimir / Enviar por WhatsApp antes de confirmar el cierre */}
+      {showTicketPreCierreModal && turnoAbierto && (
+        <TicketFinTurno
+          claveturno={turnoAbierto.claveturno}
+          efectivoContado={pendingCierreDatos?.totalArqueo ?? undefined}
+          onClose={handleCancelarDesdeTicket}
+          onBack={handleCancelarDesdeTicket}
+          onConfirm={handleConfirmarCierreDesdeTicket}
+          isConfirming={isConfirmingCierre}
         />
       )}
 

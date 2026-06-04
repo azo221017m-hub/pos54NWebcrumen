@@ -153,3 +153,33 @@
 .ticket-btn-whatsapp:hover {
   opacity: 0.85;
 }
+
+/* Fila de confirmación/cancelación */
+.ticket-modal-footer-confirm {
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.ticket-btn-cancelar {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.ticket-btn-cancelar:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+.ticket-btn-confirmar {
+  background: #16a34a;
+  color: #fff;
+}
+
+.ticket-btn-confirmar:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.ticket-btn-confirmar:disabled,
+.ticket-btn-cancelar:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

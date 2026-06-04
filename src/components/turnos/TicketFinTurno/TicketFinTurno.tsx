@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Printer, MessageCircle, Loader } from 'lucide-react';
+import { X, Printer, MessageCircle, Loader, CheckCircle, ArrowLeft } from 'lucide-react';
 import type { CorteFinTurnoData } from '../../../types/turno.types';
 import { obtenerCorteFinTurno } from '../../../services/turnosService';
 import { generarTextoTicket } from '../../../utils/ticketFinTurno';
@@ -8,9 +8,24 @@ import './TicketFinTurno.css';
 interface TicketFinTurnoProps {
   claveturno: string;
   onClose: () => void;
+  /** Valor del arqueo de caja a inyectar en el ticket (opcional) */
+  efectivoContado?: number;
+  /** Callback para confirmar el cierre del turno (opcional – muestra botón Confirmar) */
+  onConfirm?: () => void;
+  /** Callback para cancelar y regresar al modal anterior (opcional – muestra botón Cancelar) */
+  onBack?: () => void;
+  /** Indica que se está procesando la confirmación (deshabilita el botón Confirmar) */
+  isConfirming?: boolean;
 }
 
-const TicketFinTurno: React.FC<TicketFinTurnoProps> = ({ claveturno, onClose }) => {
+const TicketFinTurno: React.FC<TicketFinTurnoProps> = ({
+  claveturno,
+  onClose,
+  efectivoContado,
+  onConfirm,
+  onBack,
+  isConfirming = false,
+}) => {
   const [data, setData] = useState<CorteFinTurnoData | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,6 +37,10 @@ const TicketFinTurno: React.FC<TicketFinTurnoProps> = ({ claveturno, onClose }) 
         setCargando(true);
         setError(null);
         const corte = await obtenerCorteFinTurno(claveturno);
+        // Inject efectivoContado when provided (muestra conciliación en el ticket)
+        if (typeof efectivoContado === 'number' && efectivoContado > 0) {
+          corte.efectivoContado = efectivoContado;
+        }
         setData(corte);
       } catch (err) {
         console.error('Error al cargar corte de fin de turno:', err);
@@ -31,6 +50,8 @@ const TicketFinTurno: React.FC<TicketFinTurnoProps> = ({ claveturno, onClose }) 
       }
     };
     cargar();
+  // efectivoContado is intentionally excluded so a re-fetch only happens on claveturno change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claveturno]);
 
   const textoTicket = data ? generarTextoTicket(data) : '';
@@ -131,6 +152,40 @@ const TicketFinTurno: React.FC<TicketFinTurnoProps> = ({ claveturno, onClose }) 
               <MessageCircle size={18} />
               WhatsApp
             </button>
+          </div>
+        )}
+
+        {/* Fila de confirmación / cancelación (solo cuando se usan los callbacks) */}
+        {(onConfirm || onBack) && (
+          <div className="ticket-modal-footer ticket-modal-footer-confirm">
+            {onBack && (
+              <button
+                type="button"
+                className="ticket-btn ticket-btn-cancelar"
+                onClick={onBack}
+                disabled={isConfirming}
+                title="Cancelar y regresar"
+              >
+                <ArrowLeft size={18} />
+                Cancelar
+              </button>
+            )}
+            {onConfirm && (
+              <button
+                type="button"
+                className="ticket-btn ticket-btn-confirmar"
+                onClick={onConfirm}
+                disabled={isConfirming || cargando}
+                title="Confirmar cierre de turno"
+              >
+                {isConfirming ? (
+                  <Loader size={18} className="ticket-spinner" />
+                ) : (
+                  <CheckCircle size={18} />
+                )}
+                {isConfirming ? 'Cerrando...' : 'Confirmar Cierre'}
+              </button>
+            )}
           </div>
         )}
       </div>
