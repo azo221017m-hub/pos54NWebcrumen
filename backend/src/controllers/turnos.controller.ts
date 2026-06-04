@@ -1025,7 +1025,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       totalGastos = Number(totalGastosRows[0]?.totalGastos) || 0;
     } catch (referenciaErr: any) {
       if (referenciaErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || referenciaErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
-        // referencia or descripcionmov column may not exist yet (migration pending)
+        // referencia/descripcionmov column missing or table does not exist yet (migration pending)
         console.warn('[obtenerCorteFinTurno] referencia/descripcionmov column or table missing, omitiendo movimientos de caja y gastos');
       } else {
         throw referenciaErr;
@@ -1171,7 +1171,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       descuentosRows = rows;
     } catch (descErr: any) {
       if (descErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || descErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
-        // detalledescuento column may not exist yet (migration pending)
+        // detalledescuento column missing or table does not exist yet (migration pending)
         console.warn('[obtenerCorteFinTurno] detalledescuento column missing, omitiendo detalle de descuentos');
       } else {
         throw descErr;
