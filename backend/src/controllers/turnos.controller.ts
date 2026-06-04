@@ -463,7 +463,7 @@ export const cerrarTurnoNuevo = async (req: AuthRequest, res: Response): Promise
 
     // Buscar el turno abierto con esa clave
     const [turnosAbiertos] = await pool.query<Turno[]>(
-      `SELECT idturno, claveturno, metaturno FROM tblposcrumenwebturnos
+      `SELECT idturno, metaturno FROM tblposcrumenwebturnos
        WHERE claveturno = ? AND idnegocio = ? AND estatusturno = 'abierto'
        LIMIT 1`,
       [claveturno, idnegocio]

@@ -448,6 +448,8 @@ export const DashboardPage = () => {
         ventana.document.close();
         ventana.focus();
         setTimeout(() => { ventana.print(); ventana.close(); }, PRINT_WINDOW_READY_DELAY_MS);
+      } else {
+        showErrorToast('No se pudo abrir la ventana de impresión. Verifica los pop-ups.');
       }
 
       setShowDetalleCorteModal(true);
