@@ -72,6 +72,9 @@ const ConfigTurnos: React.FC = () => {
       // Log the closure data for debugging
       console.log('Datos del cierre de turno:', datosFormulario);
       
+      // Guardar claveturno antes de limpiar el estado
+      const claveturno = turnoEditar.claveturno;
+
       // Call the backend endpoint with the closure data
       const response = await cerrarTurnoActual(datosFormulario);
       
@@ -87,6 +90,9 @@ const ConfigTurnos: React.FC = () => {
             : turno
         )
       );
+
+      // Mostrar el ticket de fin de turno para imprimir y enviar por WhatsApp
+      setClaveturnoCorte(claveturno);
     } catch (error) {
       console.error('Error al cerrar turno:', error);
       mostrarMensaje('error', 'Error al cerrar el turno');
