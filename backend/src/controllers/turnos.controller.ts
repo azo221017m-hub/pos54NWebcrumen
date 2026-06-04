@@ -510,6 +510,8 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
       // Insertar venta con folioventa vacío (se actualizará después)
       // Nota: importedepago se establece en 0 según especificación, aunque el pago es efectivo
       // Nota: subtotal y totaldeventa deben ser NEGATIVOS para retiros de fondo
+      // Nota: detalledescuento omitido — defaultea a NULL; así el INSERT es compatible con
+      //       instalaciones donde la columna aún no fue migrada.
       const [ventaResult] = await connection.execute<ResultSetHeader>(
         `INSERT INTO tblposcrumenwebventas (
           tipodeventa, folioventa, estadodeventa, fechadeventa, 
@@ -517,8 +519,8 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
           subtotal, descuentos, impuestos, 
           totaldeventa, cliente, direcciondeentrega, contactodeentrega, 
           telefonodeentrega, propinadeventa, formadepago, importedepago, estatusdepago, 
-          referencia, tiempototaldeventa, claveturno, idnegocio, usuarioauditoria, fechamodificacionauditoria, detalledescuento
-        ) VALUES (?, ?, ?, ?, NULL, NULL, NULL, NULL, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, ?, ?, ?, ?, NULL, ?, ?, ?, ?, NULL)`,
+          referencia, tiempototaldeventa, claveturno, idnegocio, usuarioauditoria, fechamodificacionauditoria
+        ) VALUES (?, ?, ?, ?, NULL, NULL, NULL, NULL, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, ?, ?, ?, ?, NULL, ?, ?, ?, ?)`,
         [
           'MOVIMIENTO',          // tipodeventa
           '',                    // folioventa (se actualiza después)
@@ -582,13 +584,27 @@ export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promis
       });
     }
 
-    // Cerrar el turno
-    await connection.query(
-      `UPDATE tblposcrumenwebturnos 
-       SET estatusturno = 'cerrado', fechafinturno = ?, logrometa = ?
-       WHERE idturno = ?`,
-      [fechaCierreUtc6, logrometa, idturno]
-    );
+    // Cerrar el turno — logrometa es opcional (columna puede no existir en BD antigua)
+    try {
+      await connection.query(
+        `UPDATE tblposcrumenwebturnos 
+         SET estatusturno = 'cerrado', fechafinturno = ?, logrometa = ?
+         WHERE idturno = ?`,
+        [fechaCierreUtc6, logrometa, idturno]
+      );
+    } catch (logroErr: any) {
+      if (logroErr?.errno === MYSQL_ER_BAD_FIELD_ERROR) {
+        console.warn('[cerrarTurnoActual] Columna logrometa no existe, cerrando sin ella');
+        await connection.query(
+          `UPDATE tblposcrumenwebturnos 
+           SET estatusturno = 'cerrado', fechafinturno = ?
+           WHERE idturno = ?`,
+          [fechaCierreUtc6, idturno]
+        );
+      } else {
+        throw logroErr;
+      }
+    }
 
     const [productosVendidosRows] = await connection.query<ProductoVendidoTurno[]>(
       `SELECT
@@ -1012,35 +1028,57 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
 
     // 4. Ventas brutas, descuentos, ventas netas (solo ventas reales)
     currentStep = 'ventasResumenRows';
-    const [ventasResumenRows] = await pool.query<RowDataPacket[]>(
-      `SELECT
-         COALESCE(SUM(subtotal), 0) AS ventasBrutas,
-         COALESCE(SUM(descuentos), 0) AS totalDescuentos,
-         COALESCE(SUM(totaldeventa), 0) AS ventasNetas,
-         COUNT(*) AS totalTickets
-       FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
-         AND descripcionmov = 'VENTA'`,
-      [claveturno, idnegocio]
-    );
-    const ventasBrutas = Number(ventasResumenRows[0]?.ventasBrutas) || 0;
-    const totalDescuentos = Number(ventasResumenRows[0]?.totalDescuentos) || 0;
-    const ventasNetas = Number(ventasResumenRows[0]?.ventasNetas) || 0;
-    const totalTickets = Number(ventasResumenRows[0]?.totalTickets) || 0;
+    let ventasBrutas = 0;
+    let totalDescuentos = 0;
+    let ventasNetas = 0;
+    let totalTickets = 0;
+    try {
+      const [ventasResumenRows] = await pool.query<RowDataPacket[]>(
+        `SELECT
+           COALESCE(SUM(subtotal), 0) AS ventasBrutas,
+           COALESCE(SUM(descuentos), 0) AS totalDescuentos,
+           COALESCE(SUM(totaldeventa), 0) AS ventasNetas,
+           COUNT(*) AS totalTickets
+         FROM tblposcrumenwebventas
+         WHERE claveturno = ? AND idnegocio = ?
+           AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
+           AND descripcionmov = 'VENTA'`,
+        [claveturno, idnegocio]
+      );
+      ventasBrutas = Number(ventasResumenRows[0]?.ventasBrutas) || 0;
+      totalDescuentos = Number(ventasResumenRows[0]?.totalDescuentos) || 0;
+      ventasNetas = Number(ventasResumenRows[0]?.ventasNetas) || 0;
+      totalTickets = Number(ventasResumenRows[0]?.totalTickets) || 0;
+    } catch (ventasErr: any) {
+      if (ventasErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || ventasErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
+        console.warn('[obtenerCorteFinTurno] ventasResumenRows: columna faltante, usando ceros');
+      } else {
+        throw ventasErr;
+      }
+    }
 
     // 6. Ventas por forma de pago (simple + detallepagos para MIXTO)
     currentStep = 'ventasFormaPagoRows';
-    const [ventasFormaPagoRows] = await pool.query<RowDataPacket[]>(
-      `SELECT formadepago, COALESCE(SUM(totaldeventa), 0) AS total
-       FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
-         AND descripcionmov = 'VENTA' AND formadepago != 'MIXTO'
-       GROUP BY formadepago
-       ORDER BY total DESC`,
-      [claveturno, idnegocio]
-    );
+    let ventasFormaPagoRows: RowDataPacket[] = [];
+    try {
+      const [rows] = await pool.query<RowDataPacket[]>(
+        `SELECT formadepago, COALESCE(SUM(totaldeventa), 0) AS total
+         FROM tblposcrumenwebventas
+         WHERE claveturno = ? AND idnegocio = ?
+           AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
+           AND descripcionmov = 'VENTA' AND formadepago != 'MIXTO'
+         GROUP BY formadepago
+         ORDER BY total DESC`,
+        [claveturno, idnegocio]
+      );
+      ventasFormaPagoRows = rows;
+    } catch (fpErr: any) {
+      if (fpErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || fpErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
+        console.warn('[obtenerCorteFinTurno] ventasFormaPagoRows: columna faltante, usando array vacío');
+      } else {
+        throw fpErr;
+      }
+    }
 
     // Para pagos MIXTO, obtener detalles de tblposcrumenwebdetallepagos
     // Se maneja con try/catch por si la tabla no existe en esta instalación
@@ -1086,16 +1124,26 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
 
     // 7. Ventas por tipo de venta
     currentStep = 'ventasTipoRows';
-    const [ventasTipoRows] = await pool.query<RowDataPacket[]>(
-      `SELECT tipodeventa, COALESCE(SUM(totaldeventa), 0) AS total
-       FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
-         AND descripcionmov = 'VENTA'
-       GROUP BY tipodeventa
-       ORDER BY total DESC`,
-      [claveturno, idnegocio]
-    );
+    let ventasTipoRows: RowDataPacket[] = [];
+    try {
+      const [rows] = await pool.query<RowDataPacket[]>(
+        `SELECT tipodeventa, COALESCE(SUM(totaldeventa), 0) AS total
+         FROM tblposcrumenwebventas
+         WHERE claveturno = ? AND idnegocio = ?
+           AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
+           AND descripcionmov = 'VENTA'
+         GROUP BY tipodeventa
+         ORDER BY total DESC`,
+        [claveturno, idnegocio]
+      );
+      ventasTipoRows = rows;
+    } catch (tipoErr: any) {
+      if (tipoErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || tipoErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
+        console.warn('[obtenerCorteFinTurno] ventasTipoRows: columna faltante, usando array vacío');
+      } else {
+        throw tipoErr;
+      }
+    }
 
     // 8. Descuentos aplicados agrupados por detalledescuento
     currentStep = 'descuentosRows';
@@ -1126,36 +1174,48 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
 
     // 9. Productos vendidos
     currentStep = 'productosRows';
-    const [productosRows] = await pool.query<RowDataPacket[]>(
-      `SELECT 
-         d.nombreproducto,
-         COALESCE(SUM(d.cantidad), 0) AS cantidad,
-         COALESCE(SUM(d.subtotal), 0) AS total
-       FROM tblposcrumenwebdetalleventas d
-       INNER JOIN tblposcrumenwebventas v ON d.idventa = v.idventa
-       WHERE v.claveturno = ? AND v.idnegocio = ?
-         AND v.estadodeventa = 'COBRADO' AND v.estatusdepago = 'PAGADO'
-         AND v.descripcionmov = 'VENTA'
-       GROUP BY d.nombreproducto
-       ORDER BY SUM(d.cantidad) DESC`,
-      [claveturno, idnegocio]
-    );
+    let productosRows: RowDataPacket[] = [];
+    let totalUnidades = 0;
+    let totalVentaProductos = 0;
+    try {
+      const [pRows] = await pool.query<RowDataPacket[]>(
+        `SELECT 
+           d.nombreproducto,
+           COALESCE(SUM(d.cantidad), 0) AS cantidad,
+           COALESCE(SUM(d.subtotal), 0) AS total
+         FROM tblposcrumenwebdetalleventas d
+         INNER JOIN tblposcrumenwebventas v ON d.idventa = v.idventa
+         WHERE v.claveturno = ? AND v.idnegocio = ?
+           AND v.estadodeventa = 'COBRADO' AND v.estatusdepago = 'PAGADO'
+           AND v.descripcionmov = 'VENTA'
+         GROUP BY d.nombreproducto
+         ORDER BY SUM(d.cantidad) DESC`,
+        [claveturno, idnegocio]
+      );
+      productosRows = pRows;
 
-    currentStep = 'totalesProductosRows';
-    const [totalesProductosRows] = await pool.query<RowDataPacket[]>(
-      `SELECT 
-         COALESCE(SUM(d.cantidad), 0) AS totalUnidades,
-         COALESCE(SUM(d.subtotal), 0) AS totalVentaProductos
-       FROM tblposcrumenwebdetalleventas d
-       INNER JOIN tblposcrumenwebventas v ON d.idventa = v.idventa
-       WHERE v.claveturno = ? AND v.idnegocio = ?
-         AND v.estadodeventa = 'COBRADO' AND v.estatusdepago = 'PAGADO'
-         AND v.descripcionmov = 'VENTA'`,
-      [claveturno, idnegocio]
-    );
+      currentStep = 'totalesProductosRows';
+      const [tRows] = await pool.query<RowDataPacket[]>(
+        `SELECT 
+           COALESCE(SUM(d.cantidad), 0) AS totalUnidades,
+           COALESCE(SUM(d.subtotal), 0) AS totalVentaProductos
+         FROM tblposcrumenwebdetalleventas d
+         INNER JOIN tblposcrumenwebventas v ON d.idventa = v.idventa
+         WHERE v.claveturno = ? AND v.idnegocio = ?
+           AND v.estadodeventa = 'COBRADO' AND v.estatusdepago = 'PAGADO'
+           AND v.descripcionmov = 'VENTA'`,
+        [claveturno, idnegocio]
+      );
+      totalUnidades = Number(tRows[0]?.totalUnidades) || 0;
+      totalVentaProductos = Number(tRows[0]?.totalVentaProductos) || 0;
+    } catch (prodErr: any) {
+      if (prodErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || prodErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
+        console.warn('[obtenerCorteFinTurno] productosRows: tabla/columna faltante, usando arrays vacíos');
+      } else {
+        throw prodErr;
+      }
+    }
     currentStep = 'buildResponse';
-    const totalUnidades = Number(totalesProductosRows[0]?.totalUnidades) || 0;
-    const totalVentaProductos = Number(totalesProductosRows[0]?.totalVentaProductos) || 0;
 
     // 10. Indicadores operativos
     const ventaPromedio = totalTickets > 0 ? ventasNetas / totalTickets : 0;
