@@ -8,6 +8,7 @@ import { obtenerDetallesPagos } from '../services/pagosService';
 import { verificarTurnoAbierto, cerrarTurnoActual, obtenerCorteFinTurno, type ProductoVendidoCierre, type VentasPorFormaDePagoCierre, type VentasPorTipoDeVentaCierre } from '../services/turnosService';
 import type { Turno, CorteFinTurnoData } from '../types/turno.types';
 import { generarTextoTicket } from '../utils/ticketFinTurno';
+import { getPaperConfig } from '../utils/ticketLayout';
 import CierreTurno from '../components/turnos/CierreTurno/CierreTurno';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../components/FeedbackToast';
 import { obtenerInsumos } from '../services/insumosService';
@@ -171,17 +172,19 @@ const generarTextoDetalleCorte = (detalle: ResumenCierreTurno): string => {
   ].join('\n');
 };
 
-const generarHtmlDetalleCorte = (textoDetalle: string): string => `<!DOCTYPE html>
+const generarHtmlDetalleCorte = (textoDetalle: string): string => {
+  const cfg = getPaperConfig();
+  return `<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <title>Corte Fin de Turno</title>
   <style>
-    body { font-family: 'Courier New', Courier, monospace; font-size: 10px; width: 58mm; margin: 0; padding: 8px; }
+    body { font-family: 'Courier New', Courier, monospace; font-size: ${cfg.fontSize}px; width: ${cfg.cssWidth}; margin: 0; padding: 8px; }
     pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
     @media print {
-      html, body { width: 58mm; }
-      @page { size: 58mm auto; margin: 0; }
+      html, body { width: ${cfg.cssWidth}; }
+      @page { size: ${cfg.cssWidth} auto; margin: 0; }
     }
   </style>
 </head>
@@ -189,6 +192,7 @@ const generarHtmlDetalleCorte = (textoDetalle: string): string => `<!DOCTYPE htm
   <pre>${escapeHtml(textoDetalle)}</pre>
 </body>
 </html>`;
+};
 
 const getUsuarioFromStorage = (): Usuario | null => {
   const usuarioData = localStorage.getItem('usuario');
@@ -568,6 +572,10 @@ export const DashboardPage = () => {
       let corteData: CorteFinTurnoData | null = null;
       try {
         corteData = await obtenerCorteFinTurno(datosFormulario.idTurno);
+        // Attach the arqueo captured in the form so the ticket shows conciliation
+        if (corteData) {
+          corteData.efectivoContado = datosFormulario.totalArqueo > 0 ? datosFormulario.totalArqueo : null;
+        }
         setCorteFinTurnoData(corteData);
       } catch (err) {
         console.error('Error al obtener corte de fin de turno para nueva impresión:', err);
@@ -576,7 +584,9 @@ export const DashboardPage = () => {
       // 3. Auto-print with the new ticket format
       if (corteData) {
         const textoTicket = generarTextoTicket(corteData);
-        const ventana = window.open('', '_blank', PRINT_POPUP_WINDOW_FEATURES);
+        const cfg = getPaperConfig();
+        const popupFeatures = `width=${cfg.popupWidth},height=700`;
+        const ventana = window.open('', '_blank', popupFeatures);
         if (ventana) {
           ventana.document.write(generarHtmlDetalleCorte(textoTicket));
           ventana.document.close();
@@ -601,14 +611,12 @@ export const DashboardPage = () => {
   };
 
   const handleImprimirDetalleCorte = () => {
-    const textoDetalle = corteFinTurnoData
-      ? generarTextoTicket(corteFinTurnoData)
-      : detalleUltimoCierre
-        ? generarTextoDetalleCorte(detalleUltimoCierre)
-        : null;
-    if (!textoDetalle) return;
+    if (!corteFinTurnoData) return;
+    const textoDetalle = generarTextoTicket(corteFinTurnoData);
 
-    const ventana = window.open('', '_blank', PRINT_POPUP_WINDOW_FEATURES);
+    const cfg = getPaperConfig();
+    const popupFeatures = `width=${cfg.popupWidth},height=700`;
+    const ventana = window.open('', '_blank', popupFeatures);
     if (!ventana) {
       showErrorToast('No se pudo abrir la ventana de impresión. Verifica los pop-ups.');
       return;
@@ -623,12 +631,8 @@ export const DashboardPage = () => {
   };
 
   const handleEnviarDetalleCorteWhatsApp = () => {
-    const textoDetalle = corteFinTurnoData
-      ? generarTextoTicket(corteFinTurnoData)
-      : detalleUltimoCierre
-        ? generarTextoDetalleCorte(detalleUltimoCierre)
-        : null;
-    if (!textoDetalle) return;
+    if (!corteFinTurnoData) return;
+    const textoDetalle = generarTextoTicket(corteFinTurnoData);
 
     setSkipBeforeUnload(true);
     managedSkipBeforeUnloadRef.current = true;
@@ -2419,12 +2423,12 @@ export const DashboardPage = () => {
         />
       )}
 
-      {showDetalleCorteModal && (corteFinTurnoData || detalleUltimoCierre) && (
+      {showDetalleCorteModal && corteFinTurnoData && (
         <div className="dashboard-post-cierre-overlay">
           <div className="dashboard-post-cierre-modal">
             <h3>Detalle del corte de fin de turno</h3>
             <p>
-              Turno {corteFinTurnoData?.turno?.numeroturno ?? detalleUltimoCierre?.numeroTurno ?? '-'} ({corteFinTurnoData?.turno?.claveturno ?? detalleUltimoCierre?.claveTurno ?? '-'})
+              Turno {corteFinTurnoData.turno?.numeroturno ?? '-'} ({corteFinTurnoData.turno?.claveturno ?? '-'})
             </p>
             <div className="dashboard-post-cierre-actions">
               <button

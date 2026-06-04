@@ -66,7 +66,6 @@ export const generarTextoTicket = (data: CorteFinTurnoData): string => {
 
   // ── 1. ENCABEZADO ──────────────────────────────────────────
   lineas.push(SEP);
-  // Nombre del negocio (puede ser largo – se trunca a ANCHO)
   const nombre = (turno.nombreNegocio || 'NEGOCIO').toUpperCase();
   lineas.push(centrar(nombre));
   lineas.push(SEP);
@@ -88,8 +87,11 @@ export const generarTextoTicket = (data: CorteFinTurnoData): string => {
   lineas.push('RESUMEN GENERAL');
   lineas.push(SEP2);
   lineas.push(fila2col('Fondo Inicial', moneda(resumen.fondoInicial)));
-  if (resumen.retiroFondo > 0) {
-    lineas.push(fila2col('Retiro Fondo', moneda(resumen.retiroFondo)));
+  if (resumen.ingresosCaja > 0) {
+    lineas.push(fila2col('Ingresos Caja', moneda(resumen.ingresosCaja)));
+  }
+  if (resumen.retirosCaja > 0) {
+    lineas.push(fila2col('Retiros Caja', moneda(resumen.retirosCaja)));
   }
   lineas.push('');
   lineas.push(fila2col('Ventas Brutas', moneda(resumen.ventasBrutas)));
@@ -127,7 +129,6 @@ export const generarTextoTicket = (data: CorteFinTurnoData): string => {
     lineas.push('DESCUENTOS');
     lineas.push(SEP2);
     for (const d of descuentosAplicados) {
-      // Formato: NOMBRE  $monto/ops
       const val = `${moneda(d.montoDescuento)}/${d.operaciones}`;
       lineas.push(fila2col(d.nombre.toUpperCase(), val));
     }
@@ -154,15 +155,43 @@ export const generarTextoTicket = (data: CorteFinTurnoData): string => {
   lineas.push('CONCILIACION EFECTIVO');
   lineas.push(SEP2);
   lineas.push(fila2col('+Fondo Inicial', moneda(conciliacion.fondoInicial)));
-  if (conciliacion.retiroFondo > 0) {
-    lineas.push(fila2col('-Retiro Fondo', `-${moneda(conciliacion.retiroFondo)}`));
+  if (conciliacion.ingresosCaja > 0) {
+    lineas.push(fila2col('+Ingresos Fondo', moneda(conciliacion.ingresosCaja)));
   }
+  if (conciliacion.retirosCaja > 0) {
+    lineas.push(fila2col('-Retiros Fondo', moneda(conciliacion.retirosCaja)));
+  }
+  if (conciliacion.retiroFondo > 0) {
+    lineas.push(fila2col('-Retiro Cierre', moneda(conciliacion.retiroFondo)));
+  }
+  lineas.push('');
   lineas.push(fila2col('+Ventas Efectivo', moneda(conciliacion.ventasEfectivo)));
   if (conciliacion.totalGastos > 0) {
-    lineas.push(fila2col('-Gastos', `-${moneda(conciliacion.totalGastos)}`));
+    lineas.push(fila2col('-Gastos', moneda(conciliacion.totalGastos)));
   }
   lineas.push('');
   lineas.push(fila2col('EFECTIVO ESPERADO', moneda(conciliacion.efectivoEsperado)));
+
+  // Conciliación con efectivo contado (arqueo)
+  const efectivoContado = data.efectivoContado ?? null;
+  if (efectivoContado !== null && efectivoContado >= 0) {
+    const diferencia = efectivoContado - conciliacion.efectivoEsperado;
+    let estado: string;
+    if (Math.abs(diferencia) < 0.01) {
+      estado = 'CUADRADO';
+    } else if (diferencia > 0) {
+      estado = 'SOBRANTE';
+    } else {
+      estado = 'FALTANTE';
+    }
+    const diferenciaStr = diferencia >= 0 ? `+${moneda(diferencia)}` : `-${moneda(Math.abs(diferencia))}`;
+    lineas.push('');
+    lineas.push(fila2col('Efectivo Declarado', moneda(efectivoContado)));
+    lineas.push('');
+    lineas.push(fila2col('Diferencia', diferenciaStr));
+    lineas.push('');
+    lineas.push(`Estado: ${estado}`);
+  }
 
   // ── 8. PRODUCTOS VENDIDOS ─────────────────────────────────
   if (productosVendidos.length > 0) {
@@ -171,7 +200,6 @@ export const generarTextoTicket = (data: CorteFinTurnoData): string => {
     lineas.push('PRODUCTOS VENDIDOS');
     lineas.push(SEP2);
     for (const p of productosVendidos) {
-      // Nombre truncado + cantidad + total en una línea
       const cantStr = String(p.cantidad);
       const totStr = moneda(p.total);
       const espacio = ANCHO - cantStr.length - totStr.length - 2;
@@ -179,8 +207,8 @@ export const generarTextoTicket = (data: CorteFinTurnoData): string => {
       lineas.push(`${nombre2} ${cantStr} ${totStr}`);
     }
     lineas.push('');
-    lineas.push(fila2col('Total Unidades', String(totalUnidades)));
-    lineas.push(fila2col('Total Productos', moneda(totalVentaProductos)));
+    lineas.push(fila2col('TOTAL UNIDADES', String(totalUnidades)));
+    lineas.push(fila2col('TOTAL PRODUCTOS', moneda(totalVentaProductos)));
   }
 
   // ── 9. INDICADORES OPERATIVOS ─────────────────────────────
@@ -188,25 +216,30 @@ export const generarTextoTicket = (data: CorteFinTurnoData): string => {
   lineas.push(SEP2);
   lineas.push('INDICADORES');
   lineas.push(SEP2);
-  lineas.push(`Tickets Emitidos: ${indicadores.totalTickets}`);
+  lineas.push(fila2col('Tickets Emitidos:', String(indicadores.totalTickets)));
   lineas.push('');
-  lineas.push(`Venta Promedio:`);
-  lineas.push(moneda(indicadores.ventaPromedio));
+  lineas.push(fila2col('Venta Promedio:', moneda(indicadores.ventaPromedio)));
   lineas.push('');
-  lineas.push(`Artículos Vendidos:`);
-  lineas.push(String(indicadores.totalUnidades));
+  lineas.push(fila2col('Artículos Vendidos:', String(indicadores.totalUnidades)));
   lineas.push('');
-  lineas.push(`Promedio Artículos:`);
-  lineas.push(indicadores.promedioArticulos.toFixed(2));
+  lineas.push(fila2col('Promedio Artículos:', indicadores.promedioArticulos.toFixed(2)));
 
-  // ── 10. PIE DEL TICKET ────────────────────────────────────
+  // ── 10. AUDITORÍA DEL TURNO ───────────────────────────────
+  lineas.push('');
+  lineas.push(SEP2);
+  lineas.push('AUDITORIA');
+  lineas.push(SEP2);
+  lineas.push('Fecha Generación:');
+  lineas.push(formatFecha(auditoria.fechaGeneracion));
+  lineas.push('');
+  lineas.push('Usuario:');
+  lineas.push(auditoria.usuarioGenerador);
+
+  // ── 11. PIE DEL TICKET ────────────────────────────────────
   lineas.push('');
   lineas.push(SEP);
   lineas.push(centrar('FIN DE TURNO'));
   lineas.push(SEP);
-  lineas.push('');
-  lineas.push(`Generado: ${formatFecha(auditoria.fechaGeneracion)}`);
-  lineas.push(`Usuario:  ${auditoria.usuarioGenerador}`);
   lineas.push('');
 
   return lineas.join('\n');

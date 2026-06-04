@@ -49,6 +49,8 @@ export interface CorteFinTurnoTurno {
 
 export interface CorteFinTurnoResumen {
   fondoInicial: number;
+  ingresosCaja: number;
+  retirosCaja: number;
   retiroFondo: number;
   ventasBrutas: number;
   totalDescuentos: number;
@@ -79,6 +81,8 @@ export interface CorteFinTurnoDescuento {
 
 export interface CorteFinTurnoConciliacion {
   fondoInicial: number;
+  ingresosCaja: number;
+  retirosCaja: number;
   retiroFondo: number;
   ventasEfectivo: number;
   totalGastos: number;
@@ -118,4 +122,6 @@ export interface CorteFinTurnoData {
   totalVentaProductos: number;
   indicadores: CorteFinTurnoIndicadores;
   auditoria: CorteFinTurnoAuditoria;
+  /** Efectivo contado (arqueo) capturado al cerrar el turno; opcional */
+  efectivoContado?: number | null;
 }

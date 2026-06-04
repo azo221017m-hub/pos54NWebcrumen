@@ -917,6 +917,27 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     );
     const retiroFondo = Number(retiroFondoRows[0]?.retiroFondo) || 0;
 
+    // 3b. Ingresos a caja durante el turno (MOVIMIENTO referencia = 'INGRESO CAJA')
+    const [ingresosCajaRows] = await pool.query<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(totaldeventa), 0) AS ingresosCaja
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? AND idnegocio = ?
+         AND tipodeventa = 'MOVIMIENTO' AND referencia = 'INGRESO CAJA'
+         AND totaldeventa > 0`,
+      [claveturno, idnegocio]
+    );
+    const ingresosCaja = Number(ingresosCajaRows[0]?.ingresosCaja) || 0;
+
+    // 3c. Retiros de caja durante el turno (MOVIMIENTO referencia = 'RETIRO CAJA')
+    const [retirosCajaRows] = await pool.query<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(ABS(totaldeventa)), 0) AS retirosCaja
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? AND idnegocio = ?
+         AND tipodeventa = 'MOVIMIENTO' AND referencia = 'RETIRO CAJA'`,
+      [claveturno, idnegocio]
+    );
+    const retirosCaja = Number(retirosCajaRows[0]?.retirosCaja) || 0;
+
     // 4. Ventas brutas, descuentos, ventas netas (solo ventas reales)
     const [ventasResumenRows] = await pool.query<RowDataPacket[]>(
       `SELECT
@@ -1057,7 +1078,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     const promedioArticulos = totalTickets > 0 ? totalUnidades / totalTickets : 0;
 
     // 11. Conciliación de efectivo
-    const efectivoEsperado = fondoInicial - retiroFondo + ventasEfectivo - totalGastos;
+    const efectivoEsperado = fondoInicial + ingresosCaja - retirosCaja - retiroFondo + ventasEfectivo - totalGastos;
 
     // Fecha de generación
     const fechaGeneracion = new Date().toISOString();
@@ -1081,6 +1102,8 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
         // Resumen general
         resumen: {
           fondoInicial,
+          ingresosCaja,
+          retirosCaja,
           retiroFondo,
           ventasBrutas,
           totalDescuentos,
@@ -1110,6 +1133,8 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
         // Conciliación de efectivo
         conciliacion: {
           fondoInicial,
+          ingresosCaja,
+          retirosCaja,
           retiroFondo,
           ventasEfectivo,
           totalGastos,
