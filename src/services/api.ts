@@ -76,6 +76,15 @@ apiClient.interceptors.response.use(
         } else {
           autoLogout('/login');
         }
+        // Return a never-resolving promise so component catch blocks are not
+        // triggered while the page is redirecting, avoiding raw API error toasts.
+        // This is intentional: autoLogout calls window.location.href which initiates
+        // a full page navigation, tearing down the entire JS context and freeing all
+        // memory — no real leak occurs. The dangling promise prevents any awaiting
+        // component from displaying the raw "******" error message as a toast
+        // in the brief window before the browser completes the redirect.
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        return new Promise<never>(() => {});
       }
       return Promise.reject(error);
     }
