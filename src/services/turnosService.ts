@@ -1,47 +1,7 @@
-import axios from 'axios';
 import apiClient from './api';
 import type { Turno, TurnoUpdate, CorteFinTurnoData } from '../types/turno.types';
 
 const API_BASE = '/turnos';
-
-export interface ProductoVendidoCierre {
-  nombreproducto: string;
-  cantidadtotal: number;
-  totalproducto: number;
-}
-
-export interface VentasPorFormaDePagoCierre {
-  formadepago: string;
-  total: number;
-}
-
-export interface VentasPorTipoDeVentaCierre {
-  tipodeventa: string;
-  total: number;
-}
-
-export interface CerrarTurnoResponse {
-  message: string;
-  idturno: number;
-  productosVendidos?: ProductoVendidoCierre[];
-  ventasPorFormaDePago?: VentasPorFormaDePagoCierre[];
-  ventasPorTipoDeVenta?: VentasPorTipoDeVentaCierre[];
-  totalEfectivo?: number;
-  totalFondoCaja?: number;
-}
-
-export interface DetalleDenominacionesCierre {
-  billete1000: number;
-  billete500: number;
-  billete200: number;
-  billete100: number;
-  billete50: number;
-  billete20: number;
-  moneda10: number;
-  moneda5: number;
-  moneda1: number;
-  moneda050: number;
-}
 
 // Obtener todos los turnos del negocio autenticado
 export const obtenerTurnos = async (): Promise<Turno[]> => {
@@ -115,21 +75,41 @@ export const eliminarTurno = async (idturno: number): Promise<number> => {
   }
 };
 
-// Cerrar turno actual
-export const cerrarTurnoActual = async (datosFormulario?: {
-  idTurno: string;
-  retiroFondo: number;
-  totalArqueo: number;
-  detalleDenominaciones: DetalleDenominacionesCierre;
-  estatusCierre: 'sin_novedades' | 'cuentas_pendientes';
-}): Promise<CerrarTurnoResponse> => {
+// Cerrar un turno por clave de turno y obtener los datos del ticket de cierre
+export const cerrarTurnoConTicket = async (claveturno: string, efectivoContado?: number): Promise<CorteFinTurnoData> => {
   try {
-    console.log('Servicio: Cerrando turno actual');
-    const response = await apiClient.post<CerrarTurnoResponse>(`${API_BASE}/cerrar-actual`, datosFormulario || {});
-    console.log('Servicio: Turno actual cerrado');
-    return response.data;
+    console.log('Servicio: Cerrando turno y obteniendo ticket:', claveturno);
+    // 1. Cerrar el turno (actualiza estatusturno='cerrado', fechafinturno=NOW())
+    await apiClient.post(`${API_BASE}/cerrar/${claveturno}`);
+    console.log('Servicio: Turno cerrado, obteniendo datos del ticket...');
+    // 2. Obtener los datos completos del ticket de cierre
+    const response = await apiClient.get<{ success: boolean; data: CorteFinTurnoData }>(
+      `${API_BASE}/corte/${claveturno}`
+    );
+    const data = response.data.data;
+    // 3. Inyectar efectivoContado si se proporcionó (para conciliación en ticket)
+    if (typeof efectivoContado === 'number' && efectivoContado >= 0) {
+      data.efectivoContado = efectivoContado;
+    }
+    console.log('Servicio: Ticket de cierre de turno obtenido');
+    return data;
   } catch (error) {
-    console.error('Error en servicio cerrarTurnoActual:', error);
+    console.error('Error en servicio cerrarTurnoConTicket:', error);
+    throw error;
+  }
+};
+
+// Obtener todos los datos del Ticket de Fin de Turno (solo lectura)
+export const obtenerCorteFinTurno = async (claveturno: string): Promise<CorteFinTurnoData> => {
+  try {
+    console.log('Servicio: Obteniendo corte de fin de turno para:', claveturno);
+    const response = await apiClient.get<{ success: boolean; data: CorteFinTurnoData }>(
+      `${API_BASE}/corte/${claveturno}`
+    );
+    console.log('Servicio: Corte de fin de turno obtenido');
+    return response.data.data;
+  } catch (error) {
+    console.error('Error en servicio obtenerCorteFinTurno:', error);
     throw error;
   }
 };
@@ -212,28 +192,5 @@ export const obtenerTurnoAbiertoActual = async (): Promise<Turno | null> => {
   }
 };
 
-/**
- * Obtener todos los datos del Ticket de Fin de Turno (Corte de Caja)
- */
-export const obtenerCorteFinTurno = async (claveturno: string): Promise<CorteFinTurnoData> => {
-  try {
-    console.log('Servicio: Obteniendo corte de fin de turno para:', claveturno);
-    const response = await apiClient.get<{ success: boolean; data: CorteFinTurnoData }>(
-      `${API_BASE}/corte/${claveturno}`
-    );
-    console.log('Servicio: Corte de fin de turno obtenido');
-    return response.data.data;
-  } catch (error: unknown) {
-    const axiosErr = axios.isAxiosError(error) ? error : null;
-    const status = axiosErr?.response?.status;
-    const data = axiosErr?.response?.data as Record<string, unknown> | undefined;
-    const backendMessage = (data?.message ?? data?.error) as string | undefined;
-    const message = backendMessage ?? (error instanceof Error ? error.message : 'Error desconocido');
-    console.error('Error en servicio obtenerCorteFinTurno:', {
-      status,
-      message,
-      url: `/turnos/corte/${claveturno}`,
-    });
-    throw error;
-  }
-};
+
+

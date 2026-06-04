@@ -26,11 +26,6 @@ interface Turno extends RowDataPacket {
   totalventas?: number;
 }
 
-interface ProductoVendidoTurno extends RowDataPacket {
-  nombreproducto: string;
-  cantidadtotal: number;
-  totalproducto: number;
-}
 
 // Función auxiliar para generar claveturno
 // Formato: [AAMMDD]+[idnegocio]+[idusuario]+[HHMMSS]
@@ -450,280 +445,86 @@ export const eliminarTurno = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-// Cerrar turno actual
-export const cerrarTurnoActual = async (req: AuthRequest, res: Response): Promise<void> => {
-  let connection;
-  
+// POST /api/turnos/cerrar/:claveturno - Cerrar un turno por clave de turno
+export const cerrarTurnoNuevo = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idnegocio = req.user?.idNegocio;
-    const usuarioauditoria = req.user?.alias;
 
-    if (!idnegocio || !usuarioauditoria) {
-      res.status(401).json({ 
-        message: 'Usuario no autenticado o sin negocio asignado'
-      });
+    if (!idnegocio) {
+      res.status(401).json({ success: false, message: 'Usuario no autenticado o sin negocio asignado' });
       return;
     }
 
-    // Extraer datos del cuerpo de la petición
-    const { 
-      retiroFondo, 
-      estatusCierre 
-    } = req.body;
+    const { claveturno } = req.params;
+    if (!claveturno) {
+      res.status(400).json({ success: false, message: 'Clave de turno es requerida' });
+      return;
+    }
 
-    console.log('Cerrando turno actual del negocio:', idnegocio);
-    console.log('Estatus de cierre:', estatusCierre);
-
-    // Acquire database connection
-    connection = await pool.getConnection();
-    await connection.beginTransaction();
-
-    // Buscar turno abierto
-    const [turnosAbiertos] = await connection.query<Turno[]>(
-      `SELECT idturno, claveturno, metaturno FROM tblposcrumenwebturnos 
-       WHERE idnegocio = ? AND estatusturno = 'abierto'
+    // Buscar el turno abierto con esa clave
+    const [turnosAbiertos] = await pool.query<Turno[]>(
+      `SELECT idturno, metaturno FROM tblposcrumenwebturnos
+       WHERE claveturno = ? AND idnegocio = ? AND estatusturno = 'abierto'
        LIMIT 1`,
-      [idnegocio]
+      [claveturno, idnegocio]
     );
 
     if (turnosAbiertos.length === 0) {
-      await connection.rollback();
-      res.status(404).json({ message: 'No hay turno abierto para cerrar' });
+      res.status(404).json({ success: false, message: 'No se encontró un turno abierto con esa clave' });
       return;
     }
 
     const turno = turnosAbiertos[0];
     const idturno = turno.idturno;
-    const claveturno = turno.claveturno;
     const metaturno = turno.metaturno;
+    const fechaCierre = formatMySQLDateTime();
 
-    // Timestamp de cierre en UTC-6 para operaciones de fin de turno
-    const fechaCierreUtc6 = formatMySQLDateTime();
-
-    // Si el estatus de cierre es 'sin_novedades', insertar registro MOVIMIENTO
-    if (estatusCierre === 'sin_novedades' && retiroFondo && retiroFondo > 0) {
-      console.log('Insertando venta MOVIMIENTO por retiro de fondo:', retiroFondo);
-
-      // Calcular el valor negativo del retiro de fondo según requerimiento
-      const retiroFondoNegativo = -retiroFondo;
-
-      // Insertar venta con folioventa vacío (se actualizará después)
-      // Nota: importedepago se establece en 0 según especificación, aunque el pago es efectivo
-      // Nota: subtotal y totaldeventa deben ser NEGATIVOS para retiros de fondo
-      // Nota: detalledescuento omitido — defaultea a NULL; así el INSERT es compatible con
-      //       instalaciones donde la columna aún no fue migrada.
-      const [ventaResult] = await connection.execute<ResultSetHeader>(
-        `INSERT INTO tblposcrumenwebventas (
-          tipodeventa, folioventa, estadodeventa, fechadeventa, 
-          fechaprogramadaentrega, fechapreparacion, fechaenvio, fechaentrega,
-          subtotal, descuentos, impuestos, 
-          totaldeventa, cliente, direcciondeentrega, contactodeentrega, 
-          telefonodeentrega, propinadeventa, formadepago, importedepago, estatusdepago, 
-          referencia, tiempototaldeventa, claveturno, idnegocio, usuarioauditoria, fechamodificacionauditoria
-        ) VALUES (?, ?, ?, ?, NULL, NULL, NULL, NULL, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, ?, ?, ?, ?, NULL, ?, ?, ?, ?)`,
-        [
-          'MOVIMIENTO',          // tipodeventa
-          '',                    // folioventa (se actualiza después)
-          'COBRADO',             // estadodeventa
-          fechaCierreUtc6,       // fechadeventa
-          retiroFondoNegativo,   // subtotal (NEGATIVO)
-          0,                     // descuentos
-          0,                     // impuestos
-          retiroFondoNegativo,   // totaldeventa (NEGATIVO)
-          'EFECTIVO',            // formadepago
-          0,                     // importedepago (per specification)
-          'PAGADO',              // estatusdepago
-          REFERENCIA_FONDO_CAJA, // referencia
-          claveturno,            // claveturno
-          idnegocio,             // idnegocio
-          usuarioauditoria,      // usuarioauditoria
-          fechaCierreUtc6        // fechamodificacionauditoria
-        ]
-      );
-
-      const ventaId = ventaResult.insertId;
-
-      // Generar HHMMSS para el folio usando hora del servidor en zona horaria de México
-      const time = getMexicoTimeComponents();
-      const HHMMSS = `${time.hours}${time.minutes}${time.seconds}`;
-
-      // Generar folioventa con formato: claveturno+HHMMSS+M+idventa
-      const folioFinal = `${claveturno}${HHMMSS}M${ventaId}`;
-      
-      await connection.execute(
-        `UPDATE tblposcrumenwebventas 
-         SET folioventa = ?
-         WHERE idventa = ?`,
-        [folioFinal, ventaId]
-      );
-
-      console.log('Venta MOVIMIENTO creada con folio:', folioFinal);
-    }
-
-    // Calculate logrometa if metaturno is not null or zero
-    let logrometa = null;
+    // Calcular logrometa si aplica
+    let logrometa: number | null = null;
     if (metaturno !== null && metaturno !== undefined && metaturno > 0) {
-      // Get total sales for this shift
-      const [salesResult] = await connection.query<RowDataPacket[]>(
-        `SELECT COALESCE(SUM(totaldeventa), 0) as totalventas 
-         FROM tblposcrumenwebventas 
+      const [salesResult] = await pool.query<RowDataPacket[]>(
+        `SELECT COALESCE(SUM(totaldeventa), 0) AS totalventas
+         FROM tblposcrumenwebventas
          WHERE claveturno = ? AND estatusdepago = 'PAGADO'`,
         [claveturno]
       );
-
       const totalventas = Number(salesResult[0]?.totalventas) || 0;
-      
-      // Calculate achievement percentage: (totalventas / metaturno) * 100
-      // Round to 2 decimal places for consistent storage
       logrometa = Math.round((totalventas / metaturno) * 100 * 100) / 100;
-      
-      console.log('Calculando logrometa:', {
-        totalventas,
-        metaturno,
-        logrometa: logrometa.toFixed(2) + '%'
-      });
     }
 
-    // Cerrar el turno — logrometa es opcional (columna puede no existir en BD antigua)
+    // Actualizar estatusturno='cerrado' y fechafinturno=NOW()
     try {
-      await connection.query(
-        `UPDATE tblposcrumenwebturnos 
+      await pool.query(
+        `UPDATE tblposcrumenwebturnos
          SET estatusturno = 'cerrado', fechafinturno = ?, logrometa = ?
          WHERE idturno = ?`,
-        [fechaCierreUtc6, logrometa, idturno]
+        [fechaCierre, logrometa, idturno]
       );
     } catch (logroErr: any) {
       if (logroErr?.errno === MYSQL_ER_BAD_FIELD_ERROR) {
-        console.warn('[cerrarTurnoActual] Columna logrometa no existe, cerrando sin ella');
-        await connection.query(
-          `UPDATE tblposcrumenwebturnos 
+        console.warn('[cerrarTurnoNuevo] Columna logrometa no existe, cerrando sin ella');
+        await pool.query(
+          `UPDATE tblposcrumenwebturnos
            SET estatusturno = 'cerrado', fechafinturno = ?
            WHERE idturno = ?`,
-          [fechaCierreUtc6, idturno]
+          [fechaCierre, idturno]
         );
       } else {
         throw logroErr;
       }
     }
 
-    const [productosVendidosRows] = await connection.query<ProductoVendidoTurno[]>(
-      `SELECT
-         d.nombreproducto,
-         COALESCE(SUM(d.cantidad), 0) AS cantidadtotal,
-         COALESCE(SUM(d.subtotal), 0) AS totalproducto
-       FROM tblposcrumenwebdetalleventas d
-       INNER JOIN tblposcrumenwebventas v ON d.idventa = v.idventa
-       WHERE v.claveturno = ?
-         AND v.idnegocio = ?
-         AND v.estadodeventa = 'COBRADO'
-         AND v.estatusdepago = 'PAGADO'
-         AND v.descripcionmov = 'VENTA'
-       GROUP BY d.nombreproducto
-       ORDER BY COALESCE(NULLIF(TRIM(d.nombreproducto), ''), 'Producto sin nombre') ASC`,
-      [claveturno, idnegocio]
-    );
-
-    // Ventas agrupadas por forma de pago
-    const [ventasPorFormaDePagoRows] = await connection.query<RowDataPacket[]>(
-      `SELECT formadepago, COALESCE(SUM(totaldeventa), 0) AS total
-       FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
-         AND descripcionmov = 'VENTA'
-       GROUP BY formadepago
-       ORDER BY total DESC`,
-      [claveturno, idnegocio]
-    );
-
-    // Ventas agrupadas por tipo de venta
-    const [ventasPorTipoDeVentaRows] = await connection.query<RowDataPacket[]>(
-      `SELECT tipodeventa, COALESCE(SUM(totaldeventa), 0) AS total
-       FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
-         AND descripcionmov = 'VENTA'
-       GROUP BY tipodeventa
-       ORDER BY total DESC`,
-      [claveturno, idnegocio]
-    );
-
-    // Total ventas donde formadepago = 'EFECTIVO'
-    const [totalVentasEfectivoRows] = await connection.query<RowDataPacket[]>(
-      `SELECT COALESCE(SUM(totaldeventa), 0) AS total
-       FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
-         AND descripcionmov = 'VENTA' AND formadepago = 'EFECTIVO'`,
-      [claveturno, idnegocio]
-    );
-
-    // Total gastos del turno (referencia = 'GASTO')
-    const [totalGastosRows] = await connection.query<RowDataPacket[]>(
-      `SELECT COALESCE(SUM(ABS(totaldeventa)), 0) AS total
-       FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND referencia = 'GASTO'`,
-      [claveturno, idnegocio]
-    );
-
-    // Total venta donde referencia = 'FONDO de CAJA'
-    const [totalFondoCajaRows] = await connection.query<RowDataPacket[]>(
-      `SELECT COALESCE(SUM(ABS(totaldeventa)), 0) AS total
-       FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND referencia = ?`,
-      [claveturno, idnegocio, REFERENCIA_FONDO_CAJA]
-    );
-
-    const totalVentasEfectivo = Number(totalVentasEfectivoRows[0]?.total) || 0;
-    const totalGastos = Number(totalGastosRows[0]?.total) || 0;
-    const totalEfectivo = totalVentasEfectivo - totalGastos;
-    const totalFondoCaja = Number(totalFondoCajaRows[0]?.total) || 0;
-
-    await connection.commit();
-
-    console.log('Turno cerrado exitosamente');
-
+    console.log('Turno cerrado exitosamente:', claveturno);
     websocketService.notifyTurnoUpdate(idnegocio);
 
-    res.json({ 
-      message: 'Turno cerrado exitosamente',
-      idturno,
-      productosVendidos: productosVendidosRows.map((producto) => {
-        const nombreproducto = typeof producto.nombreproducto === 'string' && producto.nombreproducto.trim().length > 0
-          ? producto.nombreproducto.trim()
-          : 'Producto sin nombre';
-
-        return {
-          nombreproducto,
-          cantidadtotal: Number(producto.cantidadtotal) || 0,
-          totalproducto: Number(producto.totalproducto) || 0
-        };
-      }),
-      ventasPorFormaDePago: ventasPorFormaDePagoRows.map(r => ({
-        formadepago: String(r.formadepago || ''),
-        total: Number(r.total) || 0
-      })),
-      ventasPorTipoDeVenta: ventasPorTipoDeVentaRows.map(r => ({
-        tipodeventa: String(r.tipodeventa || ''),
-        total: Number(r.total) || 0
-      })),
-      totalEfectivo,
-      totalFondoCaja
-    });
+    res.json({ success: true, message: 'Turno cerrado exitosamente', idturno, claveturno });
   } catch (error) {
-    if (connection) {
-      await connection.rollback();
-    }
     console.error('Error al cerrar turno:', error);
-    res.status(500).json({ 
+    res.status(500).json({
+      success: false,
       message: 'Error al cerrar el turno',
       error: error instanceof Error ? error.message : 'Error desconocido'
     });
-  } finally {
-    if (connection) {
-      connection.release();
-    }
   }
 };
 
