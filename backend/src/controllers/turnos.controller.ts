@@ -1158,8 +1158,9 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       }
     });
   } catch (error) {
-    const mysqlErrno = (error as any)?.errno;
-    const mysqlMessage = (error as any)?.sqlMessage || (error as any)?.sqlState;
+    const mysqlError = error as any;
+    const mysqlErrno = mysqlError?.errno;
+    const mysqlMessage = mysqlError?.sqlMessage || mysqlError?.sqlState;
     console.error(`Error al obtener corte de fin de turno [step: ${currentStep}]:`, error);
     res.status(500).json({
       success: false,
