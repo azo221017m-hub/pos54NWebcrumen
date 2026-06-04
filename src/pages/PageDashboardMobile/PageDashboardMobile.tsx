@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { obtenerVentasWeb, obtenerResumenVentas, actualizarVentaWeb, type ResumenVentas } from '../../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta } from '../../types/ventasWeb.types';
-import { verificarTurnoAbierto, cerrarTurnoActual } from '../../services/turnosService';
+import { verificarTurnoAbierto, cerrarTurnoConTicket } from '../../services/turnosService';
 import type { Turno } from '../../types/turno.types';
 import { clearSession } from '../../services/sessionService';
 import { negociosService } from '../../services/negociosService';
@@ -633,9 +633,9 @@ export const PageDashboardMobile = () => {
           <CierreTurno
             turno={turno}
             onCancel={() => setShowCierre(false)}
-            onSubmit={async (datosFormulario) => {
+            onSubmit={async (claveturno, totalArqueo) => {
               try {
-                await cerrarTurnoActual(datosFormulario);
+                await cerrarTurnoConTicket(claveturno, totalArqueo > 0 ? totalArqueo : undefined);
                 setShowCierre(false);
                 await cargarTurno();
                 await cargarResumen();

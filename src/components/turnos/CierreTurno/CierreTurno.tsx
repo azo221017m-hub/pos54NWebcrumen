@@ -18,8 +18,6 @@ interface Denominaciones {
   moneda050: number;
 }
 
-type EstatusCierre = 'sin_novedades' | 'cuentas_pendientes';
-
 // Valores de las denominaciones (constante fuera del componente)
 const valoresDenominaciones = {
   billete1000: 1000,
@@ -37,13 +35,7 @@ const valoresDenominaciones = {
 interface CierreTurnoProps {
   turno: Turno;
   onCancel: () => void;
-  onSubmit?: (datosFormulario: {
-    idTurno: string;
-    retiroFondo: number;
-    totalArqueo: number;
-    detalleDenominaciones: Denominaciones;
-    estatusCierre: EstatusCierre;
-  }) => void;
+  onSubmit?: (claveturno: string, totalArqueo: number) => void;
 }
 
 const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) => {
@@ -122,15 +114,6 @@ const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) 
     }, 0);
   }, [denominaciones]);
 
-  // Calcular el estatus del cierre basado en comandas abiertas (usando useMemo)
-  const estatusCierre = useMemo<EstatusCierre>(() => {
-    // Si hay comandas abiertas, no puede cerrar turno
-    if (comandasAbiertas > 0) {
-      return 'cuentas_pendientes';
-    }
-    // Si no hay comandas abiertas, puede cerrar sin novedades
-    return 'sin_novedades';
-  }, [comandasAbiertas]);
 
   // Manejador para sumar/restar denominaciones
   const handleDenominacionChange = (tipo: keyof Denominaciones, operacion: 'sumar' | 'restar') => {
@@ -145,20 +128,8 @@ const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) 
   // Manejador para cerrar turno
   const handleCerrarTurno = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    const datosFormulario = {
-      idTurno: claveTurno,
-      retiroFondo: parseFloat(retiroFondo) || 0,
-      totalArqueo,
-      detalleDenominaciones: denominaciones,
-      estatusCierre
-    };
-    
-    console.log('Datos del cierre de turno:', datosFormulario);
-    
-    // Llamar a onSubmit si está definido
     if (onSubmit) {
-      onSubmit(datosFormulario);
+      onSubmit(claveTurno, totalArqueo);
     }
   };
 

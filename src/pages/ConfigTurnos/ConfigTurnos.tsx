@@ -6,28 +6,11 @@ import type { Turno } from '../../types/turno.types';
 import { EstatusTurno } from '../../types/turno.types';
 import {
   obtenerTurnos,
-  cerrarTurnoActual
+  cerrarTurnoConTicket
 } from '../../services/turnosService';
 import CierreTurno from '../../components/turnos/CierreTurno/CierreTurno';
 import TicketFinTurno from '../../components/turnos/TicketFinTurno/TicketFinTurno';
 import './ConfigTurnos.css';
-
-// Types from CierreTurno component - duplicated here to avoid circular dependencies
-// TODO: Consider moving to a shared types file if these types are needed elsewhere
-interface Denominaciones {
-  billete1000: number;
-  billete500: number;
-  billete200: number;
-  billete100: number;
-  billete50: number;
-  billete20: number;
-  moneda10: number;
-  moneda5: number;
-  moneda1: number;
-  moneda050: number;
-}
-
-type EstatusCierre = 'sin_novedades' | 'cuentas_pendientes';
 
 const ConfigTurnos: React.FC = () => {
   const [turnos, setTurnos] = useState<Turno[]>([]);
@@ -60,40 +43,26 @@ const ConfigTurnos: React.FC = () => {
     cargarTurnos();
   }, [cargarTurnos]);
 
-  const handleCerrarTurno = async (datosFormulario: {
-    idTurno: string;
-    retiroFondo: number;
-    totalArqueo: number;
-    detalleDenominaciones: Denominaciones;
-    estatusCierre: EstatusCierre;
-  }) => {
+  const handleCerrarTurno = async (claveturno: string, totalArqueo: number) => {
     if (!turnoEditar) return;
-    
     try {
-      // Log the closure data for debugging
-      console.log('Datos del cierre de turno:', datosFormulario);
-      
-      // Guardar claveturno antes de limpiar el estado
-      const claveturno = turnoEditar.claveturno;
+      const corteData = await cerrarTurnoConTicket(claveturno, totalArqueo > 0 ? totalArqueo : undefined);
 
-      // Call the backend endpoint with the closure data
-      const response = await cerrarTurnoActual(datosFormulario);
-      
       mostrarMensaje('success', 'Turno cerrado exitosamente');
       setMostrarFormulario(false);
       setTurnoEditar(undefined);
-      
+
       // Actualizar estado local sin recargar - cambiar el estatus del turno cerrado
       setTurnos(prev =>
         prev.map(turno =>
-          turno.idturno === response.idturno 
+          turno.claveturno === claveturno
             ? { ...turno, estatusturno: EstatusTurno.CERRADO }
             : turno
         )
       );
 
       // Mostrar el ticket de fin de turno para imprimir y enviar por WhatsApp
-      setEfectivoContadoCorte(datosFormulario.totalArqueo);
+      setEfectivoContadoCorte(corteData.efectivoContado ?? undefined);
       setClaveturnoCorte(claveturno);
     } catch (error) {
       console.error('Error al cerrar turno:', error);

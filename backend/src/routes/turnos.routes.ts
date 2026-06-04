@@ -5,7 +5,7 @@ import {
   crearTurno,
   actualizarTurno,
   eliminarTurno,
-  cerrarTurnoActual,
+  cerrarTurnoNuevo,
   verificarComandasAbiertas,
   obtenerFondoCaja,
   obtenerTurnoAbierto,
@@ -30,8 +30,8 @@ router.post('/', crearTurno);
 router.put('/:idturno', actualizarTurno);
 router.delete('/:idturno', checkPrivilegio(5), eliminarTurno);
 
-// Ruta adicional para cerrar turno actual
-router.post('/cerrar-actual', cerrarTurnoActual);
+// Ruta para cerrar un turno por clave de turno (actualiza estatusturno y fechafinturno)
+router.post('/cerrar/:claveturno', cerrarTurnoNuevo);
 
 // Ruta para verificar comandas abiertas en un turno
 router.get('/verificar-comandas/:claveturno', verificarComandasAbiertas);
