@@ -5,8 +5,9 @@ import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerTopP
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import { clearSession, setSkipBeforeUnload } from '../services/sessionService';
 import { obtenerDetallesPagos } from '../services/pagosService';
-import { verificarTurnoAbierto, cerrarTurnoActual, type ProductoVendidoCierre, type VentasPorFormaDePagoCierre, type VentasPorTipoDeVentaCierre } from '../services/turnosService';
-import type { Turno } from '../types/turno.types';
+import { verificarTurnoAbierto, cerrarTurnoActual, obtenerCorteFinTurno, type ProductoVendidoCierre, type VentasPorFormaDePagoCierre, type VentasPorTipoDeVentaCierre } from '../services/turnosService';
+import type { Turno, CorteFinTurnoData } from '../types/turno.types';
+import { generarTextoTicket } from '../utils/ticketFinTurno';
 import CierreTurno from '../components/turnos/CierreTurno/CierreTurno';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../components/FeedbackToast';
 import { obtenerInsumos } from '../services/insumosService';
@@ -327,6 +328,7 @@ export const DashboardPage = () => {
   const [showCierreTurnoModal, setShowCierreTurnoModal] = useState(false);
   const [showDetalleCorteModal, setShowDetalleCorteModal] = useState(false);
   const [detalleUltimoCierre, setDetalleUltimoCierre] = useState<ResumenCierreTurno | null>(null);
+  const [corteFinTurnoData, setCorteFinTurnoData] = useState<CorteFinTurnoData | null>(null);
   const [negocio, setNegocio] = useState<Negocio | null>(null);
   const [abiertoAhoraWeb, setAbiertoAhoraWeb] = useState<boolean>(false);
   const [ventasEnCamino, setVentasEnCamino] = useState<Set<number>>(new Set());
@@ -544,7 +546,7 @@ export const DashboardPage = () => {
   const handleCierreTurnoSubmit = async (datosFormulario: DatosCierreTurno) => {
     try {
       console.log('Datos de cierre de turno:', datosFormulario);
-      // Call the service to close the turno
+      // 1. Close the turno
       const cierreTurnoResponse = await cerrarTurnoActual(datosFormulario);
       const detalleCierre: ResumenCierreTurno = {
         claveTurno: datosFormulario.idTurno,
@@ -561,13 +563,36 @@ export const DashboardPage = () => {
         totalFondoCaja: cierreTurnoResponse.totalFondoCaja ?? 0
       };
       console.log('Turno cerrado exitosamente');
+
+      // 2. Fetch new-format ticket data and auto-print
+      let corteData: CorteFinTurnoData | null = null;
+      try {
+        corteData = await obtenerCorteFinTurno(datosFormulario.idTurno);
+        setCorteFinTurnoData(corteData);
+      } catch (err) {
+        console.error('Error al obtener corte de fin de turno para nueva impresión:', err);
+      }
+
+      // 3. Auto-print with the new ticket format
+      if (corteData) {
+        const textoTicket = generarTextoTicket(corteData);
+        const ventana = window.open('', '_blank', PRINT_POPUP_WINDOW_FEATURES);
+        if (ventana) {
+          ventana.document.write(generarHtmlDetalleCorte(textoTicket));
+          ventana.document.close();
+          ventana.focus();
+          setTimeout(() => { ventana.print(); ventana.close(); }, PRINT_WINDOW_READY_DELAY_MS);
+        } else {
+          showErrorToast('No se pudo abrir la ventana de impresión. Verifica los pop-ups.');
+        }
+      }
+
+      // 4. Show the post-cierre modal and refresh state
       setShowCierreTurnoModal(false);
       setDetalleUltimoCierre(detalleCierre);
       setShowDetalleCorteModal(true);
-      // Refresh the turno status and sales summary
       await verificarTurno();
       await cargarResumenVentas();
-      // Show a success message
       showSuccessToast('Turno cerrado exitosamente');
     } catch (error) {
       console.error('Error al cerrar turno:', error);
@@ -576,9 +601,13 @@ export const DashboardPage = () => {
   };
 
   const handleImprimirDetalleCorte = () => {
-    if (!detalleUltimoCierre) return;
+    const textoDetalle = corteFinTurnoData
+      ? generarTextoTicket(corteFinTurnoData)
+      : detalleUltimoCierre
+        ? generarTextoDetalleCorte(detalleUltimoCierre)
+        : null;
+    if (!textoDetalle) return;
 
-    const textoDetalle = generarTextoDetalleCorte(detalleUltimoCierre);
     const ventana = window.open('', '_blank', PRINT_POPUP_WINDOW_FEATURES);
     if (!ventana) {
       showErrorToast('No se pudo abrir la ventana de impresión. Verifica los pop-ups.');
@@ -594,8 +623,12 @@ export const DashboardPage = () => {
   };
 
   const handleEnviarDetalleCorteWhatsApp = () => {
-    if (!detalleUltimoCierre) return;
-    const textoDetalle = generarTextoDetalleCorte(detalleUltimoCierre);
+    const textoDetalle = corteFinTurnoData
+      ? generarTextoTicket(corteFinTurnoData)
+      : detalleUltimoCierre
+        ? generarTextoDetalleCorte(detalleUltimoCierre)
+        : null;
+    if (!textoDetalle) return;
 
     setSkipBeforeUnload(true);
     managedSkipBeforeUnloadRef.current = true;
@@ -2386,12 +2419,12 @@ export const DashboardPage = () => {
         />
       )}
 
-      {showDetalleCorteModal && detalleUltimoCierre && (
+      {showDetalleCorteModal && (corteFinTurnoData || detalleUltimoCierre) && (
         <div className="dashboard-post-cierre-overlay">
           <div className="dashboard-post-cierre-modal">
             <h3>Detalle del corte de fin de turno</h3>
             <p>
-              Turno {detalleUltimoCierre.numeroTurno ?? '-'} ({detalleUltimoCierre.claveTurno})
+              Turno {corteFinTurnoData?.turno?.numeroturno ?? detalleUltimoCierre?.numeroTurno ?? '-'} ({corteFinTurnoData?.turno?.claveturno ?? detalleUltimoCierre?.claveTurno ?? '-'})
             </p>
             <div className="dashboard-post-cierre-actions">
               <button
