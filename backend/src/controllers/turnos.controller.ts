@@ -11,6 +11,10 @@ const REFERENCIA_FONDO_CAJA = 'FONDO de CAJA';
 const MYSQL_ER_NO_SUCH_TABLE = 1146;
 // MySQL error number for "Unknown column" (ER_BAD_FIELD_ERROR)
 const MYSQL_ER_BAD_FIELD_ERROR = 1054;
+// MySQL error number for ONLY_FULL_GROUP_BY violation (ER_WRONG_FIELD_WITH_GROUP)
+const MYSQL_ER_WRONG_FIELD_WITH_GROUP = 1055;
+// MySQL error number for mix of aggregate and non-aggregate without GROUP BY (ER_MIX_OF_GROUP_FUNC_AND_FIELDS)
+const MYSQL_ER_MIX_OF_GROUP_FUNC_AND_FIELDS = 1140;
 
 // Interface para Turno
 interface Turno extends RowDataPacket {
@@ -620,18 +624,27 @@ export const obtenerFondoCaja = async (req: AuthRequest, res: Response): Promise
     
     // Get fondo de caja from tblposcrumenwebventas
     // WHERE tipodeventa='MOVIMIENTO' AND referencia='FONDO de CAJA'
-    const [rows] = await pool.query<RowDataPacket[]>(
-      `SELECT totaldeventa as fondoCaja
-       FROM tblposcrumenwebventas
-       WHERE claveturno = ? 
-       AND idnegocio = ?
-       AND tipodeventa = 'MOVIMIENTO'
-       AND referencia = ?
-       LIMIT 1`,
-      [claveturno, idnegocio, REFERENCIA_FONDO_CAJA]
-    );
-    
-    const fondoCaja = rows[0]?.fondoCaja || 0;
+    let fondoCaja = 0;
+    try {
+      const [rows] = await pool.query<RowDataPacket[]>(
+        `SELECT totaldeventa as fondoCaja
+         FROM tblposcrumenwebventas
+         WHERE claveturno = ? 
+         AND idnegocio = ?
+         AND tipodeventa = 'MOVIMIENTO'
+         AND referencia = ?
+         LIMIT 1`,
+        [claveturno, idnegocio, REFERENCIA_FONDO_CAJA]
+      );
+      fondoCaja = rows[0]?.fondoCaja || 0;
+    } catch (queryErr: any) {
+      if (queryErr?.errno === MYSQL_ER_BAD_FIELD_ERROR) {
+        // referencia column not yet added via migration — return 0 safely
+        console.warn('[obtenerFondoCaja] columna referencia faltante, devolviendo fondoCaja=0');
+      } else {
+        throw queryErr;
+      }
+    }
     
     console.log(`Fondo de caja encontrado: ${fondoCaja}`);
     
@@ -847,7 +860,8 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       );
       totalGastos = Number(totalGastosRows[0]?.totalGastos) || 0;
     } catch (referenciaErr: any) {
-      if (referenciaErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || referenciaErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
+      if (referenciaErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || referenciaErr?.errno === MYSQL_ER_NO_SUCH_TABLE ||
+          referenciaErr?.errno === MYSQL_ER_WRONG_FIELD_WITH_GROUP || referenciaErr?.errno === MYSQL_ER_MIX_OF_GROUP_FUNC_AND_FIELDS) {
         // referencia/descripcionmov column missing or table does not exist yet (migration pending)
         console.warn('[obtenerCorteFinTurno] referencia/descripcionmov column or table missing, omitiendo movimientos de caja y gastos');
       } else {
@@ -879,7 +893,8 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       ventasNetas = Number(ventasResumenRows[0]?.ventasNetas) || 0;
       totalTickets = Number(ventasResumenRows[0]?.totalTickets) || 0;
     } catch (ventasErr: any) {
-      if (ventasErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || ventasErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
+      if (ventasErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || ventasErr?.errno === MYSQL_ER_NO_SUCH_TABLE ||
+          ventasErr?.errno === MYSQL_ER_WRONG_FIELD_WITH_GROUP || ventasErr?.errno === MYSQL_ER_MIX_OF_GROUP_FUNC_AND_FIELDS) {
         console.warn('[obtenerCorteFinTurno] ventasResumenRows: columna faltante, usando ceros');
       } else {
         throw ventasErr;
@@ -902,7 +917,8 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       );
       ventasFormaPagoRows = rows;
     } catch (fpErr: any) {
-      if (fpErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || fpErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
+      if (fpErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || fpErr?.errno === MYSQL_ER_NO_SUCH_TABLE ||
+          fpErr?.errno === MYSQL_ER_WRONG_FIELD_WITH_GROUP || fpErr?.errno === MYSQL_ER_MIX_OF_GROUP_FUNC_AND_FIELDS) {
         console.warn('[obtenerCorteFinTurno] ventasFormaPagoRows: columna faltante, usando array vacío');
       } else {
         throw fpErr;
@@ -928,7 +944,9 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     } catch (mixtoErr: any) {
       // MySQL error 1146 (ER_NO_SUCH_TABLE): table may not exist if the payment migration was never applied
       // MySQL error 1054 (ER_BAD_FIELD_ERROR): a column may be missing (e.g. formadepagodetalle, folioventa)
-      if (mixtoErr?.errno === MYSQL_ER_NO_SUCH_TABLE || mixtoErr?.errno === MYSQL_ER_BAD_FIELD_ERROR) {
+      // MySQL error 1055 (ER_WRONG_FIELD_WITH_GROUP): GROUP BY issue
+      if (mixtoErr?.errno === MYSQL_ER_NO_SUCH_TABLE || mixtoErr?.errno === MYSQL_ER_BAD_FIELD_ERROR ||
+          mixtoErr?.errno === MYSQL_ER_WRONG_FIELD_WITH_GROUP || mixtoErr?.errno === MYSQL_ER_MIX_OF_GROUP_FUNC_AND_FIELDS) {
         console.warn('[obtenerCorteFinTurno] tblposcrumenwebdetallepagos no existe o columna faltante, omitiendo pagos MIXTO');
       } else {
         throw mixtoErr;
@@ -968,7 +986,8 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       );
       ventasTipoRows = rows;
     } catch (tipoErr: any) {
-      if (tipoErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || tipoErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
+      if (tipoErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || tipoErr?.errno === MYSQL_ER_NO_SUCH_TABLE ||
+          tipoErr?.errno === MYSQL_ER_WRONG_FIELD_WITH_GROUP || tipoErr?.errno === MYSQL_ER_MIX_OF_GROUP_FUNC_AND_FIELDS) {
         console.warn('[obtenerCorteFinTurno] ventasTipoRows: columna faltante, usando array vacío');
       } else {
         throw tipoErr;
@@ -988,13 +1007,14 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
          WHERE claveturno = ? AND idnegocio = ?
            AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
            AND descripcionmov = 'VENTA' AND descuentos > 0
-         GROUP BY detalledescuento
+         GROUP BY COALESCE(NULLIF(TRIM(detalledescuento), ''), 'Sin nombre')
          ORDER BY montoDescuento DESC`,
         [claveturno, idnegocio]
       );
       descuentosRows = rows;
     } catch (descErr: any) {
-      if (descErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || descErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
+      if (descErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || descErr?.errno === MYSQL_ER_NO_SUCH_TABLE ||
+          descErr?.errno === MYSQL_ER_WRONG_FIELD_WITH_GROUP || descErr?.errno === MYSQL_ER_MIX_OF_GROUP_FUNC_AND_FIELDS) {
         // detalledescuento column missing or table does not exist yet (migration pending)
         console.warn('[obtenerCorteFinTurno] detalledescuento column missing, omitiendo detalle de descuentos');
       } else {
@@ -1039,7 +1059,8 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       totalUnidades = Number(tRows[0]?.totalUnidades) || 0;
       totalVentaProductos = Number(tRows[0]?.totalVentaProductos) || 0;
     } catch (prodErr: any) {
-      if (prodErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || prodErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
+      if (prodErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || prodErr?.errno === MYSQL_ER_NO_SUCH_TABLE ||
+          prodErr?.errno === MYSQL_ER_WRONG_FIELD_WITH_GROUP || prodErr?.errno === MYSQL_ER_MIX_OF_GROUP_FUNC_AND_FIELDS) {
         console.warn('[obtenerCorteFinTurno] productosRows: tabla/columna faltante, usando arrays vacíos');
       } else {
         throw prodErr;
@@ -1137,11 +1158,17 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       }
     });
   } catch (error) {
+    const mysqlError = error as any;
+    const mysqlErrno = mysqlError?.errno;
+    const mysqlMessage = mysqlError?.sqlMessage || mysqlError?.sqlState;
     console.error(`Error al obtener corte de fin de turno [step: ${currentStep}]:`, error);
     res.status(500).json({
       success: false,
       message: 'Error al obtener corte de fin de turno',
-      error: error instanceof Error ? error.message : 'Error desconocido'
+      error: error instanceof Error ? error.message : 'Error desconocido',
+      ...(mysqlErrno !== undefined && { errno: mysqlErrno }),
+      ...(mysqlMessage !== undefined && { sqlMessage: mysqlMessage }),
+      step: currentStep
     });
   }
 };
