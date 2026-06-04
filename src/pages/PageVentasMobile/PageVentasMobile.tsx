@@ -498,7 +498,7 @@ const PageVentasMobile: React.FC = () => {
       const cantidad = Number(item.cantidad) || 0;
       const subtotal = precioUnitario * cantidad;
       const mods = parseModeradoresLineas(item.moderadores);
-      return { nombre: item.producto.nombre, cantidad, precioUnitario, subtotal, mods, notas: item.notas };
+      return { nombre: item.producto.nombre, cantidad, precioUnitario, subtotal, mods, notas: item.notas, moderadoresNames: item.moderadoresNames };
     });
 
     const totalProductos = itemsData.reduce((sum, d) => sum + d.cantidad, 0);
@@ -532,12 +532,16 @@ const PageVentasMobile: React.FC = () => {
     const SEP_ITEM = '========================================';
 
     const itemsHtml = itemsData.map(d => {
-      const modLineas = d.mods.map(m => `<div class="mod-linea">+ ${escH(m)}</div>`).join('');
-      const obsHtml = d.notas ? `<div class="nota-linea">NOTA: ${escH(d.notas)}</div>` : '';
+      // Use moderadoresNames for display (already formatted: 'CON TODO', 'LIMPIO', 'SOLO CON: ...', 'SIN: ...')
+      const modDisplay = (d.moderadoresNames && d.moderadoresNames.length > 0)
+        ? d.moderadoresNames[0]
+        : 'CON TODO';
+      const modHtml = `<div class="mod-linea">${escH(modDisplay)}</div>`;
+      const obsHtml = d.notas ? `<div class="nota-linea">OBS: ${escH(d.notas)}</div>` : '';
       return `<div class="item">
         <div class="item-nombre">${escH(d.nombre)}</div>
         <div class="item-linea">${escH(String(d.cantidad))} x $${d.precioUnitario.toFixed(2)} = $${d.subtotal.toFixed(2)}</div>
-        ${modLineas}
+        ${modHtml}
         ${obsHtml}
         <div class="sep-item">${SEP_ITEM}</div>
       </div>`;
@@ -612,8 +616,6 @@ const PageVentasMobile: React.FC = () => {
   <div class="entrega-titulo">${escH(clienteLabel || tipoLabel)}</div>
   ${direccionHtml}
   ${telefonoHtml}
-  <div class="entrega-obs-titulo">OBS:</div>
-  <div class="entrega-obs">Sin observaciones</div>
   <div class="pago-seccion">
     <div class="pago-titulo">INFO PAGO:</div>
     <div class="pago-linea">PENDIENTE | $${subtotalComanda.toFixed(2)}</div>
