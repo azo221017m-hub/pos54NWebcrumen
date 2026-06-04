@@ -9,6 +9,8 @@ import { websocketService } from '../services/websocket.service';
 const REFERENCIA_FONDO_CAJA = 'FONDO de CAJA';
 // MySQL error number for "Table doesn't exist" (ER_NO_SUCH_TABLE)
 const MYSQL_ER_NO_SUCH_TABLE = 1146;
+// MySQL error number for "Unknown column" (ER_BAD_FIELD_ERROR)
+const MYSQL_ER_BAD_FIELD_ERROR = 1054;
 
 // Interface para Turno
 interface Turno extends RowDataPacket {
@@ -880,17 +882,40 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
 
     // 1. Turno + Negocio
     currentStep = 'turnoRows';
-    const [turnoRows] = await pool.query<RowDataPacket[]>(
-      `SELECT 
-        t.idturno, t.numeroturno, t.claveturno, t.usuarioturno,
-        t.fechainicioturno, t.fechafinturno, t.estatusturno, t.metaturno,
-        n.nombreNegocio, n.rfcnegocio
-       FROM tblposcrumenwebturnos t
-       LEFT JOIN tblposcrumenwebnegocio n ON t.idnegocio = n.idNegocio
-       WHERE t.claveturno = ? AND t.idnegocio = ?
-       LIMIT 1`,
-      [claveturno, idnegocio]
-    );
+    let turnoRows: RowDataPacket[];
+    try {
+      const [rows] = await pool.query<RowDataPacket[]>(
+        `SELECT 
+          t.idturno, t.numeroturno, t.claveturno, t.usuarioturno,
+          t.fechainicioturno, t.fechafinturno, t.estatusturno, t.metaturno,
+          n.nombreNegocio, n.rfcnegocio
+         FROM tblposcrumenwebturnos t
+         LEFT JOIN tblposcrumenwebnegocio n ON t.idnegocio = n.idNegocio
+         WHERE t.claveturno = ? AND t.idnegocio = ?
+         LIMIT 1`,
+        [claveturno, idnegocio]
+      );
+      turnoRows = rows;
+    } catch (turnoErr: any) {
+      if (turnoErr?.errno === MYSQL_ER_BAD_FIELD_ERROR) {
+        // metaturno column may not exist yet (migration pending)
+        console.warn('[obtenerCorteFinTurno] metaturno column missing, retrying without it');
+        const [rows] = await pool.query<RowDataPacket[]>(
+          `SELECT 
+            t.idturno, t.numeroturno, t.claveturno, t.usuarioturno,
+            t.fechainicioturno, t.fechafinturno, t.estatusturno, NULL AS metaturno,
+            n.nombreNegocio, n.rfcnegocio
+           FROM tblposcrumenwebturnos t
+           LEFT JOIN tblposcrumenwebnegocio n ON t.idnegocio = n.idNegocio
+           WHERE t.claveturno = ? AND t.idnegocio = ?
+           LIMIT 1`,
+          [claveturno, idnegocio]
+        );
+        turnoRows = rows;
+      } else {
+        throw turnoErr;
+      }
+    }
 
     if (turnoRows.length === 0) {
       res.status(404).json({ success: false, message: 'Turno no encontrado' });
@@ -900,51 +925,90 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     const turno = turnoRows[0];
 
     // 2. Fondo inicial (MOVIMIENTO FONDO de CAJA positivo - primer registro)
+    // Steps 2, 3, 3b, 3c, 5 depend on the 'referencia' column (added via migration)
     currentStep = 'fondoInicialRows';
-    const [fondoInicialRows] = await pool.query<RowDataPacket[]>(
-      `SELECT COALESCE(SUM(totaldeventa), 0) AS fondoInicial
-       FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND tipodeventa = 'MOVIMIENTO' AND referencia = 'FONDO de CAJA'
-         AND totaldeventa > 0`,
-      [claveturno, idnegocio]
-    );
-    const fondoInicial = Number(fondoInicialRows[0]?.fondoInicial) || 0;
+    let fondoInicial = 0;
+    let retiroFondo = 0;
+    let ingresosCaja = 0;
+    let retirosCaja = 0;
+    let gastosRows: RowDataPacket[] = [];
+    let totalGastos = 0;
+    try {
+      const [fondoInicialRows] = await pool.query<RowDataPacket[]>(
+        `SELECT COALESCE(SUM(totaldeventa), 0) AS fondoInicial
+         FROM tblposcrumenwebventas
+         WHERE claveturno = ? AND idnegocio = ?
+           AND tipodeventa = 'MOVIMIENTO' AND referencia = 'FONDO de CAJA'
+           AND totaldeventa > 0`,
+        [claveturno, idnegocio]
+      );
+      fondoInicial = Number(fondoInicialRows[0]?.fondoInicial) || 0;
 
-    // 3. Retiro de fondo (MOVIMIENTO FONDO de CAJA negativo)
-    currentStep = 'retiroFondoRows';
-    const [retiroFondoRows] = await pool.query<RowDataPacket[]>(
-      `SELECT COALESCE(SUM(ABS(totaldeventa)), 0) AS retiroFondo
-       FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND tipodeventa = 'MOVIMIENTO' AND referencia = 'FONDO de CAJA'
-         AND totaldeventa < 0`,
-      [claveturno, idnegocio]
-    );
-    const retiroFondo = Number(retiroFondoRows[0]?.retiroFondo) || 0;
+      // 3. Retiro de fondo (MOVIMIENTO FONDO de CAJA negativo)
+      currentStep = 'retiroFondoRows';
+      const [retiroFondoRows] = await pool.query<RowDataPacket[]>(
+        `SELECT COALESCE(SUM(ABS(totaldeventa)), 0) AS retiroFondo
+         FROM tblposcrumenwebventas
+         WHERE claveturno = ? AND idnegocio = ?
+           AND tipodeventa = 'MOVIMIENTO' AND referencia = 'FONDO de CAJA'
+           AND totaldeventa < 0`,
+        [claveturno, idnegocio]
+      );
+      retiroFondo = Number(retiroFondoRows[0]?.retiroFondo) || 0;
 
-    // 3b. Ingresos a caja durante el turno (MOVIMIENTO referencia = 'INGRESO CAJA')
-    currentStep = 'ingresosCajaRows';
-    const [ingresosCajaRows] = await pool.query<RowDataPacket[]>(
-      `SELECT COALESCE(SUM(totaldeventa), 0) AS ingresosCaja
-       FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND tipodeventa = 'MOVIMIENTO' AND referencia = 'INGRESO CAJA'
-         AND totaldeventa > 0`,
-      [claveturno, idnegocio]
-    );
-    const ingresosCaja = Number(ingresosCajaRows[0]?.ingresosCaja) || 0;
+      // 3b. Ingresos a caja durante el turno (MOVIMIENTO referencia = 'INGRESO CAJA')
+      currentStep = 'ingresosCajaRows';
+      const [ingresosCajaRows] = await pool.query<RowDataPacket[]>(
+        `SELECT COALESCE(SUM(totaldeventa), 0) AS ingresosCaja
+         FROM tblposcrumenwebventas
+         WHERE claveturno = ? AND idnegocio = ?
+           AND tipodeventa = 'MOVIMIENTO' AND referencia = 'INGRESO CAJA'
+           AND totaldeventa > 0`,
+        [claveturno, idnegocio]
+      );
+      ingresosCaja = Number(ingresosCajaRows[0]?.ingresosCaja) || 0;
 
-    // 3c. Retiros de caja durante el turno (MOVIMIENTO referencia = 'RETIRO CAJA')
-    currentStep = 'retirosCajaRows';
-    const [retirosCajaRows] = await pool.query<RowDataPacket[]>(
-      `SELECT COALESCE(SUM(ABS(totaldeventa)), 0) AS retirosCaja
-       FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND tipodeventa = 'MOVIMIENTO' AND referencia = 'RETIRO CAJA'`,
-      [claveturno, idnegocio]
-    );
-    const retirosCaja = Number(retirosCajaRows[0]?.retirosCaja) || 0;
+      // 3c. Retiros de caja durante el turno (MOVIMIENTO referencia = 'RETIRO CAJA')
+      currentStep = 'retirosCajaRows';
+      const [retirosCajaRows] = await pool.query<RowDataPacket[]>(
+        `SELECT COALESCE(SUM(ABS(totaldeventa)), 0) AS retirosCaja
+         FROM tblposcrumenwebventas
+         WHERE claveturno = ? AND idnegocio = ?
+           AND tipodeventa = 'MOVIMIENTO' AND referencia = 'RETIRO CAJA'`,
+        [claveturno, idnegocio]
+      );
+      retirosCaja = Number(retirosCajaRows[0]?.retirosCaja) || 0;
+
+      // 5. Gastos del turno (referencia = 'GASTO'), solo si existen
+      currentStep = 'gastosRows';
+      const [gastosData] = await pool.query<RowDataPacket[]>(
+        `SELECT descripcionmov AS concepto, COALESCE(SUM(totaldeventa), 0) AS importe
+         FROM tblposcrumenwebventas
+         WHERE claveturno = ? AND idnegocio = ?
+           AND tipodeventa = 'MOVIMIENTO' AND referencia = 'GASTO'
+         GROUP BY descripcionmov
+         ORDER BY descripcionmov ASC`,
+        [claveturno, idnegocio]
+      );
+      gastosRows = gastosData;
+
+      currentStep = 'totalGastosRows';
+      const [totalGastosRows] = await pool.query<RowDataPacket[]>(
+        `SELECT COALESCE(SUM(totaldeventa), 0) AS totalGastos
+         FROM tblposcrumenwebventas
+         WHERE claveturno = ? AND idnegocio = ?
+           AND tipodeventa = 'MOVIMIENTO' AND referencia = 'GASTO'`,
+        [claveturno, idnegocio]
+      );
+      totalGastos = Number(totalGastosRows[0]?.totalGastos) || 0;
+    } catch (referenciaErr: any) {
+      if (referenciaErr?.errno === MYSQL_ER_BAD_FIELD_ERROR) {
+        // referencia column may not exist yet (migration pending)
+        console.warn('[obtenerCorteFinTurno] referencia column missing, omitiendo movimientos de caja y gastos');
+      } else {
+        throw referenciaErr;
+      }
+    }
 
     // 4. Ventas brutas, descuentos, ventas netas (solo ventas reales)
     currentStep = 'ventasResumenRows';
@@ -964,27 +1028,6 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     const totalDescuentos = Number(ventasResumenRows[0]?.totalDescuentos) || 0;
     const ventasNetas = Number(ventasResumenRows[0]?.ventasNetas) || 0;
     const totalTickets = Number(ventasResumenRows[0]?.totalTickets) || 0;
-
-    // 5. Gastos del turno (referencia = 'GASTO'), solo si existen
-    currentStep = 'gastosRows';
-    const [gastosRows] = await pool.query<RowDataPacket[]>(
-      `SELECT descripcionmov AS concepto, COALESCE(SUM(totaldeventa), 0) AS importe
-       FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND tipodeventa = 'MOVIMIENTO' AND referencia = 'GASTO'
-       GROUP BY descripcionmov
-       ORDER BY descripcionmov ASC`,
-      [claveturno, idnegocio]
-    );
-    currentStep = 'totalGastosRows';
-    const [totalGastosRows] = await pool.query<RowDataPacket[]>(
-      `SELECT COALESCE(SUM(totaldeventa), 0) AS totalGastos
-       FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND tipodeventa = 'MOVIMIENTO' AND referencia = 'GASTO'`,
-      [claveturno, idnegocio]
-    );
-    const totalGastos = Number(totalGastosRows[0]?.totalGastos) || 0;
 
     // 6. Ventas por forma de pago (simple + detallepagos para MIXTO)
     currentStep = 'ventasFormaPagoRows';
@@ -1056,19 +1099,30 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
 
     // 8. Descuentos aplicados agrupados por detalledescuento
     currentStep = 'descuentosRows';
-    const [descuentosRows] = await pool.query<RowDataPacket[]>(
-      `SELECT 
-         COALESCE(NULLIF(TRIM(detalledescuento), ''), 'Sin nombre') AS nombre,
-         COUNT(*) AS operaciones,
-         COALESCE(SUM(descuentos), 0) AS montoDescuento
-       FROM tblposcrumenwebventas
-       WHERE claveturno = ? AND idnegocio = ?
-         AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
-         AND descripcionmov = 'VENTA' AND descuentos > 0
-       GROUP BY detalledescuento
-       ORDER BY montoDescuento DESC`,
-      [claveturno, idnegocio]
-    );
+    let descuentosRows: RowDataPacket[] = [];
+    try {
+      const [rows] = await pool.query<RowDataPacket[]>(
+        `SELECT 
+           COALESCE(NULLIF(TRIM(detalledescuento), ''), 'Sin nombre') AS nombre,
+           COUNT(*) AS operaciones,
+           COALESCE(SUM(descuentos), 0) AS montoDescuento
+         FROM tblposcrumenwebventas
+         WHERE claveturno = ? AND idnegocio = ?
+           AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
+           AND descripcionmov = 'VENTA' AND descuentos > 0
+         GROUP BY detalledescuento
+         ORDER BY montoDescuento DESC`,
+        [claveturno, idnegocio]
+      );
+      descuentosRows = rows;
+    } catch (descErr: any) {
+      if (descErr?.errno === MYSQL_ER_BAD_FIELD_ERROR) {
+        // detalledescuento column may not exist yet (migration pending)
+        console.warn('[obtenerCorteFinTurno] detalledescuento column missing, omitiendo detalle de descuentos');
+      } else {
+        throw descErr;
+      }
+    }
 
     // 9. Productos vendidos
     currentStep = 'productosRows';
