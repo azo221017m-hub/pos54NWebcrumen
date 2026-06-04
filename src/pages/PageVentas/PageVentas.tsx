@@ -1002,28 +1002,13 @@ const PageVentas: React.FC = () => {
       const cantidad = Number(item.cantidad) || 0;
       const subtotal = precioUnitario * cantidad;
 
-      // Determine modifier display line
+      // Determine modifier display lines (same logic as WhatsApp format)
       const names = item.moderadoresNames;
-      let modHtml: string;
-      if (!names || names.length === 0 || (names.length === 1 && names[0] === MODERADORES_PLACEHOLDER)) {
-        // Product added without opening modifier selector → CON TODO
-        modHtml = `<div class="mod-linea">CON TODO</div>`;
-      } else if (names.length === 1 && (names[0] === 'CON TODO' || names[0] === 'LIMPIO')) {
-        // Explicit CON TODO or LIMPIO selection
-        modHtml = `<div class="mod-linea">${escapeHtml(names[0])}</div>`;
-      } else if (names.every(n => n.startsWith('SIN '))) {
-        // SIN mode: strip "SIN " prefix and join on one line
-        const cleanNames = names.map(n => n.slice(4));
-        modHtml = `<div class="mod-linea">SIN: ${cleanNames.map(escapeHtml).join(', ')}</div>`;
-      } else {
-        // SOLO CON mode: check if all available mods are selected → CON TODO
-        const availableMods = getAvailableModeradores(item.producto.idProducto);
-        if (availableMods.length > 0 && names.length >= availableMods.length) {
-          modHtml = `<div class="mod-linea">CON TODO</div>`;
-        } else {
-          modHtml = `<div class="mod-linea">SOLO CON: ${names.map(escapeHtml).join(', ')}</div>`;
-        }
-      }
+      const MODS_SKIP_PRINT = new Set(['LIMPIO', MODERADORES_PLACEHOLDER, 'CON TODO']);
+      const visibleMods = (names || []).filter(n => n && !MODS_SKIP_PRINT.has(n));
+      const modHtml = visibleMods.length > 0
+        ? visibleMods.map(m => `<div class="mod-linea">+ ${escapeHtml(m)}</div>`).join('')
+        : '';
 
       const obsHtml = item.notas
         ? `<div class="nota-linea">OBS: ${escapeHtml(item.notas)}</div>`
