@@ -462,12 +462,30 @@ export const cerrarTurnoNuevo = async (req: AuthRequest, res: Response): Promise
     }
 
     // Buscar el turno abierto con esa clave
-    const [turnosAbiertos] = await pool.query<Turno[]>(
-      `SELECT idturno, metaturno FROM tblposcrumenwebturnos
-       WHERE claveturno = ? AND idnegocio = ? AND estatusturno = 'abierto'
-       LIMIT 1`,
-      [claveturno, idnegocio]
-    );
+    let turnosAbiertos: Turno[];
+    try {
+      const [rows] = await pool.query<Turno[]>(
+        `SELECT idturno, metaturno FROM tblposcrumenwebturnos
+         WHERE claveturno = ? AND idnegocio = ? AND estatusturno = 'abierto'
+         LIMIT 1`,
+        [claveturno, idnegocio]
+      );
+      turnosAbiertos = rows;
+    } catch (selectErr: any) {
+      if (selectErr?.errno === MYSQL_ER_BAD_FIELD_ERROR) {
+        // metaturno column may not exist yet — retry without it
+        console.warn('[cerrarTurnoNuevo] metaturno column missing, retrying without it');
+        const [rows] = await pool.query<Turno[]>(
+          `SELECT idturno FROM tblposcrumenwebturnos
+           WHERE claveturno = ? AND idnegocio = ? AND estatusturno = 'abierto'
+           LIMIT 1`,
+          [claveturno, idnegocio]
+        );
+        turnosAbiertos = rows;
+      } else {
+        throw selectErr;
+      }
+    }
 
     if (turnosAbiertos.length === 0) {
       res.status(404).json({ success: false, message: 'No se encontró un turno abierto con esa clave' });
@@ -714,10 +732,10 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       );
       turnoRows = rows;
     } catch (turnoErr: any) {
-      if (turnoErr?.errno === MYSQL_ER_BAD_FIELD_ERROR) {
+      if (turnoErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || turnoErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
         // A column may not exist yet (metaturno, rfcnegocio, nombreNegocio, etc.)
-        // Retry without the negocio JOIN to avoid cascading BAD_FIELD errors
-        console.warn('[obtenerCorteFinTurno] column missing in turno/negocio query, retrying without JOIN');
+        // or the negocio table may not exist — retry without the JOIN
+        console.warn('[obtenerCorteFinTurno] column missing or table not found in turno/negocio query, retrying without JOIN');
         try {
           const [rows] = await pool.query<RowDataPacket[]>(
             `SELECT 
@@ -905,8 +923,9 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       mixtoDetalleRows = rows;
     } catch (mixtoErr: any) {
       // MySQL error 1146 (ER_NO_SUCH_TABLE): table may not exist if the payment migration was never applied
-      if (mixtoErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
-        console.warn('[obtenerCorteFinTurno] tblposcrumenwebdetallepagos no existe, omitiendo pagos MIXTO');
+      // MySQL error 1054 (ER_BAD_FIELD_ERROR): a column may be missing (e.g. formadepagodetalle, folioventa)
+      if (mixtoErr?.errno === MYSQL_ER_NO_SUCH_TABLE || mixtoErr?.errno === MYSQL_ER_BAD_FIELD_ERROR) {
+        console.warn('[obtenerCorteFinTurno] tblposcrumenwebdetallepagos no existe o columna faltante, omitiendo pagos MIXTO');
       } else {
         throw mixtoErr;
       }
