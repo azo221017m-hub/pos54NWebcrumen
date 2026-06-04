@@ -1002,15 +1002,29 @@ const PageVentas: React.FC = () => {
       const cantidad = Number(item.cantidad) || 0;
       const subtotal = precioUnitario * cantidad;
 
-      // Determine modifier display lines (same logic as WhatsApp format)
+      // Determine modifier display
       const names = item.moderadoresNames;
-      const MODS_SKIP_PRINT = new Set(['LIMPIO', MODERADORES_PLACEHOLDER, 'CON TODO']);
-      const visibleMods = (names || []).filter(n => n && !MODS_SKIP_PRINT.has(n));
-      const modHtml = visibleMods.length > 0
-        ? visibleMods.map(m => `<div class="mod-linea">+ ${escapeHtml(m)}</div>`).join('')
-        : '';
+      let modHtml = '';
+      if (names && names.length > 0) {
+        const first = names[0];
+        if (first === 'CON TODO' || first === MODERADORES_PLACEHOLDER) {
+          modHtml = `<div class="mod-linea">CON TODO</div>`;
+        } else if (first === 'LIMPIO') {
+          modHtml = `<div class="mod-linea">LIMPIO</div>`;
+        } else if (first.startsWith('SIN ')) {
+          const sinNames = names.map(n => n.replace(/^SIN /, '')).join(', ');
+          modHtml = `<div class="mod-linea">SIN: ${escapeHtml(sinNames)}</div>`;
+        } else {
+          const availableMods = getAvailableModeradores(item.producto.idProducto);
+          if (availableMods.length > 0 && names.length >= availableMods.length) {
+            modHtml = `<div class="mod-linea">CON TODO</div>`;
+          } else {
+            modHtml = `<div class="mod-linea">SOLO CON: ${escapeHtml(names.join(', '))}</div>`;
+          }
+        }
+      }
 
-      const obsHtml = item.notas
+      const obsHtml = item.notas && item.notas.trim()
         ? `<div class="nota-linea">OBS: ${escapeHtml(item.notas)}</div>`
         : '';
 
