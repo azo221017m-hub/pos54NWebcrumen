@@ -5,7 +5,7 @@ import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerTopP
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import { clearSession, setSkipBeforeUnload } from '../services/sessionService';
 import { obtenerDetallesPagos } from '../services/pagosService';
-import { verificarTurnoAbierto, cerrarTurnoActual, obtenerCorteFinTurno, type ProductoVendidoCierre, type VentasPorFormaDePagoCierre, type VentasPorTipoDeVentaCierre } from '../services/turnosService';
+import { verificarTurnoAbierto, cerrarTurnoActual, obtenerCorteFinTurno } from '../services/turnosService';
 import type { Turno, CorteFinTurnoData } from '../types/turno.types';
 import { generarTextoTicket } from '../utils/ticketFinTurno';
 import { getPaperConfig } from '../utils/ticketLayout';
@@ -59,40 +59,12 @@ interface DatosCierreTurno {
   estatusCierre: 'sin_novedades' | 'cuentas_pendientes';
 }
 
-interface ResumenCierreTurno {
-  claveTurno: string;
-  numeroTurno: number | null;
-  retiroFondo: number;
-  totalArqueo: number;
-  estatusCierre: 'sin_novedades' | 'cuentas_pendientes';
-  detalleDenominaciones: DatosCierreTurno['detalleDenominaciones'];
-  fechaCierreISO: string;
-  productosVendidos: ProductoVendidoCierre[];
-  ventasPorFormaDePago: VentasPorFormaDePagoCierre[];
-  ventasPorTipoDeVenta: VentasPorTipoDeVentaCierre[];
-  totalEfectivo: number;
-  totalFondoCaja: number;
-}
-
 // Mantiene el mismo retardo usado en recibos para permitir que whatsapp:// abra la app nativa
 const WHATSAPP_NAVIGATION_DELAY_MS = 1500;
 // Tamaño de popup para vista previa de ticket angosto (58mm) antes de imprimir
 const PRINT_POPUP_WINDOW_FEATURES = 'width=340,height=700';
 // Espera breve para que el popup termine de renderizar antes de lanzar print()
 const PRINT_WINDOW_READY_DELAY_MS = 500;
-
-const etiquetasDenominaciones: Record<keyof DatosCierreTurno['detalleDenominaciones'], string> = {
-  billete1000: 'Billetes de 1000',
-  billete500: 'Billetes de 500',
-  billete200: 'Billetes de 200',
-  billete100: 'Billetes de 100',
-  billete50: 'Billetes de 50',
-  billete20: 'Billetes de 20',
-  moneda10: 'Monedas de 10',
-  moneda5: 'Monedas de 5',
-  moneda1: 'Monedas de 1',
-  moneda050: 'Monedas de 0.50'
-};
 
 const escapeHtml = (value: string): string =>
   value
@@ -101,76 +73,6 @@ const escapeHtml = (value: string): string =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
-
-const generarTextoDetalleCorte = (detalle: ResumenCierreTurno): string => {
-  const formatCurrency = (amount: number) =>
-    `$${Number(amount || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-  const fechaFormatter = new Intl.DateTimeFormat('es-MX', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  });
-  const fechaCierre = fechaFormatter.format(new Date(detalle.fechaCierreISO));
-  const encabezado = [
-    'CORTE FIN DE TURNO',
-    `Fecha: ${fechaCierre}`,
-    `Turno: ${detalle.numeroTurno ?? '-'}`,
-    `Clave: ${detalle.claveTurno}`,
-    `Estatus: ${detalle.estatusCierre === 'sin_novedades' ? 'SIN NOVEDADES' : 'CUENTAS PENDIENTES'}`,
-    `Retiro Fondo: ${formatCurrency(detalle.retiroFondo)}`,
-    `Arqueo Caja: ${formatCurrency(detalle.totalArqueo)}`,
-    '',
-    'Detalle denominaciones:'
-  ];
-
-  const denominaciones = (Object.keys(detalle.detalleDenominaciones) as Array<keyof DatosCierreTurno['detalleDenominaciones']>)
-    .filter((key) => Number(detalle.detalleDenominaciones[key]) > 0)
-    .map((key) => `- ${etiquetasDenominaciones[key]}: ${detalle.detalleDenominaciones[key]}`);
-
-  if (denominaciones.length === 0) {
-    denominaciones.push('- Sin denominaciones capturadas');
-  }
-
-  const ventasPorFormaDePago = (detalle.ventasPorFormaDePago ?? []).length > 0
-    ? (detalle.ventasPorFormaDePago ?? []).map(v => `- ${v.formadepago}: ${formatCurrency(v.total)}`)
-    : ['- Sin datos'];
-
-  const ventasPorTipoDeVenta = (detalle.ventasPorTipoDeVenta ?? []).length > 0
-    ? (detalle.ventasPorTipoDeVenta ?? []).map(v => `- ${v.tipodeventa}: ${formatCurrency(v.total)}`)
-    : ['- Sin datos'];
-
-  const formatCantidad = (cantidad: number): string => {
-    const qty = Number(cantidad) || 0;
-    return qty % 1 === 0 ? String(Math.floor(qty)) : qty.toFixed(2);
-  };
-
-  const productosVendidosLista = detalle.productosVendidos ?? [];
-  const productosVendidos = productosVendidosLista.length > 0
-    ? productosVendidosLista.map((producto) => `- ${producto.nombreproducto} | ${formatCantidad(producto.cantidadtotal)} | ${formatCurrency(producto.totalproducto)}`)
-    : ['- Sin productos vendidos'];
-
-  return [
-    ...encabezado,
-    ...denominaciones,
-    '',
-    'Ventas por Forma de Pago:',
-    ...ventasPorFormaDePago,
-    '',
-    'Ventas por Tipo de Venta:',
-    ...ventasPorTipoDeVenta,
-    '',
-    `Total Efectivo (Ventas Ef. - Gastos): ${formatCurrency(detalle.totalEfectivo ?? 0)}`,
-    `Fondo de Caja retirado: ${formatCurrency(detalle.totalFondoCaja ?? 0)}`,
-    '',
-    'Productos vendidos (Nombre | Cantidad | Total):',
-    ...productosVendidos
-  ].join('\n');
-};
 
 const generarHtmlDetalleCorte = (textoDetalle: string): string => {
   const cfg = getPaperConfig();
@@ -331,7 +233,6 @@ export const DashboardPage = () => {
   const [turnoAbierto, setTurnoAbierto] = useState<Turno | null>(null);
   const [showCierreTurnoModal, setShowCierreTurnoModal] = useState(false);
   const [showDetalleCorteModal, setShowDetalleCorteModal] = useState(false);
-  const [detalleUltimoCierre, setDetalleUltimoCierre] = useState<ResumenCierreTurno | null>(null);
   const [corteFinTurnoData, setCorteFinTurnoData] = useState<CorteFinTurnoData | null>(null);
   const [negocio, setNegocio] = useState<Negocio | null>(null);
   const [abiertoAhoraWeb, setAbiertoAhoraWeb] = useState<boolean>(false);
@@ -551,21 +452,7 @@ export const DashboardPage = () => {
     try {
       console.log('Datos de cierre de turno:', datosFormulario);
       // 1. Close the turno
-      const cierreTurnoResponse = await cerrarTurnoActual(datosFormulario);
-      const detalleCierre: ResumenCierreTurno = {
-        claveTurno: datosFormulario.idTurno,
-        numeroTurno: turnoAbierto?.numeroturno ?? null,
-        retiroFondo: datosFormulario.retiroFondo,
-        totalArqueo: datosFormulario.totalArqueo,
-        estatusCierre: datosFormulario.estatusCierre,
-        detalleDenominaciones: datosFormulario.detalleDenominaciones,
-        fechaCierreISO: new Date().toISOString(),
-        productosVendidos: cierreTurnoResponse.productosVendidos ?? [],
-        ventasPorFormaDePago: cierreTurnoResponse.ventasPorFormaDePago ?? [],
-        ventasPorTipoDeVenta: cierreTurnoResponse.ventasPorTipoDeVenta ?? [],
-        totalEfectivo: cierreTurnoResponse.totalEfectivo ?? 0,
-        totalFondoCaja: cierreTurnoResponse.totalFondoCaja ?? 0
-      };
+      await cerrarTurnoActual(datosFormulario);
       console.log('Turno cerrado exitosamente');
 
       // 2. Fetch new-format ticket data and auto-print
@@ -599,7 +486,6 @@ export const DashboardPage = () => {
 
       // 4. Show the post-cierre modal and refresh state
       setShowCierreTurnoModal(false);
-      setDetalleUltimoCierre(detalleCierre);
       setShowDetalleCorteModal(true);
       await verificarTurno();
       await cargarResumenVentas();
