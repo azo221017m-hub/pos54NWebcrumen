@@ -1,3 +1,4 @@
+import axios from 'axios';
 import apiClient from './api';
 import type { Turno, TurnoUpdate, CorteFinTurnoData } from '../types/turno.types';
 
@@ -222,8 +223,17 @@ export const obtenerCorteFinTurno = async (claveturno: string): Promise<CorteFin
     );
     console.log('Servicio: Corte de fin de turno obtenido');
     return response.data.data;
-  } catch (error) {
-    console.error('Error en servicio obtenerCorteFinTurno:', error);
+  } catch (error: unknown) {
+    const axiosErr = axios.isAxiosError(error) ? error : null;
+    const status = axiosErr?.response?.status;
+    const data = axiosErr?.response?.data as Record<string, unknown> | undefined;
+    const backendMessage = (data?.message ?? data?.error) as string | undefined;
+    const message = backendMessage ?? (error instanceof Error ? error.message : 'Error desconocido');
+    console.error('Error en servicio obtenerCorteFinTurno:', {
+      status,
+      message,
+      url: `/turnos/corte/${claveturno}`,
+    });
     throw error;
   }
 };

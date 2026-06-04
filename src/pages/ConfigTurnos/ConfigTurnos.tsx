@@ -36,6 +36,7 @@ const ConfigTurnos: React.FC = () => {
   const [turnoEditar, setTurnoEditar] = useState<Turno | undefined>(undefined);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
   const [claveturnoCorte, setClaveturnoCorte] = useState<string | null>(null);
+  const [efectivoContadoCorte, setEfectivoContadoCorte] = useState<number | undefined>(undefined);
 
   const mostrarMensaje = (tipo: 'success' | 'error', texto: string) => {
     setMensaje({ tipo, texto });
@@ -92,6 +93,7 @@ const ConfigTurnos: React.FC = () => {
       );
 
       // Mostrar el ticket de fin de turno para imprimir y enviar por WhatsApp
+      setEfectivoContadoCorte(datosFormulario.totalArqueo);
       setClaveturnoCorte(claveturno);
     } catch (error) {
       console.error('Error al cerrar turno:', error);
@@ -158,7 +160,8 @@ const ConfigTurnos: React.FC = () => {
       {claveturnoCorte && (
         <TicketFinTurno
           claveturno={claveturnoCorte}
-          onClose={() => setClaveturnoCorte(null)}
+          efectivoContado={efectivoContadoCorte}
+          onClose={() => { setClaveturnoCorte(null); setEfectivoContadoCorte(undefined); }}
         />
       )}
     </>
