@@ -80,7 +80,7 @@ export const generarTextoTicket = (data: CorteFinTurnoData): string => {
   lineas.push(`Apertura: ${formatFecha(turno.fechainicioturno)}`);
   lineas.push(`Cierre:   ${formatFecha(turno.fechafinturno)}`);
   lineas.push('');
-  lineas.push(`Duracion: ${duracion(turno.fechainicioturno, turno.fechafinturno)}`);
+  lineas.push(`Duración: ${duracion(turno.fechainicioturno, turno.fechafinturno)}`);
 
   // ── 2. RESUMEN GENERAL ────────────────────────────────────
   lineas.push('');
@@ -193,10 +193,10 @@ export const generarTextoTicket = (data: CorteFinTurnoData): string => {
   lineas.push(`Venta Promedio:`);
   lineas.push(moneda(indicadores.ventaPromedio));
   lineas.push('');
-  lineas.push(`Articulos Vendidos:`);
+  lineas.push(`Artículos Vendidos:`);
   lineas.push(String(indicadores.totalUnidades));
   lineas.push('');
-  lineas.push(`Promedio Articulos:`);
+  lineas.push(`Promedio Artículos:`);
   lineas.push(indicadores.promedioArticulos.toFixed(2));
 
   // ── 10. PIE DEL TICKET ────────────────────────────────────

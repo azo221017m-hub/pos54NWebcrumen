@@ -966,7 +966,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       [claveturno, idnegocio]
     );
 
-    // For MIXTO payments, get details from tblposcrumenwebdetallepagos
+    // Para pagos MIXTO, obtener detalles de tblposcrumenwebdetallepagos
     const [mixtoDetalleRows] = await pool.query<RowDataPacket[]>(
       `SELECT dp.formadepagodetalle AS formadepago, COALESCE(SUM(dp.totaldepago), 0) AS total
        FROM tblposcrumenwebdetallepagos dp
@@ -978,7 +978,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       [claveturno, idnegocio]
     );
 
-    // Merge simple + mixto payment details
+    // Combinar detalles de pagos simples + mixtos
     const pagoMap: Record<string, number> = {};
     for (const row of ventasFormaPagoRows) {
       const fp = String(row.formadepago || '');
