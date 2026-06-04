@@ -9,6 +9,7 @@ import {
   cerrarTurnoActual
 } from '../../services/turnosService';
 import CierreTurno from '../../components/turnos/CierreTurno/CierreTurno';
+import TicketFinTurno from '../../components/turnos/TicketFinTurno/TicketFinTurno';
 import './ConfigTurnos.css';
 
 // Types from CierreTurno component - duplicated here to avoid circular dependencies
@@ -34,6 +35,7 @@ const ConfigTurnos: React.FC = () => {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [turnoEditar, setTurnoEditar] = useState<Turno | undefined>(undefined);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
+  const [claveturnoCorte, setClaveturnoCorte] = useState<string | null>(null);
 
   const mostrarMensaje = (tipo: 'success' | 'error', texto: string) => {
     setMensaje({ tipo, texto });
@@ -100,6 +102,10 @@ const ConfigTurnos: React.FC = () => {
     setMostrarFormulario(true);
   };
 
+  const handleVerCorte = (turno: Turno) => {
+    setClaveturnoCorte(turno.claveturno);
+  };
+
   const handleCancelar = () => {
     setMostrarFormulario(false);
     setTurnoEditar(undefined);
@@ -129,6 +135,7 @@ const ConfigTurnos: React.FC = () => {
         <ListaTurnos
           turnos={turnos}
           onEdit={handleEditarTurno}
+          onVerCorte={handleVerCorte}
         />
       </StandardPageLayout>
 
@@ -138,6 +145,14 @@ const ConfigTurnos: React.FC = () => {
           turno={turnoEditar}
           onSubmit={handleCerrarTurno}
           onCancel={handleCancelar}
+        />
+      )}
+
+      {/* Ticket de Fin de Turno */}
+      {claveturnoCorte && (
+        <TicketFinTurno
+          claveturno={claveturnoCorte}
+          onClose={() => setClaveturnoCorte(null)}
         />
       )}
     </>

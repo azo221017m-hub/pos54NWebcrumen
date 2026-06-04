@@ -1,15 +1,16 @@
 import React from 'react';
 import type { Turno } from '../../../types/turno.types';
 import { EstatusTurno } from '../../../types/turno.types';
-import { Clock, Edit2, CheckCircle, XCircle } from 'lucide-react';
+import { Clock, Edit2, CheckCircle, XCircle, FileText } from 'lucide-react';
 import './ListaTurnos.css';
 
 interface ListaTurnosProps {
   turnos: Turno[];
   onEdit: (turno: Turno) => void;
+  onVerCorte?: (turno: Turno) => void;
 }
 
-const ListaTurnos: React.FC<ListaTurnosProps> = ({ turnos, onEdit }) => {
+const ListaTurnos: React.FC<ListaTurnosProps> = ({ turnos, onEdit, onVerCorte }) => {
   const getEstatusClass = (estatus: EstatusTurno): string => {
     switch (estatus) {
       case EstatusTurno.ABIERTO: return 'badge-abierto';
@@ -108,6 +109,15 @@ const ListaTurnos: React.FC<ListaTurnosProps> = ({ turnos, onEdit }) => {
                       >
                         <Edit2 size={16} />
                       </button>
+                      {turno.estatusturno === EstatusTurno.CERRADO && onVerCorte && (
+                        <button
+                          className="btn-accion btn-corte"
+                          onClick={() => onVerCorte(turno)}
+                          title="Ver Corte de Fin de Turno"
+                        >
+                          <FileText size={16} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

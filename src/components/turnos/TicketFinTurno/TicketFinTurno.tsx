@@ -1,0 +1,141 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Printer, MessageCircle, Loader } from 'lucide-react';
+import type { CorteFinTurnoData } from '../../../types/turno.types';
+import { obtenerCorteFinTurno } from '../../../services/turnosService';
+import { generarTextoTicket } from '../../../utils/ticketFinTurno';
+import './TicketFinTurno.css';
+
+interface TicketFinTurnoProps {
+  claveturno: string;
+  onClose: () => void;
+}
+
+const TicketFinTurno: React.FC<TicketFinTurnoProps> = ({ claveturno, onClose }) => {
+  const [data, setData] = useState<CorteFinTurnoData | null>(null);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const ticketRef = useRef<HTMLPreElement>(null);
+
+  useEffect(() => {
+    const cargar = async () => {
+      try {
+        setCargando(true);
+        setError(null);
+        const corte = await obtenerCorteFinTurno(claveturno);
+        setData(corte);
+      } catch (err) {
+        console.error('Error al cargar corte de fin de turno:', err);
+        setError('Error al cargar el corte de fin de turno');
+      } finally {
+        setCargando(false);
+      }
+    };
+    cargar();
+  }, [claveturno]);
+
+  const textoTicket = data ? generarTextoTicket(data) : '';
+
+  const handleImprimir = () => {
+    if (!ticketRef.current) return;
+    const ventana = window.open('', '_blank', 'width=400,height=700');
+    if (!ventana) return;
+    ventana.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Corte de Fin de Turno</title>
+  <style>
+    @media print {
+      @page { margin: 2mm; size: 58mm auto; }
+    }
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 10px;
+      line-height: 1.3;
+      white-space: pre;
+      margin: 0;
+      padding: 2mm;
+    }
+  </style>
+</head>
+<body>${textoTicket.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</body>
+</html>`);
+    ventana.document.close();
+    ventana.focus();
+    ventana.print();
+    ventana.close();
+  };
+
+  const handleWhatsApp = () => {
+    if (!textoTicket) return;
+    const encoded = encodeURIComponent(textoTicket);
+    window.open(`https://wa.me/?text=${encoded}`, '_blank');
+  };
+
+  return (
+    <div className="ticket-overlay">
+      <div className="ticket-modal">
+        {/* Encabezado del modal */}
+        <div className="ticket-modal-header">
+          <h2 className="ticket-modal-title">Corte de Fin de Turno</h2>
+          <button
+            type="button"
+            className="ticket-btn-cerrar"
+            onClick={onClose}
+            aria-label="Cerrar"
+          >
+            <X size={22} />
+          </button>
+        </div>
+
+        {/* Cuerpo */}
+        <div className="ticket-modal-body">
+          {cargando && (
+            <div className="ticket-loading">
+              <Loader size={32} className="ticket-spinner" />
+              <p>Generando corte...</p>
+            </div>
+          )}
+
+          {error && !cargando && (
+            <div className="ticket-error">
+              <p>{error}</p>
+            </div>
+          )}
+
+          {!cargando && !error && data && (
+            <pre ref={ticketRef} className="ticket-contenido">
+              {textoTicket}
+            </pre>
+          )}
+        </div>
+
+        {/* Acciones */}
+        {!cargando && !error && data && (
+          <div className="ticket-modal-footer">
+            <button
+              type="button"
+              className="ticket-btn ticket-btn-imprimir"
+              onClick={handleImprimir}
+              title="Imprimir ticket"
+            >
+              <Printer size={18} />
+              Imprimir
+            </button>
+            <button
+              type="button"
+              className="ticket-btn ticket-btn-whatsapp"
+              onClick={handleWhatsApp}
+              title="Enviar por WhatsApp"
+            >
+              <MessageCircle size={18} />
+              WhatsApp
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default TicketFinTurno;

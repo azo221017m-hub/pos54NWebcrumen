@@ -122,6 +122,14 @@
   background-color: #1976D2;
 }
 
+.btn-corte {
+  background-color: #ff8f00;
+}
+
+.btn-corte:hover {
+  background-color: #e65100;
+}
+
 @media (max-width: 768px) {
   .tabla-turnos th,
   .tabla-turnos td {
