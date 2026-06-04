@@ -733,9 +733,13 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       turnoRows = rows;
     } catch (turnoErr: any) {
       if (turnoErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || turnoErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
-        // A column may not exist yet (metaturno, rfcnegocio, nombreNegocio, etc.)
-        // or the negocio table may not exist — retry without the JOIN
-        console.warn('[obtenerCorteFinTurno] column missing or table not found in turno/negocio query, retrying without JOIN');
+        // MYSQL_ER_BAD_FIELD_ERROR (1054): a column is missing (e.g. metaturno, rfcnegocio)
+        // MYSQL_ER_NO_SUCH_TABLE  (1146): tblposcrumenwebnegocio table does not exist
+        // In both cases the safe retry drops the JOIN and substitutes NULL/empty for optional fields
+        const reason = turnoErr.errno === MYSQL_ER_BAD_FIELD_ERROR
+          ? 'column missing (metaturno / rfcnegocio / nombreNegocio)'
+          : 'table tblposcrumenwebnegocio does not exist';
+        console.warn(`[obtenerCorteFinTurno] ${reason} in turno/negocio query, retrying without JOIN`);
         try {
           const [rows] = await pool.query<RowDataPacket[]>(
             `SELECT 
