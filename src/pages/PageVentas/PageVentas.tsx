@@ -994,8 +994,7 @@ const PageVentas: React.FC = () => {
       ? `<div class="folio">Comanda | ${escapeHtml(tipoDeVentaLabel)}${clienteLabel ? ` | ${escapeHtml(clienteLabel)}` : ''}</div>`
       : `<div class="folio">${escapeHtml(tipoDeVentaLabel)}${clienteLabel ? ` | ${escapeHtml(clienteLabel)}` : ''}</div>`;
 
-    // Build items with individual moderador lines and per-item separator
-    const MODS_SKIP = new Set(['LIMPIO', MODERADORES_PLACEHOLDER, 'CON TODO']);
+    // Build items with modifier summary and per-item separator
     const SEP_ITEM = '========================================';
 
     const itemsHtml = items.map(item => {
@@ -1003,19 +1002,37 @@ const PageVentas: React.FC = () => {
       const cantidad = Number(item.cantidad) || 0;
       const subtotal = precioUnitario * cantidad;
 
-      const modLineas = (item.moderadoresNames || [])
-        .filter(n => n && !MODS_SKIP.has(n))
-        .map(m => `<div class="mod-linea">+ ${escapeHtml(m)}</div>`)
-        .join('');
+      // Determine modifier display line
+      const names = item.moderadoresNames;
+      let modHtml: string;
+      if (!names || names.length === 0 || (names.length === 1 && names[0] === MODERADORES_PLACEHOLDER)) {
+        // Product added without opening modifier selector → CON TODO
+        modHtml = `<div class="mod-linea">CON TODO</div>`;
+      } else if (names.length === 1 && (names[0] === 'CON TODO' || names[0] === 'LIMPIO')) {
+        // Explicit CON TODO or LIMPIO selection
+        modHtml = `<div class="mod-linea">${escapeHtml(names[0])}</div>`;
+      } else if (names.every(n => n.startsWith('SIN '))) {
+        // SIN mode: strip "SIN " prefix and join on one line
+        const cleanNames = names.map(n => n.slice(4));
+        modHtml = `<div class="mod-linea">SIN: ${cleanNames.map(escapeHtml).join(', ')}</div>`;
+      } else {
+        // SOLO CON mode: check if all available mods are selected → CON TODO
+        const availableMods = getAvailableModeradores(item.producto.idProducto);
+        if (availableMods.length > 0 && names.length >= availableMods.length) {
+          modHtml = `<div class="mod-linea">CON TODO</div>`;
+        } else {
+          modHtml = `<div class="mod-linea">SOLO CON: ${names.map(escapeHtml).join(', ')}</div>`;
+        }
+      }
 
       const obsHtml = item.notas
-        ? `<div class="nota-linea">NOTA: ${escapeHtml(item.notas)}</div>`
+        ? `<div class="nota-linea">OBS: ${escapeHtml(item.notas)}</div>`
         : '';
 
       return `<div class="item">
         <div class="item-nombre">${escapeHtml(item.producto.nombre)}</div>
         <div class="item-linea">${escapeHtml(String(cantidad))} x $${precioUnitario.toFixed(2)} = $${subtotal.toFixed(2)}</div>
-        ${modLineas}
+        ${modHtml}
         ${obsHtml}
         <div class="sep-item">${SEP_ITEM}</div>
       </div>`;
@@ -1037,8 +1054,8 @@ const PageVentas: React.FC = () => {
       ? (domicilioData?.direcciondeentrega || '')
       : '';
     const obsEntregaStr = tipoServicio === 'Domicilio'
-      ? (domicilioData?.observaciones || 'Sin observaciones')
-      : 'Sin observaciones';
+      ? (domicilioData?.observaciones || '')
+      : '';
 
     const referenciaHoraLine = clienteLabel
       ? (horaEntrega ? `${escapeHtml(clienteLabel)} | ${escapeHtml(horaEntrega)}` : escapeHtml(clienteLabel))
@@ -1049,6 +1066,10 @@ const PageVentas: React.FC = () => {
       : '';
     const telefonoEntregaHtml = telefonoEntregaStr
       ? `<div class="entrega-campo">${escapeHtml(telefonoEntregaStr)}</div>`
+      : '';
+    const obsEntregaHtml = obsEntregaStr
+      ? `<div class="entrega-obs-titulo">OBS:</div>
+  <div class="entrega-obs">${escapeHtml(obsEntregaStr)}</div>`
       : '';
 
     // Payment info
@@ -1126,8 +1147,7 @@ const PageVentas: React.FC = () => {
   <div class="entrega-titulo">${referenciaHoraLine}</div>
   ${direccionEntregaHtml}
   ${telefonoEntregaHtml}
-  <div class="entrega-obs-titulo">OBS:</div>
-  <div class="entrega-obs">${escapeHtml(obsEntregaStr)}</div>
+  ${obsEntregaHtml}
   <div class="pago-seccion">
     <div class="pago-titulo">INFO PAGO:</div>
     <div class="pago-linea">${formaPagoLabel} | $${subtotalComanda.toFixed(2)}</div>
