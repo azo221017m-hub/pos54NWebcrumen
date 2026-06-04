@@ -929,8 +929,9 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
             [claveturno, idnegocio]
           );
           turnoRows = rows;
-        } catch (retryErr: any) {
-          console.error('[obtenerCorteFinTurno] retry turnoRows also failed:', retryErr?.message);
+        } catch (retryErr: unknown) {
+          const msg = retryErr instanceof Error ? retryErr.message : String(retryErr);
+          console.error('[obtenerCorteFinTurno] retry turnoRows also failed:', msg);
           throw retryErr;
         }
       } else {

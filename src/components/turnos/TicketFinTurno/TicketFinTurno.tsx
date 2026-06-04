@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 import { X, Printer, MessageCircle, Loader, CheckCircle, ArrowLeft } from 'lucide-react';
 import type { CorteFinTurnoData } from '../../../types/turno.types';
 import { obtenerCorteFinTurno } from '../../../services/turnosService';
@@ -42,10 +43,12 @@ const TicketFinTurno: React.FC<TicketFinTurnoProps> = ({
           corte.efectivoContado = efectivoContado;
         }
         setData(corte);
-      } catch (err: any) {
-        const status = err?.response?.status;
-        const backendMessage = err?.response?.data?.message || err?.response?.data?.error;
-        const displayMessage = backendMessage || err?.message || 'Error al cargar el corte de fin de turno';
+      } catch (err: unknown) {
+        const axiosErr = axios.isAxiosError(err) ? err : null;
+        const status = axiosErr?.response?.status;
+        const data = axiosErr?.response?.data as Record<string, unknown> | undefined;
+        const backendMessage = (data?.message ?? data?.error) as string | undefined;
+        const displayMessage = backendMessage ?? (err instanceof Error ? err.message : 'Error al cargar el corte de fin de turno');
         console.error('Error al cargar corte de fin de turno:', {
           status,
           message: displayMessage,
