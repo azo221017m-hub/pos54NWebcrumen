@@ -76,6 +76,9 @@ apiClient.interceptors.response.use(
         } else {
           autoLogout('/login');
         }
+        // Return a never-resolving promise so component catch blocks are not
+        // triggered while the page is redirecting, avoiding raw API error toasts.
+        return new Promise(() => {});
       }
       return Promise.reject(error);
     }
