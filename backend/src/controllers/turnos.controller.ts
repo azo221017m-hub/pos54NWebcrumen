@@ -857,3 +857,292 @@ export const obtenerTurnoAbierto = async (req: AuthRequest, res: Response): Prom
     });
   }
 };
+
+// GET /api/turnos/corte/:claveturno - Obtener todos los datos para el Ticket de Fin de Turno
+export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const idnegocio = req.user?.idNegocio;
+    const usuarioGenerador = req.user?.alias || '';
+    const { claveturno } = req.params;
+
+    if (!idnegocio) {
+      res.status(401).json({ success: false, message: 'Usuario no autenticado o sin negocio asignado' });
+      return;
+    }
+
+    if (!claveturno) {
+      res.status(400).json({ success: false, message: 'Clave de turno es requerida' });
+      return;
+    }
+
+    // 1. Turno + Negocio
+    const [turnoRows] = await pool.query<RowDataPacket[]>(
+      `SELECT 
+        t.idturno, t.numeroturno, t.claveturno, t.usuarioturno,
+        t.fechainicioturno, t.fechafinturno, t.estatusturno, t.metaturno,
+        n.nombreNegocio, n.rfcnegocio
+       FROM tblposcrumenwebturnos t
+       LEFT JOIN tblposcrumenwebnegocio n ON t.idnegocio = n.idNegocio
+       WHERE t.claveturno = ? AND t.idnegocio = ?
+       LIMIT 1`,
+      [claveturno, idnegocio]
+    );
+
+    if (turnoRows.length === 0) {
+      res.status(404).json({ success: false, message: 'Turno no encontrado' });
+      return;
+    }
+
+    const turno = turnoRows[0];
+
+    // 2. Fondo inicial (MOVIMIENTO FONDO de CAJA positivo - primer registro)
+    const [fondoInicialRows] = await pool.query<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(totaldeventa), 0) AS fondoInicial
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? AND idnegocio = ?
+         AND tipodeventa = 'MOVIMIENTO' AND referencia = 'FONDO de CAJA'
+         AND totaldeventa > 0`,
+      [claveturno, idnegocio]
+    );
+    const fondoInicial = Number(fondoInicialRows[0]?.fondoInicial) || 0;
+
+    // 3. Retiro de fondo (MOVIMIENTO FONDO de CAJA negativo)
+    const [retiroFondoRows] = await pool.query<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(ABS(totaldeventa)), 0) AS retiroFondo
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? AND idnegocio = ?
+         AND tipodeventa = 'MOVIMIENTO' AND referencia = 'FONDO de CAJA'
+         AND totaldeventa < 0`,
+      [claveturno, idnegocio]
+    );
+    const retiroFondo = Number(retiroFondoRows[0]?.retiroFondo) || 0;
+
+    // 4. Ventas brutas, descuentos, ventas netas (solo ventas reales)
+    const [ventasResumenRows] = await pool.query<RowDataPacket[]>(
+      `SELECT
+         COALESCE(SUM(subtotal + descuentos), 0) AS ventasBrutas,
+         COALESCE(SUM(descuentos), 0) AS totalDescuentos,
+         COALESCE(SUM(totaldeventa), 0) AS ventasNetas,
+         COUNT(*) AS totalTickets
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? AND idnegocio = ?
+         AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
+         AND descripcionmov = 'VENTA'`,
+      [claveturno, idnegocio]
+    );
+    const ventasBrutas = Number(ventasResumenRows[0]?.ventasBrutas) || 0;
+    const totalDescuentos = Number(ventasResumenRows[0]?.totalDescuentos) || 0;
+    const ventasNetas = Number(ventasResumenRows[0]?.ventasNetas) || 0;
+    const totalTickets = Number(ventasResumenRows[0]?.totalTickets) || 0;
+
+    // 5. Gastos del turno (referencia = 'GASTO'), solo si existen
+    const [gastosRows] = await pool.query<RowDataPacket[]>(
+      `SELECT descripcionmov AS concepto, COALESCE(SUM(totaldeventa), 0) AS importe
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? AND idnegocio = ?
+         AND tipodeventa = 'MOVIMIENTO' AND referencia = 'GASTO'
+       GROUP BY descripcionmov
+       ORDER BY descripcionmov ASC`,
+      [claveturno, idnegocio]
+    );
+    const [totalGastosRows] = await pool.query<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(totaldeventa), 0) AS totalGastos
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? AND idnegocio = ?
+         AND tipodeventa = 'MOVIMIENTO' AND referencia = 'GASTO'`,
+      [claveturno, idnegocio]
+    );
+    const totalGastos = Number(totalGastosRows[0]?.totalGastos) || 0;
+
+    // 6. Ventas por forma de pago (simple + detallepagos para MIXTO)
+    const [ventasFormaPagoRows] = await pool.query<RowDataPacket[]>(
+      `SELECT formadepago, COALESCE(SUM(totaldeventa), 0) AS total
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? AND idnegocio = ?
+         AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
+         AND descripcionmov = 'VENTA' AND formadepago != 'MIXTO'
+       GROUP BY formadepago
+       ORDER BY total DESC`,
+      [claveturno, idnegocio]
+    );
+
+    // For MIXTO payments, get details from tblposcrumenwebdetallepagos
+    const [mixtoDetalleRows] = await pool.query<RowDataPacket[]>(
+      `SELECT dp.formadepagodetalle AS formadepago, COALESCE(SUM(dp.totaldepago), 0) AS total
+       FROM tblposcrumenwebdetallepagos dp
+       INNER JOIN tblposcrumenwebventas v ON dp.idfolioventa = v.folioventa
+       WHERE v.claveturno = ? AND v.idnegocio = ?
+         AND v.estadodeventa = 'COBRADO' AND v.estatusdepago = 'PAGADO'
+         AND v.formadepago = 'MIXTO'
+       GROUP BY dp.formadepagodetalle`,
+      [claveturno, idnegocio]
+    );
+
+    // Merge simple + mixto payment details
+    const pagoMap: Record<string, number> = {};
+    for (const row of ventasFormaPagoRows) {
+      const fp = String(row.formadepago || '');
+      pagoMap[fp] = (pagoMap[fp] || 0) + (Number(row.total) || 0);
+    }
+    for (const row of mixtoDetalleRows) {
+      const fp = String(row.formadepago || '');
+      pagoMap[fp] = (pagoMap[fp] || 0) + (Number(row.total) || 0);
+    }
+    const ventasPorFormaDePago = Object.entries(pagoMap)
+      .map(([formadepago, total]) => ({ formadepago, total }))
+      .sort((a, b) => b.total - a.total);
+
+    const totalVentasPago = ventasPorFormaDePago.reduce((s, r) => s + r.total, 0);
+    const ventasEfectivo = pagoMap['EFECTIVO'] || 0;
+
+    // 7. Ventas por tipo de venta
+    const [ventasTipoRows] = await pool.query<RowDataPacket[]>(
+      `SELECT tipodeventa, COALESCE(SUM(totaldeventa), 0) AS total
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? AND idnegocio = ?
+         AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
+         AND descripcionmov = 'VENTA'
+       GROUP BY tipodeventa
+       ORDER BY total DESC`,
+      [claveturno, idnegocio]
+    );
+
+    // 8. Descuentos aplicados agrupados por detalledescuento
+    const [descuentosRows] = await pool.query<RowDataPacket[]>(
+      `SELECT 
+         COALESCE(NULLIF(TRIM(detalledescuento), ''), 'Sin nombre') AS nombre,
+         COUNT(*) AS operaciones,
+         COALESCE(SUM(descuentos), 0) AS montoDescuento
+       FROM tblposcrumenwebventas
+       WHERE claveturno = ? AND idnegocio = ?
+         AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
+         AND descripcionmov = 'VENTA' AND descuentos > 0
+       GROUP BY detalledescuento
+       ORDER BY montoDescuento DESC`,
+      [claveturno, idnegocio]
+    );
+
+    // 9. Productos vendidos
+    const [productosRows] = await pool.query<RowDataPacket[]>(
+      `SELECT 
+         d.nombreproducto,
+         COALESCE(SUM(d.cantidad), 0) AS cantidad,
+         COALESCE(SUM(d.subtotal), 0) AS total
+       FROM tblposcrumenwebdetalleventas d
+       INNER JOIN tblposcrumenwebventas v ON d.idventa = v.idventa
+       WHERE v.claveturno = ? AND v.idnegocio = ?
+         AND v.estadodeventa = 'COBRADO' AND v.estatusdepago = 'PAGADO'
+         AND v.descripcionmov = 'VENTA'
+       GROUP BY d.nombreproducto
+       ORDER BY SUM(d.cantidad) DESC`,
+      [claveturno, idnegocio]
+    );
+
+    const [totalesProductosRows] = await pool.query<RowDataPacket[]>(
+      `SELECT 
+         COALESCE(SUM(d.cantidad), 0) AS totalUnidades,
+         COALESCE(SUM(d.subtotal), 0) AS totalVentaProductos
+       FROM tblposcrumenwebdetalleventas d
+       INNER JOIN tblposcrumenwebventas v ON d.idventa = v.idventa
+       WHERE v.claveturno = ? AND v.idnegocio = ?
+         AND v.estadodeventa = 'COBRADO' AND v.estatusdepago = 'PAGADO'
+         AND v.descripcionmov = 'VENTA'`,
+      [claveturno, idnegocio]
+    );
+    const totalUnidades = Number(totalesProductosRows[0]?.totalUnidades) || 0;
+    const totalVentaProductos = Number(totalesProductosRows[0]?.totalVentaProductos) || 0;
+
+    // 10. Indicadores operativos
+    const ventaPromedio = totalTickets > 0 ? ventasNetas / totalTickets : 0;
+    const promedioArticulos = totalTickets > 0 ? totalUnidades / totalTickets : 0;
+
+    // 11. Conciliación de efectivo
+    const efectivoEsperado = fondoInicial - retiroFondo + ventasEfectivo - totalGastos;
+
+    // Fecha de generación
+    const fechaGeneracion = new Date().toISOString();
+
+    res.json({
+      success: true,
+      data: {
+        // Turno + Negocio
+        turno: {
+          idturno: turno.idturno,
+          numeroturno: turno.numeroturno,
+          claveturno: turno.claveturno,
+          usuarioturno: turno.usuarioturno,
+          fechainicioturno: turno.fechainicioturno,
+          fechafinturno: turno.fechafinturno,
+          estatusturno: turno.estatusturno,
+          metaturno: turno.metaturno,
+          nombreNegocio: turno.nombreNegocio || '',
+          rfcnegocio: turno.rfcnegocio || ''
+        },
+        // Resumen general
+        resumen: {
+          fondoInicial,
+          retiroFondo,
+          ventasBrutas,
+          totalDescuentos,
+          ventasNetas,
+          totalGastos
+        },
+        // Gastos del turno (solo si existen)
+        gastos: gastosRows.map(r => ({
+          concepto: String(r.concepto || ''),
+          importe: Number(r.importe) || 0
+        })),
+        totalGastos,
+        // Ventas por forma de pago
+        ventasPorFormaDePago,
+        totalVentasPago,
+        // Ventas por tipo de venta
+        ventasPorTipoDeVenta: ventasTipoRows.map(r => ({
+          tipodeventa: String(r.tipodeventa || ''),
+          total: Number(r.total) || 0
+        })),
+        // Descuentos aplicados
+        descuentosAplicados: descuentosRows.map(r => ({
+          nombre: String(r.nombre || ''),
+          operaciones: Number(r.operaciones) || 0,
+          montoDescuento: Number(r.montoDescuento) || 0
+        })),
+        // Conciliación de efectivo
+        conciliacion: {
+          fondoInicial,
+          retiroFondo,
+          ventasEfectivo,
+          totalGastos,
+          efectivoEsperado
+        },
+        // Productos vendidos
+        productosVendidos: productosRows.map(r => ({
+          nombreproducto: String(r.nombreproducto || ''),
+          cantidad: Number(r.cantidad) || 0,
+          total: Number(r.total) || 0
+        })),
+        totalUnidades,
+        totalVentaProductos,
+        // Indicadores operativos
+        indicadores: {
+          totalTickets,
+          totalUnidades,
+          ventaPromedio,
+          promedioArticulos
+        },
+        // Auditoría
+        auditoria: {
+          usuarioGenerador,
+          fechaGeneracion
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error al obtener corte de fin de turno:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener corte de fin de turno',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+};

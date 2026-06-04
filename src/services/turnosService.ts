@@ -1,5 +1,5 @@
 import apiClient from './api';
-import type { Turno, TurnoUpdate } from '../types/turno.types';
+import type { Turno, TurnoUpdate, CorteFinTurnoData } from '../types/turno.types';
 
 const API_BASE = '/turnos';
 
@@ -207,6 +207,23 @@ export const obtenerTurnoAbiertoActual = async (): Promise<Turno | null> => {
       return null;
     }
     console.error('Error en servicio obtenerTurnoAbiertoActual:', error);
+    throw error;
+  }
+};
+
+/**
+ * Obtener todos los datos del Ticket de Fin de Turno (Corte de Caja)
+ */
+export const obtenerCorteFinTurno = async (claveturno: string): Promise<CorteFinTurnoData> => {
+  try {
+    console.log('Servicio: Obteniendo corte de fin de turno para:', claveturno);
+    const response = await apiClient.get<{ success: boolean; data: CorteFinTurnoData }>(
+      `${API_BASE}/corte/${claveturno}`
+    );
+    console.log('Servicio: Corte de fin de turno obtenido');
+    return response.data.data;
+  } catch (error) {
+    console.error('Error en servicio obtenerCorteFinTurno:', error);
     throw error;
   }
 };

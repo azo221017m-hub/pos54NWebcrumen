@@ -8,7 +8,8 @@ import {
   cerrarTurnoActual,
   verificarComandasAbiertas,
   obtenerFondoCaja,
-  obtenerTurnoAbierto
+  obtenerTurnoAbierto,
+  obtenerCorteFinTurno
 } from '../controllers/turnos.controller';
 import { authMiddleware, checkPrivilegio } from '../middlewares/auth';
 import { apiLimiter } from '../middlewares/rateLimit';
@@ -37,5 +38,8 @@ router.get('/verificar-comandas/:claveturno', verificarComandasAbiertas);
 
 // Ruta para obtener fondo de caja de un turno
 router.get('/fondo-caja/:claveturno', obtenerFondoCaja);
+
+// Ruta para obtener todos los datos del Ticket de Fin de Turno
+router.get('/corte/:claveturno', obtenerCorteFinTurno);
 
 export default router;
