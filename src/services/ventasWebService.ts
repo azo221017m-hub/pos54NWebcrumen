@@ -6,6 +6,7 @@ import type {
   DetalleVentaWeb,
   EstadoDetalle
 } from '../types/ventasWeb.types';
+import type { Turno } from '../types/turno.types';
 
 const API_BASE = '/ventas-web';
 
@@ -269,6 +270,9 @@ export interface ResumenVentas {
   totalDescuentos: number;
   metaTurno: number;
   hasTurnoAbierto: boolean;
+  /** Datos completos del turno abierto; null cuando no hay turno abierto.
+   *  Permite al frontend evitar una llamada extra a GET /turnos/turno-abierto. */
+  turnoInfo: Turno | null;
   ventasPorFormaDePago: VentaPorFormaDePago[];
   ventasPorFormaDePagoPorTipo: VentaPorFormaDePagoPorTipo[];
   ventasPorTipoDeVenta: VentaPorTipoDeVenta[];
@@ -294,6 +298,7 @@ export const obtenerResumenVentas = async (): Promise<ResumenVentas> => {
       totalDescuentos: data?.totalDescuentos ?? 0,
       metaTurno: data?.metaTurno ?? 0,
       hasTurnoAbierto: data?.hasTurnoAbierto ?? false,
+      turnoInfo: data?.turnoInfo ?? null,
       ventasPorFormaDePago: data?.ventasPorFormaDePago ?? [],
       ventasPorFormaDePagoPorTipo: data?.ventasPorFormaDePagoPorTipo ?? [],
       ventasPorTipoDeVenta: data?.ventasPorTipoDeVenta ?? [],
@@ -312,6 +317,7 @@ export const obtenerResumenVentas = async (): Promise<ResumenVentas> => {
       totalDescuentos: 0,
       metaTurno: 0,
       hasTurnoAbierto: false,
+      turnoInfo: null,
       ventasPorFormaDePago: [],
       ventasPorFormaDePagoPorTipo: [],
       ventasPorTipoDeVenta: [],

@@ -75,27 +75,36 @@ export const eliminarTurno = async (idturno: number): Promise<number> => {
   }
 };
 
-// Cerrar un turno por clave de turno y obtener los datos del ticket de cierre
-export const cerrarTurnoConTicket = async (claveturno: string, efectivoContado?: number): Promise<CorteFinTurnoData> => {
+// Cerrar un turno por clave de turno y obtener los datos del ticket de cierre.
+// Retorna CorteFinTurnoData si el ticket pudo generarse, o null si el turno fue
+// cerrado correctamente pero los datos del corte no están disponibles.
+// Lanza error SOLO si el cierre del turno en sí falló (POST /cerrar/).
+export const cerrarTurnoConTicket = async (claveturno: string, efectivoContado?: number): Promise<CorteFinTurnoData | null> => {
+  // 1. Cerrar el turno – si falla aquí el turno NO fue cerrado, se relanza el error.
   try {
-    console.log('Servicio: Cerrando turno y obteniendo ticket:', claveturno);
-    // 1. Cerrar el turno (actualiza estatusturno='cerrado', fechafinturno=NOW())
+    console.log('Servicio: Cerrando turno:', claveturno);
     await apiClient.post(`${API_BASE}/cerrar/${claveturno}`);
-    console.log('Servicio: Turno cerrado, obteniendo datos del ticket...');
-    // 2. Obtener los datos completos del ticket de cierre
+    console.log('Servicio: Turno cerrado exitosamente');
+  } catch (error) {
+    console.error('Error en servicio cerrarTurnoConTicket al cerrar el turno:', error);
+    throw error;
+  }
+
+  // 2. Obtener los datos del ticket de cierre – si falla aquí el turno YA fue cerrado;
+  //    se devuelve null para que el llamador lo maneje sin mostrar error de cierre.
+  try {
     const response = await apiClient.get<{ success: boolean; data: CorteFinTurnoData }>(
       `${API_BASE}/corte/${claveturno}`
     );
     const data = response.data.data;
-    // 3. Inyectar efectivoContado si se proporcionó (para conciliación en ticket)
     if (typeof efectivoContado === 'number' && efectivoContado >= 0) {
       data.efectivoContado = efectivoContado;
     }
     console.log('Servicio: Ticket de cierre de turno obtenido');
     return data;
   } catch (error) {
-    console.error('Error en servicio cerrarTurnoConTicket:', error);
-    throw error;
+    console.warn('Servicio: Turno cerrado pero datos del ticket no disponibles (corte fallido):', error);
+    return null;
   }
 };
 
