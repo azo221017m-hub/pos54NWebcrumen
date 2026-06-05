@@ -5,7 +5,7 @@ import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerTopP
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import { clearSession, setSkipBeforeUnload } from '../services/sessionService';
 import { obtenerDetallesPagos } from '../services/pagosService';
-import { verificarTurnoAbierto, cerrarTurnoConTicket } from '../services/turnosService';
+import { cerrarTurnoConTicket } from '../services/turnosService';
 import type { Turno, CorteFinTurnoData } from '../types/turno.types';
 import { generarTextoTicket } from '../utils/ticketFinTurno';
 import { getPaperConfig } from '../utils/ticketLayout';
@@ -301,6 +301,8 @@ export const DashboardPage = () => {
       const resumen = await obtenerResumenVentas();
       console.log('🟡 DashboardPage: Resumen recibido, actualizando estado:', resumen);
       setResumenVentas(resumen);
+      // Actualizar turnoAbierto desde el resumen para evitar una llamada extra a GET /turnos/turno-abierto
+      setTurnoAbierto(resumen.turnoInfo ?? null);
     } catch (error) {
       console.error('Error al cargar resumen de ventas:', error);
     }
@@ -369,16 +371,6 @@ export const DashboardPage = () => {
     }
   }, [usuario?.idNegocio]);
 
-  const verificarTurno = useCallback(async () => {
-    try {
-      const turno = await verificarTurnoAbierto();
-      setTurnoAbierto(turno);
-    } catch (error) {
-      console.error('Error al verificar turno abierto:', error);
-      setTurnoAbierto(null);
-    }
-  }, []);
-
   const cargarTopProductosTurno = useCallback(async () => {
     try {
       const data = await obtenerTopProductosTurno();
@@ -435,28 +427,39 @@ export const DashboardPage = () => {
     setIsCerrandoTurno(true);
     setShowCierreTurnoModal(false);
     try {
+      // cerrarTurnoConTicket lanza solo si el CIERRE del turno falló.
+      // Devuelve null si el turno se cerró pero los datos del corte no están disponibles.
       const corteData = await cerrarTurnoConTicket(claveturno, totalArqueo > 0 ? totalArqueo : undefined);
-      setCorteFinTurnoData(corteData);
 
-      // Auto-imprimir ticket
-      const textoTicket = generarTextoTicket(corteData);
-      const cfg = getPaperConfig();
-      const popupFeatures = `width=${cfg.popupWidth},height=700`;
-      const ventana = window.open('', '_blank', popupFeatures);
-      if (ventana) {
-        ventana.document.write(generarHtmlDetalleCorte(textoTicket));
-        ventana.document.close();
-        ventana.focus();
-        setTimeout(() => { ventana.print(); ventana.close(); }, PRINT_WINDOW_READY_DELAY_MS);
+      // Actualizar estado del turno (cargarResumenVentas también fija turnoAbierto)
+      await cargarResumenVentas();
+
+      if (corteData) {
+        setCorteFinTurnoData(corteData);
+
+        // Auto-imprimir ticket
+        const textoTicket = generarTextoTicket(corteData);
+        const cfg = getPaperConfig();
+        const popupFeatures = `width=${cfg.popupWidth},height=700`;
+        const ventana = window.open('', '_blank', popupFeatures);
+        if (ventana) {
+          ventana.document.write(generarHtmlDetalleCorte(textoTicket));
+          ventana.document.close();
+          ventana.focus();
+          setTimeout(() => { ventana.print(); ventana.close(); }, PRINT_WINDOW_READY_DELAY_MS);
+        } else {
+          showErrorToast('No se pudo abrir la ventana de impresión. Verifica los pop-ups.');
+        }
+
+        setShowDetalleCorteModal(true);
       } else {
-        showErrorToast('No se pudo abrir la ventana de impresión. Verifica los pop-ups.');
+        // Turno cerrado pero corte no disponible (error en backend al generar ticket)
+        showInfoToast('Turno cerrado. El ticket de corte no pudo generarse; consulta el histórico de turnos.');
       }
 
-      setShowDetalleCorteModal(true);
-      await verificarTurno();
-      await cargarResumenVentas();
       showSuccessToast('Turno cerrado exitosamente');
     } catch (error) {
+      // Solo llega aquí si el CIERRE del turno falló (el turno NO fue cerrado)
       console.error('Error al cerrar turno:', error);
       showErrorToast('Error al cerrar el turno. Por favor intente nuevamente.');
       setShowCierreTurnoModal(true);
@@ -649,7 +652,7 @@ export const DashboardPage = () => {
         });
       } else if (data.type === 'turno_update') {
         debouncedRefresh('turno', () => {
-          verificarTurno();
+          // cargarResumenVentas ya actualiza turnoAbierto vía turnoInfo en la respuesta
           cargarResumenVentas();
           cargarTopProductosTurno();
         });
@@ -679,7 +682,7 @@ export const DashboardPage = () => {
 
     // Load sales with ORDENADO and ESPERAR status
     cargarVentasSolicitadas();
-    // Load sales summary for current shift
+    // Load sales summary for current shift (also sets turnoAbierto via turnoInfo in response)
     cargarResumenVentas();
     // Calculate inventory level
     calcularNivelInventario();
@@ -696,10 +699,7 @@ export const DashboardPage = () => {
         })
         .catch(err => { console.error('Error al cargar datos del negocio:', err); });
     }
-
-    // Verify open turno
-    verificarTurno();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas, cargarResumenVentas, calcularNivelInventario, cargarTopProductosTurno y verificarTurno omitidos para evitar ciclos de recarga
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- cargarVentasSolicitadas, cargarResumenVentas, calcularNivelInventario, cargarTopProductosTurno omitidos para evitar ciclos de recarga
   }, [navigate, location.key]);
 
   // Reload sales and summary when the tab regains focus (e.g. after closing a print popup)

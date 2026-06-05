@@ -1613,9 +1613,12 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
       return;
     }
 
-    // Obtener el turno abierto actual del negocio
+    // Obtener el turno abierto actual del negocio (incluye todos los campos necesarios
+    // para que el frontend evite una segunda llamada a GET /turnos/turno-abierto)
     const [turnoRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT claveturno, metaturno, fechainicioturno FROM tblposcrumenwebturnos 
+      `SELECT idturno, numeroturno, claveturno, usuarioturno,
+              fechainicioturno, fechafinturno, estatusturno, metaturno
+       FROM tblposcrumenwebturnos
        WHERE idnegocio = ? AND estatusturno = 'abierto'
        LIMIT 1`,
       [idnegocio]
@@ -1857,6 +1860,18 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
         totalDescuentos,
         metaTurno: metaturno,
         hasTurnoAbierto,
+        // Datos completos del turno abierto para evitar una llamada extra a GET /turnos/turno-abierto
+        turnoInfo: hasTurnoAbierto ? {
+          idturno: turnoRows[0].idturno,
+          numeroturno: turnoRows[0].numeroturno,
+          claveturno: turnoRows[0].claveturno,
+          usuarioturno: turnoRows[0].usuarioturno,
+          fechainicioturno: turnoRows[0].fechainicioturno,
+          fechafinturno: turnoRows[0].fechafinturno ?? null,
+          estatusturno: turnoRows[0].estatusturno,
+          idnegocio,
+          metaturno: turnoRows[0].metaturno ?? null
+        } : null,
         ventasPorFormaDePago,
         ventasPorFormaDePagoPorTipo,
         ventasPorTipoDeVenta,
