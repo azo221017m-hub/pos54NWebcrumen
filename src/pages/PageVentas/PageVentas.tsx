@@ -430,7 +430,7 @@ const PageVentas: React.FC = () => {
   // Check for open turno (shift) when component mounts
   useEffect(() => {
     let cancelled = false;
-    let timerId: ReturnType<typeof setTimeout>;
+    let timerId: ReturnType<typeof setTimeout> | undefined;
 
     const checkTurno = async () => {
       // Only check if not loaded from dashboard
