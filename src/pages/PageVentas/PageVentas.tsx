@@ -429,12 +429,18 @@ const PageVentas: React.FC = () => {
 
   // Check for open turno (shift) when component mounts
   useEffect(() => {
+    let cancelled = false;
+    let timerId: ReturnType<typeof setTimeout>;
+
     const checkTurno = async () => {
       // Only check if not loaded from dashboard
       if (!isLoadedFromDashboard) {
         try {
           setIsCheckingTurno(true);
           const turnoAbierto = await verificarTurnoAbierto();
+          // Bail out if this effect instance was superseded (e.g. isLoadedFromDashboard
+          // switched to true while the async request was in flight).
+          if (cancelled) return;
           const hasTurno = turnoAbierto !== null;
           setHasTurnoAbierto(hasTurno);
           
@@ -446,17 +452,21 @@ const PageVentas: React.FC = () => {
               navigate('/clientes');
             } else {
               console.log('No hay turno abierto, mostrando modal Inicia Turno');
-              setTimeout(() => {
-                setShowIniciaTurnoModal(true);
+              timerId = setTimeout(() => {
+                if (!cancelled) setShowIniciaTurnoModal(true);
               }, SELECTION_MODAL_DISPLAY_DELAY_MS);
             }
           }
         } catch (error) {
-          console.error('Error al verificar turno:', error);
-          // On error, allow user to proceed
-          setHasTurnoAbierto(true);
+          if (!cancelled) {
+            console.error('Error al verificar turno:', error);
+            // On error, allow user to proceed
+            setHasTurnoAbierto(true);
+          }
         } finally {
-          setIsCheckingTurno(false);
+          if (!cancelled) {
+            setIsCheckingTurno(false);
+          }
         }
       } else {
         // If loaded from dashboard, skip turno check
@@ -466,6 +476,10 @@ const PageVentas: React.FC = () => {
     };
 
     checkTurno();
+    return () => {
+      cancelled = true;
+      clearTimeout(timerId);
+    };
   }, [isLoadedFromDashboard]);
 
   // Resolve moderador names after moderadores are loaded (for items loaded from dashboard)
