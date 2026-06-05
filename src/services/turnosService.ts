@@ -118,15 +118,13 @@ export const obtenerCorteFinTurno = async (claveturno: string): Promise<CorteFin
 export const verificarTurnoAbierto = async (): Promise<Turno | null> => {
   try {
     console.log('Servicio: Verificando si existe turno abierto');
-    const turnos = await obtenerTurnos();
-    // Filter for open shifts (estatusturno = 'abierto')
-    const turnoAbierto = turnos.find(turno => turno.estatusturno === 'abierto');
-    if (turnoAbierto) {
-      console.log('Servicio: Turno abierto encontrado:', turnoAbierto.claveturno);
+    const turno = await obtenerTurnoAbiertoActual();
+    if (turno) {
+      console.log('Servicio: Turno abierto encontrado:', turno.claveturno);
     } else {
       console.log('Servicio: No se encontró turno abierto');
     }
-    return turnoAbierto ?? null;
+    return turno;
   } catch (error) {
     console.error('Error en servicio verificarTurnoAbierto:', error);
     throw error;

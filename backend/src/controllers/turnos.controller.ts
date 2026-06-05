@@ -661,28 +661,28 @@ export const obtenerFondoCaja = async (req: AuthRequest, res: Response): Promise
   }
 };
 
-// GET /api/turnos/turno-abierto - Obtener el turno abierto del usuario actual
+// GET /api/turnos/turno-abierto - Obtener el turno abierto del negocio actual
 export const obtenerTurnoAbierto = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idnegocio = req.user?.idNegocio;
-    const usuarioturno = req.user?.alias;
 
-    if (!idnegocio || !usuarioturno) {
+    if (!idnegocio) {
       res.status(401).json({ 
         message: 'Usuario no autenticado o sin negocio asignado'
       });
       return;
     }
 
-    console.log('Buscando turno abierto para usuario:', usuarioturno, 'negocio:', idnegocio);
+    console.log('Buscando turno abierto para negocio:', idnegocio);
 
-    // Buscar turno abierto del usuario actual
+    // Buscar turno abierto del negocio (cualquier usuario del negocio)
     const [turnos] = await pool.query<Turno[]>(
       `SELECT idturno, numeroturno, fechainicioturno, estatusturno, claveturno, usuarioturno, idnegocio, metaturno
        FROM tblposcrumenwebturnos 
-       WHERE usuarioturno = ? AND idnegocio = ? AND estatusturno = 'abierto'
+       WHERE idnegocio = ? AND estatusturno = 'abierto'
+       ORDER BY fechainicioturno DESC
        LIMIT 1`,
-      [usuarioturno, idnegocio]
+      [idnegocio]
     );
 
     if (turnos.length === 0) {
@@ -745,33 +745,26 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       );
       turnoRows = rows;
     } catch (turnoErr: any) {
-      if (turnoErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || turnoErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
-        // MYSQL_ER_BAD_FIELD_ERROR (1054): a column is missing (e.g. metaturno, rfcnegocio)
-        // MYSQL_ER_NO_SUCH_TABLE  (1146): tblposcrumenwebnegocio table does not exist
-        // In both cases the safe retry drops the JOIN and substitutes NULL/empty for optional fields
-        const reason = turnoErr.errno === MYSQL_ER_BAD_FIELD_ERROR
-          ? 'column missing (metaturno / rfcnegocio / nombreNegocio)'
-          : 'table tblposcrumenwebnegocio does not exist';
-        console.warn(`[obtenerCorteFinTurno] ${reason} in turno/negocio query, retrying without JOIN`);
-        try {
-          const [rows] = await pool.query<RowDataPacket[]>(
-            `SELECT 
-              t.idturno, t.numeroturno, t.claveturno, t.usuarioturno,
-              t.fechainicioturno, t.fechafinturno, t.estatusturno, NULL AS metaturno,
-              '' AS nombreNegocio, '' AS rfcnegocio
-             FROM tblposcrumenwebturnos t
-             WHERE t.claveturno = ? AND t.idnegocio = ?
-             LIMIT 1`,
-            [claveturno, idnegocio]
-          );
-          turnoRows = rows;
-        } catch (retryErr: unknown) {
-          const msg = retryErr instanceof Error ? retryErr.message : String(retryErr);
-          console.error('[obtenerCorteFinTurno] retry turnoRows also failed:', msg);
-          throw retryErr;
-        }
-      } else {
-        throw turnoErr;
+      // Retry without the JOIN on ANY error from the initial query
+      // (handles missing columns, missing table, and unexpected DB errors gracefully)
+      const reason = turnoErr instanceof Error ? turnoErr.message : String(turnoErr);
+      console.warn(`[obtenerCorteFinTurno] turno/negocio query failed (${reason}), retrying without JOIN`);
+      try {
+        const [rows] = await pool.query<RowDataPacket[]>(
+          `SELECT 
+            t.idturno, t.numeroturno, t.claveturno, t.usuarioturno,
+            t.fechainicioturno, t.fechafinturno, t.estatusturno, NULL AS metaturno,
+            '' AS nombreNegocio, '' AS rfcnegocio
+           FROM tblposcrumenwebturnos t
+           WHERE t.claveturno = ? AND t.idnegocio = ?
+           LIMIT 1`,
+          [claveturno, idnegocio]
+        );
+        turnoRows = rows;
+      } catch (retryErr: unknown) {
+        const msg = retryErr instanceof Error ? retryErr.message : String(retryErr);
+        console.error('[obtenerCorteFinTurno] retry turnoRows also failed:', msg);
+        throw retryErr;
       }
     }
 
