@@ -6,7 +6,7 @@ import type { Turno } from '../../types/turno.types';
 import { EstatusTurno } from '../../types/turno.types';
 import {
   obtenerTurnos,
-  cerrarTurnoConTicket
+  cerrarTurno
 } from '../../services/turnosService';
 import CierreTurno from '../../components/turnos/CierreTurno/CierreTurno';
 import TicketFinTurno from '../../components/turnos/TicketFinTurno/TicketFinTurno';
@@ -43,31 +43,26 @@ const ConfigTurnos: React.FC = () => {
     cargarTurnos();
   }, [cargarTurnos]);
 
-  const handleCerrarTurno = async (claveturno: string, totalArqueo: number) => {
-    if (!turnoEditar) return;
-    try {
-      const corteData = await cerrarTurnoConTicket(claveturno, totalArqueo > 0 ? totalArqueo : undefined);
+  // Paso 1: el formulario de arqueo confirma → mostrar preview del ticket SIN cerrar aún
+  const handleCierreTurnoFormSubmit = (claveturno: string, totalArqueo: number) => {
+    setEfectivoContadoCorte(totalArqueo > 0 ? totalArqueo : undefined);
+    setClaveturnoCorte(claveturno);
+    setMostrarFormulario(false);
+    setTurnoEditar(undefined);
+  };
 
-      mostrarMensaje('success', 'Turno cerrado exitosamente');
-      setMostrarFormulario(false);
-      setTurnoEditar(undefined);
-
-      // Actualizar estado local sin recargar - cambiar el estatus del turno cerrado
-      setTurnos(prev =>
-        prev.map(turno =>
-          turno.claveturno === claveturno
-            ? { ...turno, estatusturno: EstatusTurno.CERRADO }
-            : turno
-        )
-      );
-
-      // Mostrar el ticket de fin de turno para imprimir y enviar por WhatsApp
-      setEfectivoContadoCorte(corteData?.efectivoContado ?? undefined);
-      setClaveturnoCorte(claveturno);
-    } catch (error) {
-      console.error('Error al cerrar turno:', error);
-      mostrarMensaje('error', 'Error al cerrar el turno');
-    }
+  // Paso 2: el usuario elige Imprimir o WhatsApp → cerrar turno en BD
+  const handleCerrarTurnoAction = async () => {
+    if (!claveturnoCorte) throw new Error('Sin clave de turno');
+    await cerrarTurno(claveturnoCorte);
+    setTurnos((prev: Turno[]) =>
+      prev.map((turno: Turno) =>
+        turno.claveturno === claveturnoCorte
+          ? { ...turno, estatusturno: EstatusTurno.CERRADO }
+          : turno
+      )
+    );
+    mostrarMensaje('success', 'Turno cerrado exitosamente');
   };
 
   const handleEditarTurno = (turno: Turno) => {
@@ -120,7 +115,7 @@ const ConfigTurnos: React.FC = () => {
       {mostrarFormulario && turnoEditar && (
         <CierreTurno
           turno={turnoEditar}
-          onSubmit={handleCerrarTurno}
+          onSubmit={handleCierreTurnoFormSubmit}
           onCancel={handleCancelar}
         />
       )}
@@ -130,6 +125,7 @@ const ConfigTurnos: React.FC = () => {
         <TicketFinTurno
           claveturno={claveturnoCorte}
           efectivoContado={efectivoContadoCorte}
+          onCerrarTurno={handleCerrarTurnoAction}
           onClose={() => { setClaveturnoCorte(null); setEfectivoContadoCorte(undefined); }}
         />
       )}

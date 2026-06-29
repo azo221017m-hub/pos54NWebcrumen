@@ -5,8 +5,8 @@ import { obtenerVentasWeb, actualizarVentaWeb, obtenerResumenVentas, obtenerTopP
 import type { VentaWebWithDetails, EstadoDeVenta, TipoDeVenta } from '../types/ventasWeb.types';
 import { clearSession, setSkipBeforeUnload } from '../services/sessionService';
 import { obtenerDetallesPagos } from '../services/pagosService';
-import { cerrarTurnoConTicket } from '../services/turnosService';
-import type { Turno, CorteFinTurnoData } from '../types/turno.types';
+import { cerrarTurno } from '../services/turnosService';
+import type { Turno } from '../types/turno.types';
 import CierreTurno from '../components/turnos/CierreTurno/CierreTurno';
 import TicketFinTurno from '../components/turnos/TicketFinTurno/TicketFinTurno';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../components/FeedbackToast';
@@ -184,8 +184,8 @@ export const DashboardPage = () => {
   const [turnoAbierto, setTurnoAbierto] = useState<Turno | null>(null);
   const [showCierreTurnoModal, setShowCierreTurnoModal] = useState(false);
   const [showDetalleCorteModal, setShowDetalleCorteModal] = useState(false);
-  const [corteFinTurnoData, setCorteFinTurnoData] = useState<CorteFinTurnoData | null>(null);
   const [detalleCorteClaveturno, setDetalleCorteClaveturno] = useState<string | null>(null);
+  const [detalleCorteEfectivoContado, setDetalleCorteEfectivoContado] = useState<number | undefined>(undefined);
   const [isCerrandoTurno, setIsCerrandoTurno] = useState(false);
   const [negocio, setNegocio] = useState<Negocio | null>(null);
   const [abiertoAhoraWeb, setAbiertoAhoraWeb] = useState<boolean>(false);
@@ -393,29 +393,26 @@ export const DashboardPage = () => {
     setShowCierreTurnoModal(false);
   };
 
-  // Nuevo proceso: al presionar "Cerrar TURNO" se cierra el turno en BD y se genera el ticket
-  const handleCierreTurnoSubmit = async (claveturno: string, totalArqueo: number) => {
-    setIsCerrandoTurno(true);
+  // Paso 1: el formulario de arqueo confirma → mostrar preview del ticket SIN cerrar aún
+  const handleCierreTurnoSubmit = (claveturno: string, totalArqueo: number) => {
+    setDetalleCorteClaveturno(claveturno);
+    setDetalleCorteEfectivoContado(totalArqueo > 0 ? totalArqueo : undefined);
     setShowCierreTurnoModal(false);
+    setShowDetalleCorteModal(true);
+  };
+
+  // Paso 2: el usuario elige Imprimir o WhatsApp → cerrar turno en BD
+  const handleCerrarTurnoAction = async () => {
+    if (!detalleCorteClaveturno) throw new Error('Sin clave de turno');
+    setIsCerrandoTurno(true);
     try {
-      // cerrarTurnoConTicket lanza solo si el CIERRE del turno falló.
-      // Devuelve null si el turno se cerró pero los datos del corte no están disponibles.
-      const corteData = await cerrarTurnoConTicket(claveturno, totalArqueo > 0 ? totalArqueo : undefined);
-
-      // Actualizar estado del turno (cargarResumenVentas también fija turnoAbierto)
+      await cerrarTurno(detalleCorteClaveturno);
       await cargarResumenVentas();
-
-      if (corteData) {
-        setCorteFinTurnoData(corteData);
-      }
-      setDetalleCorteClaveturno(claveturno);
-      setShowDetalleCorteModal(true);
       showSuccessToast('Turno cerrado exitosamente');
     } catch (error) {
-      // Solo llega aquí si el CIERRE del turno falló (el turno NO fue cerrado)
       console.error('Error al cerrar turno:', error);
       showErrorToast('Error al cerrar el turno. Por favor intente nuevamente.');
-      setShowCierreTurnoModal(true);
+      throw error;
     } finally {
       setIsCerrandoTurno(false);
     }
@@ -2204,11 +2201,12 @@ export const DashboardPage = () => {
       {showDetalleCorteModal && detalleCorteClaveturno && (
         <TicketFinTurno
           claveturno={detalleCorteClaveturno}
-          efectivoContado={corteFinTurnoData?.efectivoContado ?? undefined}
+          efectivoContado={detalleCorteEfectivoContado}
+          onCerrarTurno={handleCerrarTurnoAction}
           onClose={() => {
             setShowDetalleCorteModal(false);
             setDetalleCorteClaveturno(null);
-            setCorteFinTurnoData(null);
+            setDetalleCorteEfectivoContado(undefined);
           }}
         />
       )}

@@ -108,6 +108,17 @@ export const cerrarTurnoConTicket = async (claveturno: string, efectivoContado?:
   }
 };
 
+// Cerrar un turno (solo el POST, sin intentar obtener datos del corte).
+// Lanza error si el turno no pudo cerrarse.
+export const cerrarTurno = async (claveturno: string): Promise<void> => {
+  try {
+    await apiClient.post(`${API_BASE}/cerrar/${claveturno}`);
+  } catch (error) {
+    console.error('Error en servicio cerrarTurno:', error);
+    throw error;
+  }
+};
+
 // Obtener todos los datos del Ticket de Fin de Turno (solo lectura)
 export const obtenerCorteFinTurno = async (claveturno: string): Promise<CorteFinTurnoData> => {
   try {

@@ -17,6 +17,12 @@ interface TicketFinTurnoProps {
   onBack?: () => void;
   /** Indica que se está procesando la confirmación (deshabilita el botón Confirmar) */
   isConfirming?: boolean;
+  /**
+   * Cuando se provee, se llama (y se awaita) ANTES de imprimir o enviar por WhatsApp.
+   * Úsalo para cerrar el turno en BD justo antes de la acción de salida.
+   * Si lanza, la acción se cancela. El modal se cierra automáticamente tras completar.
+   */
+  onCerrarTurno?: () => Promise<void>;
 }
 
 const TicketFinTurno: React.FC<TicketFinTurnoProps> = ({
@@ -26,10 +32,12 @@ const TicketFinTurno: React.FC<TicketFinTurnoProps> = ({
   onConfirm,
   onBack,
   isConfirming = false,
+  onCerrarTurno,
 }) => {
   const [data, setData] = useState<CorteFinTurnoData | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCerrando, setIsCerrando] = useState(false);
   const ticketRef = useRef<HTMLPreElement>(null);
 
   useEffect(() => {
@@ -69,10 +77,22 @@ const TicketFinTurno: React.FC<TicketFinTurnoProps> = ({
 
   const textoTicket = data ? generarTextoTicket(data) : '';
 
-  const handleImprimir = () => {
+  const handleImprimir = async () => {
     if (!ticketRef.current) return;
+    if (onCerrarTurno) {
+      setIsCerrando(true);
+      try {
+        await onCerrarTurno();
+      } catch {
+        setIsCerrando(false);
+        return;
+      }
+    }
     const ventana = window.open('', '_blank', 'width=400,height=700');
-    if (!ventana) return;
+    if (!ventana) {
+      setIsCerrando(false);
+      return;
+    }
     ventana.document.write(`<!DOCTYPE html>
 <html>
 <head>
@@ -98,12 +118,23 @@ const TicketFinTurno: React.FC<TicketFinTurnoProps> = ({
     ventana.focus();
     ventana.print();
     ventana.close();
+    onClose();
   };
 
-  const handleWhatsApp = () => {
+  const handleWhatsApp = async () => {
     if (!textoTicket) return;
+    if (onCerrarTurno) {
+      setIsCerrando(true);
+      try {
+        await onCerrarTurno();
+      } catch {
+        setIsCerrando(false);
+        return;
+      }
+    }
     const encoded = encodeURIComponent(textoTicket);
     window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    onClose();
   };
 
   return (
@@ -151,19 +182,21 @@ const TicketFinTurno: React.FC<TicketFinTurnoProps> = ({
               type="button"
               className="ticket-btn ticket-btn-imprimir"
               onClick={handleImprimir}
+              disabled={isCerrando}
               title="Imprimir ticket"
             >
-              <Printer size={18} />
-              Imprimir
+              {isCerrando ? <Loader size={18} className="ticket-spinner" /> : <Printer size={18} />}
+              {isCerrando ? 'Cerrando...' : 'Imprimir'}
             </button>
             <button
               type="button"
               className="ticket-btn ticket-btn-whatsapp"
               onClick={handleWhatsApp}
+              disabled={isCerrando}
               title="Enviar por WhatsApp"
             >
-              <MessageCircle size={18} />
-              WhatsApp
+              {isCerrando ? <Loader size={18} className="ticket-spinner" /> : <MessageCircle size={18} />}
+              {isCerrando ? 'Cerrando...' : 'WhatsApp'}
             </button>
           </div>
         )}

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { obtenerVentasWeb, obtenerResumenVentas, actualizarVentaWeb, type ResumenVentas } from '../../services/ventasWebService';
 import type { VentaWebWithDetails, EstadoDeVenta } from '../../types/ventasWeb.types';
-import { verificarTurnoAbierto, cerrarTurnoConTicket } from '../../services/turnosService';
+import { verificarTurnoAbierto, cerrarTurno } from '../../services/turnosService';
 import type { Turno } from '../../types/turno.types';
 import { clearSession } from '../../services/sessionService';
 import { negociosService } from '../../services/negociosService';
@@ -635,17 +635,9 @@ export const PageDashboardMobile = () => {
           <CierreTurno
             turno={turno}
             onCancel={() => setShowCierre(false)}
-            onSubmit={async (claveturno, totalArqueo) => {
-              try {
-                await cerrarTurnoConTicket(claveturno, totalArqueo > 0 ? totalArqueo : undefined);
-                setShowCierre(false);
-                await cargarTurno();
-                await cargarResumen();
-                setTicketCierre({ claveturno, efectivoContado: totalArqueo > 0 ? totalArqueo : undefined });
-                showSuccessToast('✅ Turno cerrado exitosamente');
-              } catch {
-                showErrorToast('Error al cerrar el turno');
-              }
+            onSubmit={(claveturno, totalArqueo) => {
+              setShowCierre(false);
+              setTicketCierre({ claveturno, efectivoContado: totalArqueo > 0 ? totalArqueo : undefined });
             }}
           />
         </div>
@@ -656,6 +648,12 @@ export const PageDashboardMobile = () => {
         <TicketFinTurno
           claveturno={ticketCierre.claveturno}
           efectivoContado={ticketCierre.efectivoContado}
+          onCerrarTurno={async () => {
+            await cerrarTurno(ticketCierre.claveturno);
+            await cargarTurno();
+            await cargarResumen();
+            showSuccessToast('✅ Turno cerrado exitosamente');
+          }}
           onClose={() => setTicketCierre(null)}
         />
       )}
