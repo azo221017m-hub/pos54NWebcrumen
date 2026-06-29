@@ -7,8 +7,6 @@ import { clearSession, setSkipBeforeUnload } from '../services/sessionService';
 import { obtenerDetallesPagos } from '../services/pagosService';
 import { cerrarTurnoConTicket } from '../services/turnosService';
 import type { Turno, CorteFinTurnoData } from '../types/turno.types';
-import { generarTextoTicket } from '../utils/ticketFinTurno';
-import { getPaperConfig } from '../utils/ticketLayout';
 import CierreTurno from '../components/turnos/CierreTurno/CierreTurno';
 import TicketFinTurno from '../components/turnos/TicketFinTurno/TicketFinTurno';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../components/FeedbackToast';
@@ -47,36 +45,6 @@ const WHATSAPP_NAVIGATION_DELAY_MS = 1500;
 const PRINT_POPUP_WINDOW_FEATURES = 'width=340,height=700';
 // Espera breve para que el popup termine de renderizar antes de lanzar print()
 const PRINT_WINDOW_READY_DELAY_MS = 500;
-
-const escapeHtml = (value: string): string =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-
-const generarHtmlDetalleCorte = (textoDetalle: string): string => {
-  const cfg = getPaperConfig();
-  return `<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>Corte Fin de Turno</title>
-  <style>
-    body { font-family: 'Courier New', Courier, monospace; font-size: ${cfg.fontSize}px; width: ${cfg.cssWidth}; margin: 0; padding: 8px; }
-    pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
-    @media print {
-      html, body { width: ${cfg.cssWidth}; }
-      @page { size: ${cfg.cssWidth} auto; margin: 0; }
-    }
-  </style>
-</head>
-<body>
-  <pre>${escapeHtml(textoDetalle)}</pre>
-</body>
-</html>`;
-};
 
 const getUsuarioFromStorage = (): Usuario | null => {
   const usuarioData = localStorage.getItem('usuario');
@@ -206,6 +174,7 @@ export const DashboardPage = () => {
     totalDescuentos: 0,
     metaTurno: 0,
     hasTurnoAbierto: false,
+    turnoInfo: null,
     ventasPorFormaDePago: [],
     ventasPorFormaDePagoPorTipo: [],
     ventasPorTipoDeVenta: [],
@@ -452,45 +421,6 @@ export const DashboardPage = () => {
     } finally {
       setIsCerrandoTurno(false);
     }
-  };
-
-  const handleImprimirDetalleCorte = () => {
-    if (!corteFinTurnoData) return;
-    const textoDetalle = generarTextoTicket(corteFinTurnoData);
-
-    const cfg = getPaperConfig();
-    const popupFeatures = `width=${cfg.popupWidth},height=700`;
-    const ventana = window.open('', '_blank', popupFeatures);
-    if (!ventana) {
-      showErrorToast('No se pudo abrir la ventana de impresión. Verifica los pop-ups.');
-      return;
-    }
-
-    ventana.document.write(generarHtmlDetalleCorte(textoDetalle));
-    ventana.document.close();
-    ventana.focus();
-    setTimeout(() => {
-      ventana.print();
-    }, PRINT_WINDOW_READY_DELAY_MS);
-  };
-
-  const handleEnviarDetalleCorteWhatsApp = () => {
-    if (!corteFinTurnoData) return;
-    const textoDetalle = generarTextoTicket(corteFinTurnoData);
-
-    setSkipBeforeUnload(true);
-    managedSkipBeforeUnloadRef.current = true;
-    window.location.href = `whatsapp://send?text=${encodeURIComponent(textoDetalle)}`;
-
-    if (whatsappTimeoutRef.current) {
-      clearTimeout(whatsappTimeoutRef.current);
-    }
-
-    whatsappTimeoutRef.current = setTimeout(() => {
-      setSkipBeforeUnload(false);
-      managedSkipBeforeUnloadRef.current = false;
-      whatsappTimeoutRef.current = null;
-    }, WHATSAPP_NAVIGATION_DELAY_MS);
   };
 
   const generarTextoInventario = async (): Promise<string> => {

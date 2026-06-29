@@ -62,7 +62,7 @@ const ConfigTurnos: React.FC = () => {
       );
 
       // Mostrar el ticket de fin de turno para imprimir y enviar por WhatsApp
-      setEfectivoContadoCorte(corteData.efectivoContado ?? undefined);
+      setEfectivoContadoCorte(corteData?.efectivoContado ?? undefined);
       setClaveturnoCorte(claveturno);
     } catch (error) {
       console.error('Error al cerrar turno:', error);
