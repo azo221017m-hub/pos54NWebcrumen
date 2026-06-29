@@ -636,7 +636,7 @@ export const obtenerFondoCaja = async (req: AuthRequest, res: Response): Promise
          LIMIT 1`,
         [claveturno, idnegocio, REFERENCIA_FONDO_CAJA]
       );
-      fondoCaja = rows[0]?.fondoCaja || 0;
+      fondoCaja = Number(rows[0]?.fondoCaja) || 0;
     } catch (queryErr: any) {
       if (queryErr?.errno === MYSQL_ER_BAD_FIELD_ERROR) {
         // referencia column not yet added via migration — return 0 safely
@@ -853,10 +853,8 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       );
       totalGastos = Number(totalGastosRows[0]?.totalGastos) || 0;
     } catch (referenciaErr: any) {
-      if (referenciaErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || referenciaErr?.errno === MYSQL_ER_NO_SUCH_TABLE ||
-          referenciaErr?.errno === MYSQL_ER_WRONG_FIELD_WITH_GROUP || referenciaErr?.errno === MYSQL_ER_MIX_OF_GROUP_FUNC_AND_FIELDS) {
-        // referencia/descripcionmov column missing or table does not exist yet (migration pending)
-        console.warn('[obtenerCorteFinTurno] referencia/descripcionmov column or table missing, omitiendo movimientos de caja y gastos');
+      if (referenciaErr?.sqlMessage !== undefined || typeof referenciaErr?.errno === 'number') {
+        console.warn('[obtenerCorteFinTurno] movimientos/gastos query failed (errno', referenciaErr?.errno, '):', referenciaErr?.sqlMessage || referenciaErr?.message);
       } else {
         throw referenciaErr;
       }
@@ -886,9 +884,8 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       ventasNetas = Number(ventasResumenRows[0]?.ventasNetas) || 0;
       totalTickets = Number(ventasResumenRows[0]?.totalTickets) || 0;
     } catch (ventasErr: any) {
-      if (ventasErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || ventasErr?.errno === MYSQL_ER_NO_SUCH_TABLE ||
-          ventasErr?.errno === MYSQL_ER_WRONG_FIELD_WITH_GROUP || ventasErr?.errno === MYSQL_ER_MIX_OF_GROUP_FUNC_AND_FIELDS) {
-        console.warn('[obtenerCorteFinTurno] ventasResumenRows: columna faltante, usando ceros');
+      if (ventasErr?.sqlMessage !== undefined || typeof ventasErr?.errno === 'number') {
+        console.warn('[obtenerCorteFinTurno] ventasResumenRows failed (errno', ventasErr?.errno, '):', ventasErr?.sqlMessage || ventasErr?.message);
       } else {
         throw ventasErr;
       }
@@ -910,9 +907,8 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       );
       ventasFormaPagoRows = rows;
     } catch (fpErr: any) {
-      if (fpErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || fpErr?.errno === MYSQL_ER_NO_SUCH_TABLE ||
-          fpErr?.errno === MYSQL_ER_WRONG_FIELD_WITH_GROUP || fpErr?.errno === MYSQL_ER_MIX_OF_GROUP_FUNC_AND_FIELDS) {
-        console.warn('[obtenerCorteFinTurno] ventasFormaPagoRows: columna faltante, usando array vacío');
+      if (fpErr?.sqlMessage !== undefined || typeof fpErr?.errno === 'number') {
+        console.warn('[obtenerCorteFinTurno] ventasFormaPagoRows failed (errno', fpErr?.errno, '):', fpErr?.sqlMessage || fpErr?.message);
       } else {
         throw fpErr;
       }
@@ -935,12 +931,8 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       );
       mixtoDetalleRows = rows;
     } catch (mixtoErr: any) {
-      // MySQL error 1146 (ER_NO_SUCH_TABLE): table may not exist if the payment migration was never applied
-      // MySQL error 1054 (ER_BAD_FIELD_ERROR): a column may be missing (e.g. formadepagodetalle, folioventa)
-      // MySQL error 1055 (ER_WRONG_FIELD_WITH_GROUP): GROUP BY issue
-      if (mixtoErr?.errno === MYSQL_ER_NO_SUCH_TABLE || mixtoErr?.errno === MYSQL_ER_BAD_FIELD_ERROR ||
-          mixtoErr?.errno === MYSQL_ER_WRONG_FIELD_WITH_GROUP || mixtoErr?.errno === MYSQL_ER_MIX_OF_GROUP_FUNC_AND_FIELDS) {
-        console.warn('[obtenerCorteFinTurno] tblposcrumenwebdetallepagos no existe o columna faltante, omitiendo pagos MIXTO');
+      if (mixtoErr?.sqlMessage !== undefined || typeof mixtoErr?.errno === 'number') {
+        console.warn('[obtenerCorteFinTurno] mixtoDetalleRows failed (errno', mixtoErr?.errno, '):', mixtoErr?.sqlMessage || mixtoErr?.message);
       } else {
         throw mixtoErr;
       }
@@ -985,9 +977,8 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       );
       ventasTipoRows = rows;
     } catch (tipoErr: any) {
-      if (tipoErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || tipoErr?.errno === MYSQL_ER_NO_SUCH_TABLE ||
-          tipoErr?.errno === MYSQL_ER_WRONG_FIELD_WITH_GROUP || tipoErr?.errno === MYSQL_ER_MIX_OF_GROUP_FUNC_AND_FIELDS) {
-        console.warn('[obtenerCorteFinTurno] ventasTipoRows: columna faltante, usando array vacío');
+      if (tipoErr?.sqlMessage !== undefined || typeof tipoErr?.errno === 'number') {
+        console.warn('[obtenerCorteFinTurno] ventasTipoRows failed (errno', tipoErr?.errno, '):', tipoErr?.sqlMessage || tipoErr?.message);
       } else {
         throw tipoErr;
       }
@@ -1012,10 +1003,8 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       );
       descuentosRows = rows;
     } catch (descErr: any) {
-      if (descErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || descErr?.errno === MYSQL_ER_NO_SUCH_TABLE ||
-          descErr?.errno === MYSQL_ER_WRONG_FIELD_WITH_GROUP || descErr?.errno === MYSQL_ER_MIX_OF_GROUP_FUNC_AND_FIELDS) {
-        // detalledescuento column missing or table does not exist yet (migration pending)
-        console.warn('[obtenerCorteFinTurno] detalledescuento column missing, omitiendo detalle de descuentos');
+      if (descErr?.sqlMessage !== undefined || typeof descErr?.errno === 'number') {
+        console.warn('[obtenerCorteFinTurno] descuentosRows failed (errno', descErr?.errno, '):', descErr?.sqlMessage || descErr?.message);
       } else {
         throw descErr;
       }
@@ -1034,8 +1023,8 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       );
       comandasAbiertas = Number(cmdRows[0]?.comandasAbiertas) || 0;
     } catch (cmdErr: any) {
-      if (cmdErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || cmdErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
-        console.warn('[obtenerCorteFinTurno] comandasAbiertas: tabla/columna faltante, usando 0');
+      if (cmdErr?.sqlMessage !== undefined || typeof cmdErr?.errno === 'number') {
+        console.warn('[obtenerCorteFinTurno] comandasAbiertasRows failed (errno', cmdErr?.errno, '):', cmdErr?.sqlMessage || cmdErr?.message);
       } else {
         throw cmdErr;
       }
@@ -1078,9 +1067,8 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       totalUnidades = Number(tRows[0]?.totalUnidades) || 0;
       totalVentaProductos = Number(tRows[0]?.totalVentaProductos) || 0;
     } catch (prodErr: any) {
-      if (prodErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || prodErr?.errno === MYSQL_ER_NO_SUCH_TABLE ||
-          prodErr?.errno === MYSQL_ER_WRONG_FIELD_WITH_GROUP || prodErr?.errno === MYSQL_ER_MIX_OF_GROUP_FUNC_AND_FIELDS) {
-        console.warn('[obtenerCorteFinTurno] productosRows: tabla/columna faltante, usando arrays vacíos');
+      if (prodErr?.sqlMessage !== undefined || typeof prodErr?.errno === 'number') {
+        console.warn('[obtenerCorteFinTurno] productosRows failed (errno', prodErr?.errno, '):', prodErr?.sqlMessage || prodErr?.message);
       } else {
         throw prodErr;
       }

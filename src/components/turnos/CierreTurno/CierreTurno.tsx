@@ -88,13 +88,10 @@ const CierreTurno: React.FC<CierreTurnoProps> = ({ turno, onCancel, onSubmit }) 
       try {
         const resultado = await obtenerFondoCaja(claveTurno);
         // Validate that fondoCaja is a valid number
-        const fondoCajaValue = resultado.fondoCaja;
-        if (typeof fondoCajaValue === 'number' && !isNaN(fondoCajaValue)) {
-          // Set the retiroFondo with the fondoCaja value
+        const fondoCajaValue = Number(resultado.fondoCaja);
+        if (!isNaN(fondoCajaValue) && fondoCajaValue > 0) {
           setRetiroFondo(fondoCajaValue.toString());
         } else {
-          // If invalid, leave the field empty
-          console.warn('Invalid fondoCaja value received:', fondoCajaValue);
           setRetiroFondo('');
         }
       } catch (error) {
