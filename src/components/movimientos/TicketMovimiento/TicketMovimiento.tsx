@@ -52,10 +52,12 @@ const generarTexto = (
   t += `${sep2}\n`;
 
   detalles.forEach((d) => {
+    const costoNum = Number(d.costo) || 0;
+    const cantNum  = Number(d.cantidad) || 0;
     const nombre = pad(d.nombreinsumo || '', 16);
-    const cant   = pad(String(d.cantidad), 6, true);
-    const costo  = pad(`$${(d.costo || 0).toFixed(2)}`, 8, true);
-    const subt   = pad(`$${((d.cantidad || 0) * (d.costo || 0)).toFixed(2)}`, 9, true);
+    const cant   = pad(String(cantNum), 6, true);
+    const costo  = pad(`$${costoNum.toFixed(2)}`, 8, true);
+    const subt   = pad(`$${(cantNum * costoNum).toFixed(2)}`, 9, true);
     t += `${nombre}${cant}${costo}${subt}\n`;
     if (d.proveedor) {
       t += `  Prov: ${d.proveedor}\n`;
@@ -70,11 +72,11 @@ const generarTexto = (
   if (proveedores.length > 1) {
     t += `SUBTOTALES:\n`;
     proveedores.forEach(([prov, sub]) => {
-      t += `  ${pad(prov, 22)}${pad(`$${sub.toFixed(2)}`, 8, true)}\n`;
+      t += `  ${pad(prov, 22)}${pad(`$${Number(sub).toFixed(2)}`, 8, true)}\n`;
     });
     t += `${sep2}\n`;
   }
-  t += `TOTAL GENERAL: ${pad(`$${totalGeneral.toFixed(2)}`, 15, true)}\n`;
+  t += `TOTAL GENERAL: ${pad(`$${Number(totalGeneral).toFixed(2)}`, 15, true)}\n`;
   t += `${sep}\n`;
 
   return t;
