@@ -7,14 +7,8 @@ import { websocketService } from '../services/websocket.service';
 
 // Constantes
 const REFERENCIA_FONDO_CAJA = 'FONDO de CAJA';
-// MySQL error number for "Table doesn't exist" (ER_NO_SUCH_TABLE)
-const MYSQL_ER_NO_SUCH_TABLE = 1146;
 // MySQL error number for "Unknown column" (ER_BAD_FIELD_ERROR)
 const MYSQL_ER_BAD_FIELD_ERROR = 1054;
-// MySQL error number for ONLY_FULL_GROUP_BY violation (ER_WRONG_FIELD_WITH_GROUP)
-const MYSQL_ER_WRONG_FIELD_WITH_GROUP = 1055;
-// MySQL error number for mix of aggregate and non-aggregate without GROUP BY (ER_MIX_OF_GROUP_FUNC_AND_FIELDS)
-const MYSQL_ER_MIX_OF_GROUP_FUNC_AND_FIELDS = 1140;
 
 // Interface para Turno
 interface Turno extends RowDataPacket {
