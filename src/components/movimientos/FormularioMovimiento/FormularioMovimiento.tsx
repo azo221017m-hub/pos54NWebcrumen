@@ -13,6 +13,7 @@ import { obtenerInsumos } from '../../../services/insumosService';
 import { obtenerProveedores } from '../../../services/proveedoresService';
 import { obtenerUltimaCompra, aplicarMovimiento } from '../../../services/movimientosService';
 import { showInfoToast } from '../../FeedbackToast';
+import TicketMovimiento from '../TicketMovimiento/TicketMovimiento';
 import './FormularioMovimiento.css';
 
 // Extended type to include stock_actual as a fallback field and unique row ID
@@ -46,6 +47,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
   const [detalles, setDetalles] = useState<DetalleMovimientoExtended[]>([]);
   const [guardando, setGuardando] = useState(false);
   const [aplicando, setAplicando] = useState(false);
+  const [showTicket, setShowTicket] = useState(false);
   
   // Estado para edición de inventario inicial (solo editable, no persistente hasta SOLICITAR)
   const [insumosEditados, setInsumosEditados] = useState<Map<number, { stockActual: number; costoPromPonderado: number; proveedor?: string }>>(new Map());
@@ -403,11 +405,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     try {
       await aplicarMovimiento(movimiento.idmovimiento);
       showInfoToast('Movimiento aplicado exitosamente');
-      // Call parent callback to refresh the list
-      if (onAplicar) {
-        onAplicar();
-      }
-      onCancelar(); // Close the form
+      setShowTicket(true);
     } catch (error: any) {
       console.error('Error al aplicar movimiento:', error);
       const errorMessage = error?.response?.data?.message || 'Error al aplicar el movimiento';
@@ -450,7 +448,24 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
     return motivomovimiento === 'AJUSTE_MANUAL' || motivomovimiento === 'INV_INICIAL';
   }, [motivomovimiento]);
 
+  const handleCerrarTicket = () => {
+    setShowTicket(false);
+    if (onAplicar) onAplicar();
+    onCancelar();
+  };
+
   return (
+    <>
+    {showTicket && (
+      <TicketMovimiento
+        motivomovimiento={motivomovimiento}
+        observaciones={observaciones}
+        detalles={detalles}
+        totalGeneral={totalGeneral}
+        subtotalesPorProveedor={subtotalesPorProveedor}
+        onClose={handleCerrarTicket}
+      />
+    )}
     <div className="formulario-movimiento-overlay">
       <div className="formulario-movimiento-container">
         <div className="formulario-movimiento-header">
@@ -814,6 +829,7 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
         </form>
       </div>
     </div>
+    </>
   );
 };
 
