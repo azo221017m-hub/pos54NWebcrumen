@@ -461,8 +461,6 @@ const FormularioMovimiento: React.FC<Props> = ({ movimiento, onGuardar, onCancel
         motivomovimiento={motivomovimiento}
         observaciones={observaciones}
         detalles={detalles}
-        totalGeneral={totalGeneral}
-        subtotalesPorProveedor={subtotalesPorProveedor}
         onClose={handleCerrarTicket}
       />
     )}

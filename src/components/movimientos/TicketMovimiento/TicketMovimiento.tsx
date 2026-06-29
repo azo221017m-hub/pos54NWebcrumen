@@ -7,18 +7,25 @@ interface DetalleTicket {
   nombreinsumo: string;
   cantidad: number;
   unidadmedida: string;
-  costo?: number;
-  proveedor?: string;
 }
 
 interface TicketMovimientoProps {
   motivomovimiento: MotivoMovimiento;
   observaciones: string;
   detalles: DetalleTicket[];
-  totalGeneral: number;
-  subtotalesPorProveedor: Record<string, number>;
   onClose: () => void;
 }
+
+const getNombreUsuario = (): string => {
+  try {
+    const raw = localStorage.getItem('usuario');
+    if (!raw) return '';
+    const u = JSON.parse(raw);
+    return u?.nombre || u?.alias || '';
+  } catch {
+    return '';
+  }
+};
 
 const pad = (str: string, len: number, right = false) => {
   const s = str.substring(0, len);
@@ -29,8 +36,7 @@ const generarTexto = (
   motivomovimiento: MotivoMovimiento,
   observaciones: string,
   detalles: DetalleTicket[],
-  totalGeneral: number,
-  subtotalesPorProveedor: Record<string, number>
+  nombreUsuario: string
 ): string => {
   const fecha = new Date().toLocaleString('es-MX', {
     year: 'numeric', month: '2-digit', day: '2-digit',
@@ -48,35 +54,20 @@ const generarTexto = (
     t += `Obs:    ${observaciones.trim()}\n`;
   }
   t += `${sep2}\n`;
-  t += `INSUMO           CANT   COSTO     TOTAL\n`;
+  t += `INSUMO           CANT\n`;
   t += `${sep2}\n`;
 
   detalles.forEach((d) => {
-    const costoNum = Number(d.costo) || 0;
-    const cantNum  = Number(d.cantidad) || 0;
-    const nombre = pad(d.nombreinsumo || '', 16);
-    const cant   = pad(String(cantNum), 6, true);
-    const costo  = pad(`$${costoNum.toFixed(2)}`, 8, true);
-    const subt   = pad(`$${(cantNum * costoNum).toFixed(2)}`, 9, true);
-    t += `${nombre}${cant}${costo}${subt}\n`;
-    if (d.proveedor) {
-      t += `  Prov: ${d.proveedor}\n`;
-    }
-    if (d.unidadmedida) {
-      t += `  U.M.: ${d.unidadmedida}\n`;
-    }
+    const cantNum = Number(d.cantidad) || 0;
+    const nombre = pad(d.nombreinsumo || '', 17);
+    const cant   = `${cantNum}`.padEnd(8);
+    const um     = d.unidadmedida || '';
+    t += `${nombre}${cant}${um}\n`;
   });
 
   t += `${sep2}\n`;
-  const proveedores = Object.entries(subtotalesPorProveedor);
-  if (proveedores.length > 1) {
-    t += `SUBTOTALES:\n`;
-    proveedores.forEach(([prov, sub]) => {
-      t += `  ${pad(prov, 22)}${pad(`$${Number(sub).toFixed(2)}`, 8, true)}\n`;
-    });
-    t += `${sep2}\n`;
-  }
-  t += `TOTAL GENERAL: ${pad(`$${Number(totalGeneral).toFixed(2)}`, 15, true)}\n`;
+  t += `Nombre de quien recibe:\n`;
+  t += `${nombreUsuario}\n`;
   t += `${sep}\n`;
 
   return t;
@@ -86,17 +77,10 @@ const TicketMovimiento: React.FC<TicketMovimientoProps> = ({
   motivomovimiento,
   observaciones,
   detalles,
-  totalGeneral,
-  subtotalesPorProveedor,
   onClose,
 }) => {
-  const textoTicket = generarTexto(
-    motivomovimiento,
-    observaciones,
-    detalles,
-    totalGeneral,
-    subtotalesPorProveedor
-  );
+  const nombreUsuario = getNombreUsuario();
+  const textoTicket = generarTexto(motivomovimiento, observaciones, detalles, nombreUsuario);
 
   const handleImprimir = () => {
     const ventana = window.open('', '_blank', 'width=400,height=700');
