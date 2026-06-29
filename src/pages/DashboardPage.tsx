@@ -10,6 +10,7 @@ import type { Turno, CorteFinTurnoData } from '../types/turno.types';
 import { generarTextoTicket } from '../utils/ticketFinTurno';
 import { getPaperConfig } from '../utils/ticketLayout';
 import CierreTurno from '../components/turnos/CierreTurno/CierreTurno';
+import TicketFinTurno from '../components/turnos/TicketFinTurno/TicketFinTurno';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../components/FeedbackToast';
 import { obtenerInsumos } from '../services/insumosService';
 import type { Insumo } from '../types/insumo.types';
@@ -436,21 +437,6 @@ export const DashboardPage = () => {
 
       if (corteData) {
         setCorteFinTurnoData(corteData);
-
-        // Auto-imprimir ticket
-        const textoTicket = generarTextoTicket(corteData);
-        const cfg = getPaperConfig();
-        const popupFeatures = `width=${cfg.popupWidth},height=700`;
-        const ventana = window.open('', '_blank', popupFeatures);
-        if (ventana) {
-          ventana.document.write(generarHtmlDetalleCorte(textoTicket));
-          ventana.document.close();
-          ventana.focus();
-          setTimeout(() => { ventana.print(); ventana.close(); }, PRINT_WINDOW_READY_DELAY_MS);
-        } else {
-          showErrorToast('No se pudo abrir la ventana de impresión. Verifica los pop-ups.');
-        }
-
         setShowDetalleCorteModal(true);
       } else {
         // Turno cerrado pero corte no disponible (error en backend al generar ticket)
@@ -2288,37 +2274,11 @@ export const DashboardPage = () => {
       )}
 
       {showDetalleCorteModal && corteFinTurnoData && (
-        <div className="dashboard-post-cierre-overlay">
-          <div className="dashboard-post-cierre-modal">
-            <h3>Detalle del corte de fin de turno</h3>
-            <p>
-              Turno {corteFinTurnoData.turno?.numeroturno ?? '-'} ({corteFinTurnoData.turno?.claveturno ?? '-'})
-            </p>
-            <div className="dashboard-post-cierre-actions">
-              <button
-                type="button"
-                className="dashboard-post-cierre-btn dashboard-post-cierre-btn-print"
-                onClick={handleImprimirDetalleCorte}
-              >
-                🖨 Imprimir
-              </button>
-              <button
-                type="button"
-                className="dashboard-post-cierre-btn dashboard-post-cierre-btn-whatsapp"
-                onClick={handleEnviarDetalleCorteWhatsApp}
-              >
-                📲 Enviar WhatsApp
-              </button>
-            </div>
-            <button
-              type="button"
-              className="dashboard-post-cierre-btn dashboard-post-cierre-btn-close"
-              onClick={() => setShowDetalleCorteModal(false)}
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
+        <TicketFinTurno
+          claveturno={corteFinTurnoData.turno.claveturno}
+          efectivoContado={corteFinTurnoData.efectivoContado ?? undefined}
+          onClose={() => setShowDetalleCorteModal(false)}
+        />
       )}
 
       {showInventarioPrintModal && (

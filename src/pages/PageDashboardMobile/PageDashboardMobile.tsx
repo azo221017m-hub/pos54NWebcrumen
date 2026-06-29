@@ -14,6 +14,7 @@ import { showSuccessToast, showErrorToast } from '../../components/FeedbackToast
 import { useWebSocket } from '../../hooks/useWebSocket';
 import useIsMobile from '../../hooks/useIsMobile';
 import CierreTurno from '../../components/turnos/CierreTurno/CierreTurno';
+import TicketFinTurno from '../../components/turnos/TicketFinTurno/TicketFinTurno';
 import './PageDashboardMobile.css';
 
 interface Usuario {
@@ -80,6 +81,7 @@ export const PageDashboardMobile = () => {
   const [nivelInv, setNivelInv]         = useState<NivelInventario>({ nivel: 'OPTIMO', mensaje: 'Cargando…' });
   const [loading, setLoading]           = useState(true);
   const [showCierre, setShowCierre]     = useState(false);
+  const [ticketCierre, setTicketCierre] = useState<{ claveturno: string; efectivoContado?: number } | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [refreshing, setRefreshing]     = useState(false);
   const [ventaDetalle, setVentaDetalle] = useState<VentaWebWithDetails | null>(null);
@@ -639,6 +641,7 @@ export const PageDashboardMobile = () => {
                 setShowCierre(false);
                 await cargarTurno();
                 await cargarResumen();
+                setTicketCierre({ claveturno, efectivoContado: totalArqueo > 0 ? totalArqueo : undefined });
                 showSuccessToast('✅ Turno cerrado exitosamente');
               } catch {
                 showErrorToast('Error al cerrar el turno');
@@ -646,6 +649,15 @@ export const PageDashboardMobile = () => {
             }}
           />
         </div>
+      )}
+
+      {/* ── Ticket de cierre de turno ─────────────────── */}
+      {ticketCierre && (
+        <TicketFinTurno
+          claveturno={ticketCierre.claveturno}
+          efectivoContado={ticketCierre.efectivoContado}
+          onClose={() => setTicketCierre(null)}
+        />
       )}
     </div>
   );

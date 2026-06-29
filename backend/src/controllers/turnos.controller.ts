@@ -733,10 +733,10 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     let turnoRows: RowDataPacket[];
     try {
       const [rows] = await pool.query<RowDataPacket[]>(
-        `SELECT 
+        `SELECT
           t.idturno, t.numeroturno, t.claveturno, t.usuarioturno,
           t.fechainicioturno, t.fechafinturno, t.estatusturno, t.metaturno,
-          n.nombreNegocio, n.rfcnegocio
+          n.nombreNegocio, n.rfcnegocio, n.direccionfiscalnegocio
          FROM tblposcrumenwebturnos t
          LEFT JOIN tblposcrumenwebnegocio n ON t.idnegocio = n.idNegocio
          WHERE t.claveturno = ? AND t.idnegocio = ?
@@ -751,10 +751,10 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       console.warn(`[obtenerCorteFinTurno] turno/negocio query failed (${reason}), retrying without JOIN`);
       try {
         const [rows] = await pool.query<RowDataPacket[]>(
-          `SELECT 
+          `SELECT
             t.idturno, t.numeroturno, t.claveturno, t.usuarioturno,
             t.fechainicioturno, t.fechafinturno, t.estatusturno, NULL AS metaturno,
-            '' AS nombreNegocio, '' AS rfcnegocio
+            '' AS nombreNegocio, '' AS rfcnegocio, '' AS direccionfiscalnegocio
            FROM tblposcrumenwebturnos t
            WHERE t.claveturno = ? AND t.idnegocio = ?
            LIMIT 1`,
@@ -899,7 +899,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     let ventasFormaPagoRows: RowDataPacket[] = [];
     try {
       const [rows] = await pool.query<RowDataPacket[]>(
-        `SELECT formadepago, COALESCE(SUM(totaldeventa), 0) AS total
+        `SELECT formadepago, COALESCE(SUM(totaldeventa), 0) AS total, COUNT(*) AS count
          FROM tblposcrumenwebventas
          WHERE claveturno = ? AND idnegocio = ?
            AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
@@ -924,7 +924,7 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     let mixtoDetalleRows: RowDataPacket[] = [];
     try {
       const [rows] = await pool.query<RowDataPacket[]>(
-        `SELECT dp.formadepagodetalle AS formadepago, COALESCE(SUM(dp.totaldepago), 0) AS total
+        `SELECT dp.formadepagodetalle AS formadepago, COALESCE(SUM(dp.totaldepago), 0) AS total, COUNT(*) AS count
        FROM tblposcrumenwebdetallepagos dp
        INNER JOIN tblposcrumenwebventas v ON dp.idfolioventa = v.folioventa
        WHERE v.claveturno = ? AND v.idnegocio = ?
@@ -946,29 +946,35 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
       }
     }
 
-    // Combinar detalles de pagos simples + mixtos
-    const pagoMap: Record<string, number> = {};
+    // Combinar detalles de pagos simples + mixtos (con conteo)
+    const pagoMap: Record<string, { total: number; count: number }> = {};
     for (const row of ventasFormaPagoRows) {
       const fp = String(row.formadepago || '');
-      pagoMap[fp] = (pagoMap[fp] || 0) + (Number(row.total) || 0);
+      if (!pagoMap[fp]) pagoMap[fp] = { total: 0, count: 0 };
+      pagoMap[fp].total += Number(row.total) || 0;
+      pagoMap[fp].count += Number(row.count) || 0;
     }
     for (const row of mixtoDetalleRows) {
       const fp = String(row.formadepago || '');
-      pagoMap[fp] = (pagoMap[fp] || 0) + (Number(row.total) || 0);
+      if (!pagoMap[fp]) pagoMap[fp] = { total: 0, count: 0 };
+      pagoMap[fp].total += Number(row.total) || 0;
+      pagoMap[fp].count += Number(row.count) || 0;
     }
     const ventasPorFormaDePago = Object.entries(pagoMap)
-      .map(([formadepago, total]) => ({ formadepago, total }))
+      .map(([formadepago, { total, count }]) => ({ formadepago, total, count }))
       .sort((a, b) => b.total - a.total);
 
     const totalVentasPago = ventasPorFormaDePago.reduce((s, r) => s + r.total, 0);
-    const ventasEfectivo = pagoMap['EFECTIVO'] || 0;
+    const totalVentasPagoCount = ventasPorFormaDePago.reduce((s, r) => s + r.count, 0);
+    const hasMixtoVentas = mixtoDetalleRows.length > 0;
+    const ventasEfectivo = pagoMap['EFECTIVO']?.total || 0;
 
     // 7. Ventas por tipo de venta
     currentStep = 'ventasTipoRows';
     let ventasTipoRows: RowDataPacket[] = [];
     try {
       const [rows] = await pool.query<RowDataPacket[]>(
-        `SELECT tipodeventa, COALESCE(SUM(totaldeventa), 0) AS total
+        `SELECT tipodeventa, COALESCE(SUM(totaldeventa), 0) AS total, COUNT(*) AS count
          FROM tblposcrumenwebventas
          WHERE claveturno = ? AND idnegocio = ?
            AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
@@ -1012,6 +1018,26 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
         console.warn('[obtenerCorteFinTurno] detalledescuento column missing, omitiendo detalle de descuentos');
       } else {
         throw descErr;
+      }
+    }
+
+    // 8b. Comandas abiertas al momento del corte (ORDENADO o EN_CAMINO)
+    currentStep = 'comandasAbiertasRows';
+    let comandasAbiertas = 0;
+    try {
+      const [cmdRows] = await pool.query<RowDataPacket[]>(
+        `SELECT COUNT(*) AS comandasAbiertas
+         FROM tblposcrumenwebventas
+         WHERE claveturno = ? AND idnegocio = ?
+           AND estadodeventa IN ('ORDENADO', 'EN_CAMINO')`,
+        [claveturno, idnegocio]
+      );
+      comandasAbiertas = Number(cmdRows[0]?.comandasAbiertas) || 0;
+    } catch (cmdErr: any) {
+      if (cmdErr?.errno === MYSQL_ER_BAD_FIELD_ERROR || cmdErr?.errno === MYSQL_ER_NO_SUCH_TABLE) {
+        console.warn('[obtenerCorteFinTurno] comandasAbiertas: tabla/columna faltante, usando 0');
+      } else {
+        throw cmdErr;
       }
     }
 
@@ -1085,7 +1111,8 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
           estatusturno: turno.estatusturno,
           metaturno: turno.metaturno,
           nombreNegocio: turno.nombreNegocio || '',
-          rfcnegocio: turno.rfcnegocio || ''
+          rfcnegocio: turno.rfcnegocio || '',
+          direccionnegocio: turno.direccionfiscalnegocio || ''
         },
         // Resumen general
         resumen: {
@@ -1107,10 +1134,13 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
         // Ventas por forma de pago
         ventasPorFormaDePago,
         totalVentasPago,
+        totalVentasPagoCount,
+        hasMixtoVentas,
         // Ventas por tipo de venta
         ventasPorTipoDeVenta: ventasTipoRows.map(r => ({
           tipodeventa: String(r.tipodeventa || ''),
-          total: Number(r.total) || 0
+          total: Number(r.total) || 0,
+          count: Number(r.count) || 0
         })),
         // Descuentos aplicados
         descuentosAplicados: descuentosRows.map(r => ({
@@ -1147,7 +1177,9 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
         auditoria: {
           usuarioGenerador,
           fechaGeneracion
-        }
+        },
+        // Comandas abiertas al momento del corte
+        comandasAbiertas
       }
     });
   } catch (error) {

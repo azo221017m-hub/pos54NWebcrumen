@@ -45,6 +45,7 @@ export interface CorteFinTurnoTurno {
   metaturno?: number | null;
   nombreNegocio: string;
   rfcnegocio: string;
+  direccionnegocio?: string;
 }
 
 export interface CorteFinTurnoResumen {
@@ -66,11 +67,13 @@ export interface CorteFinTurnoGasto {
 export interface CorteFinTurnoFormaDePago {
   formadepago: string;
   total: number;
+  count: number;
 }
 
 export interface CorteFinTurnoTipoVenta {
   tipodeventa: string;
   total: number;
+  count: number;
 }
 
 export interface CorteFinTurnoDescuento {
@@ -114,6 +117,10 @@ export interface CorteFinTurnoData {
   totalGastos: number;
   ventasPorFormaDePago: CorteFinTurnoFormaDePago[];
   totalVentasPago: number;
+  /** Suma de conteos por forma de pago (puede superar totalTickets si hay ventas MIXTO) */
+  totalVentasPagoCount?: number;
+  /** true cuando al menos una venta del turno tuvo formadepago = 'MIXTO' */
+  hasMixtoVentas?: boolean;
   ventasPorTipoDeVenta: CorteFinTurnoTipoVenta[];
   descuentosAplicados: CorteFinTurnoDescuento[];
   conciliacion: CorteFinTurnoConciliacion;
@@ -122,6 +129,8 @@ export interface CorteFinTurnoData {
   totalVentaProductos: number;
   indicadores: CorteFinTurnoIndicadores;
   auditoria: CorteFinTurnoAuditoria;
+  /** Órdenes en estado ORDENADO o EN_CAMINO al momento del corte */
+  comandasAbiertas?: number;
   /** Efectivo contado (arqueo) capturado al cerrar el turno; opcional */
   efectivoContado?: number | null;
 }
