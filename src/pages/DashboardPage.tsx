@@ -185,6 +185,7 @@ export const DashboardPage = () => {
   const [showCierreTurnoModal, setShowCierreTurnoModal] = useState(false);
   const [showDetalleCorteModal, setShowDetalleCorteModal] = useState(false);
   const [corteFinTurnoData, setCorteFinTurnoData] = useState<CorteFinTurnoData | null>(null);
+  const [detalleCorteClaveturno, setDetalleCorteClaveturno] = useState<string | null>(null);
   const [isCerrandoTurno, setIsCerrandoTurno] = useState(false);
   const [negocio, setNegocio] = useState<Negocio | null>(null);
   const [abiertoAhoraWeb, setAbiertoAhoraWeb] = useState<boolean>(false);
@@ -406,12 +407,9 @@ export const DashboardPage = () => {
 
       if (corteData) {
         setCorteFinTurnoData(corteData);
-        setShowDetalleCorteModal(true);
-      } else {
-        // Turno cerrado pero corte no disponible (error en backend al generar ticket)
-        showInfoToast('Turno cerrado. El ticket de corte no pudo generarse; consulta el histórico de turnos.');
       }
-
+      setDetalleCorteClaveturno(claveturno);
+      setShowDetalleCorteModal(true);
       showSuccessToast('Turno cerrado exitosamente');
     } catch (error) {
       // Solo llega aquí si el CIERRE del turno falló (el turno NO fue cerrado)
@@ -2203,11 +2201,15 @@ export const DashboardPage = () => {
         </div>
       )}
 
-      {showDetalleCorteModal && corteFinTurnoData && (
+      {showDetalleCorteModal && detalleCorteClaveturno && (
         <TicketFinTurno
-          claveturno={corteFinTurnoData.turno.claveturno}
-          efectivoContado={corteFinTurnoData.efectivoContado ?? undefined}
-          onClose={() => setShowDetalleCorteModal(false)}
+          claveturno={detalleCorteClaveturno}
+          efectivoContado={corteFinTurnoData?.efectivoContado ?? undefined}
+          onClose={() => {
+            setShowDetalleCorteModal(false);
+            setDetalleCorteClaveturno(null);
+            setCorteFinTurnoData(null);
+          }}
         />
       )}
 
