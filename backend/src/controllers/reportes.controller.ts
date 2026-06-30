@@ -525,7 +525,7 @@ export const getGastosDescuentos = async (req: AuthRequest, res: Response): Prom
        FROM tblposcrumenwebventas
        WHERE idnegocio = ? AND tipodeventa = 'MOVIMIENTO' AND referencia = 'GASTO'
          AND DATE(fechadeventa) BETWEEN ? AND ?
-       GROUP BY COALESCE(NULLIF(descripcionmov,''), 'Sin categoría')
+       GROUP BY descripcionmov
        ORDER BY total DESC`,
       [idnegocio, startDate, endDate]
     );
@@ -779,7 +779,7 @@ export const getComprasPorProveedor = async (req: AuthRequest, res: Response): P
        WHERE idnegocio = ? AND tipomovimiento = 'ENTRADA' AND motivomovimiento = 'COMPRA'
          AND estatusmovimiento = 'PROCESADO'
          AND DATE(fechamovimiento) BETWEEN ? AND ?
-       GROUP BY COALESCE(NULLIF(TRIM(proveedor),''), 'Sin proveedor')
+       GROUP BY proveedor
        ORDER BY total_monto DESC`,
       [idnegocio, startDate, endDate]
     );

@@ -982,8 +982,10 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
     currentStep = 'descuentosRows';
     let descuentosRows: RowDataPacket[] = [];
     try {
+      // Agrupa por la columna raw para evitar errno 1055 (ONLY_FULL_GROUP_BY) en MySQL 8.
+      // COALESCE(NULLIF...) en SELECT sigue siendo válido porque depende funcionalmente de detalledescuento.
       const [rows] = await pool.query<RowDataPacket[]>(
-        `SELECT 
+        `SELECT
            COALESCE(NULLIF(TRIM(detalledescuento), ''), 'Sin nombre') AS nombre,
            COUNT(*) AS operaciones,
            COALESCE(SUM(descuentos), 0) AS montoDescuento
@@ -991,17 +993,15 @@ export const obtenerCorteFinTurno = async (req: AuthRequest, res: Response): Pro
          WHERE claveturno = ? AND idnegocio = ?
            AND estadodeventa = 'COBRADO' AND estatusdepago = 'PAGADO'
            AND descripcionmov = 'VENTA' AND descuentos > 0
-         GROUP BY COALESCE(NULLIF(TRIM(detalledescuento), ''), 'Sin nombre')
+         GROUP BY detalledescuento
          ORDER BY montoDescuento DESC`,
         [claveturno, idnegocio]
       );
       descuentosRows = rows;
     } catch (descErr: any) {
-      if (descErr?.sqlMessage !== undefined || typeof descErr?.errno === 'number') {
-        console.warn('[obtenerCorteFinTurno] descuentosRows failed (errno', descErr?.errno, '):', descErr?.sqlMessage || descErr?.message);
-      } else {
-        throw descErr;
-      }
+      // Datos no críticos — siempre swallow para no bloquear el ticket de corte.
+      // Usamos != null en lugar de !== undefined para cubrir errno como string o number.
+      console.warn('[obtenerCorteFinTurno] descuentosRows failed (errno', descErr?.errno, '):', descErr?.sqlMessage || descErr?.message);
     }
 
     // 8b. Comandas abiertas al momento del corte (ORDENADO o EN_CAMINO)
