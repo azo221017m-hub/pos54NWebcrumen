@@ -1337,8 +1337,8 @@ export const DashboardPage = () => {
           )}
         </div>
 
-        {/* Menú Reportes - visible para privilegio >= 5 */}
-        {privilegio >= 5 && (
+        {/* Menú Reportes - visible para privilegio >= 5 o superusuario */}
+        {(privilegio >= 5 || usuario?.idNegocio === 99999) && (
         <div className="nav-item-container">
           <button
             className={`nav-item ${showReportesSubmenu ? 'active' : ''}`}

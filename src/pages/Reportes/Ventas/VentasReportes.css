@@ -2,27 +2,8 @@
 
 .ventas-page {}
 
-/* Select inside filters */
-.reportes-select {
-  background: #1b2e1b;
-  border: 1px solid #2e4a2e;
-  color: #c8e6c9;
-  border-radius: 3px;
-  padding: 5px 8px;
-  font-size: 12px;
-}
-.reportes-anio-input {
-  background: #1b2e1b;
-  border: 1px solid #2e4a2e;
-  color: #c8e6c9;
-  border-radius: 3px;
-  padding: 5px 8px;
-  font-size: 12px;
-  width: 80px;
-}
-
 /* Top producto destaque */
-.top-producto-row td { background: #0f1f10; }
+.top-producto-row td { background: rgba(10,132,255,0.06); }
 
 /* Mini bar para % */
 .ventas-bar-mini {
@@ -31,22 +12,22 @@
   gap: 6px;
 }
 .ventas-bar-fill {
-  height: 6px;
-  background: linear-gradient(90deg, #2e7d32, #69f0ae);
+  height: 5px;
+  background: linear-gradient(90deg, #1d4ed8, #60a5fa);
   border-radius: 3px;
   min-width: 2px;
 }
-.ventas-bar-mini span { font-size: 11px; color: #81c784; white-space: nowrap; }
+.ventas-bar-mini span { font-size: 11px; color: #60a5fa; white-space: nowrap; }
 
 /* Gráfica de barras mensual */
 .ventas-chart-bar {
   display: flex;
-  gap: 6px;
+  gap: 5px;
   align-items: flex-end;
   height: 160px;
-  background: #0f1f0f;
-  border: 1px solid #1b2e1b;
-  border-radius: 6px;
+  background: #0d1424;
+  border: 1px solid rgba(59,130,246,0.12);
+  border-radius: 10px;
   padding: 12px;
 }
 .ventas-chart-col {
@@ -58,7 +39,7 @@
 }
 .ventas-chart-value {
   font-size: 8px;
-  color: #558b2f;
+  color: #3d5473;
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
@@ -69,35 +50,35 @@
 .ventas-chart-bar-outer {
   flex: 1;
   width: 100%;
-  background: #1b2e1b;
-  border-radius: 2px;
+  background: rgba(59,130,246,0.08);
+  border-radius: 3px;
   display: flex;
   align-items: flex-end;
   min-height: 4px;
 }
 .ventas-chart-bar-inner {
   width: 100%;
-  background: linear-gradient(0deg, #1b5e20, #69f0ae);
-  border-radius: 2px;
+  background: linear-gradient(0deg, #1d4ed8, #60a5fa);
+  border-radius: 3px;
   min-height: 2px;
   transition: height 0.4s ease;
 }
 .ventas-chart-label {
   font-size: 9px;
-  color: #81c784;
+  color: #7a98c0;
   font-weight: 600;
 }
 
 /* Turno badges */
-.badge-turno-supero { background: #1b5e20; color: #b9f6ca; }
-.badge-turno-cumplio { background: #1565c0; color: #bbdefb; }
-.badge-turno-no_cumplio { background: #b71c1c; color: #ffcdd2; }
-.badge-turno-sin_meta, .badge-turno-no_meta { background: #37474f; color: #b0bec5; }
+.badge-turno-supero      { background: rgba(48,209,88,0.15);  color: #30d158; border: 1px solid rgba(48,209,88,0.3); }
+.badge-turno-cumplio     { background: rgba(10,132,255,0.15); color: #0a84ff; border: 1px solid rgba(10,132,255,0.3); }
+.badge-turno-no_cumplio  { background: rgba(255,69,58,0.15);  color: #ff453a; border: 1px solid rgba(255,69,58,0.3); }
+.badge-turno-sin_meta,
+.badge-turno-no_meta     { background: rgba(120,120,130,0.15); color: #8e8e93; border: 1px solid rgba(120,120,130,0.3); }
 
 /* Mes sin ventas */
-.mes-sin-ventas td { color: #2e4a2e; }
+.mes-sin-ventas td { color: #1e2d45; }
 
-/* Positivo / negativo */
-.positive { color: #69f0ae; }
-.negative { color: #ef9a9a; }
-.bold { font-weight: 700; }
+.positive { color: #30d158; }
+.negative { color: #ff453a; }
+.bold     { font-weight: 700; }
