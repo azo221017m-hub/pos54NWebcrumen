@@ -1,0 +1,24 @@
+/* InventarioReportes - specific styles (base styles in SaludNegocio.css) */
+
+.inventario-page {}
+
+/* Estado badge rows */
+.reportes-table tr.estado-critico td { background: #1a0808; }
+.reportes-table tr.estado-advertencia td { background: #1a1208; }
+
+.badge-critico { background: #b71c1c; color: #ffcdd2; }
+.badge-advertencia { background: #e65100; color: #ffe0b2; }
+.badge-optimo { background: #1b5e20; color: #b9f6ca; }
+
+/* Rotación badges */
+.badge-rot-alta { background: #1b5e20; color: #b9f6ca; }
+.badge-rot-media { background: #1565c0; color: #bbdefb; }
+.badge-rot-baja { background: #4a148c; color: #e1bee7; }
+
+/* Proveedor product list */
+.inv-producto-list { color: #81c784; font-size: 11px; max-width: 200px; }
+
+/* Negative/positive values */
+.negative { color: #ef9a9a; }
+.positive { color: #69f0ae; }
+.bold { font-weight: 700; }

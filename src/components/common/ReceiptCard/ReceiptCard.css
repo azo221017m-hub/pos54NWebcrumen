@@ -1,0 +1,255 @@
+/* ReceiptCard – Ticket Térmico Visual */
+
+.receipt-card {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  background: #0f1f0f;
+  color: #c8e6c9;
+  width: 320px;
+  min-width: 280px;
+  max-width: 340px;
+  padding: 14px 12px;
+  border-radius: 4px;
+  border: 1px solid #2e4a2e;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+/* Encabezado */
+.receipt-header {
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.receipt-business-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #e8f5e9;
+  text-transform: uppercase;
+}
+
+/* Título del reporte */
+.receipt-title {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #a5d6a7;
+  margin: 6px 0 4px;
+}
+
+/* Separador */
+.receipt-separator {
+  border: none;
+  border-top: 1px dashed #2e4a2e;
+  margin: 6px 0;
+}
+
+/* Metadatos / periodo */
+.receipt-period-block {
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+.receipt-meta-line {
+  font-size: 10px;
+  color: #81c784;
+  text-align: center;
+}
+
+/* Líneas del cuerpo */
+.receipt-body,
+.receipt-totals {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.receipt-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.receipt-line-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: inherit;
+}
+
+.receipt-line-value {
+  flex-shrink: 0;
+  text-align: right;
+  color: #e8f5e9;
+}
+
+.receipt-line.dim,
+.receipt-full-row.dim {
+  color: #558b2f;
+  font-size: 11px;
+}
+
+.receipt-line.bold .receipt-line-label,
+.receipt-line.bold .receipt-line-value {
+  font-weight: 700;
+  color: #f1f8e9;
+}
+
+.receipt-line.indent,
+.receipt-full-row.indent {
+  padding-left: 10px;
+  font-size: 11px;
+}
+
+.receipt-full-row {
+  color: #a5d6a7;
+  font-size: 11px;
+}
+
+/* Totales */
+.receipt-totals {
+  margin-top: 2px;
+}
+
+/* Estado / Semáforo */
+.receipt-status {
+  text-align: center;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 2px;
+  margin: 4px 0 2px;
+}
+
+.receipt-status-success {
+  background: #1b5e20;
+  color: #b9f6ca;
+  border: 1px solid #2e7d32;
+}
+
+.receipt-status-warning {
+  background: #e65100;
+  color: #ffe0b2;
+  border: 1px solid #bf360c;
+}
+
+.receipt-status-danger {
+  background: #b71c1c;
+  color: #ffcdd2;
+  border: 1px solid #c62828;
+}
+
+.receipt-status-info {
+  background: #0d47a1;
+  color: #bbdefb;
+  border: 1px solid #1565c0;
+}
+
+.receipt-sub-status {
+  text-align: center;
+  font-size: 11px;
+  color: #81c784;
+  margin-top: 2px;
+}
+
+/* Pie y cierre */
+.receipt-footer {
+  font-size: 10px;
+  color: #558b2f;
+  text-align: center;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.receipt-end {
+  text-align: center;
+  color: #4caf50;
+  font-weight: 700;
+  letter-spacing: 4px;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+/* Botones de acción */
+.receipt-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed #2e4a2e;
+}
+
+.receipt-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #1b5e20;
+  color: #c8e6c9;
+  border: 1px solid #2e7d32;
+  border-radius: 3px;
+  padding: 6px 8px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.receipt-action-btn:hover {
+  background: #2e7d32;
+}
+
+.receipt-action-whatsapp {
+  background: #1b4d1b;
+  border-color: #388e3c;
+}
+
+.receipt-action-whatsapp:hover {
+  background: #2e7d32;
+}
+
+/* Versión clara para impresión */
+@media print {
+  .receipt-card {
+    background: #fff;
+    color: #000;
+    border: none;
+    box-shadow: none;
+    width: 58mm;
+    max-width: 58mm;
+    padding: 2mm;
+    font-size: 10px;
+  }
+
+  .receipt-business-name,
+  .receipt-title,
+  .receipt-line-value,
+  .receipt-line.bold .receipt-line-label,
+  .receipt-line.bold .receipt-line-value { color: #000; }
+
+  .receipt-meta-line,
+  .receipt-full-row,
+  .receipt-sub-status,
+  .receipt-footer { color: #444; }
+
+  .receipt-line.dim,
+  .receipt-full-row.dim { color: #888; }
+
+  .receipt-separator { border-color: #999; }
+
+  .receipt-status-success { background: #e8f5e9; color: #1b5e20; border-color: #4caf50; }
+  .receipt-status-warning { background: #fff3e0; color: #bf360c; border-color: #ff9800; }
+  .receipt-status-danger  { background: #ffebee; color: #b71c1c; border-color: #f44336; }
+  .receipt-status-info    { background: #e3f2fd; color: #0d47a1; border-color: #2196f3; }
+
+  .receipt-actions { display: none; }
+}

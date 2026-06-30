@@ -157,6 +157,7 @@ export const DashboardPage = () => {
   const [showConfigNegocioSubmenu, setShowConfigNegocioSubmenu] = useState(false);
   const [showDashboardSubmenu, setShowDashboardSubmenu] = useState(false);
   const [showMiOperacionSubmenu, setShowMiOperacionSubmenu] = useState(false);
+  const [showReportesSubmenu, setShowReportesSubmenu] = useState(false);
   const [dashboardView, setDashboardView] = useState<'indicadores' | 'comandas' | 'comandas-pagadas' | 'visor-ventas'>('indicadores');
   const [salesReportTab, setSalesReportTab] = useState<'resumen' | 'tipo-venta' | 'forma-pago' | 'top-productos'>('resumen');
   const [autoSwitchedToComandas, setAutoSwitchedToComandas] = useState(false);
@@ -1335,6 +1336,73 @@ export const DashboardPage = () => {
             </div>
           )}
         </div>
+
+        {/* Menú Reportes - visible para privilegio >= 5 */}
+        {privilegio >= 5 && (
+        <div className="nav-item-container">
+          <button
+            className={`nav-item ${showReportesSubmenu ? 'active' : ''}`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowReportesSubmenu(!showReportesSubmenu);
+              setShowDashboardSubmenu(false);
+              setShowMiOperacionSubmenu(false);
+              setShowConfigSubmenu(false);
+              setShowConfigNegocioSubmenu(false);
+            }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+            Reportes
+            <svg
+              className={`chevron-submenu ${showReportesSubmenu ? 'rotate' : ''}`}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              style={{ width: '16px', height: '16px', marginLeft: 'auto' }}
+            >
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          {showReportesSubmenu && (
+            <div className="submenu">
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Reportes', 'Salud del Negocio', 'NAVEGACIÓN'); navigate('/reportes/salud'); setMobileMenuOpen(false); setShowReportesSubmenu(false); }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                Salud del Negocio
+              </button>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Reportes', 'Inventario', 'NAVEGACIÓN'); navigate('/reportes/inventario'); setMobileMenuOpen(false); setShowReportesSubmenu(false); }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                </svg>
+                Inventario
+              </button>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Reportes', 'Ventas', 'NAVEGACIÓN'); navigate('/reportes/ventas'); setMobileMenuOpen(false); setShowReportesSubmenu(false); }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="12" y1="1" x2="12" y2="23"/>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+                Ventas
+              </button>
+              <button className="submenu-item" onClick={(e) => { e.preventDefault(); e.stopPropagation(); registrarLog('Reportes', 'Colaboradores', 'NAVEGACIÓN'); navigate('/reportes/colaboradores'); setMobileMenuOpen(false); setShowReportesSubmenu(false); }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Colaboradores
+              </button>
+            </div>
+          )}
+        </div>
+        )}
         </div>
       </nav>
 
@@ -1344,6 +1412,7 @@ export const DashboardPage = () => {
         setShowConfigNegocioSubmenu(false);
         setShowDashboardSubmenu(false);
         setShowMiOperacionSubmenu(false);
+        setShowReportesSubmenu(false);
         setShowUserMenu(false);
       }}>
         {dashboardView === 'comandas-pagadas' ? (

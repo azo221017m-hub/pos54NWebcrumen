@@ -7,6 +7,21 @@ import {
   getReporteGastos,
   getReporteRentabilidad,
   getReporteFlujo,
+  // Nuevos endpoints – Dashboard Reestructurado
+  getSaludNegocio,
+  getGastosDescuentos,
+  getSugerenciaCompra,
+  getStockActual,
+  getStockBajoMinimo,
+  getComprasPorProveedor,
+  getRotacionInventario,
+  getVentasHoy,
+  getVentasPorTurno,
+  getTopProductos,
+  getVentasMensual,
+  getRankingColaboradores,
+  getCumplimientoMeta,
+  getKpiColaboradores,
 } from '../controllers/reportes.controller';
 import { authMiddleware } from '../middlewares/auth';
 import { apiLimiter } from '../middlewares/rateLimit';
@@ -67,5 +82,27 @@ router.get('/rentabilidad', getReporteRentabilidad);
  * @access  Private
  */
 router.get('/flujo', getReporteFlujo);
+
+// ── Salud del Negocio ─────────────────────────────────────────────────────────
+router.get('/salud/estado', getSaludNegocio);
+router.get('/salud/gastos-descuentos', getGastosDescuentos);
+
+// ── Inventario ────────────────────────────────────────────────────────────────
+router.get('/inventario/sugerencia-compra', getSugerenciaCompra);
+router.get('/inventario/stock', getStockActual);
+router.get('/inventario/bajo-minimo', getStockBajoMinimo);
+router.get('/inventario/compras-proveedor', getComprasPorProveedor);
+router.get('/inventario/rotacion', getRotacionInventario);
+
+// ── Ventas ────────────────────────────────────────────────────────────────────
+router.get('/ventas/hoy', getVentasHoy);
+router.get('/ventas/por-turno', getVentasPorTurno);
+router.get('/ventas/top-productos', getTopProductos);
+router.get('/ventas/mensual', getVentasMensual);
+
+// ── Colaboradores ─────────────────────────────────────────────────────────────
+router.get('/colaboradores/ranking', getRankingColaboradores);
+router.get('/colaboradores/cumplimiento-meta', getCumplimientoMeta);
+router.get('/colaboradores/kpi', getKpiColaboradores);
 
 export default router;

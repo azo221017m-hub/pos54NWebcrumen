@@ -1,0 +1,103 @@
+/* VentasReportes - specific styles (base styles in SaludNegocio.css) */
+
+.ventas-page {}
+
+/* Select inside filters */
+.reportes-select {
+  background: #1b2e1b;
+  border: 1px solid #2e4a2e;
+  color: #c8e6c9;
+  border-radius: 3px;
+  padding: 5px 8px;
+  font-size: 12px;
+}
+.reportes-anio-input {
+  background: #1b2e1b;
+  border: 1px solid #2e4a2e;
+  color: #c8e6c9;
+  border-radius: 3px;
+  padding: 5px 8px;
+  font-size: 12px;
+  width: 80px;
+}
+
+/* Top producto destaque */
+.top-producto-row td { background: #0f1f10; }
+
+/* Mini bar para % */
+.ventas-bar-mini {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ventas-bar-fill {
+  height: 6px;
+  background: linear-gradient(90deg, #2e7d32, #69f0ae);
+  border-radius: 3px;
+  min-width: 2px;
+}
+.ventas-bar-mini span { font-size: 11px; color: #81c784; white-space: nowrap; }
+
+/* Gráfica de barras mensual */
+.ventas-chart-bar {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  height: 160px;
+  background: #0f1f0f;
+  border: 1px solid #1b2e1b;
+  border-radius: 6px;
+  padding: 12px;
+}
+.ventas-chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.ventas-chart-value {
+  font-size: 8px;
+  color: #558b2f;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  height: 50px;
+  overflow: hidden;
+}
+.ventas-chart-bar-outer {
+  flex: 1;
+  width: 100%;
+  background: #1b2e1b;
+  border-radius: 2px;
+  display: flex;
+  align-items: flex-end;
+  min-height: 4px;
+}
+.ventas-chart-bar-inner {
+  width: 100%;
+  background: linear-gradient(0deg, #1b5e20, #69f0ae);
+  border-radius: 2px;
+  min-height: 2px;
+  transition: height 0.4s ease;
+}
+.ventas-chart-label {
+  font-size: 9px;
+  color: #81c784;
+  font-weight: 600;
+}
+
+/* Turno badges */
+.badge-turno-supero { background: #1b5e20; color: #b9f6ca; }
+.badge-turno-cumplio { background: #1565c0; color: #bbdefb; }
+.badge-turno-no_cumplio { background: #b71c1c; color: #ffcdd2; }
+.badge-turno-sin_meta, .badge-turno-no_meta { background: #37474f; color: #b0bec5; }
+
+/* Mes sin ventas */
+.mes-sin-ventas td { color: #2e4a2e; }
+
+/* Positivo / negativo */
+.positive { color: #69f0ae; }
+.negative { color: #ef9a9a; }
+.bold { font-weight: 700; }

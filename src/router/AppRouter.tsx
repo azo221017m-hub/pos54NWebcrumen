@@ -27,6 +27,10 @@ import PageClientes from '../pages/PageClientes/PageClientes';
 import PageClientesMobile from '../pages/PageClientesMobile/PageClientesMobile';
 import MovimientosInventario from '../pages/MovimientosInventario/MovimientosInventario';
 import PageGastos from '../pages/PageGastos/PageGastos';
+import SaludNegocio from '../pages/Reportes/SaludNegocio/SaludNegocio';
+import InventarioReportes from '../pages/Reportes/Inventario/InventarioReportes';
+import VentasReportes from '../pages/Reportes/Ventas/VentasReportes';
+import ColaboradoresReportes from '../pages/Reportes/Colaboradores/ColaboradoresReportes';
 import ProtectedRoute from './ProtectedRoute';
 
 const router = createBrowserRouter([
@@ -143,6 +147,23 @@ const router = createBrowserRouter([
   {
     path: '/gastos',
     element: <ProtectedRoute><PageGastos /></ProtectedRoute>,
+  },
+  // ── Reportes Reestructurados ──────────────────────────────────────────────
+  {
+    path: '/reportes/salud',
+    element: <ProtectedRoute><SaludNegocio /></ProtectedRoute>,
+  },
+  {
+    path: '/reportes/inventario',
+    element: <ProtectedRoute><InventarioReportes /></ProtectedRoute>,
+  },
+  {
+    path: '/reportes/ventas',
+    element: <ProtectedRoute><VentasReportes /></ProtectedRoute>,
+  },
+  {
+    path: '/reportes/colaboradores',
+    element: <ProtectedRoute><ColaboradoresReportes /></ProtectedRoute>,
   },
 ]);
 
