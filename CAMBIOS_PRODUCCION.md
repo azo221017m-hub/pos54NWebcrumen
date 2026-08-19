@@ -166,8 +166,8 @@ BACKEND_URL=http://localhost:3000
 ## Base de Datos
 
 ### Azure MySQL
-- **Host**: crumenprod01.mysql.database.azure.com
-- **Database**: bdcdttx
+- **Host**:
+- **Database**: 
 - **Port**: 3306
 - **Status**: ✅ Configurado y funcionando
 
