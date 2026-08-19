@@ -1790,7 +1790,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
           COALESCE(SUM(v.descuentos), 0) as total
          FROM tblposcrumenwebventas v
          LEFT JOIN tblposcrumenwebdescuentos d 
-           ON v.detalledescuento = d.nombre AND v.idnegocio = d.idnegocio
+           ON v.detalledescuento = d.nombre COLLATE utf8mb4_unicode_ci AND v.idnegocio = d.idnegocio
          WHERE v.claveturno = ? 
            AND v.idnegocio = ? 
            AND v.estadodeventa = 'COBRADO'
@@ -1805,7 +1805,7 @@ export const getSalesSummary = async (req: AuthRequest, res: Response): Promise<
           COALESCE(SUM(v.descuentos), 0) as total
          FROM tblposcrumenwebventas v
          LEFT JOIN tblposcrumenwebdescuentos d 
-           ON v.detalledescuento = d.nombre AND v.idnegocio = d.idnegocio
+           ON v.detalledescuento = d.nombre COLLATE utf8mb4_unicode_ci AND v.idnegocio = d.idnegocio
          WHERE v.idnegocio = ? 
            AND v.estadodeventa = 'COBRADO'
            AND v.descuentos > 0
