@@ -1157,7 +1157,7 @@ const PageVentasMobile: React.FC = () => {
                   return (
                     <div key={prod.idProducto} className="pvm-product-card">
                       {prod.imagenProducto ? (
-                        <img className="pvm-product-img" src={prod.imagenProducto} alt={prod.nombre} />
+                        <img className="pvm-product-img" src={`data:image/jpeg;base64,${prod.imagenProducto}`} alt={prod.nombre} />
                       ) : (
                         <div className="pvm-product-img-placeholder">🍽️</div>
                       )}
