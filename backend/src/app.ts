@@ -138,10 +138,29 @@ const allowedOrigins = [
   process.env.FRONTEND_URL || 'https://pos54nwebcrumen.onrender.com' // Producción
 ];
 
+// Patrones adicionales permitidos solo fuera de producción: acceso desde otra
+// PC/dispositivo en la misma red WiFi (IP privada) o a través de un túnel
+// (Cloudflare/ngrok) siguiendo SERVIDOR_LOCAL_TUNEL.md. No aplica en
+// producción para no relajar CORS en el despliegue real.
+const devOriginPatterns = [
+  /^https?:\/\/192\.168\.\d{1,3}\.\d{1,3}:\d+$/,
+  /^https?:\/\/10\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+$/,
+  /^https?:\/\/172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}:\d+$/,
+  /^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/,
+  /^https:\/\/[a-z0-9-]+\.ngrok-free\.app$/,
+  /^https:\/\/[a-z0-9-]+\.ngrok\.io$/
+];
+
 const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // Permitir peticiones sin origin (como Postman) o desde orígenes permitidos
-    if (!origin || allowedOrigins.includes(origin)) {
+    const isDevOrigin =
+      process.env.NODE_ENV !== 'production' &&
+      !!origin &&
+      devOriginPatterns.some((pattern) => pattern.test(origin));
+
+    // Permitir peticiones sin origin (como Postman), desde orígenes permitidos,
+    // o desde un origen de desarrollo reconocido (LAN / túnel)
+    if (!origin || allowedOrigins.includes(origin) || isDevOrigin) {
       callback(null, true);
     } else {
       callback(new Error('No permitido por CORS'));
