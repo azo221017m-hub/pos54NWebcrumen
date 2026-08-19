@@ -75,6 +75,26 @@ export default defineConfig({
     target: ['es2019', 'chrome80', 'safari13', 'firefox72', 'edge80'],
   },
   server: {
+    host: true,
+    // Necesario para exponer el dev server vía túnel (Cloudflare/ngrok):
+    // Vite rechaza por defecto peticiones con un Host header que no reconoce.
+    allowedHosts: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false
+      },
+      '/ws': {
+        target: 'ws://localhost:3000',
+        ws: true,
+        changeOrigin: true
+      }
+    }
+  },
+  preview: {
+    host: true,
+    allowedHosts: true,
     proxy: {
       '/api': {
         target: 'http://localhost:3000',
