@@ -7,6 +7,7 @@ import {
   actualizarProductoWeb,
   eliminarProductoWeb
 } from '../../services/productosWebService';
+import { useInvalidateMenuCatalogo } from '../../hooks/useMenuCatalogo';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
 import ListaProductosWeb from '../../components/productosWeb/ListaProductosWeb/ListaProductosWeb';
 import FormularioProductoWeb from '../../components/productosWeb/FormularioProductoWeb/FormularioProductoWeb';
@@ -25,6 +26,7 @@ const ConfigProductosWeb: React.FC = () => {
 
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
   const privilegio = Number(localStorage.getItem('privilegio') || '0');
+  const { invalidateProductosWeb } = useInvalidateMenuCatalogo();
 
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
@@ -79,6 +81,7 @@ const ConfigProductosWeb: React.FC = () => {
       mostrarMensaje('success', 'Producto eliminado exitosamente');
       // Actualizar estado local sin recargar
       setProductos(prev => prev.filter(producto => producto.idProducto !== idEliminado));
+      invalidateProductosWeb();
     } catch (error) {
       console.error('Error al eliminar producto:', error);
       mostrarMensaje('error', 'Error al eliminar el producto');
@@ -136,6 +139,7 @@ const ConfigProductosWeb: React.FC = () => {
             producto.idProducto === productoActualizado.idProducto ? productoActualizado : producto
           )
         );
+        invalidateProductosWeb();
       } else {
         const nuevoProducto = await crearProductoWeb(data);
         mostrarMensaje('success', 'Producto creado exitosamente');
@@ -144,6 +148,7 @@ const ConfigProductosWeb: React.FC = () => {
         if (nuevoProducto.tipoproducto !== 'Materia Prima') {
           setProductos(prev => [...prev, nuevoProducto]);
         }
+        invalidateProductosWeb();
       }
     } catch (error) {
       console.error('Error al guardar producto:', error);

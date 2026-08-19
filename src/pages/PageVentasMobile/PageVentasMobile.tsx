@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { obtenerProductosWeb } from '../../services/productosWebService';
 import { negociosService } from '../../services/negociosService';
-import { obtenerCategorias } from '../../services/categoriasService';
+import { useProductosWebCatalogo, useCategoriasCatalogo } from '../../hooks/useMenuCatalogo';
 import { crearVentaWeb, agregarDetallesAVenta } from '../../services/ventasWebService';
 import { verificarTurnoAbierto } from '../../services/turnosService';
 import { clearSession } from '../../services/sessionService';
@@ -104,6 +103,11 @@ const PageVentasMobile: React.FC = () => {
   const [productosVisibles, setProductosVisibles] = useState<ProductoWeb[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
 
+  // Catálogo (productos/categorías) cacheado con React Query: evita repetir la petición completa
+  // -incluyendo fotos en base64- cada vez que se monta esta pantalla.
+  const { data: productosWebData } = useProductosWebCatalogo();
+  const { data: categoriasData } = useCategoriasCatalogo();
+
   // ── UI state ──────────────────────────────────────────
   const [currentStep, setCurrentStep] = useState<Step>(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -158,18 +162,8 @@ const PageVentasMobile: React.FC = () => {
           setShowIniciaTurnoModal(true);
         }
 
-        // Load products, categories
-        const [prods, cats] = await Promise.all([
-          obtenerProductosWeb(),
-          obtenerCategorias(),
-        ]);
-        const activos = prods.filter(p => p.estatus === ESTATUS_ACTIVO && p.tipoproducto !== 'Materia Prima');
-        setProductos(activos);
-        setProductosVisibles(activos);
-        const catsActivas = cats.filter(c => c.estatus === ESTATUS_ACTIVO);
-        setCategorias(catsActivas);
-
         // Load mesas, catModeradores, moderadores in parallel
+        // (productos/categorias se cargan por separado vía React Query, ver efectos abajo)
         const idNegocio = usuario?.idNegocio;
         const [mesasData, catMods, mods] = await Promise.all([
           obtenerMesas().catch(() => [] as Mesa[]),
@@ -197,6 +191,23 @@ const PageVentasMobile: React.FC = () => {
     init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Sincronizar el catálogo cacheado (productosWebData/categoriasData) al estado local usado
+  // por el resto de la pantalla, cada vez que React Query entrega datos nuevos o refrescados.
+  useEffect(() => {
+    if (productosWebData) {
+      const activos = productosWebData.filter(p => p.estatus === ESTATUS_ACTIVO && p.tipoproducto !== 'Materia Prima');
+      setProductos(activos);
+      setProductosVisibles(activos);
+    }
+  }, [productosWebData]);
+
+  useEffect(() => {
+    if (categoriasData) {
+      const catsActivas = categoriasData.filter(c => c.estatus === ESTATUS_ACTIVO);
+      setCategorias(catsActivas);
+    }
+  }, [categoriasData]);
 
   // ── Filter products ───────────────────────────────────
   useEffect(() => {
@@ -508,7 +519,7 @@ const PageVentasMobile: React.FC = () => {
   };
 
   // ── Print comanda ─────────────────────────────────────
-  const imprimirComandaCocina = (items: ItemComanda[]) => {
+  const imprimirComandaCocina = (items: ItemComanda[], preOpenedWindow?: Window | null) => {
     const cfg = getPaperConfig();
     const { ahora, nombreNegocio, rfcNegocio, direccionFiscal, tipoLabel, clienteLabel, folioLine, telefonoStr, direccionStr, itemsData, totalProductos, subtotalComanda } = computarDatosComanda(items);
 
@@ -641,9 +652,14 @@ const PageVentasMobile: React.FC = () => {
 
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    const win = window.open(url, '_blank', `width=${cfg.popupWidth},height=500`);
-    if (win) win.addEventListener('unload', () => URL.revokeObjectURL(url));
-    else URL.revokeObjectURL(url);
+    // preOpenedWindow (abierta síncronamente en el click, antes de cualquier await) evita que el
+    // navegador bloquee el pop-up cuando la creación de la venta tarda y la comanda llega después
+    // de que expira la ventana de activación del gesto del usuario.
+    const win = preOpenedWindow !== undefined ? preOpenedWindow : window.open(url, '_blank', `width=${cfg.popupWidth},height=500`);
+    if (win) {
+      if (preOpenedWindow !== undefined) win.location.href = url;
+      win.addEventListener('unload', () => URL.revokeObjectURL(url));
+    } else URL.revokeObjectURL(url);
   };
 
   const generarTextoComandaWhatsApp = (items: ItemComanda[]): string => {
@@ -807,13 +823,25 @@ const PageVentasMobile: React.FC = () => {
     if (isProcessingRef.current) return;
     isProcessingRef.current = true;
     const itemsParaImprimir = comanda.filter(item => item.estadodetalle !== ESTADO_ORDENADO);
+    const shouldPrint = imprimirChecked && itemsParaImprimir.length > 0;
+    // Abrir la ventana de la comanda SÍNCRONAMENTE dentro del gesto de click, antes de cualquier
+    // await: si se abre después de esperar la respuesta del servidor, el navegador puede bloquear
+    // el pop-up en silencio (ocurre sobre todo en el primer pedido, más lento por el INSERT de venta).
+    const comandaWindow = shouldPrint ? window.open('', '_blank', `width=${getPaperConfig().popupWidth},height=500`) : null;
+    let comandaWindowUsed = false;
     try {
       const ok = await crearVenta(ESTADO_ORDENADO, ESTADO_ORDENADO, 'PENDIENTE', 'Producir');
       if (ok) {
-        if (imprimirChecked && itemsParaImprimir.length > 0) imprimirComandaCocina(itemsParaImprimir);
+        if (shouldPrint) {
+          imprimirComandaCocina(itemsParaImprimir, comandaWindow);
+          comandaWindowUsed = true;
+        }
         handlePostVenta();
       }
     } finally {
+      if (comandaWindow && !comandaWindowUsed) {
+        comandaWindow.close();
+      }
       isProcessingRef.current = false;
     }
   };

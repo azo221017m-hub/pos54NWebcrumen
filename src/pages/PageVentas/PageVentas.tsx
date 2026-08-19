@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Search, Plus, Minus, ChevronLeft, ChevronRight, StickyNote, Utensils } from 'lucide-react';
 import useIsMobile from '../../hooks/useIsMobile';
-import { obtenerProductosWeb } from '../../services/productosWebService';
-import { obtenerCategorias } from '../../services/categoriasService';
+import { useProductosWebCatalogo, useCategoriasCatalogo } from '../../hooks/useMenuCatalogo';
 import { crearVentaWeb, agregarDetallesAVenta, actualizarVentaWeb, sincronizarDetallesVentaWebSolicitado } from '../../services/ventasWebService';
 import { obtenerModeradores } from '../../services/moderadoresService';
 import { obtenerModeradoresRef } from '../../services/moderadoresRefService';
@@ -113,6 +112,11 @@ const PageVentas: React.FC = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<number | null>(null);
+
+  // Catálogo (productos/categorías) cacheado con React Query: evita repetir la petición completa
+  // -incluyendo fotos en base64- cada vez que se monta esta pantalla.
+  const { data: productosWebData } = useProductosWebCatalogo();
+  const { data: categoriasData } = useCategoriasCatalogo();
   
   // Moderadores states
   const [moderadores, setModeradores] = useState<Moderador[]>([]);
@@ -229,29 +233,25 @@ const PageVentas: React.FC = () => {
     }
   };
 
-  const cargarProductos = async () => {
-    try {
-      const data = await obtenerProductosWeb();
+  // Sincronizar el catálogo cacheado (productosWebData/categoriasData) al estado local usado
+  // por el resto de la pantalla, cada vez que React Query entrega datos nuevos o refrescados.
+  useEffect(() => {
+    if (productosWebData) {
       // Filtrar solo productos activos y que no sean Materia Prima
-      const productosActivos = data.filter(p => p.estatus === ESTATUS_ACTIVO && p.tipoproducto !== 'Materia Prima');
+      const productosActivos = productosWebData.filter(p => p.estatus === ESTATUS_ACTIVO && p.tipoproducto !== 'Materia Prima');
       setProductos(productosActivos);
       setProductosVisibles(productosActivos);
-    } catch (error) {
-      console.error('Error al cargar productos:', error);
     }
-  };
+  }, [productosWebData]);
 
-  const cargarCategorias = async () => {
-    try {
-      const data = await obtenerCategorias();
+  useEffect(() => {
+    if (categoriasData) {
       // Note: Server already filters by user's idnegocio
       // Filtrar solo categorías activas
-      const categoriasActivas = data.filter(c => c.estatus === ESTATUS_ACTIVO);
+      const categoriasActivas = categoriasData.filter(c => c.estatus === ESTATUS_ACTIVO);
       setCategorias(categoriasActivas);
-    } catch (error) {
-      console.error('Error al cargar categorías:', error);
     }
-  };
+  }, [categoriasData]);
 
   const cargarModeradores = async (idNegocio: number) => {
     try {
@@ -292,9 +292,6 @@ const PageVentas: React.FC = () => {
         cargarModeradores(user.idNegocio);
       }
     }
-
-    cargarProductos();
-    cargarCategorias();
 
     // Check if a service type was preselected from dashboard modal
     if (tipoServicioPreseleccionado) {
@@ -936,7 +933,7 @@ const PageVentas: React.FC = () => {
     }, SELECTION_MODAL_DISPLAY_DELAY_MS);
   };
 
-  const imprimirComandaCocina = (items: ItemComanda[], titulo: string = 'COMANDA COCINA') => {
+  const imprimirComandaCocina = (items: ItemComanda[], titulo: string = 'COMANDA COCINA', preOpenedWindow?: Window | null) => {
     const ahora = new Date();
     const fechaHoraLabel = ahora.toLocaleString('es-MX', {
       day: '2-digit', month: '2-digit', year: 'numeric',
@@ -1174,8 +1171,14 @@ const PageVentas: React.FC = () => {
 
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    const ventana = window.open(url, '_blank', `width=${cfg.popupWidth},height=500`);
+    // preOpenedWindow (abierta síncronamente en el click, antes de cualquier await) evita que el
+    // navegador bloquee el pop-up cuando la creación de la venta tarda y la comanda llega después
+    // de que expira la ventana de activación del gesto del usuario.
+    const ventana = preOpenedWindow !== undefined ? preOpenedWindow : window.open(url, '_blank', `width=${cfg.popupWidth},height=500`);
     if (ventana) {
+      if (preOpenedWindow !== undefined) {
+        ventana.location.href = url;
+      }
       ventana.addEventListener('unload', () => {
         URL.revokeObjectURL(url);
       });
@@ -1304,6 +1307,12 @@ const PageVentas: React.FC = () => {
     isProcessingVentaRef.current = true;
     // Capture items to print BEFORE they get marked as ORDENADO
     const itemsParaImprimir = comanda.filter(item => item.estadodetalle !== ESTADO_ORDENADO);
+    const shouldPrint = imprimirChecked && itemsParaImprimir.length > 0;
+    // Abrir la ventana de la comanda SÍNCRONAMENTE dentro del gesto de click, antes de cualquier
+    // await: si se abre después de esperar la respuesta del servidor, el navegador puede bloquear
+    // el pop-up en silencio (ocurre sobre todo en el primer pedido, más lento por el INSERT de venta).
+    const comandaWindow = shouldPrint ? window.open('', '_blank', `width=${getPaperConfig().popupWidth},height=500`) : null;
+    let comandaWindowUsed = false;
     try {
       setIsProcessingVenta(true);
       // Check if current venta is WEB + SOLICITADO - if so, UPDATE estadodeventa to ORDENADO
@@ -1324,7 +1333,8 @@ const PageVentas: React.FC = () => {
             setCurrentEstadoDeVenta('ORDENADO');
             setComanda(prevComanda => prevComanda.map(item => ({ ...item, estadodetalle: ESTADO_ORDENADO })));
             if (imprimirChecked && itemsParaImprimir.length > 0) {
-              imprimirComandaCocina(itemsParaImprimir, 'COMANDA COCINA');
+              imprimirComandaCocina(itemsParaImprimir, 'COMANDA COCINA', comandaWindow);
+              comandaWindowUsed = true;
             }
             handlePostVenta();
             return;
@@ -1392,7 +1402,8 @@ const PageVentas: React.FC = () => {
             setComanda(prevComanda => prevComanda.map(item => ({ ...item, estadodetalle: ESTADO_ORDENADO })));
             
             if (imprimirChecked && itemsParaImprimir.length > 0) {
-              imprimirComandaCocina(itemsParaImprimir, 'COMANDA COCINA');
+              imprimirComandaCocina(itemsParaImprimir, 'COMANDA COCINA', comandaWindow);
+              comandaWindowUsed = true;
             }
             handlePostVenta();
             return;
@@ -1411,11 +1422,15 @@ const PageVentas: React.FC = () => {
       const success = await crearVenta(ESTADO_ORDENADO, ESTADO_ORDENADO, 'PENDIENTE', 'Producir');
       if (success) {
         if (imprimirChecked && itemsParaImprimir.length > 0) {
-          imprimirComandaCocina(itemsParaImprimir, 'COMANDA COCINA');
+          imprimirComandaCocina(itemsParaImprimir, 'COMANDA COCINA', comandaWindow);
+          comandaWindowUsed = true;
         }
         handlePostVenta();
       }
     } finally {
+      if (comandaWindow && !comandaWindowUsed) {
+        comandaWindow.close();
+      }
       isProcessingVentaRef.current = false;
       setIsProcessingVenta(false);
     }

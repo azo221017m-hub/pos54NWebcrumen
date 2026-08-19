@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Plus, Tags } from 'lucide-react';
 import type { Categoria, CategoriaCreate, CategoriaUpdate } from '../../types/categoria.types';
 import { obtenerCategorias, crearCategoria, actualizarCategoria, eliminarCategoria } from '../../services/categoriasService';
+import { useInvalidateMenuCatalogo } from '../../hooks/useMenuCatalogo';
 import StandardPageLayout from '../../components/StandardPageLayout/StandardPageLayout';
 import ListaCategorias from '../../components/categorias/ListaCategorias/ListaCategorias';
 import FormularioCategoria from '../../components/categorias/FormularioCategoria/FormularioCategoria';
@@ -20,6 +21,7 @@ const ConfigCategorias: React.FC = () => {
   // Obtener idnegocio del localStorage
   const idnegocio = Number(localStorage.getItem('idnegocio')) || 1;
   const privilegio = Number(localStorage.getItem('privilegio') || '0');
+  const { invalidateCategorias } = useInvalidateMenuCatalogo();
 
   const mostrarMensaje = useCallback((tipo: 'success' | 'error' | 'info', texto: string) => {
     setMensaje({ tipo, texto });
@@ -75,6 +77,7 @@ const ConfigCategorias: React.FC = () => {
             cat.idCategoria === categoriaActualizada.idCategoria ? categoriaActualizada : cat
           )
         );
+        invalidateCategorias();
       } else {
         const nombreDuplicado = categorias.some(
           cat => cat.nombre.toLowerCase().trim() === data.nombre.toLowerCase().trim()
@@ -87,6 +90,7 @@ const ConfigCategorias: React.FC = () => {
         mostrarMensaje('success', 'Categoría creada exitosamente');
         setMostrarFormulario(false);
         setCategorias(prev => [...prev, nuevaCategoria]);
+        invalidateCategorias();
       }
     } catch (error) {
       console.error('Error al guardar categoría:', error);
@@ -111,6 +115,7 @@ const ConfigCategorias: React.FC = () => {
       const idEliminado = await eliminarCategoria(id);
       mostrarMensaje('success', 'Categoría eliminada exitosamente');
       setCategorias(prev => prev.filter(cat => cat.idCategoria !== idEliminado));
+      invalidateCategorias();
     } catch (error) {
       console.error('Error al eliminar categoría:', error);
       mostrarMensaje('error', 'Error al eliminar la categoría');
