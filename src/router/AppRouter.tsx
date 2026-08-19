@@ -27,6 +27,7 @@ import PageClientes from '../pages/PageClientes/PageClientes';
 import PageClientesMobile from '../pages/PageClientesMobile/PageClientesMobile';
 import MovimientosInventario from '../pages/MovimientosInventario/MovimientosInventario';
 import PageGastos from '../pages/PageGastos/PageGastos';
+import PageReportesMobile from '../pages/PageReportesMobile/PageReportesMobile';
 import SaludNegocio from '../pages/Reportes/SaludNegocio/SaludNegocio';
 import InventarioReportes from '../pages/Reportes/Inventario/InventarioReportes';
 import VentasReportes from '../pages/Reportes/Ventas/VentasReportes';
@@ -164,6 +165,10 @@ const router = createBrowserRouter([
   {
     path: '/reportes/colaboradores',
     element: <ProtectedRoute><ColaboradoresReportes /></ProtectedRoute>,
+  },
+  {
+    path: '/reportes-mobile',
+    element: <ProtectedRoute><PageReportesMobile /></ProtectedRoute>,
   },
 ]);
 

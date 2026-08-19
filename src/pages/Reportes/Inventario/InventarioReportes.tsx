@@ -136,24 +136,26 @@ export const InventarioReportes: React.FC = () => {
                     <span>En Advertencia</span><strong>{stock.items_advertencia}</strong>
                   </div>
                 </div>
-                <table className="reportes-table">
-                  <thead>
-                    <tr><th>Producto</th><th>Unidad</th><th>Stock Actual</th><th>Mínimo</th><th>Costo PP</th><th>Valor Inv.</th><th>Estado</th></tr>
-                  </thead>
-                  <tbody>
-                    {stock.items.map((item, i) => (
-                      <tr key={i} className={`estado-${item.estado.toLowerCase()}`}>
-                        <td>{item.nombre}</td>
-                        <td className="text-center">{item.unidad_medida}</td>
-                        <td className="text-right">{item.stock_actual}</td>
-                        <td className="text-right">{item.stock_minimo}</td>
-                        <td className="text-right">{mxFmt(item.costo_promedio_ponderado)}</td>
-                        <td className="text-right">{mxFmt(item.valor_inventario)}</td>
-                        <td><span className={`badge badge-${item.estado.toLowerCase()}`}>{item.estado}</span></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div className="reportes-table-scroll">
+                  <table className="reportes-table">
+                    <thead>
+                      <tr><th>Producto</th><th>Unidad</th><th>Stock Actual</th><th>Mínimo</th><th>Costo PP</th><th>Valor Inv.</th><th>Estado</th></tr>
+                    </thead>
+                    <tbody>
+                      {stock.items.map((item, i) => (
+                        <tr key={i} className={`estado-${item.estado.toLowerCase()}`}>
+                          <td>{item.nombre}</td>
+                          <td className="text-center">{item.unidad_medida}</td>
+                          <td className="text-right">{item.stock_actual}</td>
+                          <td className="text-right">{item.stock_minimo}</td>
+                          <td className="text-right">{mxFmt(item.costo_promedio_ponderado)}</td>
+                          <td className="text-right">{mxFmt(item.valor_inventario)}</td>
+                          <td><span className={`badge badge-${item.estado.toLowerCase()}`}>{item.estado}</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
@@ -188,25 +190,27 @@ export const InventarioReportes: React.FC = () => {
                     <div className="kpi-badge">{bajoMinimo.length > 0 ? 'REQUIEREN REABASTO' : 'TODO EN NIVEL'}</div>
                   </div>
                 </div>
-                <table className="reportes-table">
-                  <thead>
-                    <tr><th>Insumo</th><th>Stock Actual</th><th>Mínimo</th><th>Déficit</th><th>Proveedor</th></tr>
-                  </thead>
-                  <tbody>
-                    {bajoMinimo.map((item, i) => (
-                      <tr key={i}>
-                        <td>{item.nombre}</td>
-                        <td className="text-right negative">{item.stock_actual} {item.unidad_medida}</td>
-                        <td className="text-right">{item.stock_minimo} {item.unidad_medida}</td>
-                        <td className="text-right bold negative">{item.deficit} {item.unidad_medida}</td>
-                        <td>{item.proveedor || '—'}</td>
-                      </tr>
-                    ))}
-                    {bajoMinimo.length === 0 && (
-                      <tr><td colSpan={5} className="text-center empty">Todos los insumos están sobre el mínimo ✓</td></tr>
-                    )}
-                  </tbody>
-                </table>
+                <div className="reportes-table-scroll">
+                  <table className="reportes-table">
+                    <thead>
+                      <tr><th>Insumo</th><th>Stock Actual</th><th>Mínimo</th><th>Déficit</th><th>Proveedor</th></tr>
+                    </thead>
+                    <tbody>
+                      {bajoMinimo.map((item, i) => (
+                        <tr key={i}>
+                          <td>{item.nombre}</td>
+                          <td className="text-right negative">{item.stock_actual} {item.unidad_medida}</td>
+                          <td className="text-right">{item.stock_minimo} {item.unidad_medida}</td>
+                          <td className="text-right bold negative">{item.deficit} {item.unidad_medida}</td>
+                          <td>{item.proveedor || '—'}</td>
+                        </tr>
+                      ))}
+                      {bajoMinimo.length === 0 && (
+                        <tr><td colSpan={5} className="text-center empty">Todos los insumos están sobre el mínimo ✓</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
@@ -243,25 +247,27 @@ export const InventarioReportes: React.FC = () => {
                   <div className="kpi-card"><span>Proveedores</span><strong>{comprasProveedor.length}</strong></div>
                   <div className="kpi-card"><span>Total Compras</span><strong>{mxFmt(comprasProveedor.reduce((s, p) => s + p.total_monto, 0))}</strong></div>
                 </div>
-                <table className="reportes-table">
-                  <thead>
-                    <tr><th>Proveedor</th><th>Operaciones</th><th>Productos</th><th>Última Compra</th><th>Total</th></tr>
-                  </thead>
-                  <tbody>
-                    {comprasProveedor.map((p, i) => (
-                      <tr key={i}>
-                        <td>{p.proveedor}</td>
-                        <td className="text-center">{p.total_operaciones}</td>
-                        <td className="inv-producto-list">{p.productos.slice(0, 3).join(', ')}{p.productos.length > 3 ? ` +${p.productos.length - 3}` : ''}</td>
-                        <td>{p.ultima_compra}</td>
-                        <td className="text-right bold">{mxFmt(p.total_monto)}</td>
-                      </tr>
-                    ))}
-                    {comprasProveedor.length === 0 && (
-                      <tr><td colSpan={5} className="text-center empty">Sin compras en el periodo</td></tr>
-                    )}
-                  </tbody>
-                </table>
+                <div className="reportes-table-scroll">
+                  <table className="reportes-table">
+                    <thead>
+                      <tr><th>Proveedor</th><th>Operaciones</th><th>Productos</th><th>Última Compra</th><th>Total</th></tr>
+                    </thead>
+                    <tbody>
+                      {comprasProveedor.map((p, i) => (
+                        <tr key={i}>
+                          <td>{p.proveedor}</td>
+                          <td className="text-center">{p.total_operaciones}</td>
+                          <td className="inv-producto-list">{p.productos.slice(0, 3).join(', ')}{p.productos.length > 3 ? ` +${p.productos.length - 3}` : ''}</td>
+                          <td>{p.ultima_compra}</td>
+                          <td className="text-right bold">{mxFmt(p.total_monto)}</td>
+                        </tr>
+                      ))}
+                      {comprasProveedor.length === 0 && (
+                        <tr><td colSpan={5} className="text-center empty">Sin compras en el periodo</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
@@ -298,25 +304,27 @@ export const InventarioReportes: React.FC = () => {
                   <div className="kpi-card"><span>Alta Rotación</span><strong className="positive">{rotacion.filter(r => r.nivel === 'ALTA').length}</strong></div>
                   <div className="kpi-card"><span>Baja Rotación</span><strong className="negative">{rotacion.filter(r => r.nivel === 'BAJA').length}</strong></div>
                 </div>
-                <table className="reportes-table">
-                  <thead>
-                    <tr><th>Producto</th><th>Vendido (periodo)</th><th>Stock Actual</th><th>Índice Rot.</th><th>Nivel</th></tr>
-                  </thead>
-                  <tbody>
-                    {rotacion.map((item, i) => (
-                      <tr key={i}>
-                        <td>{item.nombre}</td>
-                        <td className="text-right">{item.cantidad_vendida}</td>
-                        <td className="text-right">{item.stock_actual}</td>
-                        <td className="text-right">{item.indice_rotacion.toFixed(2)}x</td>
-                        <td><span className={`badge badge-rot-${item.nivel.toLowerCase()}`}>{item.nivel}</span></td>
-                      </tr>
-                    ))}
-                    {rotacion.length === 0 && (
-                      <tr><td colSpan={5} className="text-center empty">Sin ventas en el periodo</td></tr>
-                    )}
-                  </tbody>
-                </table>
+                <div className="reportes-table-scroll">
+                  <table className="reportes-table">
+                    <thead>
+                      <tr><th>Producto</th><th>Vendido (periodo)</th><th>Stock Actual</th><th>Índice Rot.</th><th>Nivel</th></tr>
+                    </thead>
+                    <tbody>
+                      {rotacion.map((item, i) => (
+                        <tr key={i}>
+                          <td>{item.nombre}</td>
+                          <td className="text-right">{item.cantidad_vendida}</td>
+                          <td className="text-right">{item.stock_actual}</td>
+                          <td className="text-right">{item.indice_rotacion.toFixed(2)}x</td>
+                          <td><span className={`badge badge-rot-${item.nivel.toLowerCase()}`}>{item.nivel}</span></td>
+                        </tr>
+                      ))}
+                      {rotacion.length === 0 && (
+                        <tr><td colSpan={5} className="text-center empty">Sin ventas en el periodo</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 

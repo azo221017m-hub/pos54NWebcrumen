@@ -12,20 +12,20 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #0d1424;
-  border: 1px solid rgba(59,130,246,0.12);
+  background: var(--rpt-bg-card);
+  border: 1px solid rgba(102,126,234,0.12);
   border-radius: 10px;
   padding: 10px 14px;
   transition: background 0.15s, border-color 0.15s;
 }
-.col-ranking-item:hover { background: #111d35; border-color: rgba(59,130,246,0.22); }
-.col-ranking-item.col-top-3 { border-color: rgba(10,132,255,0.30); }
+.col-ranking-item:hover { background: var(--rpt-bg-hover); border-color: rgba(102,126,234,0.22); }
+.col-ranking-item.col-top-3 { border-color: rgba(102,126,234,0.30); }
 
 .col-ranking-pos {
   font-size: 20px;
   min-width: 36px;
   text-align: center;
-  color: #60a5fa;
+  color: var(--rpt-blue-light);
   font-weight: 700;
 }
 
@@ -35,26 +35,26 @@
   flex-direction: column;
   gap: 4px;
 }
-.col-ranking-name { font-size: 13px; color: #e8eef8; font-weight: 600; }
-.col-ranking-sub  { font-size: 10px; color: #3d5473; }
+.col-ranking-name { font-size: 13px; color: var(--rpt-text-1); font-weight: 600; }
+.col-ranking-sub  { font-size: 10px; color: var(--rpt-text-dim); }
 .col-ranking-bar-wrap {
   height: 4px;
-  background: rgba(59,130,246,0.10);
+  background: rgba(102,126,234,0.10);
   border-radius: 2px;
   overflow: hidden;
 }
 .col-ranking-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #1d4ed8, #60a5fa);
+  background: linear-gradient(90deg, var(--rpt-blue-dim), var(--rpt-blue));
   border-radius: 2px;
   min-width: 2px;
   transition: width 0.4s ease;
 }
-.col-ranking-total { font-size: 14px; font-weight: 700; color: #e8eef8; white-space: nowrap; }
+.col-ranking-total { font-size: 14px; font-weight: 700; color: var(--rpt-text-1); white-space: nowrap; }
 
 /* Meta badges */
 .badge-col-supero    { background: rgba(48,209,88,0.15);   color: #30d158; border: 1px solid rgba(48,209,88,0.3); }
-.badge-col-cumplio   { background: rgba(10,132,255,0.15);  color: #0a84ff; border: 1px solid rgba(10,132,255,0.3); }
+.badge-col-cumplio   { background: rgba(102,126,234,0.15);  color: #667eea; border: 1px solid rgba(102,126,234,0.3); }
 .badge-col-no_cumplio { background: rgba(255,69,58,0.15);  color: #ff453a; border: 1px solid rgba(255,69,58,0.3); }
 .badge-col-sin_meta  { background: rgba(120,120,130,0.15); color: #8e8e93; border: 1px solid rgba(120,120,130,0.3); }
 

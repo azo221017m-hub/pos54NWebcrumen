@@ -1,33 +1,35 @@
-/* ── Variables de diseño (azul / Mac aesthetic) ─────────────────────── */
+/* ── Variables de diseño ────────────────────────────────────────────────
+   Mismo lenguaje visual que el resto del proyecto (StandardPageLayout):
+   fondo claro con gradiente, acento morado/índigo, tarjetas blancas. */
 :root {
-  --rpt-bg-page:      #06080f;
-  --rpt-bg-card:      #0d1424;
-  --rpt-bg-surface:   #111d35;
-  --rpt-bg-hover:     #152039;
-  --rpt-border:       rgba(59, 130, 246, 0.12);
-  --rpt-border-mid:   rgba(59, 130, 246, 0.22);
-  --rpt-border-hi:    rgba(59, 130, 246, 0.40);
-  --rpt-blue:         #0a84ff;
-  --rpt-blue-dim:     #2563eb;
-  --rpt-blue-light:   #60a5fa;
-  --rpt-blue-ghost:   rgba(10, 132, 255, 0.10);
-  --rpt-text-1:       #e8eef8;
-  --rpt-text-2:       #7a98c0;
-  --rpt-text-dim:     #3d5473;
-  --rpt-green:        #30d158;
-  --rpt-orange:       #ff9f0a;
-  --rpt-red:          #ff453a;
+  --rpt-bg-page:      linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --rpt-bg-card:      #ffffff;
+  --rpt-bg-surface:   #f3f4f6;
+  --rpt-bg-hover:     #eef0f6;
+  --rpt-border:       rgba(102, 126, 234, 0.15);
+  --rpt-border-mid:   rgba(102, 126, 234, 0.28);
+  --rpt-border-hi:    rgba(102, 126, 234, 0.45);
+  --rpt-blue:         #667eea;
+  --rpt-blue-dim:     #764ba2;
+  --rpt-blue-light:   #4f5fd6;
+  --rpt-blue-ghost:   rgba(102, 126, 234, 0.10);
+  --rpt-text-1:       #1f2937;
+  --rpt-text-2:       #6b7280;
+  --rpt-text-dim:     #9ca3af;
+  --rpt-green:        #10b981;
+  --rpt-orange:       #f59e0b;
+  --rpt-red:          #ef4444;
   --rpt-radius:       10px;
   --rpt-radius-lg:    14px;
-  --rpt-shadow:       0 2px 12px rgba(0,0,0,0.45);
-  --rpt-shadow-card:  0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
+  --rpt-shadow:       0 2px 12px rgba(0,0,0,0.08);
+  --rpt-shadow-card:  0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05);
 }
 
 /* ── Scrollbar global para páginas de reportes ─────────────────────────── */
 .reportes-page *::-webkit-scrollbar        { width: 5px; height: 5px; }
 .reportes-page *::-webkit-scrollbar-track  { background: transparent; }
-.reportes-page *::-webkit-scrollbar-thumb  { background: rgba(59,130,246,0.35); border-radius: 8px; }
-.reportes-page *::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.6); }
+.reportes-page *::-webkit-scrollbar-thumb  { background: rgba(102,126,234,0.35); border-radius: 8px; }
+.reportes-page *::-webkit-scrollbar-thumb:hover { background: rgba(102,126,234,0.6); }
 
 /* ── Página base ─────────────────────────────────────────────────────────── */
 .reportes-page {
@@ -154,7 +156,7 @@
 .reportes-select,
 .reportes-anio-input {
   background: var(--rpt-blue-dim);
-  border: 1px solid rgba(37,99,235,0.6);
+  border: 1px solid rgba(118,75,162,0.6);
   color: #fff;
   padding: 6px 18px;
   border-radius: 7px;
@@ -253,7 +255,7 @@
 
 /* Semáforos — bordes de color */
 .kpi-semaforo-utilidad  { border-color: rgba(48,209,88,0.3);  background: linear-gradient(135deg, var(--rpt-bg-card) 0%, rgba(48,209,88,0.06) 100%); }
-.kpi-semaforo-equilibrio { border-color: rgba(10,132,255,0.3); background: linear-gradient(135deg, var(--rpt-bg-card) 0%, rgba(10,132,255,0.06) 100%); }
+.kpi-semaforo-equilibrio { border-color: rgba(102,126,234,0.3); background: linear-gradient(135deg, var(--rpt-bg-card) 0%, rgba(102,126,234,0.06) 100%); }
 .kpi-semaforo-perdida   { border-color: rgba(255,69,58,0.3);  background: linear-gradient(135deg, var(--rpt-bg-card) 0%, rgba(255,69,58,0.06) 100%); }
 
 /* Badge dentro de KPI */
@@ -268,7 +270,7 @@
   margin-top: 6px;
 }
 .kpi-semaforo-utilidad  .kpi-badge { background: rgba(48,209,88,0.18);  color: var(--rpt-green); }
-.kpi-semaforo-equilibrio .kpi-badge { background: rgba(10,132,255,0.18); color: var(--rpt-blue); }
+.kpi-semaforo-equilibrio .kpi-badge { background: rgba(102,126,234,0.18); color: var(--rpt-blue); }
 .kpi-semaforo-perdida   .kpi-badge { background: rgba(255,69,58,0.18);  color: var(--rpt-red); }
 
 /* Barra de margen */
@@ -348,7 +350,7 @@
 .reportes-table td {
   padding: 7px 12px;
   color: var(--rpt-text-1);
-  border-bottom: 1px solid rgba(59,130,246,0.05);
+  border-bottom: 1px solid rgba(102,126,234,0.05);
   font-size: 12px;
 }
 .reportes-table tr:last-child td { border-bottom: none; }
@@ -380,12 +382,26 @@
 }
 .badge-critica, .badge-critico { background: rgba(255,69,58,0.15);  color: var(--rpt-red);    border: 1px solid rgba(255,69,58,0.3); }
 .badge-alta                    { background: rgba(255,159,10,0.15); color: var(--rpt-orange); border: 1px solid rgba(255,159,10,0.3); }
-.badge-media                   { background: rgba(10,132,255,0.15); color: var(--rpt-blue);   border: 1px solid rgba(10,132,255,0.3); }
+.badge-media                   { background: rgba(102,126,234,0.15); color: var(--rpt-blue);   border: 1px solid rgba(102,126,234,0.3); }
 .badge-advertencia { background: rgba(255,159,10,0.15); color: var(--rpt-orange); border: 1px solid rgba(255,159,10,0.3); }
 .badge-optimo      { background: rgba(48,209,88,0.15);  color: var(--rpt-green);  border: 1px solid rgba(48,209,88,0.3); }
 
 .urgencia-critica td { background: rgba(255,69,58,0.04); }
 .urgencia-alta td    { background: rgba(255,159,10,0.04); }
+
+/* ── Responsive (mobile) ─────────────────────────────────────────────────
+   Las 4 pantallas de reportes se acceden también desde /reportes-mobile
+   (hub mobile); no tienen versión mobile separada, solo se adaptan aquí. */
+@media (max-width: 640px) {
+  .reportes-page { padding: 12px; }
+  .reportes-header { gap: 10px; }
+  .reportes-header-title h1 { font-size: 15px; }
+  .reportes-filters { flex-direction: column; align-items: stretch; }
+  .reportes-filters label { width: 100%; }
+  .reportes-filter-btn { align-self: stretch; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .reportes-table-scroll { max-height: 320px; }
+}
 
 /* ── Ticket view ─────────────────────────────────────────────────────────── */
 .ticket-view {

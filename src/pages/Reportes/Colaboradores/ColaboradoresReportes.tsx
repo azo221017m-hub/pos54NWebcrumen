@@ -194,29 +194,31 @@ export const ColaboradoresReportes: React.FC = () => {
                     <strong className="negative">{meta.filter(m => m.semaforo === 'NO_CUMPLIO').length}</strong>
                   </div>
                 </div>
-                <table className="reportes-table">
-                  <thead>
-                    <tr><th>Colaborador</th><th>Turno</th><th>Fecha</th><th>Meta</th><th>Venta Real</th><th>Cumplim.</th><th>Estado</th></tr>
-                  </thead>
-                  <tbody>
-                    {meta.map((m, i) => (
-                      <tr key={i}>
-                        <td>{m.colaborador}</td>
-                        <td>{m.claveturno}</td>
-                        <td>{m.fecha_turno}</td>
-                        <td className="text-right">{mxFmt(m.meta)}</td>
-                        <td className="text-right bold">{mxFmt(m.venta_real)}</td>
-                        <td className={`text-right ${m.cumplimiento_pct >= 100 ? 'positive' : 'negative'}`}>
-                          {m.cumplimiento_pct.toFixed(1)}%
-                        </td>
-                        <td><span className={`badge ${semBadgeClass(m.semaforo)}`}>{m.semaforo}</span></td>
-                      </tr>
-                    ))}
-                    {meta.length === 0 && (
-                      <tr><td colSpan={7} className="text-center empty">Sin turnos con meta en el periodo</td></tr>
-                    )}
-                  </tbody>
-                </table>
+                <div className="reportes-table-scroll">
+                  <table className="reportes-table">
+                    <thead>
+                      <tr><th>Colaborador</th><th>Turno</th><th>Fecha</th><th>Meta</th><th>Venta Real</th><th>Cumplim.</th><th>Estado</th></tr>
+                    </thead>
+                    <tbody>
+                      {meta.map((m, i) => (
+                        <tr key={i}>
+                          <td>{m.colaborador}</td>
+                          <td>{m.claveturno}</td>
+                          <td>{m.fecha_turno}</td>
+                          <td className="text-right">{mxFmt(m.meta)}</td>
+                          <td className="text-right bold">{mxFmt(m.venta_real)}</td>
+                          <td className={`text-right ${m.cumplimiento_pct >= 100 ? 'positive' : 'negative'}`}>
+                            {m.cumplimiento_pct.toFixed(1)}%
+                          </td>
+                          <td><span className={`badge ${semBadgeClass(m.semaforo)}`}>{m.semaforo}</span></td>
+                        </tr>
+                      ))}
+                      {meta.length === 0 && (
+                        <tr><td colSpan={7} className="text-center empty">Sin turnos con meta en el periodo</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
@@ -251,26 +253,28 @@ export const ColaboradoresReportes: React.FC = () => {
                 total_descuentos, total_devoluciones, turnos_trabajados, monto_devoluciones */}
             {tab === 'kpi' && kpi && viewMode === 'dashboard' && (
               <div className="reportes-dashboard">
-                <table className="reportes-table">
-                  <thead>
-                    <tr><th>Colaborador</th><th>Turnos</th><th>Total Ventas</th><th>Descuentos</th><th>Devoluciones</th><th>Ticket Prom.</th></tr>
-                  </thead>
-                  <tbody>
-                    {kpi.map((k, i) => (
-                      <tr key={i}>
-                        <td>{k.colaborador}</td>
-                        <td className="text-center">{k.turnos_trabajados}</td>
-                        <td className="text-right bold">{mxFmt(k.total_ventas)}</td>
-                        <td className="text-right">{mxFmt(k.total_descuentos)}</td>
-                        <td className={`text-right ${k.total_devoluciones > 0 ? 'negative' : ''}`}>{k.total_devoluciones}</td>
-                        <td className="text-right">{mxFmt(k.ticket_promedio)}</td>
-                      </tr>
-                    ))}
-                    {kpi.length === 0 && (
-                      <tr><td colSpan={6} className="text-center empty">Sin datos en el periodo</td></tr>
-                    )}
-                  </tbody>
-                </table>
+                <div className="reportes-table-scroll">
+                  <table className="reportes-table">
+                    <thead>
+                      <tr><th>Colaborador</th><th>Turnos</th><th>Total Ventas</th><th>Descuentos</th><th>Devoluciones</th><th>Ticket Prom.</th></tr>
+                    </thead>
+                    <tbody>
+                      {kpi.map((k, i) => (
+                        <tr key={i}>
+                          <td>{k.colaborador}</td>
+                          <td className="text-center">{k.turnos_trabajados}</td>
+                          <td className="text-right bold">{mxFmt(k.total_ventas)}</td>
+                          <td className="text-right">{mxFmt(k.total_descuentos)}</td>
+                          <td className={`text-right ${k.total_devoluciones > 0 ? 'negative' : ''}`}>{k.total_devoluciones}</td>
+                          <td className="text-right">{mxFmt(k.ticket_promedio)}</td>
+                        </tr>
+                      ))}
+                      {kpi.length === 0 && (
+                        <tr><td colSpan={6} className="text-center empty">Sin datos en el periodo</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 

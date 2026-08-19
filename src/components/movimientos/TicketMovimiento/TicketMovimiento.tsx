@@ -1,6 +1,8 @@
 import React from 'react';
 import { X, Printer, MessageCircle } from 'lucide-react';
 import type { MotivoMovimiento } from '../../../types/movimientos.types';
+import { getPaperConfig, getMediaPrintCss } from '../../../utils/ticketLayout';
+import { separador, wrapTexto } from '../../../utils/monospaceTicket';
 import './TicketMovimiento.css';
 
 interface DetalleTicket {
@@ -27,47 +29,52 @@ const getNombreUsuario = (): string => {
   }
 };
 
-const pad = (str: string, len: number, right = false) => {
-  const s = str.substring(0, len);
-  return right ? s.padStart(len) : s.padEnd(len);
-};
-
+// Genera el ticket de movimiento a `ancho` columnas (PrinterProfile.charactersPerLine).
+// Los nombres de insumo/observaciones nunca se cortan: si no caben en la columna,
+// se envuelven a línea(s) adicionales.
 const generarTexto = (
   motivomovimiento: MotivoMovimiento,
   observaciones: string,
   detalles: DetalleTicket[],
-  nombreUsuario: string
+  nombreUsuario: string,
+  ancho: number
 ): string => {
   const fecha = new Date().toLocaleString('es-MX', {
     year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit'
   });
-  const sep  = '================================';
-  const sep2 = '--------------------------------';
+  const sep = separador(ancho, '=');
+  const sep2 = separador(ancho, '-');
+  const colCant = 8;
+  const colNombre = ancho - colCant;
 
   let t = `${sep}\n`;
   t += `   CONFIRMACION DE MOVIMIENTO\n`;
   t += `${sep}\n`;
-  t += `Fecha:  ${fecha}\n`;
-  t += `Motivo: ${motivomovimiento}\n`;
+  wrapTexto(`Fecha:  ${fecha}`, ancho).forEach(l => { t += `${l}\n`; });
+  wrapTexto(`Motivo: ${motivomovimiento}`, ancho).forEach(l => { t += `${l}\n`; });
   if (observaciones.trim()) {
-    t += `Obs:    ${observaciones.trim()}\n`;
+    wrapTexto(`Obs:    ${observaciones.trim()}`, ancho).forEach(l => { t += `${l}\n`; });
   }
   t += `${sep2}\n`;
-  t += `INSUMO           CANT\n`;
+  t += `${'INSUMO'.padEnd(colNombre)}CANT\n`;
   t += `${sep2}\n`;
 
   detalles.forEach((d) => {
     const cantNum = Number(d.cantidad) || 0;
-    const nombre = pad(d.nombreinsumo || '', 17);
-    const cant   = `${cantNum}`.padEnd(8);
-    const um     = d.unidadmedida || '';
-    t += `${nombre}${cant}${um}\n`;
+    const nombre = d.nombreinsumo || '';
+    const cantUm = `${cantNum} ${d.unidadmedida || ''}`.trim();
+    if (nombre.length <= colNombre) {
+      t += `${nombre.padEnd(colNombre)}${cantUm}\n`;
+    } else {
+      wrapTexto(nombre, ancho).forEach(l => { t += `${l}\n`; });
+      t += `  ${cantUm}\n`;
+    }
   });
 
   t += `${sep2}\n`;
   t += `Nombre de quien recibe:\n`;
-  t += `${nombreUsuario}\n`;
+  wrapTexto(nombreUsuario, ancho).forEach(l => { t += `${l}\n`; });
   t += `${sep}\n`;
 
   return t;
@@ -79,11 +86,12 @@ const TicketMovimiento: React.FC<TicketMovimientoProps> = ({
   detalles,
   onClose,
 }) => {
+  const cfg = getPaperConfig();
   const nombreUsuario = getNombreUsuario();
-  const textoTicket = generarTexto(motivomovimiento, observaciones, detalles, nombreUsuario);
+  const textoTicket = generarTexto(motivomovimiento, observaciones, detalles, nombreUsuario, cfg.charactersPerLine);
 
   const handleImprimir = () => {
-    const ventana = window.open('', '_blank', 'width=400,height=700');
+    const ventana = window.open('', '_blank', `width=${cfg.popupWidth},height=700`);
     if (!ventana) return;
     ventana.document.write(`<!DOCTYPE html>
 <html>
@@ -91,14 +99,18 @@ const TicketMovimiento: React.FC<TicketMovimientoProps> = ({
   <meta charset="UTF-8">
   <title>Ticket de Movimiento</title>
   <style>
-    @media print { @page { margin: 2mm; size: 58mm auto; } }
+    ${getMediaPrintCss(cfg)}
     body {
       font-family: 'Courier New', Courier, monospace;
-      font-size: 10px;
+      font-size: ${cfg.fontSize}px;
       line-height: 1.3;
-      white-space: pre;
+      /* pre-wrap (no 'pre'): generarTexto ya ajusta a charactersPerLine, esto evita que
+         un cálculo mm↔carácter ligeramente desajustado trunque texto. */
+      white-space: pre-wrap;
+      word-break: break-word;
       margin: 0;
       padding: 2mm;
+      width: ${cfg.cssWidth};
     }
   </style>
 </head>

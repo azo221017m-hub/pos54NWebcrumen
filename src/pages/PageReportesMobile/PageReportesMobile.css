@@ -1,0 +1,6 @@
+/* PageReportesMobile: hub de reportes en mobile. Reutiliza .pdm-page/.pdm-header/
+   .pdm-content/.pdm-menu-list/.pdm-menu-item de PageDashboardMobile.css; solo se
+   agrega el botón de regreso propio de esta pantalla secundaria. */
+.prm-back-btn {
+  flex-shrink: 0;
+}

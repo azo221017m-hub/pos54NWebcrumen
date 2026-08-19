@@ -1,7 +1,7 @@
 // Utilidades para generar el recibo de pago con soporte para múltiples anchos de papel
 import { extractShortFolio } from './formatters';
 import { setSkipBeforeUnload } from '../services/sessionService';
-import { getPaperConfig } from './ticketLayout';
+import { getPaperConfig, getMediaPrintCss } from './ticketLayout';
 
 // Retardo para restaurar la protección de beforeunload tras abrir WhatsApp.
 // El protocolo whatsapp:// abre la app nativa sin descargar la página;
@@ -58,7 +58,7 @@ export interface DatosRecibo {
 /**
  * Genera el HTML del recibo de pago adaptado al ancho de papel configurado.
  * @param datos  Datos del recibo
- * @param anchoPapel  Ancho de papel ('48mm' | '58mm' | '80mm'). Si no se indica
+ * @param anchoPapel  Ancho de papel ('48mm' | '58mm' | '76mm' | '80mm' | 'A4'). Si no se indica
  *                    se usa el configurado en localStorage (por defecto 58mm).
  */
 export function generarHtmlRecibo(datos: DatosRecibo, anchoPapel?: string): string {
@@ -271,13 +271,7 @@ export function generarHtmlRecibo(datos: DatosRecibo, anchoPapel?: string): stri
       text-align: center;
       margin-top: 4px;
     }
-    @media print {
-      html, body { width: ${w}; }
-      @page {
-        size: ${w} auto;
-        margin: 0;
-      }
-    }
+    ${getMediaPrintCss(cfg)}
   </style>
 </head>
 <body>
@@ -309,7 +303,7 @@ export function generarHtmlRecibo(datos: DatosRecibo, anchoPapel?: string): stri
 /**
  * Abre una ventana de impresión con el recibo.
  * @param datos  Datos del recibo
- * @param anchoPapel  Ancho de papel ('48mm' | '58mm' | '80mm'). Si no se indica
+ * @param anchoPapel  Ancho de papel ('48mm' | '58mm' | '76mm' | '80mm' | 'A4'). Si no se indica
  *                    se usa el configurado en localStorage.
  */
 export function imprimirRecibo(datos: DatosRecibo, anchoPapel?: string): void {

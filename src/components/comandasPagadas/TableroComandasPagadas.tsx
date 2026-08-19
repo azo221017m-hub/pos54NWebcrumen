@@ -3,7 +3,7 @@ import { obtenerComandasPagadasTurnoActual } from '../../services/ventasWebServi
 import type { VentaWebWithDetails } from '../../types/ventasWeb.types';
 import { getShortFolio } from '../../utils/formatters';
 import { setSkipBeforeUnload } from '../../services/sessionService';
-import { getPaperConfig } from '../../utils/ticketLayout';
+import { getPaperConfig, getMediaPrintCss } from '../../utils/ticketLayout';
 import './TableroComandasPagadas.css';
 
 interface Props {
@@ -139,7 +139,7 @@ const generarHtmlReporteComandasPagadas = (comandas: VentaWebWithDetails[]): str
     .ref-row td { font-size: ${fsSm}px; color: #666; padding-left: 8px; }
     .grupo-total { font-size: ${fsSm}px; text-align: right; border-top: 1px solid #ccc; padding-top: 2px; margin-bottom: 4px; }
     .gran-total { font-size: ${fs}px; font-weight: bold; text-align: right; border-top: 2px solid #000; padding-top: 4px; margin-top: 8px; }
-    @media print { html, body { width: ${w}; } @page { size: ${w} auto; margin: 0; } }
+    ${getMediaPrintCss(cfg)}
   </style>
 </head>
 <body>

@@ -319,40 +319,44 @@ export const SaludNegocio: React.FC = () => {
                 <div className="reportes-two-col">
                   <div className="reportes-table-section">
                     <h3>Gastos por Categoría</h3>
-                    <table className="reportes-table">
-                      <thead><tr><th>Categoría</th><th>Operaciones</th><th>Total</th></tr></thead>
-                      <tbody>
-                        {gastosDesc.gastos_por_categoria.map((g, i) => (
-                          <tr key={i}>
-                            <td>{g.categoria}</td>
-                            <td className="text-center">{g.cantidad}</td>
-                            <td className="text-right">{mxFmt(g.total)}</td>
-                          </tr>
-                        ))}
-                        {gastosDesc.gastos_por_categoria.length === 0 && (
-                          <tr><td colSpan={3} className="text-center empty">Sin gastos en el periodo</td></tr>
-                        )}
-                      </tbody>
-                    </table>
+                    <div className="reportes-table-scroll">
+                      <table className="reportes-table">
+                        <thead><tr><th>Categoría</th><th>Operaciones</th><th>Total</th></tr></thead>
+                        <tbody>
+                          {gastosDesc.gastos_por_categoria.map((g, i) => (
+                            <tr key={i}>
+                              <td>{g.categoria}</td>
+                              <td className="text-center">{g.cantidad}</td>
+                              <td className="text-right">{mxFmt(g.total)}</td>
+                            </tr>
+                          ))}
+                          {gastosDesc.gastos_por_categoria.length === 0 && (
+                            <tr><td colSpan={3} className="text-center empty">Sin gastos en el periodo</td></tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                   <div className="reportes-table-section">
                     <h3>Descuentos Otorgados</h3>
-                    <table className="reportes-table">
-                      <thead><tr><th>Descuento</th><th>Colaborador</th><th>Ops.</th><th>Monto</th></tr></thead>
-                      <tbody>
-                        {gastosDesc.descuentos_por_nombre.map((d, i) => (
-                          <tr key={i}>
-                            <td>{d.nombre}</td>
-                            <td>{d.colaborador}</td>
-                            <td className="text-center">{d.operaciones}</td>
-                            <td className="text-right">{mxFmt(d.monto)}</td>
-                          </tr>
-                        ))}
-                        {gastosDesc.descuentos_por_nombre.length === 0 && (
-                          <tr><td colSpan={4} className="text-center empty">Sin descuentos en el periodo</td></tr>
-                        )}
-                      </tbody>
-                    </table>
+                    <div className="reportes-table-scroll">
+                      <table className="reportes-table">
+                        <thead><tr><th>Descuento</th><th>Colaborador</th><th>Ops.</th><th>Monto</th></tr></thead>
+                        <tbody>
+                          {gastosDesc.descuentos_por_nombre.map((d, i) => (
+                            <tr key={i}>
+                              <td>{d.nombre}</td>
+                              <td>{d.colaborador}</td>
+                              <td className="text-center">{d.operaciones}</td>
+                              <td className="text-right">{mxFmt(d.monto)}</td>
+                            </tr>
+                          ))}
+                          {gastosDesc.descuentos_por_nombre.length === 0 && (
+                            <tr><td colSpan={4} className="text-center empty">Sin descuentos en el periodo</td></tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -407,33 +411,35 @@ export const SaludNegocio: React.FC = () => {
                     <strong className="negative">{sugerencia.items.filter(i => i.urgencia === 'CRITICA').length}</strong>
                   </div>
                 </div>
-                <table className="reportes-table">
-                  <thead>
-                    <tr>
-                      <th>Producto</th>
-                      <th>Stock / Mín</th>
-                      <th>Sugerido</th>
-                      <th>Proveedor</th>
-                      <th>Últ. compra</th>
-                      <th>Urgencia</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sugerencia.items.map((item, i) => (
-                      <tr key={i} className={`urgencia-${item.urgencia.toLowerCase()}`}>
-                        <td>{item.nombre}</td>
-                        <td className="text-center">{item.stock_actual} / {item.stock_minimo} {item.unidad_medida}</td>
-                        <td className="text-center bold">{item.cantidad_sugerida} {item.unidad_medida}</td>
-                        <td>{item.proveedor_habitual || '—'}</td>
-                        <td>{item.ultima_compra || '—'}</td>
-                        <td><span className={`badge badge-${item.urgencia.toLowerCase()}`}>{item.urgencia}</span></td>
+                <div className="reportes-table-scroll">
+                  <table className="reportes-table">
+                    <thead>
+                      <tr>
+                        <th>Producto</th>
+                        <th>Stock / Mín</th>
+                        <th>Sugerido</th>
+                        <th>Proveedor</th>
+                        <th>Últ. compra</th>
+                        <th>Urgencia</th>
                       </tr>
-                    ))}
-                    {sugerencia.items.length === 0 && (
-                      <tr><td colSpan={6} className="text-center empty">Todos los insumos están sobre el mínimo</td></tr>
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {sugerencia.items.map((item, i) => (
+                        <tr key={i} className={`urgencia-${item.urgencia.toLowerCase()}`}>
+                          <td>{item.nombre}</td>
+                          <td className="text-center">{item.stock_actual} / {item.stock_minimo} {item.unidad_medida}</td>
+                          <td className="text-center bold">{item.cantidad_sugerida} {item.unidad_medida}</td>
+                          <td>{item.proveedor_habitual || '—'}</td>
+                          <td>{item.ultima_compra || '—'}</td>
+                          <td><span className={`badge badge-${item.urgencia.toLowerCase()}`}>{item.urgencia}</span></td>
+                        </tr>
+                      ))}
+                      {sugerencia.items.length === 0 && (
+                        <tr><td colSpan={6} className="text-center empty">Todos los insumos están sobre el mínimo</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 

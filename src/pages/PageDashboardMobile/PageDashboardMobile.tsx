@@ -493,6 +493,13 @@ export const PageDashboardMobile = () => {
                   <span className="pdm-menu-item-chevron">›</span>
                 </button>
               )}
+              {(privilegio >= 5 || usuario?.idNegocio === 99999) && (
+                <button className="pdm-menu-item" onClick={() => { registrarLog('PageDashboardMobile', 'Reportes', 'NAVEGACIÓN'); navigate('/reportes-mobile'); }}>
+                  <span className="pdm-menu-item-icon">📊</span>
+                  Reportes
+                  <span className="pdm-menu-item-chevron">›</span>
+                </button>
+              )}
             </div>
 
             <p className="pdm-section-title" style={{ marginTop: 8 }}>Turno</p>

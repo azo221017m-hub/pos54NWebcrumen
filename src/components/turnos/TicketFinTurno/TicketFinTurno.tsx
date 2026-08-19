@@ -4,6 +4,7 @@ import { X, Printer, MessageCircle, Loader, CheckCircle, ArrowLeft } from 'lucid
 import type { CorteFinTurnoData } from '../../../types/turno.types';
 import { obtenerCorteFinTurno } from '../../../services/turnosService';
 import { generarTextoTicket } from '../../../utils/ticketFinTurno';
+import { getPaperConfig, getMediaPrintCss } from '../../../utils/ticketLayout';
 import './TicketFinTurno.css';
 
 interface TicketFinTurnoProps {
@@ -75,7 +76,8 @@ const TicketFinTurno: React.FC<TicketFinTurnoProps> = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claveturno]);
 
-  const textoTicket = data ? generarTextoTicket(data) : '';
+  const cfg = getPaperConfig();
+  const textoTicket = data ? generarTextoTicket(data, cfg.charactersPerLine) : '';
 
   const handleImprimir = async () => {
     if (!ticketRef.current) return;
@@ -88,7 +90,7 @@ const TicketFinTurno: React.FC<TicketFinTurnoProps> = ({
         return;
       }
     }
-    const ventana = window.open('', '_blank', 'width=400,height=700');
+    const ventana = window.open('', '_blank', `width=${cfg.popupWidth},height=700`);
     if (!ventana) {
       setIsCerrando(false);
       return;
@@ -99,16 +101,18 @@ const TicketFinTurno: React.FC<TicketFinTurnoProps> = ({
   <meta charset="UTF-8">
   <title>Corte de Fin de Turno</title>
   <style>
-    @media print {
-      @page { margin: 2mm; size: 58mm auto; }
-    }
+    ${getMediaPrintCss(cfg)}
     body {
       font-family: 'Courier New', Courier, monospace;
-      font-size: 10px;
+      font-size: ${cfg.fontSize}px;
       line-height: 1.3;
-      white-space: pre;
+      /* pre-wrap (no 'pre'): generarTextoTicket ya ajusta el texto a charactersPerLine,
+         pero esto evita que un cálculo mm↔carácter ligeramente desajustado trunque texto. */
+      white-space: pre-wrap;
+      word-break: break-word;
       margin: 0;
       padding: 2mm;
+      width: ${cfg.cssWidth};
     }
   </style>
 </head>

@@ -430,18 +430,18 @@ export const FormularioNegocio = ({ negocioEditar, onSubmit, onCancel }: Formula
             </div>
 
             <div className="form-group full-width">
-              <label htmlFor="anchoPapel">Ancho de papel de impresora (este equipo)</label>
+              <label htmlFor="anchoPapel">Papel de impresora (este equipo)</label>
               <select
                 id="anchoPapel"
                 value={anchoPapel}
                 onChange={(e) => handleAnchoPapelChange(e.target.value as PaperWidth)}
               >
                 {PAPER_WIDTHS.map((w) => (
-                  <option key={w} value={w}>{w}</option>
+                  <option key={w} value={w}>{w === 'A4' ? 'A4 (impresora de hoja)' : `${w} (térmica)`}</option>
                 ))}
               </select>
               <small className="form-hint">
-                Configuración local del dispositivo. Elige el ancho de papel de tu impresora térmica.
+                Configuración local del dispositivo. Elige el papel de tu impresora: ancho de rollo térmico (48/58/76/80mm) o A4 si usas una impresora normal de hoja.
               </small>
             </div>
 

@@ -1,39 +1,20 @@
 /**
- * Generador de Ticket de Cierre de Turno — impresora térmica 58mm (32 chars/línea).
+ * Generador de Ticket de Cierre de Turno.
+ * Ancho de columnas parametrizable por PrinterProfile (charactersPerLine) para que el
+ * corte salga completo sin truncar en cualquier tamaño de papel (48/58/76/80mm/A4).
  * Fuente única de contenido: mismo texto para impresión y WhatsApp.
  */
 
 import type { CorteFinTurnoData } from '../types/turno.types';
+import { centrar as centrarAncho, fila2col as fila2colAncho, wrapTexto, filaProducto, separador } from './monospaceTicket';
 
-const ANCHO = 32;
-const SEP  = '='.repeat(ANCHO); // ================================
-const SEP2 = '-'.repeat(ANCHO); // --------------------------------
+const ANCHO_DEFAULT = 32;
 
-// ── Utilidades de formato ────────────────────────────────────
+// ── Utilidades de formato (envuelven las genéricas de monospaceTicket con el ancho activo) ──
 
-const centrar = (texto: string): string => {
-  if (texto.length >= ANCHO) return texto.slice(0, ANCHO);
-  const pad = Math.floor((ANCHO - texto.length) / 2);
-  return ' '.repeat(pad) + texto;
-};
-
-/** Dos columnas: etiqueta izquierda, valor derecho. */
-const fila2col = (etiqueta: string, valor: string): string => {
-  const espacio = ANCHO - etiqueta.length - valor.length;
-  if (espacio <= 0) return `${etiqueta} ${valor}`;
-  return etiqueta + ' '.repeat(espacio) + valor;
-};
-
-/**
- * Tres columnas a 32 chars: nombre (izq, 16), cantidad (der, 4), importe (der, 12).
- * Usar para: formas de pago, tipo de venta, descuentos, productos.
- */
-const fila3col = (nombre: string, cant: string | number, importe: string): string => {
-  const n   = String(nombre).slice(0, 16).padEnd(16);
-  const c   = String(cant).padStart(4);
-  const imp = importe.padStart(12);
-  return n + c + imp;
-};
+const centrar = (texto: string, ancho: number): string => centrarAncho(texto, ancho);
+const fila2col = (etiqueta: string, valor: string, ancho: number): string => fila2colAncho(etiqueta, valor, ancho);
+const headerRow = (ancho: number): string => filaProducto('Concepto', 'Cant', 'Importe', ancho)[0];
 
 /** Importe con signo $ (secciones narrativas). */
 const moneda = (valor: number): string =>
@@ -71,27 +52,16 @@ const formatHora = (iso: string | null): string => {
 const formatFechaHora = (iso: string | null): string =>
   iso ? `${formatFecha(iso)} ${formatHora(iso)}` : 'N/A';
 
-/** Divide texto en líneas de ≤ maxLen chars por palabras. */
-const wrapTexto = (texto: string, maxLen = ANCHO): string[] => {
-  if (texto.length <= maxLen) return [texto];
-  const palabras = texto.split(' ');
-  const lineas: string[] = [];
-  let linea = '';
-  for (const p of palabras) {
-    if ((linea ? linea + ' ' + p : p).length <= maxLen) {
-      linea = linea ? linea + ' ' + p : p;
-    } else {
-      if (linea) lineas.push(linea);
-      linea = p.slice(0, maxLen);
-    }
-  }
-  if (linea) lineas.push(linea);
-  return lineas;
-};
-
 // ── Generador principal ──────────────────────────────────────
 
-export const generarTextoTicket = (data: CorteFinTurnoData): string => {
+/**
+ * @param charactersPerLine  Columnas disponibles según el PrinterProfile activo
+ *                           (PaperConfig.charactersPerLine). Default 32 = 58mm.
+ */
+export const generarTextoTicket = (data: CorteFinTurnoData, charactersPerLine: number = ANCHO_DEFAULT): string => {
+  const ancho = charactersPerLine;
+  const SEP = separador(ancho, '=');
+  const SEP2 = separador(ancho, '-');
   const lineas: string[] = [];
   const {
     turno, resumen, gastos, totalGastos,
@@ -107,123 +77,122 @@ export const generarTextoTicket = (data: CorteFinTurnoData): string => {
 
   // ── 1. ENCABEZADO ──────────────────────────────────────────
   lineas.push(SEP);
-  wrapTexto((turno.nombreNegocio || 'NEGOCIO').toUpperCase()).forEach(l =>
-    lineas.push(centrar(l))
+  wrapTexto((turno.nombreNegocio || 'NEGOCIO').toUpperCase(), ancho).forEach(l =>
+    lineas.push(centrar(l, ancho))
   );
   if (turno.direccionnegocio) {
-    wrapTexto(turno.direccionnegocio.trim()).forEach(l => lineas.push(centrar(l)));
+    wrapTexto(turno.direccionnegocio.trim(), ancho).forEach(l => lineas.push(centrar(l, ancho)));
   }
   if (turno.rfcnegocio) {
-    lineas.push(centrar(`RFC: ${turno.rfcnegocio}`));
+    lineas.push(centrar(`RFC: ${turno.rfcnegocio}`, ancho));
   }
   lineas.push(SEP);
-  lineas.push(centrar('CIERRE DE TURNO DE VENTA'));
+  lineas.push(centrar('CIERRE DE TURNO DE VENTA', ancho));
   lineas.push(SEP2);
 
   // ── 2. DATOS DEL TURNO ─────────────────────────────────────
-  lineas.push(fila2col('Fecha impr:', formatFecha(ahora)));
-  lineas.push(fila2col('Hora impr:', formatHora(ahora)));
-  lineas.push(fila2col('No. turno:', String(turno.numeroturno)));
+  lineas.push(fila2col('Fecha impr:', formatFecha(ahora), ancho));
+  lineas.push(fila2col('Hora impr:', formatHora(ahora), ancho));
+  lineas.push(fila2col('No. turno:', String(turno.numeroturno), ancho));
   lineas.push('Cajero:');
-  wrapTexto('  ' + (turno.usuarioturno || '-'), ANCHO).forEach(l => lineas.push(l));
-  lineas.push(fila2col('Apertura:', formatFechaHora(turno.fechainicioturno)));
-  lineas.push(fila2col('Cierre:', formatFechaHora(turno.fechafinturno)));
+  wrapTexto('  ' + (turno.usuarioturno || '-'), ancho).forEach(l => lineas.push(l));
+  lineas.push(fila2col('Apertura:', formatFechaHora(turno.fechainicioturno), ancho));
+  lineas.push(fila2col('Cierre:', formatFechaHora(turno.fechafinturno), ancho));
 
   // ── 3. MESAS / CUENTAS ABIERTAS (solo si las hay) ──────────
   if ((comandasAbiertas ?? 0) > 0) {
     lineas.push(SEP2);
-    lineas.push(`** MESAS/CUENTAS ABIERTAS: ${comandasAbiertas}`);
-    lineas.push('   (no incluidas en este corte)');
+    wrapTexto(`** MESAS/CUENTAS ABIERTAS: ${comandasAbiertas}`, ancho).forEach(l => lineas.push(l));
+    wrapTexto('   (no incluidas en este corte)', ancho).forEach(l => lineas.push(l));
   }
 
   // ── 4. RESUMEN DE VENTA ────────────────────────────────────
   lineas.push(SEP2);
-  lineas.push(centrar('RESUMEN DE VENTA'));
+  lineas.push(centrar('RESUMEN DE VENTA', ancho));
   lineas.push(SEP2);
-  lineas.push(fila2col('Total tickets:', String(indicadores.totalTickets)));
-  lineas.push(fila2col('TOTAL VENTA TURNO:', moneda(resumen.ventasNetas)));
+  lineas.push(fila2col('Total tickets:', String(indicadores.totalTickets), ancho));
+  lineas.push(fila2col('TOTAL VENTA TURNO:', moneda(resumen.ventasNetas), ancho));
 
   // ── 5. FORMAS DE PAGO ──────────────────────────────────────
   lineas.push(SEP2);
-  lineas.push(centrar('FORMAS DE PAGO'));
+  lineas.push(centrar('FORMAS DE PAGO', ancho));
   lineas.push(SEP2);
-  lineas.push(fila3col('Concepto', 'Cant', '     Importe'));
+  lineas.push(headerRow(ancho));
   for (const fp of ventasPorFormaDePago) {
     const esFpEfectivo = fp.formadepago.toUpperCase() === 'EFECTIVO';
     const nombre = esFpEfectivo && hasMixtoVentas
       ? `${fp.formadepago}*`
       : fp.formadepago;
-    lineas.push(fila3col(nombre, fp.count, numCol(fp.total)));
+    lineas.push(...filaProducto(nombre, String(fp.count), numCol(fp.total), ancho));
   }
   lineas.push(SEP2);
   const countTotal = totalVentasPagoCount ?? ventasPorFormaDePago.reduce((s, r) => s + r.count, 0);
-  lineas.push(fila3col('TOTAL', countTotal, numCol(totalVentasPago)));
+  lineas.push(...filaProducto('TOTAL', String(countTotal), numCol(totalVentasPago), ancho));
   if (hasMixtoVentas) {
-    lineas.push('(*) Incluye desglose de');
-    lineas.push('    ventas con pago MIXTO');
+    wrapTexto('(*) Incluye desglose de ventas con pago MIXTO', ancho).forEach(l => lineas.push(l));
   }
 
   // ── 6. TIPO DE VENTA ───────────────────────────────────────
   if (ventasPorTipoDeVenta.length > 0) {
     lineas.push(SEP2);
-    lineas.push(centrar('TIPO DE VENTA'));
+    lineas.push(centrar('TIPO DE VENTA', ancho));
     lineas.push(SEP2);
-    lineas.push(fila3col('Concepto', 'Cant', '     Importe'));
+    lineas.push(headerRow(ancho));
     for (const tv of ventasPorTipoDeVenta) {
-      lineas.push(fila3col(tv.tipodeventa, tv.count, numCol(tv.total)));
+      lineas.push(...filaProducto(tv.tipodeventa, String(tv.count), numCol(tv.total), ancho));
     }
     lineas.push(SEP2);
-    lineas.push(fila3col('TOTAL', indicadores.totalTickets, numCol(resumen.ventasNetas)));
+    lineas.push(...filaProducto('TOTAL', String(indicadores.totalTickets), numCol(resumen.ventasNetas), ancho));
   }
 
   // ── 7. DESCUENTOS APLICADOS ────────────────────────────────
   if (descuentosAplicados.length > 0) {
     lineas.push(SEP2);
-    lineas.push(centrar('DESCUENTOS APLICADOS'));
+    lineas.push(centrar('DESCUENTOS APLICADOS', ancho));
     lineas.push(SEP2);
-    lineas.push(fila3col('Concepto', 'Cant', '     Importe'));
+    lineas.push(headerRow(ancho));
     for (const d of descuentosAplicados) {
-      lineas.push(fila3col(d.nombre, d.operaciones, numCol(-d.montoDescuento)));
+      lineas.push(...filaProducto(d.nombre, String(d.operaciones), numCol(-d.montoDescuento), ancho));
     }
     lineas.push(SEP2);
     const totalOpDesc = descuentosAplicados.reduce((s, d) => s + d.operaciones, 0);
-    lineas.push(fila3col('TOTAL DESC.', totalOpDesc, numCol(-resumen.totalDescuentos)));
+    lineas.push(...filaProducto('TOTAL DESC.', String(totalOpDesc), numCol(-resumen.totalDescuentos), ancho));
   }
 
   // ── 8. CORTE DE EFECTIVO ───────────────────────────────────
   lineas.push(SEP2);
-  lineas.push(centrar('CORTE DE EFECTIVO'));
+  lineas.push(centrar('CORTE DE EFECTIVO', ancho));
   lineas.push(SEP2);
 
   if (conciliacion.fondoInicial > 0) {
     lineas.push('Fondo caja ingresado:');
-    lineas.push(moneda(conciliacion.fondoInicial).padStart(ANCHO));
+    lineas.push(moneda(conciliacion.fondoInicial).padStart(ancho));
   }
   if (conciliacion.ingresosCaja > 0) {
     lineas.push('Ingresos a caja:');
-    lineas.push(moneda(conciliacion.ingresosCaja).padStart(ANCHO));
+    lineas.push(moneda(conciliacion.ingresosCaja).padStart(ancho));
   }
   if (conciliacion.retirosCaja > 0) {
     lineas.push('Retiros de caja:');
-    lineas.push(('-' + moneda(conciliacion.retirosCaja)).padStart(ANCHO));
+    lineas.push(('-' + moneda(conciliacion.retirosCaja)).padStart(ancho));
   }
   if (conciliacion.retiroFondo > 0) {
     lineas.push('Fondo caja retirado:');
-    lineas.push(('-' + moneda(conciliacion.retiroFondo)).padStart(ANCHO));
+    lineas.push(('-' + moneda(conciliacion.retiroFondo)).padStart(ancho));
   }
 
   lineas.push('Venta en efectivo:');
-  lineas.push(moneda(conciliacion.ventasEfectivo).padStart(ANCHO));
+  lineas.push(moneda(conciliacion.ventasEfectivo).padStart(ancho));
 
   if (totalGastos !== 0) {
     lineas.push('(-) Gastos:');
-    lineas.push(('-' + moneda(totalGastos)).padStart(ANCHO));
+    lineas.push(('-' + moneda(totalGastos)).padStart(ancho));
     if (gastos.length > 0) {
       lineas.push('  Detalle de gastos:');
       for (const g of gastos) {
-        const imp = numCol(Math.abs(g.importe)).padStart(8);
-        const nom = ('  - ' + g.concepto).slice(0, ANCHO - 8);
-        lineas.push(nom.padEnd(ANCHO - 8) + imp);
+        // Nombre completo siempre (envuelve en vez de truncar); importe en línea propia.
+        wrapTexto('  - ' + g.concepto, ancho).forEach(l => lineas.push(l));
+        lineas.push(numCol(Math.abs(g.importe)).padStart(ancho));
       }
     }
   }
@@ -231,40 +200,40 @@ export const generarTextoTicket = (data: CorteFinTurnoData): string => {
   lineas.push(SEP2);
   const totalEntrega = conciliacion.ventasEfectivo - totalGastos;
   lineas.push('TOTAL EFECTIVO');
-  lineas.push(fila2col('A ENTREGAR:', moneda(totalEntrega)));
-  lineas.push('(Venta efectivo - Gastos)');
+  lineas.push(fila2col('A ENTREGAR:', moneda(totalEntrega), ancho));
+  wrapTexto('(Venta efectivo - Gastos)', ancho).forEach(l => lineas.push(l));
 
   // Conciliación con arqueo (efectivo contado), si fue capturado
   const efectivoContado = data.efectivoContado ?? null;
   if (efectivoContado !== null && efectivoContado >= 0) {
     lineas.push(SEP2);
-    lineas.push(fila2col('Efectivo declarado:', moneda(efectivoContado)));
+    lineas.push(fila2col('Efectivo declarado:', moneda(efectivoContado), ancho));
     const diff = efectivoContado - conciliacion.efectivoEsperado;
     const signo = diff >= 0 ? '+' : '-';
-    lineas.push(fila2col('Diferencia:', `${signo}${moneda(Math.abs(diff))}`));
+    lineas.push(fila2col('Diferencia:', `${signo}${moneda(Math.abs(diff))}`, ancho));
     const estado =
       Math.abs(diff) < 0.01 ? 'CUADRADO' : diff > 0 ? 'SOBRANTE' : 'FALTANTE';
-    lineas.push(fila2col('Estado:', estado));
+    lineas.push(fila2col('Estado:', estado, ancho));
   }
 
   // ── 9. DETALLE DE PRODUCTOS ────────────────────────────────
   if (productosVendidos.length > 0) {
     lineas.push(SEP2);
-    lineas.push(centrar('DETALLE DE PRODUCTOS'));
+    lineas.push(centrar('DETALLE DE PRODUCTOS', ancho));
     lineas.push(SEP2);
-    lineas.push(fila3col('Producto', 'Cant', '     Importe'));
+    lineas.push(headerRow(ancho));
     for (const p of productosVendidos) {
-      lineas.push(fila3col(p.nombreproducto, Math.round(p.cantidad), numCol(p.total)));
+      lineas.push(...filaProducto(p.nombreproducto, String(Math.round(p.cantidad)), numCol(p.total), ancho));
     }
     lineas.push(SEP2);
-    lineas.push(fila3col('TOTAL PROD.', Math.round(totalUnidades), numCol(totalVentaProductos)));
+    lineas.push(...filaProducto('TOTAL PROD.', String(Math.round(totalUnidades)), numCol(totalVentaProductos), ancho));
   }
 
   // ── 10. PIE ────────────────────────────────────────────────
   lineas.push(SEP);
-  lineas.push(centrar('Documento de uso interno'));
-  lineas.push(centrar('No valido como'));
-  lineas.push(centrar('comprobante fiscal'));
+  lineas.push(centrar('Documento de uso interno', ancho));
+  lineas.push(centrar('No valido como', ancho));
+  lineas.push(centrar('comprobante fiscal', ancho));
   lineas.push(SEP);
   lineas.push('');
 

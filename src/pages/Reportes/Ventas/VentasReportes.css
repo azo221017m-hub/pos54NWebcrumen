@@ -3,7 +3,7 @@
 .ventas-page {}
 
 /* Top producto destaque */
-.top-producto-row td { background: rgba(10,132,255,0.06); }
+.top-producto-row td { background: rgba(102,126,234,0.06); }
 
 /* Mini bar para % */
 .ventas-bar-mini {
@@ -13,11 +13,11 @@
 }
 .ventas-bar-fill {
   height: 5px;
-  background: linear-gradient(90deg, #1d4ed8, #60a5fa);
+  background: linear-gradient(90deg, var(--rpt-blue-dim), var(--rpt-blue));
   border-radius: 3px;
   min-width: 2px;
 }
-.ventas-bar-mini span { font-size: 11px; color: #60a5fa; white-space: nowrap; }
+.ventas-bar-mini span { font-size: 11px; color: var(--rpt-blue-light); white-space: nowrap; }
 
 /* Gráfica de barras mensual */
 .ventas-chart-bar {
@@ -25,8 +25,8 @@
   gap: 5px;
   align-items: flex-end;
   height: 160px;
-  background: #0d1424;
-  border: 1px solid rgba(59,130,246,0.12);
+  background: var(--rpt-bg-card);
+  border: 1px solid rgba(102,126,234,0.12);
   border-radius: 10px;
   padding: 12px;
 }
@@ -39,7 +39,7 @@
 }
 .ventas-chart-value {
   font-size: 8px;
-  color: #3d5473;
+  color: var(--rpt-text-dim);
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
@@ -50,7 +50,7 @@
 .ventas-chart-bar-outer {
   flex: 1;
   width: 100%;
-  background: rgba(59,130,246,0.08);
+  background: rgba(102,126,234,0.08);
   border-radius: 3px;
   display: flex;
   align-items: flex-end;
@@ -58,26 +58,26 @@
 }
 .ventas-chart-bar-inner {
   width: 100%;
-  background: linear-gradient(0deg, #1d4ed8, #60a5fa);
+  background: linear-gradient(0deg, var(--rpt-blue-dim), var(--rpt-blue));
   border-radius: 3px;
   min-height: 2px;
   transition: height 0.4s ease;
 }
 .ventas-chart-label {
   font-size: 9px;
-  color: #7a98c0;
+  color: var(--rpt-text-2);
   font-weight: 600;
 }
 
 /* Turno badges */
 .badge-turno-supero      { background: rgba(48,209,88,0.15);  color: #30d158; border: 1px solid rgba(48,209,88,0.3); }
-.badge-turno-cumplio     { background: rgba(10,132,255,0.15); color: #0a84ff; border: 1px solid rgba(10,132,255,0.3); }
+.badge-turno-cumplio     { background: rgba(102,126,234,0.15); color: #667eea; border: 1px solid rgba(102,126,234,0.3); }
 .badge-turno-no_cumplio  { background: rgba(255,69,58,0.15);  color: #ff453a; border: 1px solid rgba(255,69,58,0.3); }
 .badge-turno-sin_meta,
 .badge-turno-no_meta     { background: rgba(120,120,130,0.15); color: #8e8e93; border: 1px solid rgba(120,120,130,0.3); }
 
 /* Mes sin ventas */
-.mes-sin-ventas td { color: #1e2d45; }
+.mes-sin-ventas td { color: var(--rpt-text-dim); }
 
 .positive { color: #30d158; }
 .negative { color: #ff453a; }

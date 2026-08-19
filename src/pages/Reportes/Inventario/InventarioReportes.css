@@ -12,12 +12,12 @@
 .badge-optimo     { background: rgba(48,209,88,0.15);  color: #30d158; border: 1px solid rgba(48,209,88,0.3); }
 
 /* Rotación badges */
-.badge-rot-alta   { background: rgba(10,132,255,0.15); color: #0a84ff; border: 1px solid rgba(10,132,255,0.3); }
+.badge-rot-alta   { background: rgba(102,126,234,0.15); color: #667eea; border: 1px solid rgba(102,126,234,0.3); }
 .badge-rot-media  { background: rgba(48,209,88,0.15);  color: #30d158; border: 1px solid rgba(48,209,88,0.3); }
 .badge-rot-baja   { background: rgba(255,159,10,0.15); color: #ff9f0a; border: 1px solid rgba(255,159,10,0.3); }
 
 /* Proveedor product list */
-.inv-producto-list { color: #60a5fa; font-size: 11px; max-width: 200px; }
+.inv-producto-list { color: var(--rpt-blue-light); font-size: 11px; max-width: 200px; }
 
 .negative { color: #ff453a; }
 .positive { color: #30d158; }

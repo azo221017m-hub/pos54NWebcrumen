@@ -179,35 +179,39 @@ export const VentasReportes: React.FC = () => {
                 <div className="reportes-two-col">
                   <div className="reportes-table-section">
                     <h3>Por Forma de Pago</h3>
-                    <table className="reportes-table">
-                      {/* formadepago, total, cantidad según VentasHoyData */}
-                      <thead><tr><th>Forma de Pago</th><th>Monto</th><th>Cant.</th></tr></thead>
-                      <tbody>
-                        {ventasHoy.por_forma_pago.map((fp, i) => (
-                          <tr key={i}>
-                            <td>{fp.formadepago}</td>
-                            <td className="text-right">{mxFmt(fp.total)}</td>
-                            <td className="text-right">{fp.cantidad}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    <div className="reportes-table-scroll">
+                      <table className="reportes-table">
+                        {/* formadepago, total, cantidad según VentasHoyData */}
+                        <thead><tr><th>Forma de Pago</th><th>Monto</th><th>Cant.</th></tr></thead>
+                        <tbody>
+                          {ventasHoy.por_forma_pago.map((fp, i) => (
+                            <tr key={i}>
+                              <td>{fp.formadepago}</td>
+                              <td className="text-right">{mxFmt(fp.total)}</td>
+                              <td className="text-right">{fp.cantidad}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                   <div className="reportes-table-section">
                     <h3>Por Turno</h3>
-                    <table className="reportes-table">
-                      {/* por_turno: claveturno, usuarioturno, total */}
-                      <thead><tr><th>Turno</th><th>Responsable</th><th>Ventas</th></tr></thead>
-                      <tbody>
-                        {ventasHoy.por_turno.map((t, i) => (
-                          <tr key={i}>
-                            <td>{t.claveturno}</td>
-                            <td>{t.usuarioturno || '—'}</td>
-                            <td className="text-right">{mxFmt(t.total)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    <div className="reportes-table-scroll">
+                      <table className="reportes-table">
+                        {/* por_turno: claveturno, usuarioturno, total */}
+                        <thead><tr><th>Turno</th><th>Responsable</th><th>Ventas</th></tr></thead>
+                        <tbody>
+                          {ventasHoy.por_turno.map((t, i) => (
+                            <tr key={i}>
+                              <td>{t.claveturno}</td>
+                              <td>{t.usuarioturno || '—'}</td>
+                              <td className="text-right">{mxFmt(t.total)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -250,31 +254,33 @@ export const VentasReportes: React.FC = () => {
                     <strong className="positive">{turnosData.filter(t => t.semaforo === 'SUPERO' || t.semaforo === 'CUMPLIO').length}</strong>
                   </div>
                 </div>
-                <table className="reportes-table">
-                  {/* VentasTurnoItem: claveturno, usuarioturno, fechainicioturno, total_ventas, metaturno, logrometa, semaforo */}
-                  <thead>
-                    <tr><th>Turno</th><th>Fecha</th><th>Responsable</th><th>Meta</th><th>Ventas</th><th>Logro</th><th>Estado</th></tr>
-                  </thead>
-                  <tbody>
-                    {turnosData.map((t, i) => {
-                      const pct = logroPct(t);
-                      return (
-                        <tr key={i}>
-                          <td>{t.claveturno}</td>
-                          <td>{t.fechainicioturno?.split('T')[0] ?? '—'}</td>
-                          <td>{t.usuarioturno || '—'}</td>
-                          <td className="text-right">{t.metaturno ? mxFmt(t.metaturno) : '—'}</td>
-                          <td className="text-right bold">{mxFmt(t.total_ventas)}</td>
-                          <td className={`text-right ${pct >= 100 ? 'positive' : 'negative'}`}>{pct.toFixed(1)}%</td>
-                          <td><span className={`badge badge-turno-${(t.semaforo ?? 'sin_meta').toLowerCase()}`}>{t.semaforo ?? 'SIN META'}</span></td>
-                        </tr>
-                      );
-                    })}
-                    {turnosData.length === 0 && (
-                      <tr><td colSpan={7} className="text-center empty">Sin turnos en el periodo</td></tr>
-                    )}
-                  </tbody>
-                </table>
+                <div className="reportes-table-scroll">
+                  <table className="reportes-table">
+                    {/* VentasTurnoItem: claveturno, usuarioturno, fechainicioturno, total_ventas, metaturno, logrometa, semaforo */}
+                    <thead>
+                      <tr><th>Turno</th><th>Fecha</th><th>Responsable</th><th>Meta</th><th>Ventas</th><th>Logro</th><th>Estado</th></tr>
+                    </thead>
+                    <tbody>
+                      {turnosData.map((t, i) => {
+                        const pct = logroPct(t);
+                        return (
+                          <tr key={i}>
+                            <td>{t.claveturno}</td>
+                            <td>{t.fechainicioturno?.split('T')[0] ?? '—'}</td>
+                            <td>{t.usuarioturno || '—'}</td>
+                            <td className="text-right">{t.metaturno ? mxFmt(t.metaturno) : '—'}</td>
+                            <td className="text-right bold">{mxFmt(t.total_ventas)}</td>
+                            <td className={`text-right ${pct >= 100 ? 'positive' : 'negative'}`}>{pct.toFixed(1)}%</td>
+                            <td><span className={`badge badge-turno-${(t.semaforo ?? 'sin_meta').toLowerCase()}`}>{t.semaforo ?? 'SIN META'}</span></td>
+                          </tr>
+                        );
+                      })}
+                      {turnosData.length === 0 && (
+                        <tr><td colSpan={7} className="text-center empty">Sin turnos en el periodo</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
@@ -315,32 +321,34 @@ export const VentasReportes: React.FC = () => {
                     <strong>{topProductos.length}</strong>
                   </div>
                 </div>
-                <table className="reportes-table">
-                  <thead>
-                    <tr><th>#</th><th>Producto</th><th>Cantidad</th><th>Total Vendido</th><th>% del Total</th></tr>
-                  </thead>
-                  <tbody>
-                    {(() => {
-                      const totalGlobal = topProductos.reduce((s, p) => s + p.total_ventas, 0);
-                      return topProductos.map((p, i) => (
-                        <tr key={i} className={i < 3 ? 'top-producto-row' : ''}>
-                          <td className="text-center">
-                            {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
-                          </td>
-                          <td>{p.nombreproducto}</td>
-                          <td className="text-right">{p.cantidad_vendida}</td>
-                          <td className="text-right bold">{mxFmt(p.total_ventas)}</td>
-                          <td className="text-right">
-                            <div className="ventas-bar-mini">
-                              <div className="ventas-bar-fill" style={{ width: `${totalGlobal > 0 ? (p.total_ventas / totalGlobal) * 100 : 0}%` }} />
-                              <span>{totalGlobal > 0 ? ((p.total_ventas / totalGlobal) * 100).toFixed(1) : '0.0'}%</span>
-                            </div>
-                          </td>
-                        </tr>
-                      ));
-                    })()}
-                  </tbody>
-                </table>
+                <div className="reportes-table-scroll">
+                  <table className="reportes-table">
+                    <thead>
+                      <tr><th>#</th><th>Producto</th><th>Cantidad</th><th>Total Vendido</th><th>% del Total</th></tr>
+                    </thead>
+                    <tbody>
+                      {(() => {
+                        const totalGlobal = topProductos.reduce((s, p) => s + p.total_ventas, 0);
+                        return topProductos.map((p, i) => (
+                          <tr key={i} className={i < 3 ? 'top-producto-row' : ''}>
+                            <td className="text-center">
+                              {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
+                            </td>
+                            <td>{p.nombreproducto}</td>
+                            <td className="text-right">{p.cantidad_vendida}</td>
+                            <td className="text-right bold">{mxFmt(p.total_ventas)}</td>
+                            <td className="text-right">
+                              <div className="ventas-bar-mini">
+                                <div className="ventas-bar-fill" style={{ width: `${totalGlobal > 0 ? (p.total_ventas / totalGlobal) * 100 : 0}%` }} />
+                                <span>{totalGlobal > 0 ? ((p.total_ventas / totalGlobal) * 100).toFixed(1) : '0.0'}%</span>
+                              </div>
+                            </td>
+                          </tr>
+                        ));
+                      })()}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
@@ -399,19 +407,21 @@ export const VentasReportes: React.FC = () => {
                     );
                   })}
                 </div>
-                <table className="reportes-table">
-                  <thead><tr><th>Mes</th><th>Ventas</th><th>Tickets</th><th>Ticket Prom.</th></tr></thead>
-                  <tbody>
-                    {mensual.map((m, i) => (
-                      <tr key={i} className={m.total === 0 ? 'mes-sin-ventas' : ''}>
-                        <td>{m.mes_nombre}</td>
-                        <td className="text-right">{mxFmt(m.total)}</td>
-                        <td className="text-right">{m.tickets}</td>
-                        <td className="text-right">{m.tickets > 0 ? mxFmt(m.ticket_promedio) : '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div className="reportes-table-scroll">
+                  <table className="reportes-table">
+                    <thead><tr><th>Mes</th><th>Ventas</th><th>Tickets</th><th>Ticket Prom.</th></tr></thead>
+                    <tbody>
+                      {mensual.map((m, i) => (
+                        <tr key={i} className={m.total === 0 ? 'mes-sin-ventas' : ''}>
+                          <td>{m.mes_nombre}</td>
+                          <td className="text-right">{mxFmt(m.total)}</td>
+                          <td className="text-right">{m.tickets}</td>
+                          <td className="text-right">{m.tickets > 0 ? mxFmt(m.ticket_promedio) : '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 

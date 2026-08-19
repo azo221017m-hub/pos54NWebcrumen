@@ -12,7 +12,7 @@ import { obtenerCatModeradores } from '../../services/catModeradoresService';
 import { obtenerModeradores } from '../../services/moderadoresService';
 import { buscarClientesPorReferencia } from '../../services/clientesService';
 import { registrarLog } from '../../services/logService';
-import { getPaperConfig } from '../../utils/ticketLayout';
+import { getPaperConfig, getMediaPrintCss } from '../../utils/ticketLayout';
 import ModalIniciaTurno from '../../components/turnos/ModalIniciaTurno';
 import ModuloPagos from '../../components/ventas/ModuloPagos';
 import useIsMobile from '../../hooks/useIsMobile';
@@ -614,10 +614,7 @@ const PageVentasMobile: React.FC = () => {
     .pago-seccion { margin-top: 5px; }
     .pago-titulo { font-size: ${fsMd}px; font-weight: 700; margin-bottom: 2px; }
     .pago-linea { font-size: ${fs}px; font-weight: 900; }
-    @media print {
-      html, body { width: ${w}; }
-      @page { size: ${w} auto; margin: 0; }
-    }
+    ${getMediaPrintCss(cfg)}
   </style>
 </head>
 <body>
