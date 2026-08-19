@@ -17,7 +17,10 @@ function getWebSocketUrl(): string {
     const wsUrl = base.replace(/^http/, 'ws');
     return `${wsUrl}/ws`;
   }
-  return 'ws://localhost:3000/ws';
+  // Sin VITE_API_URL, derivar del origen actual (localhost, IP de LAN o
+  // túnel) para que pase por el proxy /ws de Vite hacia el backend local.
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${protocol}//${window.location.host}/ws`;
 }
 
 const WS_URL = getWebSocketUrl();

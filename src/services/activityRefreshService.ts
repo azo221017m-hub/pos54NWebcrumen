@@ -7,7 +7,8 @@
 import { getToken, getTimeUntilExpiration } from './sessionService';
 
 // Constantes de configuración
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+// Sin VITE_API_URL, ruta relativa al origen actual (ver src/config/api.config.ts)
+const API_URL = import.meta.env.VITE_API_URL || '';
 const TOKEN_KEY = 'token'; // Debe coincidir con sessionService.ts
 const REFRESH_THRESHOLD_MS = 300000; // Renovar si quedan menos de 5 minutos (300000ms)
 const MIN_REFRESH_INTERVAL_MS = 60000; // No renovar más de una vez por minuto
