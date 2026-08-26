@@ -20,11 +20,17 @@ export const obtenerMovimientos = async (req: AuthRequest, res: Response): Promi
 
     // Si es superusuario (idNegocio = 99999), obtener todos los movimientos
     const isSuperuser = idNegocio === 99999;
-    const whereClause = isSuperuser
-      ? "WHERE m.fecharegistro IS NOT NULL AND m.estatusmovimiento IN ('PENDIENTE', 'PROCESADO')"
-      : "WHERE m.idnegocio = ? AND m.estatusmovimiento IN ('PENDIENTE', 'PROCESADO')";
 
-    const params = isSuperuser ? [] : [idNegocio];
+    // Los PROCESADO solo se listan si caen en esta ventana; los PENDIENTE se
+    // incluyen siempre para no ocultar tareas por procesar/aplicar aunque sean viejas.
+    const fechaLimite = formatMySQLDateTime(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+    const filtroFecha = "(m.estatusmovimiento = 'PENDIENTE' OR m.fechamovimiento >= ?)";
+
+    const whereClause = isSuperuser
+      ? `WHERE m.fecharegistro IS NOT NULL AND m.estatusmovimiento IN ('PENDIENTE', 'PROCESADO') AND ${filtroFecha}`
+      : `WHERE m.idnegocio = ? AND m.estatusmovimiento IN ('PENDIENTE', 'PROCESADO') AND ${filtroFecha}`;
+
+    const params = isSuperuser ? [fechaLimite] : [idNegocio, fechaLimite];
 
     const [movimientos] = await pool.query<(Movimiento & RowDataPacket)[]>(
       `SELECT * FROM tblposcrumenwebmovimientos m
@@ -33,17 +39,29 @@ export const obtenerMovimientos = async (req: AuthRequest, res: Response): Promi
       params
     );
 
-    // Cargar detalles para cada movimiento
-    const movimientosConDetalles: MovimientoConDetalles[] = await Promise.all(
-      movimientos.map(async (mov: Movimiento & RowDataPacket) => {
-        // Load detalles using idmovimiento as the reference key (stored in claveturno of detallemovimientos)
-        const [detalles] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
-          'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE claveturno = ? ORDER BY iddetallemovimiento',
-          [mov.idmovimiento.toString()]
-        );
-        return { ...mov, detalles };
-      })
-    );
+    // Cargar detalles de todos los movimientos en una sola consulta (evita N+1 queries)
+    const detallesPorMovimiento = new Map<string, (DetalleMovimiento & RowDataPacket)[]>();
+    if (movimientos.length > 0) {
+      const claves = movimientos.map((mov: Movimiento & RowDataPacket) => mov.idmovimiento.toString());
+      const [detalles] = await pool.query<(DetalleMovimiento & RowDataPacket)[]>(
+        'SELECT * FROM tblposcrumenwebdetallemovimientos WHERE claveturno IN (?) ORDER BY claveturno, iddetallemovimiento',
+        [claves]
+      );
+      for (const detalle of detalles) {
+        const clave = detalle.claveturno ?? '';
+        const lista = detallesPorMovimiento.get(clave);
+        if (lista) {
+          lista.push(detalle);
+        } else {
+          detallesPorMovimiento.set(clave, [detalle]);
+        }
+      }
+    }
+
+    const movimientosConDetalles: MovimientoConDetalles[] = movimientos.map((mov: Movimiento & RowDataPacket) => ({
+      ...mov,
+      detalles: detallesPorMovimiento.get(mov.idmovimiento.toString()) || []
+    }));
 
     res.status(200).json({
       success: true,
