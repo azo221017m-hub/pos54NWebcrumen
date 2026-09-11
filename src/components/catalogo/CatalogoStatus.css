@@ -1,0 +1,157 @@
+/* Indicador de estado del catálogo local (PWA). Compacto en móvil, discreto en escritorio. */
+
+.catalogo-status {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 1200;
+  font-family: inherit;
+  max-width: calc(100vw - 24px);
+}
+
+.catalogo-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  background: #eef2f7;
+  color: #334155;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+  transition: opacity 0.2s ease;
+}
+
+.catalogo-status-texto {
+  white-space: nowrap;
+}
+
+.catalogo-status-actualizado .catalogo-status-chip {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #86efac;
+}
+
+.catalogo-status-sincronizando .catalogo-status-chip {
+  background: #dbeafe;
+  color: #1e40af;
+  border-color: #93c5fd;
+}
+
+.catalogo-status-offline .catalogo-status-chip {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fcd34d;
+}
+
+.catalogo-status-error .catalogo-status-chip {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+
+.catalogo-status-girando {
+  animation: catalogo-status-spin 1s linear infinite;
+}
+
+@keyframes catalogo-status-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.catalogo-status-detalle {
+  margin-top: 8px;
+  padding: 12px;
+  width: 260px;
+  max-width: calc(100vw - 24px);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
+}
+
+.catalogo-status-datos {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.catalogo-status-datos > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.catalogo-status-datos dt {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.catalogo-status-datos dd {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.catalogo-status-mensaje {
+  margin: 10px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+.catalogo-status-acciones {
+  margin-top: 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.catalogo-status-acciones button {
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: none;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.catalogo-status-acciones button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.catalogo-status-acciones .catalogo-status-secundario {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+/* En pantallas pequeñas el chip se reduce a sólo el icono para no tapar la comanda */
+@media (max-width: 600px) {
+  .catalogo-status {
+    left: 8px;
+    bottom: 8px;
+  }
+
+  .catalogo-status:not(.catalogo-status-expandido) .catalogo-status-texto {
+    display: none;
+  }
+
+  .catalogo-status-chip {
+    padding: 7px;
+  }
+}
+
+/* Al imprimir tickets/comandas el indicador no debe aparecer */
+@media print {
+  .catalogo-status {
+    display: none !important;
+  }
+}

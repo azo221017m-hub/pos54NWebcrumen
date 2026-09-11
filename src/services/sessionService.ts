@@ -4,6 +4,9 @@
  */
 
 import { jwtDecode } from 'jwt-decode';
+// `catalogoDB` no importa nada de la app (sólo usa la API nativa de IndexedDB),
+// por lo que puede importarse aquí sin crear un ciclo con api.ts.
+import { limpiarCatalogoLocal } from './catalogoDB';
 
 // Tipos para el payload del token JWT
 interface JWTPayload {
@@ -130,6 +133,14 @@ export const clearSession = (): void => {
   // Si falla, se loggea pero no interrumpe la sesión
   clearServiceWorkerCache().catch(err => {
     console.error('Error al limpiar cache del service worker:', err);
+  });
+
+  // Limpiar el catálogo local (IndexedDB) por la misma razón: un dispositivo
+  // compartido no debe conservar el catálogo del negocio anterior. Se borran
+  // TODOS los negocios porque en este punto ya no se sabe cuál estaba activo.
+  // Fire-and-forget, igual que el cache del service worker.
+  limpiarCatalogoLocal().catch(err => {
+    console.error('Error al limpiar el catálogo local (IndexedDB):', err);
   });
 };
 

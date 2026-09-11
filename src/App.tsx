@@ -3,6 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import AppRouter from './router/AppRouter';
 import UpdateNotification from './components/UpdateNotification';
 import FeedbackToast from './components/FeedbackToast';
+import CatalogoStatus from './components/catalogo/CatalogoStatus';
 import { initSessionMonitoring, setupSessionClearOnReload } from './services/sessionService';
 import { setupActivityTracking } from './services/activityRefreshService';
 import { queryClient } from './config/queryClient';
@@ -40,6 +41,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AppRouter />
       <UpdateNotification />
+      {/* Sincroniza el catálogo local (IndexedDB) y muestra ONLINE/OFFLINE/SINCRONIZANDO.
+          Se monta aquí una sola vez para que aplique a pantallas web y móviles. */}
+      <CatalogoStatus />
       <FeedbackToast />
     </QueryClientProvider>
   );

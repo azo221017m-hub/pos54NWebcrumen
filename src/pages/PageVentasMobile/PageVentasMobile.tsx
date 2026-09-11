@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { negociosService } from '../../services/negociosService';
-import { useProductosWebCatalogo, useCategoriasCatalogo } from '../../hooks/useMenuCatalogo';
+import { useProductosWebCatalogo, useCategoriasCatalogo, useModeradoresCatalogo, useCatModeradoresCatalogo } from '../../hooks/useMenuCatalogo';
 import { crearVentaWeb, agregarDetallesAVenta } from '../../services/ventasWebService';
 import { verificarTurnoAbierto } from '../../services/turnosService';
 import { clearSession } from '../../services/sessionService';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../../components/FeedbackToast';
 import { extractShortFolio } from '../../utils/formatters';
 import { obtenerMesas } from '../../services/mesasService';
-import { obtenerCatModeradores } from '../../services/catModeradoresService';
-import { obtenerModeradores } from '../../services/moderadoresService';
 import { buscarClientesPorReferencia } from '../../services/clientesService';
 import { registrarLog } from '../../services/logService';
 import { getPaperConfig, getMediaPrintCss } from '../../utils/ticketLayout';
@@ -107,6 +105,8 @@ const PageVentasMobile: React.FC = () => {
   // -incluyendo fotos en base64- cada vez que se monta esta pantalla.
   const { data: productosWebData } = useProductosWebCatalogo();
   const { data: categoriasData } = useCategoriasCatalogo();
+  const { data: moderadoresData } = useModeradoresCatalogo();
+  const { data: catModeradoresData } = useCatModeradoresCatalogo();
 
   // ── UI state ──────────────────────────────────────────
   const [currentStep, setCurrentStep] = useState<Step>(0);
@@ -162,17 +162,10 @@ const PageVentasMobile: React.FC = () => {
           setShowIniciaTurnoModal(true);
         }
 
-        // Load mesas, catModeradores, moderadores in parallel
-        // (productos/categorias se cargan por separado vía React Query, ver efectos abajo)
-        const idNegocio = usuario?.idNegocio;
-        const [mesasData, catMods, mods] = await Promise.all([
-          obtenerMesas().catch(() => [] as Mesa[]),
-          obtenerCatModeradores().catch(() => [] as CatModerador[]),
-          idNegocio ? obtenerModeradores(idNegocio).catch(() => [] as Moderador[]) : Promise.resolve([] as Moderador[]),
-        ]);
+        // Mesas sigue viniendo de la API (no es catálogo replicado localmente).
+        // Moderadores y sus categorías salen del catálogo local; ver efectos abajo.
+        const mesasData = await obtenerMesas().catch(() => [] as Mesa[]);
         setMesas(mesasData);
-        setCatModeradores(catMods);
-        setModeradores(mods);
 
         // Load negocio
         if (usuario?.idNegocio) {
@@ -208,6 +201,16 @@ const PageVentasMobile: React.FC = () => {
       setCategorias(catsActivas);
     }
   }, [categoriasData]);
+
+  // Moderadores (opciones de modificación) y sus categorías, desde IndexedDB.
+  // Se conserva el comportamiento anterior: la lista llega sin filtrar por estatus.
+  useEffect(() => {
+    if (moderadoresData) setModeradores(moderadoresData);
+  }, [moderadoresData]);
+
+  useEffect(() => {
+    if (catModeradoresData) setCatModeradores(catModeradoresData);
+  }, [catModeradoresData]);
 
   // ── Filter products ───────────────────────────────────
   useEffect(() => {

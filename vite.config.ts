@@ -1,6 +1,15 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { readFileSync } from 'node:fs'
+
+// Versión de la APLICACIÓN (distinta de la versión del CATÁLOGO).
+// La app se actualiza vía Service Worker (banner de UpdateNotification);
+// el catálogo se actualiza vía IndexedDB + /api/catalogo/sync. Son dos ciclos
+// de vida independientes y no deben confundirse.
+const { version: appVersion } = JSON.parse(
+  readFileSync(new URL('./package.json', import.meta.url), 'utf-8')
+) as { version: string }
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -42,6 +51,9 @@ export default defineConfig({
         globIgnores: ['**/agradecimientocdt.png'], // Exclude large image (2.49 MB) from precache; served on demand
         // Exclude API endpoints from caching to always fetch fresh data
         navigateFallbackDenylist: [/^\/api/],
+        // Servir el app shell desde el precache cuando no hay red: sin esto la PWA
+        // no arranca offline y el catálogo local de IndexedDB no serviría de nada.
+        navigateFallback: 'index.html',
         // NO activar automáticamente: esperar a que el usuario confirme la actualización
         skipWaiting: false,
         clientsClaim: true, // Tomar control de las páginas abiertas después de activarse
@@ -70,6 +82,9 @@ export default defineConfig({
       }
     })
   ],
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion)
+  },
   build: {
     // Target browsers that cover all modern mobile devices (Chrome 80+, Safari 13+, Firefox 72+)
     target: ['es2019', 'chrome80', 'safari13', 'firefox72', 'edge80'],

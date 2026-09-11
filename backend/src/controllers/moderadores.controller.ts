@@ -1,7 +1,8 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
+import { registrarCambioCatalogo } from '../services/catalogo.service';
 
 /**
  * IMPORTANTE: Los moderadores son opciones de modificación para productos
@@ -69,9 +70,16 @@ export const obtenerModeradores = async (req: AuthRequest, res: Response): Promi
 };
 
 // Obtener un moderador por ID
-export const obtenerModerador = async (req: Request, res: Response): Promise<void> => {
+export const obtenerModerador = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    // Sólo registros del negocio del usuario: un id ajeno responde 404
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({ message: 'Usuario no autenticado o sin negocio asignado' });
+      return;
+    }
     
     const [rows] = await pool.query<Moderador[]>(
       `SELECT 
@@ -83,8 +91,8 @@ export const obtenerModerador = async (req: Request, res: Response): Promise<voi
         idnegocio,
         estatus
       FROM tblposcrumenwebmoderadores
-      WHERE idmoderador = ?`,
-      [id]
+      WHERE idmoderador = ? AND idnegocio = ?`,
+      [id, idnegocio]
     );
     
     if (rows.length === 0) {
@@ -152,6 +160,12 @@ export const crearModerador = async (req: AuthRequest, res: Response): Promise<v
       [result.insertId]
     );
 
+    await registrarCambioCatalogo(idnegocio, {
+      entidad: 'moderador',
+      identidad: result.insertId,
+      accion: 'CREATE'
+    });
+
     res.status(201).json(createdRows[0]);
   } catch (error) {
     console.error('Error al crear moderador:', error);
@@ -163,7 +177,7 @@ export const crearModerador = async (req: AuthRequest, res: Response): Promise<v
 };
 
 // Actualizar moderador
-export const actualizarModerador = async (req: Request, res: Response): Promise<void> => {
+export const actualizarModerador = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const {
@@ -172,6 +186,14 @@ export const actualizarModerador = async (req: Request, res: Response): Promise<
       estatus
     } = req.body;
 
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ message: 'El usuario no está autenticado' });
+      return;
+    }
+
+    // Acotado al negocio del usuario: un moderador ajeno responde 404
     const [result] = await pool.query<ResultSetHeader>(
       `UPDATE tblposcrumenwebmoderadores 
        SET 
@@ -179,12 +201,13 @@ export const actualizarModerador = async (req: Request, res: Response): Promise<
         fehamodificacionauditoria = NOW(),
         usuarioauditoria = ?,
         estatus = ?
-       WHERE idmoderador = ?`,
+       WHERE idmoderador = ? AND idnegocio = ?`,
       [
         nombremoderador,
         usuarioauditoria,
         estatus,
-        id
+        id,
+        idnegocio
       ]
     );
 
@@ -208,6 +231,12 @@ export const actualizarModerador = async (req: Request, res: Response): Promise<
       [id]
     );
 
+    await registrarCambioCatalogo(idnegocio, {
+      entidad: 'moderador',
+      identidad: Number(id),
+      accion: 'UPDATE'
+    });
+
     res.json(updatedRows[0]);
   } catch (error) {
     console.error('Error al actualizar moderador:', error);
@@ -219,19 +248,34 @@ export const actualizarModerador = async (req: Request, res: Response): Promise<
 };
 
 // Eliminar moderador
-export const eliminarModerador = async (req: Request, res: Response): Promise<void> => {
+export const eliminarModerador = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    const idnegocio = req.user?.idNegocio;
 
+    if (!idnegocio) {
+      res.status(400).json({ message: 'El usuario no está autenticado' });
+      return;
+    }
+
+    // Borrado físico: el filtro por negocio es lo único que impide eliminar
+    // de forma irreversible un moderador de otro negocio.
     const [result] = await pool.query<ResultSetHeader>(
-      'DELETE FROM tblposcrumenwebmoderadores WHERE idmoderador = ?',
-      [id]
+      'DELETE FROM tblposcrumenwebmoderadores WHERE idmoderador = ? AND idnegocio = ?',
+      [id, idnegocio]
     );
 
     if (result.affectedRows === 0) {
       res.status(404).json({ message: 'Moderador no encontrado' });
       return;
     }
+
+    // Borrado físico: el cliente debe eliminar el registro de IndexedDB
+    await registrarCambioCatalogo(idnegocio, {
+      entidad: 'moderador',
+      identidad: Number(id),
+      accion: 'DELETE'
+    });
 
     res.json({ message: 'Moderador eliminado exitosamente' });
   } catch (error) {

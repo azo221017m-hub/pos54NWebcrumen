@@ -2,10 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Search, Plus, Minus, ChevronLeft, ChevronRight, StickyNote, Utensils } from 'lucide-react';
 import useIsMobile from '../../hooks/useIsMobile';
-import { useProductosWebCatalogo, useCategoriasCatalogo } from '../../hooks/useMenuCatalogo';
+import { useProductosWebCatalogo, useCategoriasCatalogo, useModeradoresCatalogo, useCatModeradoresCatalogo } from '../../hooks/useMenuCatalogo';
 import { crearVentaWeb, agregarDetallesAVenta, actualizarVentaWeb, sincronizarDetallesVentaWebSolicitado } from '../../services/ventasWebService';
-import { obtenerModeradores } from '../../services/moderadoresService';
-import { obtenerModeradoresRef } from '../../services/moderadoresRefService';
 import { verificarTurnoAbierto } from '../../services/turnosService';
 import { cambiarEstatusMesa } from '../../services/mesasService';
 import { clearSession, setSkipBeforeUnload } from '../../services/sessionService';
@@ -117,6 +115,8 @@ const PageVentas: React.FC = () => {
   // -incluyendo fotos en base64- cada vez que se monta esta pantalla.
   const { data: productosWebData } = useProductosWebCatalogo();
   const { data: categoriasData } = useCategoriasCatalogo();
+  const { data: moderadoresData } = useModeradoresCatalogo();
+  const { data: catModeradoresData } = useCatModeradoresCatalogo();
   
   // Moderadores states
   const [moderadores, setModeradores] = useState<Moderador[]>([]);
@@ -253,31 +253,24 @@ const PageVentas: React.FC = () => {
     }
   }, [categoriasData]);
 
-  const cargarModeradores = async (idNegocio: number) => {
-    try {
-      const mods = await obtenerModeradores(idNegocio);
-      const modsActivos = mods.filter(m => m.estatus === ESTATUS_ACTIVO);
-      setModeradores(modsActivos);
-      
-      const catMods = await obtenerModeradoresRef(idNegocio);
-      // Map ModeradorRef to CatModerador format
-      const mappedCatMods = catMods
-        .filter(cm => cm.estatus === ESTATUS_ACTIVO)
-        .map(cm => ({
-          idmodref: cm.idmoderadorref,
-          nombremodref: cm.nombremodref,
-          fechaRegistroauditoria: cm.fechaRegistroauditoria,
-          usuarioauditoria: cm.usuarioauditoria,
-          fehamodificacionauditoria: cm.fehamodificacionauditoria,
-          idnegocio: cm.idnegocio,
-          estatus: cm.estatus,
-          moderadores: cm.moderadores || ''
-        }));
-      setCatModeradores(mappedCatMods);
-    } catch (error) {
-      console.error('Error al cargar moderadores:', error);
+  // Moderadores (opciones de modificación) y sus categorías salen del catálogo
+  // local en IndexedDB, igual que productos y categorías. Se siguen filtrando por
+  // estatus activo aquí, tal como antes.
+  useEffect(() => {
+    if (moderadoresData) {
+      setModeradores(moderadoresData.filter(m => m.estatus === ESTATUS_ACTIVO));
     }
-  };
+  }, [moderadoresData]);
+
+  useEffect(() => {
+    if (catModeradoresData) {
+      setCatModeradores(
+        catModeradoresData
+          .filter(cm => cm.estatus === ESTATUS_ACTIVO)
+          .map(cm => ({ ...cm, moderadores: cm.moderadores || '' }))
+      );
+    }
+  }, [catModeradoresData]);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -289,7 +282,6 @@ const PageVentas: React.FC = () => {
       // Cargar datos del negocio del usuario
       if (user.idNegocio) {
         cargarNegocio(user.idNegocio);
-        cargarModeradores(user.idNegocio);
       }
     }
 

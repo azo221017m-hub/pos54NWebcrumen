@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
+import { registrarCambioCatalogo } from '../services/catalogo.service';
 
 interface ProductoWeb extends RowDataPacket {
   idProducto: number;
@@ -96,9 +97,16 @@ export const obtenerProductosWeb = async (req: AuthRequest, res: Response): Prom
 };
 
 // Obtener un producto web por ID
-export const obtenerProductoWebPorId = async (req: Request, res: Response): Promise<void> => {
+export const obtenerProductoWebPorId = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    // Sólo registros del negocio del usuario: un id ajeno responde 404
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({ mensaje: 'Usuario no autenticado o sin negocio asignado' });
+      return;
+    }
 
     const [rows] = await pool.query<ProductoWeb[]>(
       `SELECT 
@@ -138,8 +146,8 @@ export const obtenerProductoWebPorId = async (req: Request, res: Response): Prom
       LEFT JOIN tblposcrumenwebcategorias c ON p.idCategoria = c.idCategoria
       LEFT JOIN tblposcrumenwebrecetas r ON p.tipoproducto = 'Receta' AND p.idreferencia = r.idReceta
       LEFT JOIN tblposcrumenwebinsumos i ON p.tipoproducto = 'Inventario' AND p.idreferencia = i.id_insumo
-      WHERE p.idProducto = ?`,
-      [id]
+      WHERE p.idProducto = ? AND p.idnegocio = ?`,
+      [id, idnegocio]
     );
 
     if (rows.length === 0) {
@@ -306,6 +314,13 @@ export const crearProductoWeb = async (req: AuthRequest, res: Response): Promise
       [result.insertId]
     );
 
+    // Versionar el catálogo: el alta incluye precio e imagen, que las PWAs cachean
+    await registrarCambioCatalogo(idnegocio, {
+      entidad: 'producto',
+      identidad: result.insertId,
+      accion: 'CREATE'
+    });
+
     res.status(201).json({
       success: true,
       mensaje: 'Producto web creado exitosamente',
@@ -338,10 +353,11 @@ export const actualizarProductoWeb = async (req: AuthRequest, res: Response): Pr
       menudia
     } = req.body;
 
-    // Obtener alias del usuario autenticado
+    // Obtener idnegocio y alias del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
     const usuarioauditoria = req.user?.alias;
 
-    if (!usuarioauditoria) {
+    if (!idnegocio || !usuarioauditoria) {
       res.status(400).json({ 
         success: false,
         mensaje: 'El usuario no está autenticado' 
@@ -349,10 +365,11 @@ export const actualizarProductoWeb = async (req: AuthRequest, res: Response): Pr
       return;
     }
 
-    // Verificar si existe el producto
+    // Verificar que el producto exista Y pertenezca al negocio del usuario.
+    // Un producto de otro negocio responde 404, igual que uno inexistente.
     const [exist] = await pool.query<RowDataPacket[]>(
-      'SELECT idProducto FROM tblposcrumenwebproductos WHERE idProducto = ?',
-      [id]
+      'SELECT idProducto FROM tblposcrumenwebproductos WHERE idProducto = ? AND idnegocio = ?',
+      [id, idnegocio]
     );
 
     if (exist.length === 0) {
@@ -363,10 +380,10 @@ export const actualizarProductoWeb = async (req: AuthRequest, res: Response): Pr
       return;
     }
 
-    // Verificar si ya existe otro producto con el mismo nombre
+    // Verificar si ya existe otro producto con el mismo nombre en este negocio
     const [existing] = await pool.query<RowDataPacket[]>(
-      `SELECT COUNT(*) as count FROM tblposcrumenwebproductos WHERE nombre = ? AND idProducto != ? AND idnegocio = (SELECT idnegocio FROM tblposcrumenwebproductos WHERE idProducto = ?)`,
-      [nombre, id, id]
+      `SELECT COUNT(*) as count FROM tblposcrumenwebproductos WHERE nombre = ? AND idProducto != ? AND idnegocio = ?`,
+      [nombre, id, idnegocio]
     );
 
     if (existing[0].count > 0) {
@@ -416,8 +433,8 @@ export const actualizarProductoWeb = async (req: AuthRequest, res: Response): Pr
       params.push(imagenBuffer);
     }
 
-    updateQuery += ` WHERE idProducto = ?`;
-    params.push(Number(id));
+    updateQuery += ` WHERE idProducto = ? AND idnegocio = ?`;
+    params.push(Number(id), idnegocio);
 
     const [result] = await pool.query<ResultSetHeader>(updateQuery, params);
 
@@ -472,6 +489,13 @@ export const actualizarProductoWeb = async (req: AuthRequest, res: Response): Pr
       [id]
     );
 
+    // Cubre también los cambios de precio: son una columna de este mismo registro
+    await registrarCambioCatalogo(idnegocio, {
+      entidad: 'producto',
+      identidad: Number(id),
+      accion: 'UPDATE'
+    });
+
     res.status(200).json({ 
       success: true,
       mensaje: 'Producto web actualizado exitosamente',
@@ -488,19 +512,32 @@ export const actualizarProductoWeb = async (req: AuthRequest, res: Response): Pr
 };
 
 // Eliminar producto web (soft delete)
-export const eliminarProductoWeb = async (req: Request, res: Response): Promise<void> => {
+export const eliminarProductoWeb = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      return;
+    }
 
     const [result] = await pool.query<ResultSetHeader>(
-      'UPDATE tblposcrumenwebproductos SET estatus = 0 WHERE idProducto = ?',
-      [id]
+      'UPDATE tblposcrumenwebproductos SET estatus = 0 WHERE idProducto = ? AND idnegocio = ?',
+      [id, idnegocio]
     );
 
     if (result.affectedRows === 0) {
       res.status(404).json({ mensaje: 'Producto web no encontrado' });
       return;
     }
+
+    // Baja lógica (estatus = 0): se propaga como UPDATE, la fila sigue existiendo
+    await registrarCambioCatalogo(idnegocio, {
+      entidad: 'producto',
+      identidad: Number(id),
+      accion: 'UPDATE'
+    });
 
     res.status(200).json({ mensaje: 'Producto web eliminado exitosamente' });
   } catch (error) {

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
+import { registrarCambioCatalogo } from '../services/catalogo.service';
 
 // Interface para Descuento
 interface Descuento extends RowDataPacket {
@@ -78,9 +79,16 @@ export const obtenerDescuentos = async (req: AuthRequest, res: Response): Promis
 };
 
 // Obtener un descuento por ID
-export const obtenerDescuentoPorId = async (req: Request, res: Response): Promise<void> => {
+export const obtenerDescuentoPorId = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id_descuento } = req.params;
+    // Sólo registros del negocio del usuario: un id ajeno responde 404
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({ message: 'Usuario no autenticado o sin negocio asignado' });
+      return;
+    }
     
     console.log('Obteniendo descuento con ID:', id_descuento);
     
@@ -94,8 +102,8 @@ export const obtenerDescuentoPorId = async (req: Request, res: Response): Promis
         requiereautorizacion,
         idnegocio
       FROM tblposcrumenwebdescuentos
-      WHERE id_descuento = ?`,
-      [id_descuento]
+      WHERE id_descuento = ? AND idnegocio = ?`,
+      [id_descuento, idnegocio]
     );
 
     if (rows.length === 0) {
@@ -190,6 +198,12 @@ export const crearDescuento = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
+    await registrarCambioCatalogo(idnegocio, {
+      entidad: 'descuento',
+      identidad: result.insertId,
+      accion: 'CREATE'
+    });
+
     res.status(201).json(createdDescuento);
   } catch (error) {
     console.error('Error al crear descuento:', error);
@@ -212,22 +226,24 @@ export const actualizarDescuento = async (req: AuthRequest, res: Response): Prom
       requiereautorizacion
     } = req.body;
 
-    // Obtener alias del usuario autenticado
+    // Obtener idnegocio y alias del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
     const usuarioauditoria = req.user?.alias;
 
     console.log('Actualizando descuento ID:', id_descuento);
 
-    if (!usuarioauditoria) {
+    if (!idnegocio || !usuarioauditoria) {
       res.status(400).json({ 
         message: 'Usuario no está autenticado'
       });
       return;
     }
 
-    // Validar que el descuento existe
+    // Validar que el descuento existe Y pertenece al negocio del usuario.
+    // Un descuento de otro negocio responde 404, igual que uno inexistente.
     const [descuentoExistente] = await pool.query<Descuento[]>(
-      'SELECT id_descuento FROM tblposcrumenwebdescuentos WHERE id_descuento = ?',
-      [id_descuento]
+      'SELECT id_descuento FROM tblposcrumenwebdescuentos WHERE id_descuento = ? AND idnegocio = ?',
+      [id_descuento, idnegocio]
     );
 
     if (descuentoExistente.length === 0) {
@@ -264,7 +280,7 @@ export const actualizarDescuento = async (req: AuthRequest, res: Response): Prom
            requiereautorizacion = ?,
            usuarioauditoria = ?,
            fechamodificacionauditoria = NOW()
-       WHERE id_descuento = ?`,
+       WHERE id_descuento = ? AND idnegocio = ?`,
       [
         nombre,
         tipodescuento,
@@ -272,7 +288,8 @@ export const actualizarDescuento = async (req: AuthRequest, res: Response): Prom
         estatusdescuento,
         requiereautorizacion,
         usuarioauditoria,
-        id_descuento
+        id_descuento,
+        idnegocio
       ]
     );
 
@@ -291,6 +308,12 @@ export const actualizarDescuento = async (req: AuthRequest, res: Response): Prom
       return;
     }
 
+    await registrarCambioCatalogo(idnegocio, {
+      entidad: 'descuento',
+      identidad: Number(id_descuento),
+      accion: 'UPDATE'
+    });
+
     res.json(updatedDescuento);
   } catch (error) {
     console.error('Error al actualizar descuento:', error);
@@ -302,15 +325,23 @@ export const actualizarDescuento = async (req: AuthRequest, res: Response): Prom
 };
 
 // Eliminar descuento
-export const eliminarDescuento = async (req: Request, res: Response): Promise<void> => {
+export const eliminarDescuento = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id_descuento } = req.params;
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ message: 'Usuario no está autenticado' });
+      return;
+    }
     
     console.log('Eliminando descuento ID:', id_descuento);
 
+    // Borrado físico: el filtro por negocio es lo único que impide eliminar
+    // de forma irreversible un descuento de otro negocio.
     const [result] = await pool.query<ResultSetHeader>(
-      'DELETE FROM tblposcrumenwebdescuentos WHERE id_descuento = ?',
-      [id_descuento]
+      'DELETE FROM tblposcrumenwebdescuentos WHERE id_descuento = ? AND idnegocio = ?',
+      [id_descuento, idnegocio]
     );
 
     if (result.affectedRows === 0) {
@@ -319,6 +350,14 @@ export const eliminarDescuento = async (req: Request, res: Response): Promise<vo
     }
 
     console.log('Descuento eliminado exitosamente');
+
+    // Borrado físico (DELETE real): el cliente debe quitarlo de IndexedDB
+    await registrarCambioCatalogo(idnegocio, {
+      entidad: 'descuento',
+      identidad: Number(id_descuento),
+      accion: 'DELETE'
+    });
+
     res.json({ message: 'Descuento eliminado exitosamente' });
   } catch (error) {
     console.error('Error al eliminar descuento:', error);
@@ -358,10 +397,16 @@ export const validarNombreDescuentoUnico = async (req: Request, res: Response): 
 };
 
 // Cambiar estatus de descuento
-export const cambiarEstatusDescuento = async (req: Request, res: Response): Promise<void> => {
+export const cambiarEstatusDescuento = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id_descuento } = req.params;
     const { estatusdescuento, UsuarioModifico } = req.body;
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ message: 'Usuario no está autenticado' });
+      return;
+    }
 
     console.log('Cambiando estatus de descuento ID:', id_descuento, 'a:', estatusdescuento);
 
@@ -370,8 +415,8 @@ export const cambiarEstatusDescuento = async (req: Request, res: Response): Prom
        SET estatusdescuento = ?,
            UsuarioModifico = ?,
            FechaModifico = NOW()
-       WHERE id_descuento = ?`,
-      [estatusdescuento, UsuarioModifico, id_descuento]
+       WHERE id_descuento = ? AND idnegocio = ?`,
+      [estatusdescuento, UsuarioModifico, id_descuento, idnegocio]
     );
 
     if (result.affectedRows === 0) {
@@ -380,6 +425,13 @@ export const cambiarEstatusDescuento = async (req: Request, res: Response): Prom
     }
 
     console.log('Estatus de descuento actualizado exitosamente');
+
+    await registrarCambioCatalogo(idnegocio, {
+      entidad: 'descuento',
+      identidad: Number(id_descuento),
+      accion: 'UPDATE'
+    });
+
     res.json({ message: 'Estatus actualizado exitosamente' });
   } catch (error) {
     console.error('Error al cambiar estatus de descuento:', error);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import './ModuloPagos.css';
-import { obtenerDescuentos } from '../../services/descuentosService';
+import { useDescuentosCatalogo } from '../../hooks/useMenuCatalogo';
 import { procesarPagoSimple, procesarPagoMixto, obtenerDetallesPagos } from '../../services/pagosService';
 import { negociosService } from '../../services/negociosService';
 import type { DatosRecibo } from '../../utils/reciboPagoUtils';
@@ -81,29 +81,23 @@ const ModuloPagos: React.FC<ModuloPagosProps> = ({ onClose, onPaymentSuccess, to
   const [negocioData, setNegocioData] = useState<Negocio | null>(null);
   const [parametrosData, setParametrosData] = useState<ParametrosNegocio | null>(null);
 
-  const cargarDescuentos = useCallback(async () => {
-    try {
-      setCargandoDescuentos(true);
-      const descuentosData = await obtenerDescuentos();
-      // Filtrar solo descuentos activos (case-insensitive)
-      const descuentosActivos = descuentosData.filter(d => d.estatusdescuento.toLowerCase() === 'activo');
-      setDescuentos(descuentosActivos);
-    } catch (error) {
-      console.error('Error al cargar descuentos:', error);
-    } finally {
-      setCargandoDescuentos(false);
-    }
-  }, []);
+  // Los descuentos vienen del catálogo local (IndexedDB), no de una petición HTTP
+  // en cada apertura del módulo de pagos. Se mantiene el filtro por estatus activo.
+  const { data: descuentosData, isLoading: descuentosCargando } = useDescuentosCatalogo();
 
-  // Cargar descuentos al montar el componente
   useEffect(() => {
-    cargarDescuentos();
-    
+    setCargandoDescuentos(descuentosCargando);
+    if (descuentosData) {
+      setDescuentos(descuentosData.filter(d => d.estatusdescuento?.toLowerCase() === 'activo'));
+    }
+  }, [descuentosData, descuentosCargando]);
+
+  useEffect(() => {
     // Show warning if no ventaId
     if (!ventaId) {
       console.warn('⚠️ ModuloPagos abierto sin ventaId. El usuario debe usar PRODUCIR primero.');
     }
-  }, [ventaId, cargarDescuentos]);
+  }, [ventaId]);
 
   // Cargar datos del negocio para el recibo
   useEffect(() => {

@@ -1,7 +1,8 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
+import { registrarCambioCatalogo } from '../services/catalogo.service';
 
 // Interface para tblposcrumenwebmodref
 interface CatModerador extends RowDataPacket {
@@ -56,9 +57,16 @@ export const obtenerCatModeradores = async (req: AuthRequest, res: Response): Pr
 };
 
 // Obtener una categoría moderador por ID
-export const obtenerCatModeradorPorId = async (req: Request, res: Response): Promise<void> => {
+export const obtenerCatModeradorPorId = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    // Sólo registros del negocio del usuario: un id ajeno responde 404
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({ mensaje: 'Usuario no autenticado o sin negocio asignado' });
+      return;
+    }
 
     console.log('🔵 Obteniendo categoría moderador ID:', id);
 
@@ -73,8 +81,8 @@ export const obtenerCatModeradorPorId = async (req: Request, res: Response): Pro
         estatus,
         moderadores
       FROM tblposcrumenwebmodref
-      WHERE idmodref = ?`,
-      [id]
+      WHERE idmodref = ? AND idnegocio = ?`,
+      [id, idnegocio]
     );
 
     if (rows.length === 0) {
@@ -144,6 +152,13 @@ export const crearCatModerador = async (req: AuthRequest, res: Response): Promis
     );
 
     console.log('✅ Categoría moderador creada con ID:', result.insertId);
+
+    await registrarCambioCatalogo(idnegocio, {
+      entidad: 'catmoderador',
+      identidad: result.insertId,
+      accion: 'CREATE'
+    });
+
     res.status(201).json(createdRows[0]);
   } catch (error) {
     await connection.rollback();
@@ -169,10 +184,11 @@ export const actualizarCatModerador = async (req: AuthRequest, res: Response): P
       moderadores
     } = req.body;
 
-    // Obtener alias del usuario autenticado
+    // Obtener idnegocio y alias del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
     const usuarioauditoria = req.user?.alias;
 
-    if (!usuarioauditoria) {
+    if (!idnegocio || !usuarioauditoria) {
       res.status(400).json({ mensaje: 'El usuario no está autenticado' });
       return;
     }
@@ -181,6 +197,7 @@ export const actualizarCatModerador = async (req: AuthRequest, res: Response): P
 
     await connection.beginTransaction();
 
+    // Acotado al negocio del usuario: una categoría ajena responde 404
     const [result] = await connection.query<ResultSetHeader>(
       `UPDATE tblposcrumenwebmodref 
       SET nombremodref = ?,
@@ -188,8 +205,8 @@ export const actualizarCatModerador = async (req: AuthRequest, res: Response): P
           usuarioauditoria = ?,
           estatus = ?,
           moderadores = ?
-      WHERE idmodref = ?`,
-      [nombremodref, usuarioauditoria, estatus, moderadores || '', id]
+      WHERE idmodref = ? AND idnegocio = ?`,
+      [nombremodref, usuarioauditoria, estatus, moderadores || '', id, idnegocio]
     );
 
     await connection.commit();
@@ -216,6 +233,13 @@ export const actualizarCatModerador = async (req: AuthRequest, res: Response): P
     );
 
     console.log('✅ Categoría moderador actualizada');
+
+    await registrarCambioCatalogo(idnegocio, {
+      entidad: 'catmoderador',
+      identidad: Number(id),
+      accion: 'UPDATE'
+    });
+
     res.status(200).json(updatedRows[0]);
   } catch (error) {
     await connection.rollback();
@@ -230,11 +254,17 @@ export const actualizarCatModerador = async (req: AuthRequest, res: Response): P
 };
 
 // Eliminar categoría moderador (soft delete)
-export const eliminarCatModerador = async (req: Request, res: Response): Promise<void> => {
+export const eliminarCatModerador = async (req: AuthRequest, res: Response): Promise<void> => {
   const connection = await pool.getConnection();
 
   try {
     const { id } = req.params;
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      return;
+    }
 
     console.log('🔵 Eliminando categoría moderador ID:', id);
 
@@ -244,8 +274,8 @@ export const eliminarCatModerador = async (req: Request, res: Response): Promise
       `UPDATE tblposcrumenwebmodref 
       SET estatus = 0,
           fehamodificacionauditoria = NOW()
-      WHERE idmodref = ?`,
-      [id]
+      WHERE idmodref = ? AND idnegocio = ?`,
+      [id, idnegocio]
     );
 
     await connection.commit();
@@ -256,6 +286,14 @@ export const eliminarCatModerador = async (req: Request, res: Response): Promise
     }
 
     console.log('✅ Categoría moderador eliminada');
+
+    // Baja lógica (estatus = 0): se propaga como UPDATE
+    await registrarCambioCatalogo(idnegocio, {
+      entidad: 'catmoderador',
+      identidad: Number(id),
+      accion: 'UPDATE'
+    });
+
     res.status(200).json({ mensaje: 'Categoría moderador eliminada exitosamente' });
   } catch (error) {
     await connection.rollback();

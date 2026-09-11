@@ -1,7 +1,8 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
+import { registrarCambioCatalogo } from '../services/catalogo.service';
 
 interface Categoria extends RowDataPacket {
   idCategoria: number;
@@ -18,7 +19,7 @@ interface Categoria extends RowDataPacket {
 }
 
 // Helper function para obtener una categoría completa por ID
-async function obtenerCategoriaCompleta(idCategoria: number): Promise<Categoria | null> {
+async function obtenerCategoriaCompleta(idCategoria: number, idnegocio?: number): Promise<Categoria | null> {
   const [rows] = await pool.query<Categoria[]>(
     `SELECT 
       idCategoria,
@@ -33,8 +34,8 @@ async function obtenerCategoriaCompleta(idCategoria: number): Promise<Categoria 
       idmoderadordef,
       orden
     FROM tblposcrumenwebcategorias 
-    WHERE idCategoria = ?`,
-    [idCategoria]
+    WHERE idCategoria = ?${idnegocio !== undefined ? ' AND idnegocio = ?' : ''}`,
+    idnegocio !== undefined ? [idCategoria, idnegocio] : [idCategoria]
   );
   return rows.length > 0 ? rows[0] : null;
 }
@@ -77,9 +78,16 @@ export const obtenerCategorias = async (req: AuthRequest, res: Response): Promis
 };
 
 // Obtener una categoría por ID
-export const obtenerCategoriaPorId = async (req: Request, res: Response): Promise<void> => {
+export const obtenerCategoriaPorId = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    // Sólo registros del negocio del usuario: un id ajeno responde 404
+    const idnegocio = req.user?.idNegocio;
+
+    if (!idnegocio) {
+      res.status(401).json({ mensaje: 'Usuario no autenticado o sin negocio asignado' });
+      return;
+    }
 
     const [categorias] = await pool.query<Categoria[]>(
       `SELECT 
@@ -95,8 +103,8 @@ export const obtenerCategoriaPorId = async (req: Request, res: Response): Promis
         idmoderadordef,
         orden
       FROM tblposcrumenwebcategorias 
-      WHERE idCategoria = ?`,
-      [id]
+      WHERE idCategoria = ? AND idnegocio = ?`,
+      [id, idnegocio]
     );
 
     if (categorias.length === 0) {
@@ -156,6 +164,13 @@ export const crearCategoria = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
+    // Versionar el catálogo para que las PWAs del negocio sincronicen el alta
+    await registrarCambioCatalogo(idnegocio, {
+      entidad: 'categoria',
+      identidad: result.insertId,
+      accion: 'CREATE'
+    });
+
     res.status(201).json(createdCategoria);
   } catch (error) {
     await connection.rollback();
@@ -181,17 +196,20 @@ export const actualizarCategoria = async (req: AuthRequest, res: Response): Prom
       orden
     } = req.body;
 
-    // Obtener alias del usuario autenticado
+    // Obtener idnegocio y alias del usuario autenticado
+    const idnegocio = req.user?.idNegocio;
     const usuarioauditoria = req.user?.alias;
 
-    if (!usuarioauditoria) {
+    if (!idnegocio || !usuarioauditoria) {
       res.status(400).json({ mensaje: 'El usuario no está autenticado' });
       return;
     }
 
     await connection.beginTransaction();
 
-    await connection.query(
+    // El filtro por idnegocio impide modificar categorías de otro negocio
+    // aunque se envíe un idCategoria ajeno en la URL.
+    const [result] = await connection.query<ResultSetHeader>(
       `UPDATE tblposcrumenwebcategorias 
       SET nombre = ?, 
           imagencategoria = ?, 
@@ -201,21 +219,32 @@ export const actualizarCategoria = async (req: AuthRequest, res: Response): Prom
           fechamodificacionauditoria = NOW(),
           idmoderadordef = ?,
           orden = ?
-      WHERE idCategoria = ?`,
+      WHERE idCategoria = ? AND idnegocio = ?`,
       [nombre, imagencategoria || '', descripcion, estatus, usuarioauditoria, 
-       idmoderadordef, orden, id]
+       idmoderadordef, orden, id, idnegocio]
     );
+
+    if (result.affectedRows === 0) {
+      await connection.rollback();
+      res.status(404).json({ mensaje: 'Categoría no encontrada' });
+      return;
+    }
 
     await connection.commit();
 
     // Obtener la categoría completa actualizada
-    const updatedCategoria = await obtenerCategoriaCompleta(Number(id));
+    const updatedCategoria = await obtenerCategoriaCompleta(Number(id), idnegocio);
     
     if (!updatedCategoria) {
-      await connection.rollback();
       res.status(500).json({ mensaje: 'Categoría actualizada pero no se pudo recuperar' });
       return;
     }
+
+    await registrarCambioCatalogo(idnegocio, {
+      entidad: 'categoria',
+      identidad: Number(id),
+      accion: 'UPDATE'
+    });
 
     res.status(200).json(updatedCategoria);
   } catch (error) {
@@ -228,17 +257,36 @@ export const actualizarCategoria = async (req: AuthRequest, res: Response): Prom
 };
 
 // Eliminar categoría (cambiar estatus a 0)
-export const eliminarCategoria = async (req: Request, res: Response): Promise<void> => {
+export const eliminarCategoria = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    const idnegocio = req.user?.idNegocio;
 
-    await pool.query(
+    if (!idnegocio) {
+      res.status(400).json({ mensaje: 'El usuario no está autenticado' });
+      return;
+    }
+
+    const [result] = await pool.query<ResultSetHeader>(
       `UPDATE tblposcrumenwebcategorias 
       SET estatus = 0, 
           fechamodificacionauditoria = NOW()
-      WHERE idCategoria = ?`,
-      [id]
+      WHERE idCategoria = ? AND idnegocio = ?`,
+      [id, idnegocio]
     );
+
+    if (result.affectedRows === 0) {
+      res.status(404).json({ mensaje: 'Categoría no encontrada' });
+      return;
+    }
+
+    // Baja lógica (estatus = 0): la fila sigue existiendo, por eso se propaga
+    // como UPDATE y el cliente la conserva con estatus 0 en IndexedDB.
+    await registrarCambioCatalogo(idnegocio, {
+      entidad: 'categoria',
+      identidad: Number(id),
+      accion: 'UPDATE'
+    });
 
     res.status(200).json({ mensaje: 'Categoría eliminada exitosamente' });
   } catch (error) {
