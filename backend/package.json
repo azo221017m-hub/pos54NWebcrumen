@@ -18,9 +18,7 @@
     "db:fix-referencia": "ts-node src/scripts/applyReferenciaMigration.ts",
     "test:superuser": "ts-node src/scripts/testCreateSuperuser.ts",
     "test:image-conversion": "ts-node src/scripts/testImageConversion.ts",
-    "verify:user-filtering": "ts-node src/scripts/verifyUserFiltering.ts",
-    "db:catalogo-sync": "ts-node src/scripts/applyCatalogoSyncMigration.ts",
-    "test:catalogo-sync": "ts-node src/scripts/testCatalogoSync.ts"
+    "verify:user-filtering": "ts-node src/scripts/verifyUserFiltering.ts"
   },
   "keywords": [
     "pos",

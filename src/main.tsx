@@ -69,15 +69,11 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-// Registrar Service Worker con manejo de actualizaciones
-// Se hace después del render para no bloquear la carga inicial
-if (import.meta.env.PROD) {
-  // Solo en producción: registrar SW con notificación opcional al usuario
-  // NO se aplica la actualización automáticamente; se muestra un banner para que el usuario decida
-  import('./services/swUpdateService').then(({ setupPromptUpdate }) => {
-    setupPromptUpdate((workbox) => {
-      // Disparar evento personalizado para que UpdateNotification muestre el banner
-      window.dispatchEvent(new CustomEvent('swUpdateAvailable', { detail: { workbox } }));
-    });
-  });
-}
+// REPARACIÓN EMERGENTE: el sistema opera 100% en línea.
+// Ya NO se registra ningún Service Worker. En su lugar se desmonta lo que
+// quedó instalado en el dispositivo (Service Worker, caches y el catálogo
+// local en IndexedDB) para que la aplicación deje de servirse del precache.
+// Se hace después del render para no bloquear la carga inicial.
+import('./services/pwaCleanup').then(({ limpiarLegadoPWA }) => {
+  void limpiarLegadoPWA();
+});

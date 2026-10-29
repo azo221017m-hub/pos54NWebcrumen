@@ -2,7 +2,6 @@ import type { Request, Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
-import { registrarCambioCatalogo } from '../services/catalogo.service';
 
 interface ProductoWeb extends RowDataPacket {
   idProducto: number;
@@ -314,13 +313,6 @@ export const crearProductoWeb = async (req: AuthRequest, res: Response): Promise
       [result.insertId]
     );
 
-    // Versionar el catálogo: el alta incluye precio e imagen, que las PWAs cachean
-    await registrarCambioCatalogo(idnegocio, {
-      entidad: 'producto',
-      identidad: result.insertId,
-      accion: 'CREATE'
-    });
-
     res.status(201).json({
       success: true,
       mensaje: 'Producto web creado exitosamente',
@@ -489,13 +481,6 @@ export const actualizarProductoWeb = async (req: AuthRequest, res: Response): Pr
       [id]
     );
 
-    // Cubre también los cambios de precio: son una columna de este mismo registro
-    await registrarCambioCatalogo(idnegocio, {
-      entidad: 'producto',
-      identidad: Number(id),
-      accion: 'UPDATE'
-    });
-
     res.status(200).json({ 
       success: true,
       mensaje: 'Producto web actualizado exitosamente',
@@ -531,13 +516,6 @@ export const eliminarProductoWeb = async (req: AuthRequest, res: Response): Prom
       res.status(404).json({ mensaje: 'Producto web no encontrado' });
       return;
     }
-
-    // Baja lógica (estatus = 0): se propaga como UPDATE, la fila sigue existiendo
-    await registrarCambioCatalogo(idnegocio, {
-      entidad: 'producto',
-      identidad: Number(id),
-      accion: 'UPDATE'
-    });
 
     res.status(200).json({ mensaje: 'Producto web eliminado exitosamente' });
   } catch (error) {

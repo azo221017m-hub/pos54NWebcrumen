@@ -4,30 +4,18 @@ import { obtenerCategorias } from '../services/categoriasService';
 import { obtenerModeradores } from '../services/moderadoresService';
 import { obtenerCatModeradores } from '../services/catModeradoresService';
 import { obtenerDescuentos } from '../services/descuentosService';
-import {
-  leerColeccion,
-  leerVersionLocal,
-  soportaIndexedDB,
-  type NombreColeccion
-} from '../services/catalogoDB';
-import { sincronizarCatalogo } from '../services/catalogoSyncService';
-import type { ProductoWeb } from '../types/productoWeb.types';
-import type { Categoria } from '../types/categoria.types';
-import type { Moderador } from '../types/moderador.types';
-import type { CatModerador } from '../types/catModerador.types';
-import type { Descuento } from '../types/descuento.types';
 
 /**
  * Catálogo de venta (categorías, platillos, modificadores y descuentos).
  *
- * Desde la incorporación de la PWA offline, estos hooks leen de IndexedDB en vez
- * de pegarle a la API en cada montaje de pantalla. React Query sigue siendo la
- * caché en memoria; la copia local de IndexedDB es la que permite abrir el POS
- * al instante y operar sin conexión. La sincronización con MySQL la orquesta
- * `useCatalogoSync` (montado en App), disparada por eventos, no por polling.
+ * MODO ONLINE. Todo el catálogo se lee directamente de la API en cada consulta;
+ * no hay copia local en IndexedDB ni sincronización por versiones. React Query
+ * mantiene la respuesta en memoria durante la sesión (ver config/queryClient.ts)
+ * para que navegar entre pasos del flujo de venta no vuelva a descargar el
+ * catálogo completo -incluyendo las fotos en base64- en cada montaje.
  *
- * Si el navegador no soporta IndexedDB, o si la copia local falla, se cae de
- * vuelta a los servicios HTTP de siempre: el comportamiento anterior se conserva.
+ * Si el dispositivo pierde la conexión, estas consultas fallan: el sistema
+ * requiere estar en línea para operar.
  */
 
 export const MENU_CATALOGO_QUERY_KEYS = {
@@ -38,7 +26,7 @@ export const MENU_CATALOGO_QUERY_KEYS = {
   descuentos: ['descuentos-catalogo'] as const
 };
 
-/** Negocio de la sesión, usado para particionar la copia local. */
+/** Negocio de la sesión; lo exige el endpoint de moderadores. */
 const idNegocioSesion = (): number | null => {
   try {
     const usuarioRaw = localStorage.getItem('usuario');
@@ -54,76 +42,41 @@ const idNegocioSesion = (): number | null => {
   }
 };
 
-/**
- * Lee una colección del catálogo local. Si todavía no hay copia local (primer
- * arranque), espera a la primera sincronización; si ésta falla, usa la API.
- */
-const leerCatalogo = async <T>(
-  coleccion: NombreColeccion,
-  respaldoApi: () => Promise<T[]>
-): Promise<T[]> => {
-  const idnegocio = idNegocioSesion();
-
-  if (!idnegocio || !soportaIndexedDB()) {
-    return respaldoApi();
-  }
-
-  try {
-    const versionLocal = await leerVersionLocal(idnegocio);
-
-    // Sin copia local: hay que poblarla antes de poder mostrar algo.
-    if (versionLocal === 0) {
-      const sincronizado = await sincronizarCatalogo(idnegocio);
-      if (!sincronizado) return respaldoApi();
-    }
-
-    return await leerColeccion<T>(coleccion, idnegocio);
-  } catch (error) {
-    console.warn(`[Catalogo] fallo al leer "${coleccion}" de IndexedDB, usando API:`, error);
-    return respaldoApi();
-  }
-};
-
 export const useProductosWebCatalogo = () =>
   useQuery({
     queryKey: MENU_CATALOGO_QUERY_KEYS.productosWeb,
-    queryFn: () => leerCatalogo<ProductoWeb>('productos', obtenerProductosWeb)
+    queryFn: obtenerProductosWeb
   });
 
 export const useCategoriasCatalogo = () =>
   useQuery({
     queryKey: MENU_CATALOGO_QUERY_KEYS.categorias,
-    queryFn: () => leerCatalogo<Categoria>('categorias', obtenerCategorias)
+    queryFn: obtenerCategorias
   });
 
 export const useModeradoresCatalogo = () =>
   useQuery({
     queryKey: MENU_CATALOGO_QUERY_KEYS.moderadores,
-    queryFn: () =>
-      // El respaldo HTTP necesita el idnegocio explícito; se resuelve aquí y no
-      // desde el estado del componente, para que no dependa del orden de montaje.
-      leerCatalogo<Moderador>('moderadores', () => {
-        const idnegocio = idNegocioSesion();
-        return idnegocio ? obtenerModeradores(idnegocio) : Promise.resolve([]);
-      })
+    queryFn: () => {
+      const idnegocio = idNegocioSesion();
+      return idnegocio ? obtenerModeradores(idnegocio) : Promise.resolve([]);
+    }
   });
 
 export const useCatModeradoresCatalogo = () =>
   useQuery({
     queryKey: MENU_CATALOGO_QUERY_KEYS.catModeradores,
-    queryFn: () => leerCatalogo<CatModerador>('catModeradores', obtenerCatModeradores)
+    queryFn: obtenerCatModeradores
   });
 
 export const useDescuentosCatalogo = () =>
   useQuery({
     queryKey: MENU_CATALOGO_QUERY_KEYS.descuentos,
-    queryFn: () => leerCatalogo<Descuento>('descuentos', obtenerDescuentos)
+    queryFn: obtenerDescuentos
   });
 
 // Usado por las pantallas de administración (ConfigProductosWeb/ConfigCategorias) tras un
 // create/update/delete, para que el catálogo cacheado en las pantallas de venta no quede obsoleto.
-// La copia de IndexedDB se actualiza por su cuenta al llegar el evento `catalogo_update`;
-// estas invalidaciones sólo refrescan la caché en memoria de React Query.
 export const useInvalidateMenuCatalogo = () => {
   const queryClient = useQueryClient();
   return {

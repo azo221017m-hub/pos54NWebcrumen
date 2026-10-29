@@ -2,7 +2,6 @@ import type { Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
-import { registrarCambioCatalogo } from '../services/catalogo.service';
 
 // Interface para tblposcrumenwebmodref
 interface CatModerador extends RowDataPacket {
@@ -153,12 +152,6 @@ export const crearCatModerador = async (req: AuthRequest, res: Response): Promis
 
     console.log('✅ Categoría moderador creada con ID:', result.insertId);
 
-    await registrarCambioCatalogo(idnegocio, {
-      entidad: 'catmoderador',
-      identidad: result.insertId,
-      accion: 'CREATE'
-    });
-
     res.status(201).json(createdRows[0]);
   } catch (error) {
     await connection.rollback();
@@ -234,12 +227,6 @@ export const actualizarCatModerador = async (req: AuthRequest, res: Response): P
 
     console.log('✅ Categoría moderador actualizada');
 
-    await registrarCambioCatalogo(idnegocio, {
-      entidad: 'catmoderador',
-      identidad: Number(id),
-      accion: 'UPDATE'
-    });
-
     res.status(200).json(updatedRows[0]);
   } catch (error) {
     await connection.rollback();
@@ -286,13 +273,6 @@ export const eliminarCatModerador = async (req: AuthRequest, res: Response): Pro
     }
 
     console.log('✅ Categoría moderador eliminada');
-
-    // Baja lógica (estatus = 0): se propaga como UPDATE
-    await registrarCambioCatalogo(idnegocio, {
-      entidad: 'catmoderador',
-      identidad: Number(id),
-      accion: 'UPDATE'
-    });
 
     res.status(200).json({ mensaje: 'Categoría moderador eliminada exitosamente' });
   } catch (error) {
