@@ -36,43 +36,116 @@ corrección.
 
 Por eso el plugin se mantiene, en modo autodestructivo:
 
-```ts
-VitePWA({
-  selfDestroying: true,
-  injectRegister: null,
-  manifest: false
-})
-```
-
-Eso genera un `dist/sw.js` cuyo único trabajo es desmontarse:
+Por eso se conserva un `/sw.js`, pero cuyo único trabajo es desmontarse. Es un
+**archivo estático** (`public/sw.js`), no generado por `vite-plugin-pwa`: con el
+plugin, `/sw.js` devolvía **404 en el servidor de desarrollo** (sus `devOptions`
+vienen desactivados), así que un perfil local con el Service Worker viejo quedaba
+atascado sin forma de recuperarse. Como archivo estático se sirve igual en
+desarrollo y en producción, y `vite-plugin-pwa` ya no participa del build.
 
 ```js
 install  → self.skipWaiting()                 // toma el control de inmediato
-activate → self.registration.unregister()     // se desregistra
+activate → caches.delete(...)                 // borra todas las caches
+         → self.registration.unregister()     // se desregistra
          → client.navigate(client.url)        // renavega las pestañas abiertas
-         → caches.delete(...)                 // borra todas las caches
 ```
+
+Todo dentro de `event.waitUntil()`, para que el navegador no corte el trabajo a
+medias.
 
 **Dos capas de limpieza:**
 
-1. **`dist/sw.js` autodestructivo** — rescata a los equipos atascados en el JS
+1. **`public/sw.js` autodestructivo** — rescata a los equipos atascados en el JS
    viejo. Su navegador sigue pidiendo `/sw.js` por su cuenta, recibe este SW y
    suelta el precache. Es la única vía de escape para un cliente que no puede
    ejecutar el código nuevo.
 2. **`src/services/pwaCleanup.ts`** — para los equipos que sí cargan el código
-   nuevo: desregistra Service Workers, borra todas las caches, elimina la base
-   `posweb54n` de IndexedDB y recarga **una vez** (con bandera en
-   `sessionStorage`) si el documento venía servido por el Service Worker.
+   nuevo: desregistra Service Workers, borra todas las caches y elimina la base
+   `posweb54n` de IndexedDB.
+
+   **No recarga la página.** De eso se encarga el propio `sw.js`, que renavega
+   las pestañas que controlaba. Forzar un `location.reload()` aquí era además
+   contraproducente: `setupSessionClearOnReload` (en `sessionService`) borra el
+   token en el evento `unload`, de modo que la recarga **cerraba la sesión del
+   usuario**.
 
 Se invoca desde `src/main.tsx` después del render, y nunca lanza: si la limpieza
 falla, la aplicación arranca igual.
 
-### Retirar el plugin más adelante
+### Retirar el Service Worker más adelante
 
 Cuando el parque de dispositivos esté limpio (semanas después del despliegue),
-se puede quitar `VitePWA` de `vite.config.ts` y borrar `pwaCleanup.ts`. **No
-antes**: mientras exista un equipo con el Service Worker viejo, `/sw.js` debe
-seguir respondiendo con el autodestructivo.
+se pueden borrar `public/sw.js` y `src/services/pwaCleanup.ts`. **No antes**:
+mientras exista un equipo con el Service Worker viejo, `/sw.js` debe seguir
+respondiendo con el autodestructivo.
+
+---
+
+## 2-bis. Rutas del SPA: el 404 que destapó el retiro de la PWA
+
+**Síntoma reportado:** `https://pos54nwebcrumen.onrender.com/login` no abría
+(tampoco en incógnito), y la lista de negocios (`/clientes`) tampoco.
+
+**Diagnóstico medido en producción:**
+
+```text
+GET /            -> 200   sirve index.html
+GET /login       -> 404   "Not Found"  (del hosting, no de la app)
+GET /clientes    -> 404   "Not Found"
+GET /api/health  -> 200   backend sano
+```
+
+**Causa raíz.** La aplicación usa `BrowserRouter`: rutas como `/login` o
+`/clientes` sólo existen en el cliente. El hosting devuelve 404 para cualquier
+ruta que no exista como archivo en disco, así que entrar directo a una ruta,
+recargar la página o abrir un enlace guardado fallaba.
+
+Eso estuvo mal configurado desde antes, pero **el Service Worker lo tapaba**: su
+`navigateFallback: 'index.html'` servía el shell del SPA desde el precache. Al
+retirar la PWA dejó de haber quien lo tapara y el defecto quedó expuesto.
+
+Los archivos de configuración presentes no cubren este hosting:
+
+| Archivo | Contiene el fallback | ¿Lo lee Render? |
+|---|---|---|
+| `vercel.json` (`routes` → `/index.html`) | sí | **no** (es de Vercel) |
+| `public/_redirects` (`/* /index.html 200`) | sí | **no** (sintaxis de Netlify) |
+
+Render usa su propio sistema de *Redirects/Rewrites* y no interpreta ninguno de
+los dos. Ambos se conservan por si se vuelve a desplegar en esas plataformas,
+pero **en Render son inertes**.
+
+### Corrección aplicada (funciona sin tocar el panel)
+
+Render sirve `/404.html` del directorio publicado cuando la ruta no existe. El
+plugin `spaFallback404` de `vite.config.ts` genera `dist/404.html` como copia
+exacta de `index.html`, así que cualquier ruta desconocida entrega el shell del
+SPA y React Router la resuelve en el cliente.
+
+Verificado sirviendo `dist` con el mismo comportamiento de Render:
+
+```text
+/            -> 200   shell del SPA
+/login       -> 404   shell del SPA   (la app carga y enruta bien)
+/clientes    -> 404   shell del SPA
+/sw.js       -> 200   Service Worker autodestructivo
+```
+
+### Pendiente recomendado (requiere acceso al panel)
+
+El fallback anterior funciona, pero responde con código **404** en lugar de 200.
+Lo correcto para un SPA es un *rewrite*. En el panel de Render:
+
+```text
+Static Site → Settings → Redirects/Rewrites → Add Rule
+  Source:      /*
+  Destination: /index.html
+  Action:      Rewrite
+```
+
+Render no aplica las reglas a rutas que sí existen en disco, así que
+`/assets/*` y `/sw.js` siguen sirviéndose con normalidad. Con esa regla puesta,
+`404.html` queda como red de seguridad.
 
 ---
 
@@ -99,12 +172,13 @@ src/scripts/testCatalogoSync.ts                 verificación
 
 ### Nuevo
 ```text
-src/services/pwaCleanup.ts                      limpieza del legado de la PWA
+src/services/pwaCleanup.ts   limpieza del legado de la PWA en el cliente
+public/sw.js                 Service Worker autodestructivo (archivo estático)
 ```
 
 ### Modificados
 ```text
-vite.config.ts                     PWA en modo selfDestroying; sin manifest
+vite.config.ts                     sin vite-plugin-pwa; plugin spaFallback404
 src/main.tsx                       ya no registra SW; invoca la limpieza
 src/App.tsx                        sin <CatalogoStatus> ni <UpdateNotification>
 src/hooks/useMenuCatalogo.ts       vuelve a leer de la API
