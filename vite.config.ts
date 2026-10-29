@@ -1,32 +1,55 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
-import { VitePWA } from 'vite-plugin-pwa'
+import { copyFileSync, existsSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+/**
+ * Genera `dist/404.html` como copia exacta de `index.html`.
+ *
+ * POR QUÉ: este SPA usa BrowserRouter, así que rutas como /login o /clientes
+ * sólo existen en el cliente. El hosting (Render) devuelve "Not Found" para
+ * cualquier ruta que no exista en disco, de modo que entrar directo a /login,
+ * recargar en /clientes o abrir un enlace guardado daba 404.
+ *
+ * Render sirve /404.html del directorio publicado cuando la ruta no existe;
+ * al ser una copia del shell del SPA, React Router resuelve la ruta en el
+ * cliente y la aplicación carga con normalidad.
+ *
+ * Esto NO sustituye la regla de rewrite del hosting, que además devuelve 200
+ * en lugar de 404 (ver REPARACION_EMERGENTE_SIN_PWA.md); es el arreglo que
+ * funciona sin depender de la configuración del panel de Render.
+ */
+function spaFallback404(): Plugin {
+  let directorioSalida = 'dist'
+
+  return {
+    name: 'spa-fallback-404',
+    apply: 'build',
+    configResolved(config) {
+      directorioSalida = resolve(config.root, config.build.outDir)
+    },
+    closeBundle() {
+      const indice = resolve(directorioSalida, 'index.html')
+      const respaldo = resolve(directorioSalida, '404.html')
+
+      if (!existsSync(indice)) {
+        this.warn('no se encontró index.html; no se generó 404.html')
+        return
+      }
+
+      copyFileSync(indice, respaldo)
+      console.log('\n[spa-fallback-404] 404.html generado (fallback de rutas del SPA)')
+    }
+  }
+}
 
 export default defineConfig({
-  plugins: [
-    react(),
-    // ──────────────────────────────────────────────────────────────────────
-    // PWA DESACTIVADA (reparación emergente). El sistema opera 100% en línea.
-    //
-    // El plugin NO se elimina: se deja en modo `selfDestroying`, que genera un
-    // Service Worker cuyo único trabajo es desregistrarse y borrar todas las
-    // caches. Eso es imprescindible para los dispositivos que YA tienen la PWA
-    // instalada: su navegador seguirá pidiendo /sw.js y, al recibir este SW
-    // autodestructivo, soltará el precache. Si simplemente quitáramos el
-    // plugin, /sw.js devolvería 404 y esos equipos podrían seguir sirviendo
-    // indefinidamente el bundle viejo desde su cache.
-    //
-    // `manifest: false` evita que la app vuelva a ser instalable.
-    //
-    // Una vez que el parque de dispositivos esté limpio, este plugin puede
-    // retirarse por completo. Ver REPARACION_EMERGENTE_SIN_PWA.md.
-    // ──────────────────────────────────────────────────────────────────────
-    VitePWA({
-      selfDestroying: true,
-      injectRegister: null,
-      manifest: false
-    })
-  ],
+  // NOTA: la PWA fue retirada (reparación emergente, ver
+  // REPARACION_EMERGENTE_SIN_PWA.md). El Service Worker autodestructivo que
+  // desmonta las instalaciones previas ya NO lo genera vite-plugin-pwa: es un
+  // archivo estático en `public/sw.js`, para que se sirva igual en desarrollo
+  // y en producción.
+  plugins: [react(), spaFallback404()],
   build: {
     // Target browsers that cover all modern mobile devices (Chrome 80+, Safari 13+, Firefox 72+)
     target: ['es2019', 'chrome80', 'safari13', 'firefox72', 'edge80'],

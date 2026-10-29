@@ -8,18 +8,18 @@
  *
  *   1. desregistra cualquier Service Worker previo;
  *   2. borra todas las caches del navegador (precache de la app y api-cache);
- *   3. elimina la base de datos local del catálogo (`posweb54n`);
- *   4. recarga UNA vez si la página venía siendo servida por el Service Worker,
- *      porque en ese caso el HTML/JS mostrado puede ser una versión vieja.
+ *   3. elimina la base de datos local del catálogo (`posweb54n`).
  *
- * Sin el paso 4, un equipo con la PWA instalada seguiría ejecutando el bundle
- * antiguo tomado del precache y nunca vería esta corrección.
+ * NO recarga la página. De eso se encarga `public/sw.js`, que renavega las
+ * pestañas que todavía controlaba. Forzar aquí un `location.reload()` sería
+ * además contraproducente: `setupSessionClearOnReload` (sessionService) borra
+ * el token en el evento `unload`, de modo que la recarga cerraría la sesión
+ * del usuario.
  *
  * Nunca lanza: si algo falla, la aplicación debe arrancar igual.
  */
 
 const DB_CATALOGO_LEGADO = 'posweb54n';
-const BANDERA_RECARGA = 'pwaCleanupRecargado';
 
 /** Desregistra todos los Service Workers. Devuelve true si había alguno. */
 const desregistrarServiceWorkers = async (): Promise<boolean> => {
@@ -86,33 +86,9 @@ const borrarCatalogoLocal = async (): Promise<void> => {
  */
 export const limpiarLegadoPWA = async (): Promise<void> => {
   try {
-    // Leer el controlador ANTES de desregistrar: indica que este documento fue
-    // servido por el Service Worker y por tanto puede ser una versión vieja.
-    const servidaPorServiceWorker = Boolean(
-      'serviceWorker' in navigator && navigator.serviceWorker.controller
-    );
-
-    const habiaServiceWorker = await desregistrarServiceWorkers();
+    await desregistrarServiceWorkers();
     await borrarCaches();
     await borrarCatalogoLocal();
-
-    if (!servidaPorServiceWorker && !habiaServiceWorker) return;
-
-    // Recargar una sola vez por sesión de pestaña, para no entrar en un bucle
-    // si por cualquier motivo la limpieza no pudo completarse.
-    let yaRecargado = false;
-    try {
-      yaRecargado = sessionStorage.getItem(BANDERA_RECARGA) === '1';
-      sessionStorage.setItem(BANDERA_RECARGA, '1');
-    } catch {
-      // Sin sessionStorage (modo privado) no se arriesga una recarga automática
-      return;
-    }
-
-    if (!yaRecargado && servidaPorServiceWorker) {
-      console.log('[PWACleanup] recargando para obtener la versión en línea...');
-      window.location.reload();
-    }
   } catch (error) {
     console.warn('[PWACleanup] limpieza incompleta:', error);
   }
