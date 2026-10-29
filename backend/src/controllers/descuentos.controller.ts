@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
-import { registrarCambioCatalogo } from '../services/catalogo.service';
 
 // Interface para Descuento
 interface Descuento extends RowDataPacket {
@@ -198,12 +197,6 @@ export const crearDescuento = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
-    await registrarCambioCatalogo(idnegocio, {
-      entidad: 'descuento',
-      identidad: result.insertId,
-      accion: 'CREATE'
-    });
-
     res.status(201).json(createdDescuento);
   } catch (error) {
     console.error('Error al crear descuento:', error);
@@ -308,12 +301,6 @@ export const actualizarDescuento = async (req: AuthRequest, res: Response): Prom
       return;
     }
 
-    await registrarCambioCatalogo(idnegocio, {
-      entidad: 'descuento',
-      identidad: Number(id_descuento),
-      accion: 'UPDATE'
-    });
-
     res.json(updatedDescuento);
   } catch (error) {
     console.error('Error al actualizar descuento:', error);
@@ -350,13 +337,6 @@ export const eliminarDescuento = async (req: AuthRequest, res: Response): Promis
     }
 
     console.log('Descuento eliminado exitosamente');
-
-    // Borrado físico (DELETE real): el cliente debe quitarlo de IndexedDB
-    await registrarCambioCatalogo(idnegocio, {
-      entidad: 'descuento',
-      identidad: Number(id_descuento),
-      accion: 'DELETE'
-    });
 
     res.json({ message: 'Descuento eliminado exitosamente' });
   } catch (error) {
@@ -425,12 +405,6 @@ export const cambiarEstatusDescuento = async (req: AuthRequest, res: Response): 
     }
 
     console.log('Estatus de descuento actualizado exitosamente');
-
-    await registrarCambioCatalogo(idnegocio, {
-      entidad: 'descuento',
-      identidad: Number(id_descuento),
-      accion: 'UPDATE'
-    });
 
     res.json({ message: 'Estatus actualizado exitosamente' });
   } catch (error) {

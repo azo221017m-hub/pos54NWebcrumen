@@ -2,7 +2,6 @@ import { Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
-import { registrarCambioCatalogo } from '../services/catalogo.service';
 
 interface Categoria extends RowDataPacket {
   idCategoria: number;
@@ -164,13 +163,6 @@ export const crearCategoria = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
-    // Versionar el catálogo para que las PWAs del negocio sincronicen el alta
-    await registrarCambioCatalogo(idnegocio, {
-      entidad: 'categoria',
-      identidad: result.insertId,
-      accion: 'CREATE'
-    });
-
     res.status(201).json(createdCategoria);
   } catch (error) {
     await connection.rollback();
@@ -240,12 +232,6 @@ export const actualizarCategoria = async (req: AuthRequest, res: Response): Prom
       return;
     }
 
-    await registrarCambioCatalogo(idnegocio, {
-      entidad: 'categoria',
-      identidad: Number(id),
-      accion: 'UPDATE'
-    });
-
     res.status(200).json(updatedCategoria);
   } catch (error) {
     await connection.rollback();
@@ -279,14 +265,6 @@ export const eliminarCategoria = async (req: AuthRequest, res: Response): Promis
       res.status(404).json({ mensaje: 'Categoría no encontrada' });
       return;
     }
-
-    // Baja lógica (estatus = 0): la fila sigue existiendo, por eso se propaga
-    // como UPDATE y el cliente la conserva con estatus 0 en IndexedDB.
-    await registrarCambioCatalogo(idnegocio, {
-      entidad: 'categoria',
-      identidad: Number(id),
-      accion: 'UPDATE'
-    });
 
     res.status(200).json({ mensaje: 'Categoría eliminada exitosamente' });
   } catch (error) {

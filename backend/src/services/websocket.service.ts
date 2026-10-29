@@ -94,33 +94,6 @@ class WebSocketService {
     });
   }
 
-  /**
-   * Notifica que el CATÁLOGO de un negocio cambió (CATALOG_UPDATED).
-   *
-   * El payload es deliberadamente pequeño: sólo dice "existe una versión nueva",
-   * nunca transporta el catálogo. Los clientes deciden si deben sincronizar
-   * comparando `catalogVersion` con su versión local, y descargan el delta por HTTP
-   * (autenticado con JWT). Por eso este broadcast no expone datos de negocio.
-   */
-  notifyCatalogoUpdate(
-    idnegocio: number,
-    catalogVersion: number,
-    cambios: Array<{ entidad: string; identidad: number; accion: string }> = []
-  ): void {
-    this.broadcast({
-      type: 'catalogo_update',
-      idnegocio,
-      catalogVersion,
-      // Lista acotada, sólo como pista de diagnóstico/UI. Nunca incluye los datos.
-      entidades: cambios.slice(0, 20).map((c) => ({
-        entity: c.entidad,
-        entityId: c.identidad,
-        action: c.accion
-      })),
-      timestamp: new Date().toISOString()
-    });
-  }
-
   // Notify about a new chat message on a transit order (client → business or business → client)
   notifyMensajePedidoTransito(idnegocio: number, idpedidowebtransito: number): void {
     this.broadcast({

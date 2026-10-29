@@ -2,7 +2,6 @@ import type { Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
-import { registrarCambioCatalogo } from '../services/catalogo.service';
 
 /**
  * IMPORTANTE: Los moderadores son opciones de modificación para productos
@@ -160,12 +159,6 @@ export const crearModerador = async (req: AuthRequest, res: Response): Promise<v
       [result.insertId]
     );
 
-    await registrarCambioCatalogo(idnegocio, {
-      entidad: 'moderador',
-      identidad: result.insertId,
-      accion: 'CREATE'
-    });
-
     res.status(201).json(createdRows[0]);
   } catch (error) {
     console.error('Error al crear moderador:', error);
@@ -231,12 +224,6 @@ export const actualizarModerador = async (req: AuthRequest, res: Response): Prom
       [id]
     );
 
-    await registrarCambioCatalogo(idnegocio, {
-      entidad: 'moderador',
-      identidad: Number(id),
-      accion: 'UPDATE'
-    });
-
     res.json(updatedRows[0]);
   } catch (error) {
     console.error('Error al actualizar moderador:', error);
@@ -269,13 +256,6 @@ export const eliminarModerador = async (req: AuthRequest, res: Response): Promis
       res.status(404).json({ message: 'Moderador no encontrado' });
       return;
     }
-
-    // Borrado físico: el cliente debe eliminar el registro de IndexedDB
-    await registrarCambioCatalogo(idnegocio, {
-      entidad: 'moderador',
-      identidad: Number(id),
-      accion: 'DELETE'
-    });
 
     res.json({ message: 'Moderador eliminado exitosamente' });
   } catch (error) {
