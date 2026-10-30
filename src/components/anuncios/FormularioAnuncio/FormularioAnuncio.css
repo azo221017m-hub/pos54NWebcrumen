@@ -95,6 +95,12 @@
   margin-left: 2px;
 }
 
+.imagenes-hint {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #6b7280;
+}
+
 .form-input {
   padding: 10px 14px;
   border: 1.5px solid #e2e8f0;

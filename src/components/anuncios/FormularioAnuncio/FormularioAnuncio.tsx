@@ -23,6 +23,9 @@ const IMAGE_SLOTS: ImageSlot[] = [
   { key: 'imagen5Anuncio', label: 'Imagen 5' },
 ];
 
+const MAX_IMAGE_SIZE_MB = 3.5;
+const MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * 1024 * 1024; // 3.5MB
+
 const FormularioAnuncio: React.FC<Props> = ({ anuncioEditar, onSubmit, onCancel, loading }) => {
   const datosIniciales = useMemo(() => {
     if (anuncioEditar) {
@@ -82,9 +85,10 @@ const FormularioAnuncio: React.FC<Props> = ({ anuncioEditar, onSubmit, onCancel,
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validar tamaño máximo de 5 MB
-    if (file.size > 5 * 1024 * 1024) {
-      setErrores(prev => ({ ...prev, [key]: 'La imagen no puede superar 5 MB' }));
+    // Validar tamaño máximo de 3.5 MB
+    if (file.size > MAX_IMAGE_SIZE) {
+      setErrores(prev => ({ ...prev, [key]: `La imagen no puede superar ${MAX_IMAGE_SIZE_MB} MB` }));
+      e.target.value = '';
       return;
     }
 
@@ -211,7 +215,9 @@ const FormularioAnuncio: React.FC<Props> = ({ anuncioEditar, onSubmit, onCancel,
 
           {/* Imágenes */}
           <div className="form-field">
-            <label className="form-label">Imágenes del Anuncio</label>
+            <label className="form-label">
+              Imágenes del Anuncio <span className="imagenes-hint">(máx. {MAX_IMAGE_SIZE_MB} MB c/u)</span>
+            </label>
             <div className="imagenes-grid">
               {IMAGE_SLOTS.map((slot) => {
                 const preview = previews[slot.key];

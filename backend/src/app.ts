@@ -246,7 +246,7 @@ app.use(morgan(process.env.NODE_ENV === 'production' ? MORGAN_FORMAT_LOCAL : 'de
 // Middleware de caché para optimizar respuestas 304
 app.use(cacheMiddleware);
 
-app.use(express.json({ limit: '25mb' })); // Límite aumentado para soportar hasta 5 imágenes base64 de 2MB c/u
+app.use(express.json({ limit: '25mb' })); // Límite aumentado para soportar hasta 5 imágenes base64 de 3.5MB c/u (anuncios, ~23.3MB)
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 // Servir archivos estáticos desde la carpeta public
