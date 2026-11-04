@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import bcrypt from 'bcrypt';
-import type { AuthRequest } from '../middlewares/auth';
+import { esSuperUsuario, type AuthRequest } from '../middlewares/auth';
 
 // Obtener todos los usuarios
 export const obtenerUsuarios = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -51,7 +51,7 @@ export const obtenerUsuarios = async (req: AuthRequest, res: Response): Promise<
     
     const params: any[] = [];
     
-    if (idnegocio !== 99999) {
+    if (!esSuperUsuario(req)) {
       query += ` WHERE idNegocio = ?`;
       params.push(idnegocio);
     }
@@ -119,7 +119,7 @@ export const obtenerUsuarioPorId = async (req: AuthRequest, res: Response): Prom
     
     const params: any[] = [id];
     
-    if (idnegocio !== 99999) {
+    if (!esSuperUsuario(req)) {
       query += ` AND idNegocio = ?`;
       params.push(idnegocio);
     }
@@ -195,7 +195,7 @@ export const crearUsuario = async (req: AuthRequest, res: Response): Promise<voi
 
     // Validar que el idNegocio proporcionado coincida con el del usuario autenticado
     // (a menos que sea superusuario con idNegocio = 99999)
-    if (userIdNegocio !== 99999 && finalIdNegocio !== userIdNegocio) {
+    if (!esSuperUsuario(req) && finalIdNegocio !== userIdNegocio) {
       res.status(403).json({
         success: false,
         message: 'No tiene permiso para crear usuarios en otro negocio'
@@ -373,7 +373,7 @@ export const actualizarUsuario = async (req: AuthRequest, res: Response): Promis
     let queryExiste = 'SELECT idUsuario, idNegocio FROM tblposcrumenwebusuarios WHERE idUsuario = ?';
     const paramsExiste: any[] = [id];
     
-    if (userIdNegocio !== 99999) {
+    if (!esSuperUsuario(req)) {
       queryExiste += ' AND idNegocio = ?';
       paramsExiste.push(userIdNegocio);
     }
@@ -406,7 +406,7 @@ export const actualizarUsuario = async (req: AuthRequest, res: Response): Promis
 
     // Validar que el idNegocio no pueda ser cambiado por usuarios no-superusuarios
     // Si se intenta cambiar el idNegocio y el usuario no es superusuario, rechazar
-    if (idNegocio !== undefined && idNegocio !== null && userIdNegocio !== 99999) {
+    if (idNegocio !== undefined && idNegocio !== null && !esSuperUsuario(req)) {
       if (usuarioActual.idNegocio !== idNegocio) {
         res.status(403).json({
           success: false,
@@ -481,7 +481,7 @@ export const actualizarUsuario = async (req: AuthRequest, res: Response): Promis
     query += ' WHERE idUsuario = ?';
     params.push(id);
     
-    if (userIdNegocio !== 99999) {
+    if (!esSuperUsuario(req)) {
       query += ' AND idNegocio = ?';
       params.push(userIdNegocio);
     }
@@ -562,7 +562,7 @@ export const eliminarUsuario = async (req: AuthRequest, res: Response): Promise<
     let queryExiste = 'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ?';
     const paramsExiste: any[] = [id];
     
-    if (idnegocio !== 99999) {
+    if (!esSuperUsuario(req)) {
       queryExiste += ' AND idNegocio = ?';
       paramsExiste.push(idnegocio);
     }
@@ -581,7 +581,7 @@ export const eliminarUsuario = async (req: AuthRequest, res: Response): Promise<
     let queryDelete = 'UPDATE tblposcrumenwebusuarios SET estatus = 0, fehamodificacionauditoria = NOW() WHERE idUsuario = ?';
     const paramsDelete: any[] = [id];
     
-    if (idnegocio !== 99999) {
+    if (!esSuperUsuario(req)) {
       queryDelete += ' AND idNegocio = ?';
       paramsDelete.push(idnegocio);
     }
@@ -625,7 +625,7 @@ export const cambiarEstatusUsuario = async (req: AuthRequest, res: Response): Pr
     let queryExiste = 'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ?';
     const paramsExiste: any[] = [id];
     
-    if (idnegocio !== 99999) {
+    if (!esSuperUsuario(req)) {
       queryExiste += ' AND idNegocio = ?';
       paramsExiste.push(idnegocio);
     }
@@ -644,7 +644,7 @@ export const cambiarEstatusUsuario = async (req: AuthRequest, res: Response): Pr
     let queryUpdate = 'UPDATE tblposcrumenwebusuarios SET estatus = ?, fehamodificacionauditoria = NOW() WHERE idUsuario = ?';
     const paramsUpdate: any[] = [estatus, id];
     
-    if (idnegocio !== 99999) {
+    if (!esSuperUsuario(req)) {
       queryUpdate += ' AND idNegocio = ?';
       paramsUpdate.push(idnegocio);
     }
@@ -686,7 +686,7 @@ export const validarAliasUnico = async (req: AuthRequest, res: Response): Promis
     const params: any[] = [alias];
 
     // Si idnegocio != 99999, filtrar por negocio
-    if (idnegocio !== 99999) {
+    if (!esSuperUsuario(req)) {
       query += ' AND idNegocio = ?';
       params.push(idnegocio);
     }
@@ -743,7 +743,7 @@ export const actualizarImagenUsuario = async (req: AuthRequest, res: Response): 
     let queryExiste = 'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE idUsuario = ?';
     const paramsExiste: any[] = [id];
     
-    if (idnegocio !== 99999) {
+    if (!esSuperUsuario(req)) {
       queryExiste += ' AND idNegocio = ?';
       paramsExiste.push(idnegocio);
     }
@@ -762,7 +762,7 @@ export const actualizarImagenUsuario = async (req: AuthRequest, res: Response): 
     let queryUpdate = `UPDATE tblposcrumenwebusuarios SET ${tipoImagen} = ?, fehamodificacionauditoria = NOW() WHERE idUsuario = ?`;
     const paramsUpdate: any[] = [imagen, id];
     
-    if (idnegocio !== 99999) {
+    if (!esSuperUsuario(req)) {
       queryUpdate += ' AND idNegocio = ?';
       paramsUpdate.push(idnegocio);
     }
@@ -814,7 +814,7 @@ export const obtenerImagenUsuario = async (req: AuthRequest, res: Response): Pro
     let query = `SELECT ${tipo} FROM tblposcrumenwebusuarios WHERE idUsuario = ?`;
     const params: any[] = [id];
     
-    if (idnegocio !== 99999) {
+    if (!esSuperUsuario(req)) {
       query += ' AND idNegocio = ?';
       params.push(idnegocio);
     }
@@ -882,7 +882,7 @@ export const eliminarImagenUsuario = async (req: AuthRequest, res: Response): Pr
     let query = `UPDATE tblposcrumenwebusuarios SET ${tipo} = NULL, fehamodificacionauditoria = NOW() WHERE idUsuario = ?`;
     const params: any[] = [id];
     
-    if (idnegocio !== 99999) {
+    if (!esSuperUsuario(req)) {
       query += ' AND idNegocio = ?';
       params.push(idnegocio);
     }

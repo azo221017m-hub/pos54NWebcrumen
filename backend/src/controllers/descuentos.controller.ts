@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
@@ -349,14 +349,16 @@ export const eliminarDescuento = async (req: AuthRequest, res: Response): Promis
 };
 
 // Validar que el nombre del descuento sea único en el negocio
-export const validarNombreDescuentoUnico = async (req: Request, res: Response): Promise<void> => {
+export const validarNombreDescuentoUnico = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { nombre, idnegocio, id_descuento } = req.query;
+    const { nombre, id_descuento } = req.query;
+    // El negocio se toma de la sesión, nunca del query string
+    const idnegocio = req.user?.idNegocio;
 
     console.log('Validando nombre de descuento único:', nombre);
 
     let query = 'SELECT id_descuento FROM tblposcrumenwebdescuentos WHERE nombre = ? AND idnegocio = ?';
-    const params: Array<string | number> = [nombre as string, idnegocio as string];
+    const params: Array<string | number> = [nombre as string, Number(idnegocio)];
 
     // Si se proporciona id_descuento, excluirlo de la validación (para updates)
     if (id_descuento) {

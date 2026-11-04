@@ -11,8 +11,57 @@ export interface AuthRequest extends Request {
     nombre: string;
     idNegocio: number;
     idRol: number;
+    esCliente?: boolean; // true para tokens de clientes web (portal /clientes)
   };
 }
+
+/** idNegocio reservado del superusuario: administra todos los negocios */
+export const ID_NEGOCIO_SUPERUSUARIO = 99999;
+
+/** idRol que se asigna a los tokens de clientes web */
+export const ID_ROL_CLIENTE_WEB = 99;
+
+/**
+ * Superusuario = usuario de personal (no cliente web) con idNegocio 99999.
+ * No usar el nombre del usuario para esto: cualquiera puede llamarse 'SUPERUSUARIO'.
+ */
+export const esSuperUsuario = (req: AuthRequest): boolean =>
+  !!req.user && !req.user.esCliente && req.user.idNegocio === ID_NEGOCIO_SUPERUSUARIO;
+
+/**
+ * Rutas permitidas a un token de cliente web. Un cliente solo arma y envía su
+ * pedido en /ventas: lee el catálogo del negocio elegido, consulta el turno,
+ * crea su venta y le agrega productos. Todo lo demás (usuarios, ventas del
+ * negocio, reportes, clientes, configuración...) es exclusivo del personal.
+ * Cualquier ruta nueva queda bloqueada para clientes hasta agregarla aquí.
+ */
+const RUTAS_CLIENTE_WEB: ReadonlyArray<{ metodo: string; ruta: RegExp }> = [
+  { metodo: 'GET', ruta: /^\/api\/negocios\/\d+$/ }, // solo su negocio (se valida abajo)
+  { metodo: 'GET', ruta: /^\/api\/productos-web$/ },
+  { metodo: 'GET', ruta: /^\/api\/categorias$/ },
+  { metodo: 'GET', ruta: /^\/api\/moderadores\/(ref\/)?negocio\/\d+$/ },
+  { metodo: 'GET', ruta: /^\/api\/cat-moderadores$/ },
+  { metodo: 'GET', ruta: /^\/api\/turnos\/turno-abierto$/ },
+  { metodo: 'POST', ruta: /^\/api\/ventas-web$/ },
+  { metodo: 'POST', ruta: /^\/api\/ventas-web\/\d+\/detalles$/ }, // solo sus pedidos (se valida en el controlador)
+  { metodo: 'POST', ruta: /^\/api\/logs$/ },
+  { metodo: 'POST', ruta: /^\/api\/auth\/cliente-token-negocio$/ },
+  { metodo: 'GET', ruta: /^\/api\/auth\/mis-pedidos$/ },
+  { metodo: 'POST', ruta: /^\/api\/auth\/enviar-mensaje-pedido$/ },
+  { metodo: 'GET', ruta: /^\/api\/auth\/verify$/ },
+];
+
+const clientePuedeAcceder = (req: Request, idNegocioToken: number): boolean => {
+  const ruta = `${req.baseUrl}${req.path}`.replace(/\/+$/, '');
+  const permitida = RUTAS_CLIENTE_WEB.some(r => r.metodo === req.method && r.ruta.test(ruta));
+  if (!permitida) return false;
+
+  // Datos del negocio: solo el negocio que el cliente seleccionó
+  const negocio = ruta.match(/^\/api\/negocios\/(\d+)$/);
+  if (negocio) return Number(negocio[1]) === idNegocioToken;
+
+  return true;
+};
 
 interface Usuario extends RowDataPacket {
   idUsuario: number;
@@ -87,15 +136,35 @@ export const authMiddleware = async (
         return;
       }
 
+      if (!clientePuedeAcceder(req, Number(decoded.idNegocio))) {
+        res.status(403).json({
+          success: false,
+          error: 'Acceso denegado',
+          message: 'Esta operación no está disponible para clientes'
+        });
+        return;
+      }
+
       req.user = {
         id: decoded.clientId,
         alias: decoded.alias,
         nombre: decoded.nombre,
         idNegocio: decoded.idNegocio,
-        idRol: 99
+        idRol: ID_ROL_CLIENTE_WEB,
+        esCliente: true
       };
 
       next();
+      return;
+    }
+
+    // Un token con isCliente pero sin clientId no es válido como token de personal
+    if (decoded.isCliente || !decoded.id) {
+      res.status(401).json({
+        success: false,
+        error: 'Token inválido',
+        message: 'El token proporcionado no es válido'
+      });
       return;
     }
 
@@ -218,6 +287,43 @@ export const checkNegocio = (req: AuthRequest, res: Response, next: NextFunction
 
   next();
 };
+
+/**
+ * Middleware para operaciones exclusivas del superusuario (idNegocio 99999):
+ * datos globales del sistema como negocios, roles y anuncios.
+ * Debe usarse DESPUÉS de authMiddleware.
+ */
+export const soloSuperUsuario = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  if (!esSuperUsuario(req)) {
+    res.status(403).json({
+      success: false,
+      error: 'Acceso denegado',
+      message: 'Solo el superusuario puede realizar esta acción'
+    });
+    return;
+  }
+
+  next();
+};
+
+/**
+ * Middleware para rutas /:param que identifican un negocio: el usuario solo
+ * puede operar sobre su propio negocio; el superusuario, sobre cualquiera.
+ * Debe usarse DESPUÉS de authMiddleware.
+ */
+export const soloSuNegocio = (param = 'id') =>
+  (req: AuthRequest, res: Response, next: NextFunction): void => {
+    if (esSuperUsuario(req) || Number(req.params[param]) === req.user?.idNegocio) {
+      next();
+      return;
+    }
+
+    res.status(403).json({
+      success: false,
+      error: 'Acceso denegado',
+      message: 'No tiene acceso a los datos de este negocio'
+    });
+  };
 
 /**
  * Middleware para verificar privilegio mínimo del rol del usuario.

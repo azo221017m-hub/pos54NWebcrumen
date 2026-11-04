@@ -26,6 +26,25 @@ export const apiLimiter = rateLimit({
 });
 
 /**
+ * Rate limiter para imágenes (logotipos): cada tarjeta del portal o fila de una
+ * lista pide su imagen por separado, así que no deben consumir el presupuesto
+ * compartido de apiLimiter (100 peticiones por IP para TODAS sus rutas).
+ */
+const IMAGE_LIMITER_MAX = isProduction ? 1000 : 5000;
+
+export const imageLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: IMAGE_LIMITER_MAX,
+  message: {
+    success: false,
+    error: 'Demasiadas peticiones',
+    message: 'Ha excedido el límite de peticiones de imágenes. Por favor, intente más tarde.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+/**
  * Rate limiter estricto para operaciones sensibles
  * Permite 20 peticiones por 15 minutos por IP en producción
  */

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { clienteWebService } from '../../services/clienteWebService';
+import { clienteWebService, urlLogotipoPublico } from '../../services/clienteWebService';
 import type { NegocioPublico, ClienteWebData } from '../../services/clienteWebService';
 import { verificarTurnoAbierto } from '../../services/turnosService';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../../components/FeedbackToast';
@@ -590,8 +590,8 @@ const PageClientesMobile: React.FC = () => {
                 <div key={negocio.idNegocio} className="pcm-card">
                   {/* Logo panel */}
                   <div className="pcm-card-logo-wrap">
-                    {negocio.logotipo ? (
-                      <img src={negocio.logotipo} alt={negocio.nombreNegocio} className="pcm-card-logo" />
+                    {negocio.tieneLogotipo ? (
+                      <img src={urlLogotipoPublico(negocio.idNegocio, negocio.logotipoVersion)} alt={negocio.nombreNegocio} className="pcm-card-logo" loading="lazy" decoding="async" />
                     ) : (
                       <div className="pcm-card-logo-placeholder">
                         <svg viewBox="0 0 24 24" fill="currentColor" className="pcm-store-icon">

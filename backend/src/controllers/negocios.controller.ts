@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { pool } from '../config/db';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
+import { esSuperUsuario, type AuthRequest } from '../middlewares/auth';
 
 // Helper function to detect image MIME type from buffer
 const detectImageMimeType = (buffer: Buffer): string => {
@@ -97,8 +98,10 @@ const convertDataUriToBuffer = (dataUri: string | null | undefined): Buffer | nu
 // superaba los 15 MB y el superusuario (99999) recibía "timeout of 30000ms exceeded".
 // Se envía solo el indicador tieneLogotipo; la imagen se pide por negocio en
 // GET /negocios/:id/logotipo.
-export const obtenerNegocios = async (_req: Request, res: Response): Promise<void> => {
+export const obtenerNegocios = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    // Superusuario: todos los negocios; resto del personal: solo el suyo
+    const superUsuario = esSuperUsuario(req);
     const [negocios] = await pool.query<RowDataPacket[]>(
       `SELECT idNegocio, numeronegocio, nombreNegocio, rfcnegocio, direccionfiscalnegocio,
               contactonegocio, telefonocontacto, estatusnegocio, plancontratado,
@@ -107,7 +110,9 @@ export const obtenerNegocios = async (_req: Request, res: Response): Promise<voi
               entregarapidaweb, nuevoweb,
               (COALESCE(LENGTH(logotipo), 0) > 0) AS tieneLogotipo
        FROM tblposcrumenwebnegocio
-       ORDER BY nombreNegocio ASC`
+       ${superUsuario ? '' : 'WHERE idNegocio = ?'}
+       ORDER BY nombreNegocio ASC`,
+      superUsuario ? [] : [req.user?.idNegocio]
     );
 
     const negociosLigeros = negocios.map((negocio: RowDataPacket) => ({
@@ -137,12 +142,16 @@ export const obtenerNegocios = async (_req: Request, res: Response): Promise<voi
  */
 export const obtenerNegociosPublico = async (_req: Request, res: Response): Promise<void> => {
   try {
-    // pool.query() is used instead of pool.execute() because logotipo is LONGBLOB
-    // pool.execute() (prepared statements / binary protocol) has issues with LONGBLOB in mysql2
+    // La lista NO incluye el logotipo (LONGBLOB): con todos los negocios pesaba
+    // >11 MB y el portal /clientes tardaba o se quedaba vacío. Se envía
+    // tieneLogotipo y una versión (fecha de modificación) para que el portal
+    // cargue cada imagen desde GET /negocios/publico/:id/logotipo?v=<versión>.
     // Note: the DB column is named "promohoyweb" (not "promocionhoyweb").
     // We alias it so the frontend interface NegocioPublico.promocionhoyweb stays consistent.
     const [negocios] = await pool.query<RowDataPacket[]>(
-      `SELECT idNegocio, nombreNegocio, logotipo, calificacion, etiquetas,
+      `SELECT idNegocio, nombreNegocio, calificacion, etiquetas,
+              (COALESCE(LENGTH(logotipo), 0) > 0) AS tieneLogotipo,
+              UNIX_TIMESTAMP(fehamodificacionauditoria) AS logotipoVersion,
               abiertoahoraweb, promohoyweb AS promocionhoyweb, entregarapidaweb, nuevoweb,
               (SELECT tipoNegocio FROM tblposcrumenwebparametrosnegocio WHERE idNegocio = n.idNegocio LIMIT 1) AS tipoNegocio
        FROM tblposcrumenwebnegocio n
@@ -154,7 +163,8 @@ export const obtenerNegociosPublico = async (_req: Request, res: Response): Prom
       idNegocio: negocio.idNegocio,
       nombreNegocio: negocio.nombreNegocio,
       tipoNegocio: negocio.tipoNegocio || 'Negocio',
-      logotipo: convertLogotipoToDataUri(negocio.logotipo as Buffer | string | null),
+      tieneLogotipo: Number(negocio.tieneLogotipo) === 1,
+      logotipoVersion: negocio.logotipoVersion != null ? Number(negocio.logotipoVersion) : null,
       calificacion: negocio.calificacion != null ? Number(negocio.calificacion) : null,
       etiquetas: negocio.etiquetas || null,
       abiertoahoraweb: Number(negocio.abiertoahoraweb) || 0,
@@ -587,6 +597,46 @@ export const subirLogotipo = async (req: Request, res: Response): Promise<void> 
     res.status(500).json({
       success: false,
       message: 'Error al subir logotipo',
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    });
+  }
+};
+
+// Logotipo de un negocio activo como imagen binaria (portal de clientes, sin sesión).
+// Se sirve como archivo y no como base64 en JSON para que el navegador lo descargue
+// en paralelo, lo guarde en caché y no bloquee la lista de negocios.
+export const obtenerLogotipoPublico = async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+
+  try {
+    // pool.query() is used instead of pool.execute() because logotipo is LONGBLOB
+    const [negocios] = await pool.query<RowDataPacket[]>(
+      'SELECT logotipo FROM tblposcrumenwebnegocio WHERE idNegocio = ? AND estatusnegocio = 1',
+      [id]
+    );
+
+    const logotipo = negocios[0]?.logotipo as Buffer | string | null | undefined;
+    // Datos antiguos guardados como data URI en texto
+    const imagen = typeof logotipo === 'string' ? convertDataUriToBuffer(logotipo) : logotipo;
+
+    if (!imagen || imagen.length === 0) {
+      res.status(404).json({ success: false, message: 'Logotipo no encontrado' });
+      return;
+    }
+
+    res.set({
+      'Content-Type': detectImageMimeType(imagen),
+      // El portal agrega ?v=<fecha de modificación>, así que un logotipo nuevo cambia la URL
+      'Cache-Control': 'public, max-age=86400',
+      // helmet pone same-origin por defecto y el portal vive en otro origen
+      'Cross-Origin-Resource-Policy': 'cross-origin',
+    });
+    res.send(imagen);
+  } catch (error) {
+    console.error('Error al obtener logotipo público:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener logotipo',
       error: error instanceof Error ? error.message : 'Error desconocido',
     });
   }

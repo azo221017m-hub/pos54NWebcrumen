@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
@@ -117,7 +117,7 @@ export const obtenerInsumos = async (req: AuthRequest, res: Response): Promise<v
 };
 
 // Obtener un insumo por ID
-export const obtenerInsumoPorId = async (req: Request, res: Response): Promise<void> => {
+export const obtenerInsumoPorId = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id_insumo } = req.params;
     
@@ -142,8 +142,8 @@ export const obtenerInsumoPorId = async (req: Request, res: Response): Promise<v
         i.idproveedor
       FROM tblposcrumenwebinsumos i
       LEFT JOIN tblposcrumenwebcuentacontable cc ON i.id_cuentacontable = cc.id_cuentacontable
-      WHERE i.id_insumo = ?`,
-      [id_insumo]
+      WHERE i.id_insumo = ? AND i.idnegocio = ?`,
+      [id_insumo, req.user?.idNegocio]
     );
     
     if (rows.length === 0) {
@@ -403,8 +403,8 @@ export const actualizarInsumo = async (req: AuthRequest, res: Response): Promise
 
     // Verificar si existe el insumo
     const [exist] = await pool.query<RowDataPacket[]>(
-      'SELECT id_insumo FROM tblposcrumenwebinsumos WHERE id_insumo = ?',
-      [id_insumo]
+      'SELECT id_insumo FROM tblposcrumenwebinsumos WHERE id_insumo = ? AND idnegocio = ?',
+      [id_insumo, idnegocio]
     );
     
     if (exist.length === 0) {
@@ -499,13 +499,13 @@ export const actualizarInsumo = async (req: AuthRequest, res: Response): Promise
 };
 
 // Eliminar insumo
-export const eliminarInsumo = async (req: Request, res: Response): Promise<void> => {
+export const eliminarInsumo = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id_insumo } = req.params;
     
     const [result] = await pool.query<ResultSetHeader>(
-      'DELETE FROM tblposcrumenwebinsumos WHERE id_insumo = ?',
-      [id_insumo]
+      'DELETE FROM tblposcrumenwebinsumos WHERE id_insumo = ? AND idnegocio = ?',
+      [id_insumo, req.user?.idNegocio]
     );
     
     if (result.affectedRows === 0) {

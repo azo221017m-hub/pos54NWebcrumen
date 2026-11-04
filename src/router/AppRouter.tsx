@@ -59,11 +59,11 @@ const router = createBrowserRouter([
   },
   {
     path: '/config-negocios',
-    element: <ProtectedRoute><ConfigNegocios /></ProtectedRoute>,
+    element: <ProtectedRoute soloSuperUsuario><ConfigNegocios /></ProtectedRoute>,
   },
   {
     path: '/config-roles',
-    element: <ProtectedRoute><ConfigRolUsuarios /></ProtectedRoute>,
+    element: <ProtectedRoute soloSuperUsuario><ConfigRolUsuarios /></ProtectedRoute>,
   },
   {
     path: '/config-usuarios',
@@ -87,7 +87,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/config-clientes',
-    element: <ProtectedRoute><ConfigClientes /></ProtectedRoute>,
+    element: <ProtectedRoute soloSuperUsuario><ConfigClientes /></ProtectedRoute>,
   },
   {
     path: '/config-cuentas-contables',
@@ -127,11 +127,11 @@ const router = createBrowserRouter([
   },
   {
     path: '/config-anuncios',
-    element: <ProtectedRoute><ConfigAnuncios /></ProtectedRoute>,
+    element: <ProtectedRoute soloSuperUsuario><ConfigAnuncios /></ProtectedRoute>,
   },
   {
     path: '/ventas',
-    element: <ProtectedRoute><PageVentas /></ProtectedRoute>,
+    element: <ProtectedRoute permitirCliente><PageVentas /></ProtectedRoute>,
   },
   {
     path: '/ventas-mobile',

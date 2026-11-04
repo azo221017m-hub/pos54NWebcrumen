@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
@@ -165,9 +165,11 @@ export const obtenerProductoWebPorId = async (req: AuthRequest, res: Response): 
 };
 
 // Verificar si existe un producto con el mismo nombre
-export const verificarNombreProducto = async (req: Request, res: Response): Promise<void> => {
+export const verificarNombreProducto = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { nombre, idnegocio, idProducto } = req.query;
+    const { nombre, idProducto } = req.query;
+    // El negocio se toma de la sesión, nunca del query string
+    const idnegocio = req.user?.idNegocio;
 
     let query = `SELECT COUNT(*) as count FROM tblposcrumenwebproductos WHERE nombre = ? AND idnegocio = ?`;
     const params: (string | number)[] = [nombre as string, Number(idnegocio)];

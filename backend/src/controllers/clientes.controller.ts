@@ -1,7 +1,7 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
-import type { AuthRequest } from '../middlewares/auth';
+import { esSuperUsuario, type AuthRequest } from '../middlewares/auth';
 
 interface Cliente extends RowDataPacket {
   idCliente: number;
@@ -59,23 +59,28 @@ async function obtenerClienteCompleto(idCliente: number): Promise<Cliente | null
   return rows.length > 0 ? rows[0] : null;
 }
 
+// Alcance de las operaciones por ID: el superusuario opera sobre cualquier
+// cliente; el resto, solo sobre clientes de su propio negocio.
+const filtroNegocioCliente = (req: AuthRequest): { sql: string; params: number[] } =>
+  esSuperUsuario(req)
+    ? { sql: '', params: [] }
+    : { sql: ' AND idnegocio = ?', params: [Number(req.user?.idNegocio)] };
+
 // Obtener todos los clientes por negocio
-// Si el usuario es SUPERUSUARIO (nombre='SUPERUSUARIO') o tiene idNegocio=99999,
-// se muestran todos los clientes de todos los negocios.
+// El superusuario (idNegocio 99999) ve los clientes de todos los negocios.
+// No se usa el nombre 'SUPERUSUARIO': cualquier usuario o cliente puede llamarse así.
 export const obtenerClientes = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // Usar idnegocio del usuario autenticado para seguridad
     const idnegocio = req.user?.idNegocio;
-    const usuarioNombre = req.user?.nombre;
     
     if (!idnegocio) {
       res.status(401).json({ message: 'Usuario no autenticado o sin negocio asignado' });
       return;
     }
 
-    // Si es SUPERUSUARIO o idNegocio=99999, mostrar todos los clientes
-    // Si no, mostrar solo clientes del mismo negocio
-    const isSuperUsuario = usuarioNombre === 'SUPERUSUARIO' || idnegocio === 99999;
+    // Superusuario: todos los clientes; resto: solo clientes del mismo negocio
+    const isSuperUsuario = esSuperUsuario(req);
 
     let query = `SELECT 
         idCliente,
@@ -123,9 +128,10 @@ export const obtenerClientes = async (req: AuthRequest, res: Response): Promise<
 };
 
 // Obtener un cliente por ID
-export const obtenerClientePorId = async (req: Request, res: Response): Promise<void> => {
+export const obtenerClientePorId = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { idCliente } = req.params;
+    const filtro = filtroNegocioCliente(req);
     
     const [rows] = await pool.query<Cliente[]>(
       `SELECT 
@@ -151,8 +157,8 @@ export const obtenerClientePorId = async (req: Request, res: Response): Promise<
         fehamodificacionauditoria,
         idnegocio
       FROM tblposcrumenwebclientes
-      WHERE idCliente = ?`,
-      [idCliente]
+      WHERE idCliente = ?${filtro.sql}`,
+      [idCliente, ...filtro.params]
     );
     
     if (rows.length === 0) {
@@ -266,7 +272,7 @@ export const crearCliente = async (req: AuthRequest, res: Response): Promise<voi
 };
 
 // Actualizar cliente
-export const actualizarCliente = async (req: Request, res: Response): Promise<void> => {
+export const actualizarCliente = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { idCliente } = req.params;
     const {
@@ -289,10 +295,11 @@ export const actualizarCliente = async (req: Request, res: Response): Promise<vo
       usuarioauditoria
     } = req.body;
 
-    // Verificar si existe el cliente
+    // Verificar si existe el cliente (y que pertenezca al negocio del usuario)
+    const filtro = filtroNegocioCliente(req);
     const [exist] = await pool.query<RowDataPacket[]>(
-      'SELECT idCliente FROM tblposcrumenwebclientes WHERE idCliente = ?',
-      [idCliente]
+      `SELECT idCliente FROM tblposcrumenwebclientes WHERE idCliente = ?${filtro.sql}`,
+      [idCliente, ...filtro.params]
     );
     
     if (exist.length === 0) {
@@ -436,13 +443,14 @@ export const buscarClientesPorReferencia = async (req: AuthRequest, res: Respons
 };
 
 // Eliminar cliente
-export const eliminarCliente = async (req: Request, res: Response): Promise<void> => {
+export const eliminarCliente = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { idCliente } = req.params;
+    const filtro = filtroNegocioCliente(req);
     
     const [result] = await pool.query<ResultSetHeader>(
-      'DELETE FROM tblposcrumenwebclientes WHERE idCliente = ?',
-      [idCliente]
+      `DELETE FROM tblposcrumenwebclientes WHERE idCliente = ?${filtro.sql}`,
+      [idCliente, ...filtro.params]
     );
     
     if (result.affectedRows === 0) {

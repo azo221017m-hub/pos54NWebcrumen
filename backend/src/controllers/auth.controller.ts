@@ -9,7 +9,7 @@ import {
   registrarLoginExitoso,
   desbloquearCuenta
 } from '../services/loginAudit.service';
-import type { AuthRequest } from '../middlewares/auth';
+import { ID_ROL_CLIENTE_WEB, type AuthRequest } from '../middlewares/auth';
 
 interface Usuario extends RowDataPacket {
   idUsuario: number;
@@ -153,63 +153,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const register = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { 
-      nombre, 
-      alias, 
-      password, 
-      idNegocio = 1, 
-      idRol = 2, 
-      telefono = '' 
-    } = req.body;
-
-    if (!nombre || !alias || !password) {
-      res.status(400).json({ 
-        success: false, 
-        message: 'Nombre, alias (usuario) y contraseña son requeridos' 
-      });
-      return;
-    }
-
-    // Verificar si el alias (username) ya existe
-    const [existingUsers] = await pool.execute<Usuario[]>(
-      'SELECT idUsuario FROM tblposcrumenwebusuarios WHERE alias = ?',
-      [alias]
-    );
-
-    if (existingUsers.length > 0) {
-      res.status(409).json({ 
-        success: false, 
-        message: 'El nombre de usuario ya está registrado' 
-      });
-      return;
-    }
-
-    // Hash de la contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Insertar nuevo usuario
-    await pool.execute(
-      `INSERT INTO tblposcrumenwebusuarios 
-       (idNegocio, idRol, nombre, alias, password, telefono, estatus, fechaRegistroauditoria, usuarioauditoria) 
-       VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), ?)`,
-      [idNegocio, idRol, nombre, alias, hashedPassword, telefono, alias]
-    );
-
-    res.status(201).json({
-      success: true,
-      message: 'Usuario registrado exitosamente'
-    });
-  } catch (error) {
-    console.error('Error en registro:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Error en el servidor' 
-    });
-  }
-};
-
 export const verifyToken = async (req: Request, res: Response): Promise<void> => {
   try {
     res.json({
@@ -285,74 +228,6 @@ export const unlockUser = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({ 
       success: false, 
       message: 'Error en el servidor' 
-    });
-  }
-};
-
-export const ensureSuperuser = async (_req: Request, res: Response): Promise<void> => {
-  try {
-    // Credenciales predefinidas según requisitos del sistema
-    const superuserAlias = 'Crumen';
-    const superuserPassword = 'Crumen.*';
-    
-    console.log('🔄 Verificando usuario SUPERUSUARIO...');
-    
-    // Buscar si el usuario ya existe
-    const [usuarios] = await pool.execute<Usuario[]>(
-      'SELECT idUsuario, alias, nombre, estatus, password FROM tblposcrumenwebusuarios WHERE alias = ?',
-      [superuserAlias]
-    );
-    
-    const hashedPassword = await bcrypt.hash(superuserPassword, 10);
-    
-    if (usuarios.length > 0) {
-      const usuario = usuarios[0];
-      console.log('✅ SUPERUSUARIO encontrado, actualizando...');
-      
-      // Actualizar la contraseña y asegurar que esté activo
-      await pool.execute(
-        'UPDATE tblposcrumenwebusuarios SET password = ?, estatus = 1 WHERE alias = ?',
-        [hashedPassword, superuserAlias]
-      );
-      
-      // Limpiar intentos de login fallidos
-      await desbloquearCuenta(superuserAlias);
-      
-      res.json({
-        success: true,
-        message: 'SUPERUSUARIO actualizado y cuenta desbloqueada exitosamente',
-        data: {
-          alias: superuserAlias,
-          id: usuario.idUsuario,
-          action: 'updated'
-        }
-      });
-    } else {
-      console.log('⚠️  SUPERUSUARIO no encontrado. Creándolo...');
-      
-      // Crear el SUPERUSUARIO con rol de administrador
-      const [result] = await pool.execute<ResultSetHeader>(
-        `INSERT INTO tblposcrumenwebusuarios 
-         (idNegocio, idRol, nombre, alias, password, telefono, estatus, fechaRegistroauditoria, usuarioauditoria) 
-         VALUES (1, 1, 'SUPERUSUARIO', ?, ?, '', 1, NOW(), 'system')`,
-        [superuserAlias, hashedPassword]
-      );
-      
-      res.json({
-        success: true,
-        message: 'SUPERUSUARIO creado exitosamente',
-        data: {
-          alias: superuserAlias,
-          id: result.insertId,
-          action: 'created'
-        }
-      });
-    }
-  } catch (error) {
-    console.error('❌ Error al crear/actualizar SUPERUSUARIO:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Error al procesar la solicitud del SUPERUSUARIO' 
     });
   }
 };
@@ -625,6 +500,11 @@ export const getClienteTokenForNegocio = async (req: AuthRequest, res: Response)
   try {
     const { idNegocio } = req.body;
 
+    if (!req.user?.esCliente) {
+      res.status(403).json({ success: false, message: 'Solo disponible para clientes web' });
+      return;
+    }
+
     if (!idNegocio) {
       res.status(400).json({ success: false, message: 'idNegocio es requerido' });
       return;
@@ -655,7 +535,7 @@ export const getClienteTokenForNegocio = async (req: AuthRequest, res: Response)
         alias: req.user?.alias,
         isCliente: true,
         idNegocio: Number(idNegocio),
-        idRol: 99
+        idRol: ID_ROL_CLIENTE_WEB
       },
       JWT_SECRET,
       { expiresIn: '24h' }
@@ -669,46 +549,35 @@ export const getClienteTokenForNegocio = async (req: AuthRequest, res: Response)
 };
 
 /**
- * Extracts the client phone (alias) from a JWT in the Authorization header.
- * Returns the phone string if valid, or empty string on any failure.
- * This is a "soft auth" helper: it never throws.
+ * Teléfono del cliente web autenticado, leído de su cuenta (no del request).
+ * Devuelve '' si la sesión no es de un cliente web activo.
  */
-function extractPhoneFromJWT(req: Request): string {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) return '';
-  try {
-    const JWT_SECRET = process.env.JWT_SECRET;
-    if (!JWT_SECRET) return '';
-    const decoded = jwt.verify(authHeader.slice(7), JWT_SECRET) as { alias?: string };
-    return (decoded.alias || '').trim();
-  } catch {
-    return '';
-  }
+async function obtenerTelefonoClienteAutenticado(req: AuthRequest): Promise<string> {
+  if (!req.user?.esCliente || !req.user.id) return '';
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    'SELECT telefono FROM tblposcrumenwebclientes WHERE idCliente = ? AND estatus = 1',
+    [req.user.id]
+  );
+  return rows.length > 0 ? String(rows[0].telefono || '').trim() : '';
 }
 
 /**
  * Obtener pedidos activos del cliente desde tblposcrumenwebpedidoswebtransito.
- * Filtra por teléfono del cliente y retorna los pedidos más recientes.
- * Incluye logotipo y contactonegocio de tblposcrumenwebnegocio.
+ * Filtra por el teléfono de la cuenta del cliente autenticado y retorna los
+ * pedidos más recientes con el contacto del negocio.
  * Filtra solo registros con estadopedidowebtransito=1.
  * Ordena por idnegocio y luego por fecha de creación.
  *
- * Obtención del teléfono (prioridad):
- *   1. JWT token (Authorization header) → req.user.alias  (más fiable)
- *   2. Query param ?telefono=…                            (fallback)
+ * El teléfono NO se acepta del request: antes bastaba ?telefono=… para ver los
+ * pedidos de cualquier persona. El logotipo tampoco se envía (hasta 1.8 MB por
+ * fila); el portal lo carga con GET /api/negocios/publico/:id/logotipo.
  */
-export const getMisPedidos = async (req: Request, res: Response): Promise<void> => {
+export const getMisPedidos = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    // 1. Try to extract phone from JWT (soft auth – does not fail on invalid token)
-    let telefono = extractPhoneFromJWT(req);
-
-    // 2. Fallback to query param
-    if (!telefono) {
-      telefono = typeof req.query.telefono === 'string' ? req.query.telefono.trim() : '';
-    }
+    const telefono = await obtenerTelefonoClienteAutenticado(req);
 
     if (!telefono) {
-      res.status(400).json({ success: false, message: 'Teléfono del cliente es obligatorio.' });
+      res.status(403).json({ success: false, message: 'Solo disponible para clientes con sesión iniciada.' });
       return;
     }
 
@@ -722,7 +591,6 @@ export const getMisPedidos = async (req: Request, res: Response): Promise<void> 
     res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.set('Pragma', 'no-cache');
 
-    // pool.query() instead of pool.execute() because logotipo is LONGBLOB
     const [rows] = await pool.query<RowDataPacket[]>(
       `SELECT 
         t.idpedidowebtransito, t.folioventa, t.idnegocio, t.totalpedido,
@@ -734,7 +602,7 @@ export const getMisPedidos = async (req: Request, res: Response): Promise<void> 
         t.puntosobtenidospedidostransito, t.puntosusadospedidostransito, t.saldopuntospedidostransito,
         t.mensajeclientepedidostransito, t.mensajenegociopedidostransito,
         t.fecha_creacion, t.fecha_actualizacion, t.estadopedidowebtransito,
-        n.logotipo AS negocio_logotipo,
+        (COALESCE(LENGTH(n.logotipo), 0) > 0) AS negocio_tienelogotipo,
         n.contactonegocio AS negocio_contacto
       FROM tblposcrumenwebpedidoswebtransito t
       LEFT JOIN tblposcrumenwebnegocio n ON n.idNegocio = t.idnegocio
@@ -746,26 +614,10 @@ export const getMisPedidos = async (req: Request, res: Response): Promise<void> 
       [telefono]
     );
 
-    // Convert logotipo Buffer to data URI for frontend
-    const rowsProcessed = rows.map((row: RowDataPacket) => {
-      let logotipoUri: string | null = null;
-      if (row.negocio_logotipo) {
-        if (typeof row.negocio_logotipo === 'string') {
-          logotipoUri = row.negocio_logotipo.startsWith('data:image/') ? row.negocio_logotipo : null;
-        } else if (Buffer.isBuffer(row.negocio_logotipo)) {
-          // Detect MIME type from magic bytes
-          let mime = 'image/png';
-          if (row.negocio_logotipo[0] === 0xFF && row.negocio_logotipo[1] === 0xD8) mime = 'image/jpeg';
-          else if (row.negocio_logotipo[0] === 0x47 && row.negocio_logotipo[1] === 0x49) mime = 'image/gif';
-          else if (row.negocio_logotipo[0] === 0x52 && row.negocio_logotipo[1] === 0x49) mime = 'image/webp';
-          logotipoUri = `data:${mime};base64,${row.negocio_logotipo.toString('base64')}`;
-        }
-      }
-      return {
-        ...row,
-        negocio_logotipo: logotipoUri
-      };
-    });
+    const rowsProcessed = rows.map((row: RowDataPacket) => ({
+      ...row,
+      negocio_tienelogotipo: Number(row.negocio_tienelogotipo) === 1
+    }));
 
     res.json({ success: true, data: rowsProcessed });
   } catch (error: unknown) {
@@ -791,27 +643,19 @@ export const getMisPedidos = async (req: Request, res: Response): Promise<void> 
 /**
  * Enviar mensaje del cliente en un pedido en tránsito.
  * Actualiza mensajeclientepedidostransito en tblposcrumenwebpedidoswebtransito.
- *
- * Obtención del teléfono (prioridad):
- *   1. JWT token (Authorization header) → decoded.alias  (más fiable)
- *   2. Body param telefono                               (fallback)
+ * Solo el cliente autenticado dueño del pedido (por el teléfono de su cuenta).
  */
-export const enviarMensajePedido = async (req: Request, res: Response): Promise<void> => {
+export const enviarMensajePedido = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { idpedidowebtransito, mensaje, telefono: rawTelefono } = req.body;
+    const { idpedidowebtransito, mensaje } = req.body;
 
-    // 1. Try to extract phone from JWT (soft auth)
-    let telefono = extractPhoneFromJWT(req);
-
-    // 2. Fallback to body param
-    if (!telefono) {
-      telefono = typeof rawTelefono === 'string' ? rawTelefono.trim() : '';
-    }
+    const telefono = await obtenerTelefonoClienteAutenticado(req);
 
     if (!telefono) {
-      res.status(400).json({ success: false, message: 'Teléfono del cliente es obligatorio.' });
+      res.status(403).json({ success: false, message: 'Solo disponible para clientes con sesión iniciada.' });
       return;
     }
+
     if (!idpedidowebtransito || typeof mensaje !== 'string') {
       res.status(400).json({ success: false, message: 'Datos incompletos' });
       return;

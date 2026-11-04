@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
@@ -61,7 +61,7 @@ export const obtenerCuentasContables = async (req: AuthRequest, res: Response): 
 };
 
 // Obtener una cuenta contable por ID
-export const obtenerCuentaContable = async (req: Request, res: Response): Promise<void> => {
+export const obtenerCuentaContable = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     
@@ -76,8 +76,8 @@ export const obtenerCuentaContable = async (req: Request, res: Response): Promis
         fechamodificacionauditoria,
         idnegocio
       FROM tblposcrumenwebcuentacontable
-      WHERE id_cuentacontable = ?`,
-      [id]
+      WHERE id_cuentacontable = ? AND idnegocio = ?`,
+      [id, req.user?.idNegocio]
     );
     
     if (rows.length === 0) {
@@ -183,13 +183,14 @@ export const actualizarCuentaContable = async (req: AuthRequest, res: Response):
         tipocuentacontable = ?,
         fechamodificacionauditoria = NOW(),
         usuarioauditoria = ?
-       WHERE id_cuentacontable = ?`,
+       WHERE id_cuentacontable = ? AND idnegocio = ?`,
       [
         naturalezacuentacontable,
         nombrecuentacontable,
         tipocuentacontable,
         usuarioauditoria,
-        id
+        id,
+        req.user?.idNegocio
       ]
     );
 
@@ -210,8 +211,8 @@ export const actualizarCuentaContable = async (req: AuthRequest, res: Response):
         fechamodificacionauditoria,
         idnegocio
       FROM tblposcrumenwebcuentacontable
-      WHERE id_cuentacontable = ?`,
-      [id]
+      WHERE id_cuentacontable = ? AND idnegocio = ?`,
+      [id, req.user?.idNegocio]
     );
 
     res.json(updatedRows[0]);
@@ -225,13 +226,13 @@ export const actualizarCuentaContable = async (req: AuthRequest, res: Response):
 };
 
 // Eliminar cuenta contable
-export const eliminarCuentaContable = async (req: Request, res: Response): Promise<void> => {
+export const eliminarCuentaContable = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
     const [result] = await pool.query<ResultSetHeader>(
-      'DELETE FROM tblposcrumenwebcuentacontable WHERE id_cuentacontable = ?',
-      [id]
+      'DELETE FROM tblposcrumenwebcuentacontable WHERE id_cuentacontable = ? AND idnegocio = ?',
+      [id, req.user?.idNegocio]
     );
 
     if (result.affectedRows === 0) {

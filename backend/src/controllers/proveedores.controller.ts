@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
@@ -62,7 +62,7 @@ export const obtenerProveedores = async (req: AuthRequest, res: Response): Promi
 };
 
 // Obtener un proveedor por ID
-export const obtenerProveedorPorId = async (req: Request, res: Response): Promise<void> => {
+export const obtenerProveedorPorId = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id_proveedor } = req.params;
     
@@ -82,8 +82,8 @@ export const obtenerProveedorPorId = async (req: Request, res: Response): Promis
         fehamodificacionauditoria,
         idnegocio
       FROM tblposcrumenwebproveedores
-      WHERE id_proveedor = ?`,
-      [id_proveedor]
+      WHERE id_proveedor = ? AND idnegocio = ?`,
+      [id_proveedor, req.user?.idNegocio]
     );
     
     if (rows.length === 0) {
@@ -205,7 +205,7 @@ export const crearProveedor = async (req: AuthRequest, res: Response): Promise<v
 };
 
 // Actualizar proveedor
-export const actualizarProveedor = async (req: Request, res: Response): Promise<void> => {
+export const actualizarProveedor = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id_proveedor } = req.params;
     const {
@@ -222,8 +222,8 @@ export const actualizarProveedor = async (req: Request, res: Response): Promise<
 
     // Verificar si existe el proveedor
     const [exist] = await pool.query<RowDataPacket[]>(
-      'SELECT id_proveedor FROM tblposcrumenwebproveedores WHERE id_proveedor = ?',
-      [id_proveedor]
+      'SELECT id_proveedor FROM tblposcrumenwebproveedores WHERE id_proveedor = ? AND idnegocio = ?',
+      [id_proveedor, req.user?.idNegocio]
     );
     
     if (exist.length === 0) {
@@ -284,13 +284,13 @@ export const actualizarProveedor = async (req: Request, res: Response): Promise<
 };
 
 // Eliminar proveedor
-export const eliminarProveedor = async (req: Request, res: Response): Promise<void> => {
+export const eliminarProveedor = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id_proveedor } = req.params;
     
     const [result] = await pool.query<ResultSetHeader>(
-      'DELETE FROM tblposcrumenwebproveedores WHERE id_proveedor = ?',
-      [id_proveedor]
+      'DELETE FROM tblposcrumenwebproveedores WHERE id_proveedor = ? AND idnegocio = ?',
+      [id_proveedor, req.user?.idNegocio]
     );
     
     if (result.affectedRows === 0) {

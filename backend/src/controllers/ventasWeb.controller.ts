@@ -413,6 +413,16 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
 
     const ventaData: VentaWebCreate = req.body;
 
+    // Un cliente web solo puede SOLICITAR un pedido WEB a su nombre: el estado,
+    // el pago y el origen no se aceptan del request (los confirma el negocio).
+    const esClienteWeb = !!req.user?.esCliente;
+    if (esClienteWeb) {
+      ventaData.estadodeventa = 'SOLICITADO';
+      ventaData.estadodetalle = 'SOLICITADO';
+      ventaData.estatusdepago = 'PENDIENTE';
+      ventaData.origenventa = 'WEB';
+    }
+
     // Validar campos requeridos
     if (!ventaData.tipodeventa || !ventaData.cliente || !ventaData.formadepago || 
         !ventaData.detalles || ventaData.detalles.length === 0) {
@@ -486,8 +496,9 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
         subtotal, descuentos, impuestos, 
         totaldeventa, cliente, direcciondeentrega, contactodeentrega, 
         telefonodeentrega, propinadeventa, formadepago, estatusdepago, 
-        descripcionmov, origenventa, claveturno, idnegocio, usuarioauditoria, fechamodificacionauditoria
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        descripcionmov, origenventa, claveturno, idnegocio, usuarioauditoria, fechamodificacionauditoria,
+        idcliente
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         ventaData.tipodeventa,
         folioventa,
@@ -513,7 +524,8 @@ export const createVentaWeb = async (req: AuthRequest, res: Response): Promise<v
         claveturno, // Clave de turno actual del usuario que hizo login
         idnegocio,
         usuarioauditoria,
-        fechaHoraRegistro
+        fechaHoraRegistro,
+        esClienteWeb ? req.user?.id ?? null : null // Dueño del pedido WEB (para que solo él lo amplíe)
       ]
     );
 
@@ -1124,7 +1136,10 @@ export const addDetallesToVenta = async (req: AuthRequest, res: Response): Promi
       return;
     }
 
-    const { detalles, estadodetalle } = req.body;
+    const { detalles } = req.body;
+    const esClienteWeb = !!req.user?.esCliente;
+    // Un cliente web solo agrega productos en estado SOLICITADO
+    const estadodetalle = esClienteWeb ? 'SOLICITADO' : req.body.estadodetalle;
 
     // Validar campos requeridos
     if (!detalles || detalles.length === 0) {
@@ -1137,10 +1152,14 @@ export const addDetallesToVenta = async (req: AuthRequest, res: Response): Promi
 
     await connection.beginTransaction();
 
-    // Verificar que la venta existe y pertenece al negocio
+    // Verificar que la venta existe y pertenece al negocio; si es un cliente web,
+    // además debe ser su propio pedido WEB y seguir en estado SOLICITADO
+    const filtroCliente = esClienteWeb
+      ? " AND idcliente = ? AND origenventa = 'WEB' AND estadodeventa = 'SOLICITADO'"
+      : '';
     const [ventaRows] = await connection.execute<RowDataPacket[]>(
-      'SELECT idventa, folioventa, subtotal, descuentos, impuestos, totaldeventa FROM tblposcrumenwebventas WHERE idventa = ? AND idnegocio = ?',
-      [id, idnegocio]
+      `SELECT idventa, folioventa, subtotal, descuentos, impuestos, totaldeventa FROM tblposcrumenwebventas WHERE idventa = ? AND idnegocio = ?${filtroCliente}`,
+      esClienteWeb ? [id, idnegocio, req.user?.id] : [id, idnegocio]
     );
 
     if (ventaRows.length === 0) {

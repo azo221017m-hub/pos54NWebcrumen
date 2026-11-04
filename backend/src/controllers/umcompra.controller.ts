@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
@@ -310,12 +310,13 @@ export const eliminarUMCompra = async (req: AuthRequest, res: Response): Promise
 };
 
 // Validar nombre único
-export const validarNombreUnico = async (req: Request, res: Response): Promise<void> => {
+export const validarNombreUnico = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { nombreUmCompra, idUmCompra } = req.body;
 
-    let query = 'SELECT idUmCompra FROM tblposrumenwebumcompra WHERE nombreUmCompra = ?';
-    const params: any[] = [nombreUmCompra];
+    // Único dentro del negocio de la sesión (cada negocio tiene sus propias UM)
+    let query = 'SELECT idUmCompra FROM tblposrumenwebumcompra WHERE nombreUmCompra = ? AND idnegocio = ?';
+    const params: any[] = [nombreUmCompra, req.user?.idNegocio];
 
     if (idUmCompra) {
       query += ' AND idUmCompra != ?';

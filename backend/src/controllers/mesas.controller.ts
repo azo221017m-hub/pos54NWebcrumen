@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
@@ -87,7 +87,7 @@ export const obtenerMesas = async (req: AuthRequest, res: Response): Promise<voi
 };
 
 // Obtener una mesa por ID
-export const obtenerMesaPorId = async (req: Request, res: Response): Promise<void> => {
+export const obtenerMesaPorId = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { idmesa } = req.params;
     
@@ -105,8 +105,8 @@ export const obtenerMesaPorId = async (req: Request, res: Response): Promise<voi
         estatustiempo,
         idnegocio
       FROM tblposcrumenwebmesas
-      WHERE idmesa = ?`,
-      [idmesa]
+      WHERE idmesa = ? AND idnegocio = ?`,
+      [idmesa, req.user?.idNegocio]
     );
 
     if (rows.length === 0) {
@@ -364,15 +364,15 @@ export const actualizarMesa = async (req: AuthRequest, res: Response): Promise<v
 };
 
 // Eliminar mesa
-export const eliminarMesa = async (req: Request, res: Response): Promise<void> => {
+export const eliminarMesa = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { idmesa } = req.params;
     
     console.log('Eliminando mesa ID:', idmesa);
 
     const [result] = await pool.query<ResultSetHeader>(
-      'DELETE FROM tblposcrumenwebmesas WHERE idmesa = ?',
-      [idmesa]
+      'DELETE FROM tblposcrumenwebmesas WHERE idmesa = ? AND idnegocio = ?',
+      [idmesa, req.user?.idNegocio]
     );
 
     if (result.affectedRows === 0) {
@@ -392,14 +392,16 @@ export const eliminarMesa = async (req: Request, res: Response): Promise<void> =
 };
 
 // Validar que el número de mesa sea único en el negocio
-export const validarNumeroMesaUnico = async (req: Request, res: Response): Promise<void> => {
+export const validarNumeroMesaUnico = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { numeromesa, idnegocio, idmesa } = req.query;
+    const { numeromesa, idmesa } = req.query;
+    // El negocio se toma de la sesión, nunca del query string
+    const idnegocio = req.user?.idNegocio;
 
     console.log('Validando número de mesa único:', numeromesa);
 
     let query = 'SELECT idmesa FROM tblposcrumenwebmesas WHERE numeromesa = ? AND idnegocio = ?';
-    const params: Array<string | number> = [numeromesa as string, idnegocio as string];
+    const params: Array<string | number> = [numeromesa as string, Number(idnegocio)];
 
     // Si se proporciona idmesa, excluirlo de la validación (para updates)
     if (idmesa) {
@@ -420,7 +422,7 @@ export const validarNumeroMesaUnico = async (req: Request, res: Response): Promi
 };
 
 // Cambiar estatus de mesa (DISPONIBLE/OCUPADA/RESERVADA)
-export const cambiarEstatusMesa = async (req: Request, res: Response): Promise<void> => {
+export const cambiarEstatusMesa = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { idmesa } = req.params;
     const { estatusmesa, usuarioauditoria } = req.body;
@@ -442,8 +444,8 @@ export const cambiarEstatusMesa = async (req: Request, res: Response): Promise<v
        SET estatusmesa = ?,
            usuarioauditoria = ?,
            fechamodificacionauditoria = NOW()
-       WHERE idmesa = ?`,
-      [estatusmesa, usuarioauditoria, idmesa]
+       WHERE idmesa = ? AND idnegocio = ?`,
+      [estatusmesa, usuarioauditoria, idmesa, req.user?.idNegocio]
     );
 
     if (result.affectedRows === 0) {

@@ -1,11 +1,9 @@
 import { Router } from 'express';
 import { 
   login, 
-  register, 
   verifyToken, 
   checkLoginStatus, 
   unlockUser, 
-  ensureSuperuser,
   refreshToken,
   loginCliente,
   getClienteTokenForNegocio,
@@ -13,13 +11,10 @@ import {
   getMisPedidos,
   enviarMensajePedido
 } from '../controllers/auth.controller';
-import { authMiddleware, checkRole } from '../middlewares/auth';
+import { authMiddleware, soloSuperUsuario } from '../middlewares/auth';
 import { strictLimiter, apiLimiter } from '../middlewares/rateLimit';
 
 const router = Router();
-
-// Constantes de roles
-const ADMIN_ROLE = 1;
 
 /**
  * @route   POST /api/auth/login
@@ -44,17 +39,17 @@ router.post('/cliente-token-negocio', apiLimiter, authMiddleware, getClienteToke
 
 /**
  * @route   GET /api/auth/mis-pedidos
- * @desc    Obtener pedidos activos del cliente (por JWT o teléfono)
- * @access  Public (soft auth – uses JWT when available, falls back to query param)
+ * @desc    Obtener pedidos activos del cliente autenticado (teléfono tomado de su cuenta)
+ * @access  Private (requiere token de cliente válido)
  */
-router.get('/mis-pedidos', apiLimiter, getMisPedidos);
+router.get('/mis-pedidos', apiLimiter, authMiddleware, getMisPedidos);
 
 /**
  * @route   POST /api/auth/enviar-mensaje-pedido
- * @desc    Enviar mensaje del cliente en un pedido en tránsito (por JWT o teléfono)
- * @access  Public (soft auth – uses JWT when available, falls back to body param)
+ * @desc    Enviar mensaje del cliente autenticado en uno de sus pedidos en tránsito
+ * @access  Private (requiere token de cliente válido)
  */
-router.post('/enviar-mensaje-pedido', apiLimiter, enviarMensajePedido);
+router.post('/enviar-mensaje-pedido', apiLimiter, authMiddleware, enviarMensajePedido);
 
 /**
  * @route   POST /api/auth/registro-cliente
@@ -63,12 +58,9 @@ router.post('/enviar-mensaje-pedido', apiLimiter, enviarMensajePedido);
  */
 router.post('/registro-cliente', apiLimiter, registroClientePublico);
 
-/**
- * @route   POST /api/auth/register
- * @desc    Registrar nuevo usuario
- * @access  Public
- */
-router.post('/register', register);
+// POST /api/auth/register fue retirado: era público y permitía crear usuarios de
+// personal en cualquier negocio y con cualquier rol (incluido el 99999). El
+// personal se da de alta con POST /api/usuarios (requiere sesión).
 
 /**
  * @route   POST /api/auth/refresh
@@ -86,25 +78,21 @@ router.get('/verify', authMiddleware, verifyToken);
 
 /**
  * @route   GET /api/auth/status/:alias
- * @desc    Verificar estado de bloqueo de un usuario
- * @access  Private (solo administradores - idRol: 1)
+ * @desc    Verificar estado de bloqueo de un usuario (cualquier negocio)
+ * @access  Private (solo superusuario)
  */
-router.get('/status/:alias', authMiddleware, checkRole(ADMIN_ROLE), checkLoginStatus);
+router.get('/status/:alias', authMiddleware, soloSuperUsuario, checkLoginStatus);
 
 /**
  * @route   POST /api/auth/unlock/:alias
- * @desc    Desbloquear cuenta de usuario
- * @access  Private (solo administradores - idRol: 1)
+ * @desc    Desbloquear cuenta de usuario (cualquier negocio)
+ * @access  Private (solo superusuario)
  */
-router.post('/unlock/:alias', authMiddleware, checkRole(ADMIN_ROLE), unlockUser);
+router.post('/unlock/:alias', authMiddleware, soloSuperUsuario, unlockUser);
 
-/**
- * @route   POST /api/auth/ensure-superuser
- * @desc    Crear o actualizar el SUPERUSUARIO del sistema (Crumen)
- * @access  Public (para inicialización del sistema)
- * @note    Este endpoint crea/actualiza el usuario "Crumen" con la contraseña "Crumen.*"
- *          y desbloquea la cuenta si está bloqueada. Uso recomendado: inicialización del sistema.
- */
-router.post('/ensure-superuser', ensureSuperuser);
+// POST /api/auth/ensure-superuser fue retirado: era público y restablecía la
+// contraseña del superusuario a un valor fijo publicado en el repositorio.
+// Para crear o restablecer el superusuario usar el script del servidor:
+//   cd backend && npm run db:create-superuser
 
 export default router;

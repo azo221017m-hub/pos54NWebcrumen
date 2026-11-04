@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { AuthRequest } from '../middlewares/auth';
+import { AuthRequest, esSuperUsuario } from '../middlewares/auth';
 import { pool } from '../config/db';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import {
@@ -19,7 +19,7 @@ export const obtenerMovimientos = async (req: AuthRequest, res: Response): Promi
     const idNegocio = req.user?.idNegocio;
 
     // Si es superusuario (idNegocio = 99999), obtener todos los movimientos
-    const isSuperuser = idNegocio === 99999;
+    const isSuperuser = esSuperUsuario(req);
 
     // Los PROCESADO solo se listan si caen en esta ventana; los PENDIENTE se
     // incluyen siempre para no ocultar tareas por procesar/aplicar aunque sean viejas.
@@ -83,7 +83,7 @@ export const obtenerMovimientoPorId = async (req: AuthRequest, res: Response): P
   try {
     const { id } = req.params;
     const idNegocio = req.user?.idNegocio;
-    const isSuperuser = idNegocio === 99999;
+    const isSuperuser = esSuperUsuario(req);
 
     const whereClause = isSuperuser
       ? 'WHERE idmovimiento = ?'
@@ -284,7 +284,7 @@ export const actualizarMovimiento = async (req: AuthRequest, res: Response): Pro
   try {
     const { id } = req.params;
     const idNegocio = req.user?.idNegocio;
-    const isSuperuser = idNegocio === 99999;
+    const isSuperuser = esSuperUsuario(req);
     const movimientoData: MovimientoUpdate = req.body;
 
     // Verificar que el movimiento existe y pertenece al negocio
@@ -371,7 +371,7 @@ export const eliminarMovimiento = async (req: AuthRequest, res: Response): Promi
   try {
     const { id } = req.params;
     const idNegocio = req.user?.idNegocio;
-    const isSuperuser = idNegocio === 99999;
+    const isSuperuser = esSuperUsuario(req);
 
     const whereClause = isSuperuser
       ? 'WHERE idmovimiento = ?'
@@ -433,7 +433,7 @@ export const procesarMovimiento = async (req: AuthRequest, res: Response): Promi
   try {
     const { id } = req.params;
     const idNegocio = req.user?.idNegocio;
-    const isSuperuser = idNegocio === 99999;
+    const isSuperuser = esSuperUsuario(req);
 
     const whereClause = isSuperuser
       ? 'WHERE idmovimiento = ?'
@@ -536,7 +536,7 @@ export const obtenerUltimaCompra = async (req: AuthRequest, res: Response): Prom
   try {
     const { idinsumo } = req.params;
     const idNegocio = req.user?.idNegocio;
-    const isSuperuser = idNegocio === 99999;
+    const isSuperuser = esSuperUsuario(req);
 
     if (!idNegocio) {
       res.status(401).json({
@@ -607,7 +607,7 @@ export const aplicarMovimiento = async (req: AuthRequest, res: Response): Promis
     const { id } = req.params;
     const idNegocio = req.user?.idNegocio;
     const usuarioAuditoria = req.user?.alias || req.user?.nombre || 'Sistema';
-    const isSuperuser = idNegocio === 99999;
+    const isSuperuser = esSuperUsuario(req);
 
     const whereClause = isSuperuser
       ? 'WHERE idmovimiento = ?'

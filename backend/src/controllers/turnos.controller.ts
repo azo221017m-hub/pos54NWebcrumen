@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { pool } from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { AuthRequest } from '../middlewares/auth';
@@ -130,7 +130,7 @@ export const obtenerTurnos = async (req: AuthRequest, res: Response): Promise<vo
 };
 
 // Obtener un turno por ID
-export const obtenerTurnoPorId = async (req: Request, res: Response): Promise<void> => {
+export const obtenerTurnoPorId = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { idturno } = req.params;
     
@@ -148,8 +148,8 @@ export const obtenerTurnoPorId = async (req: Request, res: Response): Promise<vo
         idnegocio,
         metaturno
       FROM tblposcrumenwebturnos
-      WHERE idturno = ?`,
-      [idturno]
+      WHERE idturno = ? AND idnegocio = ?`,
+      [idturno, req.user?.idNegocio]
     );
 
     if (rows.length === 0) {
@@ -364,7 +364,7 @@ export const crearTurno = async (req: AuthRequest, res: Response): Promise<void>
 };
 
 // Actualizar un turno (cerrar turno)
-export const actualizarTurno = async (req: Request, res: Response): Promise<void> => {
+export const actualizarTurno = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { idturno } = req.params;
     const { estatusturno } = req.body;
@@ -373,8 +373,8 @@ export const actualizarTurno = async (req: Request, res: Response): Promise<void
 
     // Validar que el turno existe
     const [turnoExistente] = await pool.query<Turno[]>(
-      'SELECT idturno, estatusturno FROM tblposcrumenwebturnos WHERE idturno = ?',
-      [idturno]
+      'SELECT idturno, estatusturno FROM tblposcrumenwebturnos WHERE idturno = ? AND idnegocio = ?',
+      [idturno, req.user?.idNegocio]
     );
 
     if (turnoExistente.length === 0) {
@@ -412,7 +412,7 @@ export const actualizarTurno = async (req: Request, res: Response): Promise<void
 };
 
 // Eliminar un turno
-export const eliminarTurno = async (req: Request, res: Response): Promise<void> => {
+export const eliminarTurno = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { idturno } = req.params;
 
@@ -420,8 +420,8 @@ export const eliminarTurno = async (req: Request, res: Response): Promise<void> 
 
     // Validar que el turno existe
     const [turnoExistente] = await pool.query<Turno[]>(
-      'SELECT idturno FROM tblposcrumenwebturnos WHERE idturno = ?',
-      [idturno]
+      'SELECT idturno FROM tblposcrumenwebturnos WHERE idturno = ? AND idnegocio = ?',
+      [idturno, req.user?.idNegocio]
     );
 
     if (turnoExistente.length === 0) {
@@ -430,7 +430,7 @@ export const eliminarTurno = async (req: Request, res: Response): Promise<void> 
     }
 
     // Eliminar el turno
-    await pool.query('DELETE FROM tblposcrumenwebturnos WHERE idturno = ?', [idturno]);
+    await pool.query('DELETE FROM tblposcrumenwebturnos WHERE idturno = ? AND idnegocio = ?', [idturno, req.user?.idNegocio]);
 
     console.log('Turno eliminado exitosamente');
     res.json({ message: 'Turno eliminado exitosamente' });

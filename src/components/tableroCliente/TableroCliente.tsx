@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { clienteWebService } from '../../services/clienteWebService';
+import { clienteWebService, urlLogotipoPublico } from '../../services/clienteWebService';
 import type { PedidoTransito } from '../../services/clienteWebService';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import { extractShortFolio } from '../../utils/formatters';
@@ -58,7 +58,7 @@ function agruparPorNegocio(pedidos: PedidoTransito[]): GrupoNegocio[] {
     if (!map.has(p.idnegocio)) {
       map.set(p.idnegocio, {
         idnegocio: p.idnegocio,
-        logotipo: p.negocio_logotipo,
+        logotipo: p.negocio_tienelogotipo ? urlLogotipoPublico(p.idnegocio) : null,
         contacto: p.negocio_contacto,
         pedidos: [],
       });

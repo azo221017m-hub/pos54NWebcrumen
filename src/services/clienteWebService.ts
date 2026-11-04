@@ -1,4 +1,5 @@
 import { api } from './api';
+import config from '../config/api.config';
 
 export interface ClienteRegistroData {
   referencia: string;
@@ -43,7 +44,7 @@ export interface PedidoTransito {
   fecha_creacion: string;
   fecha_actualizacion: string;
   estadopedidowebtransito: number;
-  negocio_logotipo: string | null;
+  negocio_tienelogotipo: boolean;
   negocio_contacto: string | null;
 }
 
@@ -60,7 +61,8 @@ export interface NegocioPublico {
   idNegocio: number;
   nombreNegocio: string;
   tipoNegocio: string;
-  logotipo: string | null;
+  tieneLogotipo: boolean; // el logotipo se carga aparte con urlLogotipoPublico()
+  logotipoVersion: number | null; // cambia cuando se modifica el negocio (invalida la caché)
   calificacion: number | null;
   etiquetas: string | null;
   abiertoahoraweb: number;
@@ -77,6 +79,14 @@ const NO_BUSINESS_SELECTED = 0;
 
 /** idRol value used for client-portal users (distinct from any regular system role) */
 const CLIENT_ROLE = 99;
+
+/**
+ * URL pública del logotipo de un negocio activo. Se usa directo en <img src>:
+ * el navegador lo descarga en paralelo y lo guarda en caché, en lugar de traer
+ * todos los logotipos en base64 dentro de la lista (>11 MB).
+ */
+export const urlLogotipoPublico = (idNegocio: number, version?: number | null): string =>
+  `${config.apiUrl}/negocios/publico/${idNegocio}/logotipo${version ? `?v=${version}` : ''}`;
 
 export const clienteWebService = {
   /**
@@ -143,12 +153,10 @@ export const clienteWebService = {
    */
   obtenerMisPedidos: async (): Promise<PedidoTransito[]> => {
     try {
-      const session = clienteWebService.getClienteSession();
-      const telefono = (session?.telefono || '').trim();
-      if (!telefono) return [];
+      // Requiere sesión de cliente: el backend toma el teléfono de la cuenta, no del request
+      if (!clienteWebService.getClienteSession()) return [];
       const response = await api.get<{ success: boolean; data: PedidoTransito[] }>(
-        '/auth/mis-pedidos',
-        { params: { telefono } }
+        '/auth/mis-pedidos'
       );
       return response.data.data || [];
     } catch (error) {
@@ -162,13 +170,11 @@ export const clienteWebService = {
    */
   enviarMensajePedido: async (idpedidowebtransito: number, mensaje: string): Promise<boolean> => {
     try {
-      const session = clienteWebService.getClienteSession();
-      const telefono = (session?.telefono || '').trim();
-      if (!telefono) return false;
+      // Requiere sesión de cliente: el backend toma el teléfono de la cuenta, no del request
+      if (!clienteWebService.getClienteSession()) return false;
       const response = await api.post<{ success: boolean }>('/auth/enviar-mensaje-pedido', {
         idpedidowebtransito,
-        mensaje,
-        telefono
+        mensaje
       });
       return response.data.success;
     } catch (error) {
