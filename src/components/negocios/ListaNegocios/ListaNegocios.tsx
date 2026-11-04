@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import type { Negocio } from '../../../types/negocio.types';
+import { negociosService } from '../../../services/negociosService';
 import './ListaNegocios.css';
 import { Building2, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
 
@@ -17,6 +19,34 @@ const isValidImageDataUri = (logotipo: string | null | undefined): logotipo is s
   // Check if it's a valid Base64 data URI with proper format
   // Supports common image types: jpeg, png, gif, webp, bmp, svg+xml
   return /^data:image\/(jpeg|png|gif|webp|bmp|svg\+xml);base64,/.test(logotipo.trim());
+};
+
+// Miniatura del logotipo. La lista de negocios no trae el logotipo (pesaba >15 MB
+// con todos los negocios); se pide por separado cuando tieneLogotipo es true.
+const LogoNegocio = ({ negocio }: { negocio: Negocio }) => {
+  const [logotipoCargado, setLogotipoCargado] = useState<string | null>(null);
+  // Tras crear/editar, el registro ya trae logotipo (data URI o null) y tiene prioridad
+  const logotipoIncluido = negocio.logotipo !== undefined;
+
+  useEffect(() => {
+    if (logotipoIncluido || !negocio.tieneLogotipo || !negocio.idNegocio) return;
+
+    let cancelado = false;
+    negociosService.obtenerLogotipo(negocio.idNegocio)
+      .then(data => { if (!cancelado) setLogotipoCargado(data); })
+      .catch(() => { /* Sin logotipo: se muestra el ícono por defecto */ });
+    return () => { cancelado = true; };
+  }, [negocio.idNegocio, logotipoIncluido, negocio.tieneLogotipo]);
+
+  const logotipo = logotipoIncluido ? negocio.logotipo : logotipoCargado;
+  if (isValidImageDataUri(logotipo)) {
+    return <img src={logotipo} alt={negocio.nombreNegocio} className="negocio-logo-thumb" />;
+  }
+  return (
+    <div className="negocio-logo-placeholder">
+      <Building2 size={20} />
+    </div>
+  );
 };
 
 export const ListaNegocios = ({ negocios, onEditar, onEliminar, loading }: ListaNegociosProps) => {
@@ -57,13 +87,7 @@ export const ListaNegocios = ({ negocios, onEditar, onEliminar, loading }: Lista
               negocios.map((negocio) => (
                 <tr key={negocio.idNegocio}>
                   <td>
-                    {isValidImageDataUri(negocio.logotipo) ? (
-                      <img src={negocio.logotipo} alt={negocio.nombreNegocio} className="negocio-logo-thumb" />
-                    ) : (
-                      <div className="negocio-logo-placeholder">
-                        <Building2 size={20} />
-                      </div>
-                    )}
+                    <LogoNegocio negocio={negocio} />
                   </td>
                   <td className="cell-nombre">
                     {negocio.nombreNegocio}

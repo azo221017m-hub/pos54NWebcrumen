@@ -5,6 +5,7 @@ import type { Negocio } from '../../../types/negocio.types';
 import type { Rol } from '../../../types/rol.types';
 import { negociosService } from '../../../services/negociosService';
 import { rolesService } from '../../../services/rolesService';
+import { obtenerImagenUsuario } from '../../../services/usuariosService';
 import './ListaUsuarios.css';
 
 // Avatar image with fallback icon on error
@@ -12,6 +13,29 @@ const AvatarImg: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
   const [error, setError] = useState(false);
   if (error) return <User size={20} />;
   return <img src={src} alt={alt} onError={() => setError(true)} />;
+};
+
+// La lista de usuarios no trae las imágenes (pesaba >23 MB con todos los negocios);
+// el avatar se pide por separado cuando fotoavatar_size > 0.
+const AvatarUsuario: React.FC<{ usuario: Usuario }> = ({ usuario }) => {
+  const [avatarCargado, setAvatarCargado] = useState<string | null>(null);
+  const tieneAvatar = !!usuario.fotoavatar_size && usuario.fotoavatar_size > 0;
+  // Tras crear/editar, el registro ya trae fotoavatar (string o null) y tiene prioridad
+  const avatarIncluido = usuario.fotoavatar !== undefined;
+
+  useEffect(() => {
+    if (avatarIncluido || !tieneAvatar || !usuario.idUsuario) return;
+
+    let cancelado = false;
+    obtenerImagenUsuario(usuario.idUsuario, 'fotoavatar')
+      .then(data => { if (!cancelado) setAvatarCargado(data); })
+      .catch(() => { /* Sin avatar: se muestra el ícono por defecto */ });
+    return () => { cancelado = true; };
+  }, [usuario.idUsuario, avatarIncluido, tieneAvatar]);
+
+  const avatar = avatarIncluido ? usuario.fotoavatar : avatarCargado;
+  if (!tieneAvatar || !avatar) return <User size={20} />;
+  return <AvatarImg src={`data:image/jpeg;base64,${avatar}`} alt={usuario.nombre} />;
 };
 
 interface ListaUsuariosProps {
@@ -106,11 +130,7 @@ export const ListaUsuarios: React.FC<ListaUsuariosProps> = ({
                 <tr key={usuario.idUsuario}>
                   <td>
                     <div className="usuario-avatar-thumb">
-                      {usuario.fotoavatar_size && usuario.fotoavatar_size > 0 && usuario.fotoavatar ? (
-                        <AvatarImg src={`data:image/jpeg;base64,${usuario.fotoavatar}`} alt={usuario.nombre} />
-                      ) : (
-                        <User size={20} />
-                      )}
+                      <AvatarUsuario usuario={usuario} />
                     </div>
                   </td>
                   <td className="cell-nombre">{usuario.nombre}</td>

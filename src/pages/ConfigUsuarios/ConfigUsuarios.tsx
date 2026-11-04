@@ -6,6 +6,7 @@ import { FormularioUsuario } from '../../components/usuarios/FormularioUsuario/F
 import type { Usuario, UsuarioFormData } from '../../types/usuario.types';
 import {
   obtenerUsuarios,
+  obtenerUsuarioPorId,
   crearUsuario,
   actualizarUsuario,
   eliminarUsuario,
@@ -56,9 +57,24 @@ export const ConfigUsuarios: React.FC = () => {
     setMostrarFormulario(true);
   };
 
-  const handleEditarUsuario = (usuario: Usuario) => {
-    setUsuarioEditar(usuario);
-    setMostrarFormulario(true);
+  const handleEditarUsuario = async (usuario: Usuario) => {
+    if (!usuario.idUsuario) return;
+    try {
+      setLoading(true);
+      // La lista no trae las imágenes; se carga el usuario completo para editarlo
+      const usuarioCompleto = await obtenerUsuarioPorId(usuario.idUsuario);
+      if (!usuarioCompleto) {
+        mostrarMensaje('error', 'No se encontró el usuario');
+        return;
+      }
+      setUsuarioEditar(usuarioCompleto);
+      setMostrarFormulario(true);
+    } catch (error) {
+      console.error('Error al cargar usuario:', error);
+      mostrarMensaje('error', 'Error al cargar el usuario');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEliminarUsuario = async (id: number) => {

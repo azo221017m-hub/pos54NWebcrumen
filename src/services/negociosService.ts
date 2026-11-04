@@ -142,6 +142,19 @@ export const negociosService = {
     }
   },
 
+  // Obtener solo el logotipo de un negocio (la lista obtenerNegocios no lo incluye)
+  obtenerLogotipo: async (idNegocio: number): Promise<string | null> => {
+    try {
+      const response = await api.get<{ success: boolean; data: { logotipo: string | null } }>(
+        `/negocios/${idNegocio}/logotipo`
+      );
+      return response.data.data?.logotipo ?? null;
+    } catch (error) {
+      console.error('Error al obtener logotipo:', error);
+      throw error;
+    }
+  },
+
   // Obtener próximo número de negocio
   obtenerProximoNumeroNegocio: async (): Promise<{ proximoNumero: string; proximoId: number }> => {
     try {

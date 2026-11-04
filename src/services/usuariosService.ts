@@ -162,9 +162,26 @@ export const actualizarImagenUsuario = async (
   }
 };
 
+// Obtener una imagen de usuario en Base64 (la lista obtenerUsuarios no incluye imágenes)
+export const obtenerImagenUsuario = async (
+  id: number,
+  tipoImagen: 'fotoine' | 'fotopersona' | 'fotoavatar'
+): Promise<string | null> => {
+  try {
+    const response = await api.get<{ success: boolean; data?: { imagen: string } }>(
+      `/usuarios/${id}/imagen/${tipoImagen}`
+    );
+    return response.data.success ? response.data.data?.imagen ?? null : null;
+  } catch (error) {
+    console.error(`❌ Error al obtener ${tipoImagen} del usuario ${id}:`, error);
+    throw error;
+  }
+};
+
 export default {
   obtenerUsuarios,
   obtenerUsuarioPorId,
+  obtenerImagenUsuario,
   crearUsuario,
   actualizarUsuario,
   eliminarUsuario,
