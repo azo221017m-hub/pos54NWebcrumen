@@ -12,6 +12,7 @@ import {
   toggleAbiertoAhoraWeb,
   validarNombreUnico,
   subirLogotipo,
+  obtenerLogotipo,
   obtenerProximoNumeroNegocio,
 } from '../controllers/negocios.controller';
 
@@ -95,5 +96,12 @@ router.post('/validar-nombre', authMiddleware, validarNombreUnico);
  * @access  Private
  */
 router.post('/:id/logotipo', authMiddleware, subirLogotipo);
+
+/**
+ * @route   GET /api/negocios/:id/logotipo
+ * @desc    Obtener el logotipo de un negocio (la lista GET /api/negocios no lo incluye)
+ * @access  Private
+ */
+router.get('/:id/logotipo', authMiddleware, obtenerLogotipo);
 
 export default router;

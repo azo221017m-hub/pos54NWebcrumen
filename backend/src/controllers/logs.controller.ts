@@ -5,6 +5,18 @@ import type { AuthRequest } from '../middlewares/auth';
 
 const EQUIPO_MAX_LENGTH = 150;
 
+// Longitudes de las columnas varchar de tblposcrumenweblogs. La BD corre con
+// STRICT_TRANS_TABLES: un valor más largo hace fallar el INSERT (500), p. ej.
+// accion = 'Configuración Sistema' (21 caracteres) en una columna varchar(20).
+const ACCION_MAX_LENGTH = 20;
+const USUARIO_MAX_LENGTH = 100;
+const MODULO_MAX_LENGTH = 100;
+const TABLA_AFECTADA_MAX_LENGTH = 100;
+const IDREGISTRO_MAX_LENGTH = 50;
+
+const recortar = (valor: unknown, max: number): string | null =>
+  valor !== undefined && valor !== null ? String(valor).substring(0, max) : null;
+
 // Registrar un evento en tblposcrumenweblogs
 export const registrarLog = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -38,11 +50,11 @@ export const registrarLog = async (req: AuthRequest, res: Response): Promise<voi
       [
         idnegocio ?? null,
         idusuario ?? null,
-        usuario ?? null,
-        accion,
-        modulo,
-        tabla_afectada ?? null,
-        idregistro !== undefined && idregistro !== null ? String(idregistro) : null,
+        recortar(usuario, USUARIO_MAX_LENGTH),
+        recortar(accion, ACCION_MAX_LENGTH),
+        recortar(modulo, MODULO_MAX_LENGTH),
+        recortar(tabla_afectada, TABLA_AFECTADA_MAX_LENGTH),
+        recortar(idregistro, IDREGISTRO_MAX_LENGTH),
         descripcion ?? null,
         ip,
         equipo ? String(equipo).substring(0, EQUIPO_MAX_LENGTH) : null,

@@ -93,24 +93,32 @@ const convertDataUriToBuffer = (dataUri: string | null | undefined): Buffer | nu
 };
 
 // Obtener todos los negocios
+// La lista NO incluye el logotipo (LONGBLOB): con todos los negocios la respuesta
+// superaba los 15 MB y el superusuario (99999) recibía "timeout of 30000ms exceeded".
+// Se envía solo el indicador tieneLogotipo; la imagen se pide por negocio en
+// GET /negocios/:id/logotipo.
 export const obtenerNegocios = async (_req: Request, res: Response): Promise<void> => {
   try {
-    // pool.query() is used instead of pool.execute() because logotipo is LONGBLOB
-    // pool.execute() (prepared statements / binary protocol) has issues with LONGBLOB in mysql2
     const [negocios] = await pool.query<RowDataPacket[]>(
-      'SELECT * FROM tblposcrumenwebnegocio ORDER BY nombreNegocio ASC'
+      `SELECT idNegocio, numeronegocio, nombreNegocio, rfcnegocio, direccionfiscalnegocio,
+              contactonegocio, telefonocontacto, estatusnegocio, plancontratado,
+              fechaRegistroauditoria, usuarioauditoria, fehamodificacionauditoria,
+              operacionweb, calificacion, etiquetas, abiertoahoraweb, promohoyweb,
+              entregarapidaweb, nuevoweb,
+              (COALESCE(LENGTH(logotipo), 0) > 0) AS tieneLogotipo
+       FROM tblposcrumenwebnegocio
+       ORDER BY nombreNegocio ASC`
     );
 
-    // Convert logotipo Buffer to Base64 string for frontend consumption
-    const negociosConLogotipo = negocios.map((negocio: RowDataPacket) => ({
+    const negociosLigeros = negocios.map((negocio: RowDataPacket) => ({
       ...negocio,
-      logotipo: convertLogotipoToDataUri(negocio.logotipo as Buffer | string | null)
+      tieneLogotipo: Number(negocio.tieneLogotipo) === 1
     }));
 
     res.json({
       success: true,
       message: 'Negocios obtenidos exitosamente',
-      data: negociosConLogotipo,
+      data: negociosLigeros,
     });
   } catch (error) {
     console.error('Error al obtener negocios:', error);
@@ -579,6 +587,41 @@ export const subirLogotipo = async (req: Request, res: Response): Promise<void> 
     res.status(500).json({
       success: false,
       message: 'Error al subir logotipo',
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    });
+  }
+};
+
+// Obtener solo el logotipo de un negocio (la lista de negocios no lo incluye)
+export const obtenerLogotipo = async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+
+  try {
+    // pool.query() is used instead of pool.execute() because logotipo is LONGBLOB
+    // pool.execute() (prepared statements / binary protocol) has issues with LONGBLOB in mysql2
+    const [negocios] = await pool.query<RowDataPacket[]>(
+      'SELECT logotipo FROM tblposcrumenwebnegocio WHERE idNegocio = ?',
+      [id]
+    );
+
+    if (negocios.length === 0) {
+      res.status(404).json({
+        success: false,
+        message: 'Negocio no encontrado',
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      message: 'Logotipo obtenido exitosamente',
+      data: { logotipo: convertLogotipoToDataUri(negocios[0].logotipo as Buffer | string | null) },
+    });
+  } catch (error) {
+    console.error('Error al obtener logotipo:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener logotipo',
       error: error instanceof Error ? error.message : 'Error desconocido',
     });
   }

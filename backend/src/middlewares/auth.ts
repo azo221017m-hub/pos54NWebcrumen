@@ -237,7 +237,7 @@ export const checkPrivilegio = (minPrivilegio: number) => {
 
     try {
       const [rolRows] = await pool.execute<RowDataPacket[]>(
-        'SELECT privilegio FROM tblposcrumenwebroles WHERE idRol = ?',
+        'SELECT privilegio FROM tblposcrumenwebrolesdeusuario WHERE idRol = ?',
         [req.user.idRol]
       );
 

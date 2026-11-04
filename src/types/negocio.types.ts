@@ -7,6 +7,7 @@ export interface Negocio {
   direccionfiscalnegocio: string;
   contactonegocio: string;
   logotipo?: string | null; // Base64 string o null
+  tieneLogotipo?: boolean; // Solo en la lista GET /negocios (no trae logotipo; se pide con obtenerLogotipo)
   telefonocontacto: string;
   estatusnegocio: number; // 0 = inactivo, 1 = activo
   plancontratado?: 'EMPRENDEDOR' | 'EMPRESARIO' | 'EJECUTIVO';

@@ -26,27 +26,27 @@ export const obtenerUsuarios = async (req: AuthRequest, res: Response): Promise<
 
     // Si idnegocio == 99999, mostrar todos los usuarios
     // Si idnegocio != 99999, mostrar solo usuarios con el mismo idnegocio
-    let query = `SELECT 
-        idUsuario, 
-        idNegocio, 
-        idRol, 
-        nombre, 
-        alias, 
-        telefono, 
-        cumple, 
-        frasepersonal, 
-        desempeno, 
-        popularidad, 
-        estatus, 
-        fechaRegistroauditoria, 
-        usuarioauditoria, 
+    // La lista NO incluye las imágenes (LONGBLOB), solo su tamaño: con todos los
+    // negocios la respuesta superaba los 23 MB y el superusuario recibía timeout.
+    // Las imágenes se obtienen con GET /usuarios/:id o GET /usuarios/:id/imagen/:tipo.
+    let query = `SELECT
+        idUsuario,
+        idNegocio,
+        idRol,
+        nombre,
+        alias,
+        telefono,
+        cumple,
+        frasepersonal,
+        desempeno,
+        popularidad,
+        estatus,
+        fechaRegistroauditoria,
+        usuarioauditoria,
         fehamodificacionauditoria,
         LENGTH(fotoine) as fotoine_size,
         LENGTH(fotopersona) as fotopersona_size,
-        LENGTH(fotoavatar) as fotoavatar_size,
-        fotoine,  -- Actual image data for conversion to Base64
-        fotopersona,  -- Actual image data for conversion to Base64
-        fotoavatar  -- Actual image data for conversion to Base64
+        LENGTH(fotoavatar) as fotoavatar_size
       FROM tblposcrumenwebusuarios`;
     
     const params: any[] = [];
@@ -62,18 +62,10 @@ export const obtenerUsuarios = async (req: AuthRequest, res: Response): Promise<
     
     // Log adicional con resultados
     console.log(`✅ [USUARIOS] Encontrados ${rows.length} usuarios para idNegocio: ${idnegocio}`);
-    
-    // Convertir todas las imágenes de Buffer a Base64
-    const usuariosConImagenes = rows.map(usuario => ({
-      ...usuario,
-      fotoine: usuario.fotoine ? (usuario.fotoine as Buffer).toString('base64') : null,
-      fotopersona: usuario.fotopersona ? (usuario.fotopersona as Buffer).toString('base64') : null,
-      fotoavatar: usuario.fotoavatar ? (usuario.fotoavatar as Buffer).toString('base64') : null
-    }));
-    
+
     res.json({
       success: true,
-      data: usuariosConImagenes,
+      data: rows,
       message: 'Usuarios obtenidos exitosamente'
     });
   } catch (error) {
